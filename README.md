@@ -90,7 +90,7 @@ my-social-app/
   [LinkedIn](https://www.linkedin.com/in/david-kalu-504150402/)
 * Divo Kohler: Data Engineer/Service Engineer
 
-  [LinkedIn]((https://www.linkedin.com/in/divo-kohler-1023b6397/))
+  [LinkedIn](https://www.linkedin.com/in/divo-kohler-1023b6397/)
 * Amantle Keamogetse Temo: Intergration Enigeer
 
   [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
