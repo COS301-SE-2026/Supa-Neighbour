@@ -1,0 +1,120 @@
+# 🏡 SupaNeighbour
+## Parse&co in conjunction with Gendac ## 
+
+> A community-driven platform that connects people who are in need with those willing to assist the people of within their neighbourhood.
+
+---
+
+## 📌 Table of Contents
+
+* [Overview](#-overview)
+* [Features](#-features)
+* [Tech Stack](#-tech-stack)
+* [Team](#-Team-and-Information)
+
+---
+
+## 📖 Overview
+
+**The SupaNeighbour system** aims to create a secure, community-driven platform where residents can request and provide short-term assistance for small household tasks.
+enabling the community to have:
+
+* People to request help with tasks
+* Volunteers or skilled individuals to offer assistance
+* Smart matching based on compatibility, location, and skills
+
+---
+
+## ✨ Features
+
+* 👤 User roles: Admin, Helper, Dependent
+* 📍 Location-based task matching
+* 🧠 Compatibility scoring system
+* 🏆 Badge & XP system for Helpers
+* ⭐ Rating & review system
+* 📊 Analytics tracking
+* 📄 Task tracking
+
+---
+
+## 🛠 Tech Stack
+
+**Frontend**
+
+* (e.g., React / Angular / Vue)
+
+**Backend**
+
+* (e.g., NestJS / Node.js / Spring Boot)
+
+**Database**
+
+* (e.g., PostgreSQL / MySQL)
+
+**Other Tools**
+
+* Git & GitHub
+* Docker (optional)
+
+---
+
+## Github Project Board
+
+[Github](https://github.com/COS301-SE-2026/Supa-Neighbour/pulse)
+
+---
+
+
+## 📁 Project Structure
+
+```
+SupaNeighbour/
+│
+├── src/
+│   ├── modules/
+│   ├── controllers/
+│   ├── services/
+│   └── entities/
+│
+├── database/
+├── tests/
+├── docs/
+└── README.md
+```
+
+---
+## 👥 Team and Information
+
+* Blessing Gibendi: Team Lead
+
+  [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
+* David Ekele Kalu: Tester
+
+  [LinkedIn](https://www.linkedin.com/in/david-kalu-504150402/)
+* Divo Kohler: Data Engineer/Service Engineer
+
+  [LinkedIn]((https://www.linkedin.com/in/divo-kohler-1023b6397/))
+* Amantle Keamogetse Temo: Intergration Enigeer
+
+  [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
+* Michelle W Njoroge: UI Engineer/Designer
+
+  [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
+
+---
+
+## 💡 Future Improvements
+
+* Mobile app integration
+* Real-time notifications
+* AI-based matching system
+* Enhanced analytics dashboard
+
+---
+
+## 📬 Contact
+
+For questions or collaboration:
+
+* Email:  parseandco@gmail.com
+* GitHub: https://github.com/Supa-Neighbour
