@@ -10,7 +10,7 @@
 * [Overview](#-overview)
 * [Features](#-features)
 * [Tech Stack](#-tech-stack)
-* [Team](#-Team-and-Information)
+* [Team and Information](#-team-and-information)
 
 ---
 
@@ -68,17 +68,14 @@ enabling the community to have:
 ## 📁 Project Structure
 
 ```
-SupaNeighbour/
-│
-├── src/
-│   ├── modules/
-│   ├── controllers/
-│   ├── services/
-│   └── entities/
-│
-├── database/
-├── tests/
-├── docs/
+my-social-app/
+├── .github/            # CI/CD workflows
+├── api/                # Spring Boot backend
+├── flutter/            # Mobile + Web Frontend
+├── functions/          # Azure serverless functions
+├── e2e/                # End-to-end Testing
+├── documenation/       # Documentation   
+├── .gitignore
 └── README.md
 ```
 
