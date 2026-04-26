@@ -45,5 +45,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'supa-neighbor-backend' #ok but this is just a place holder, we need to change this to the actual name of the app service but we havent set that up yet.
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} #would need to add these secrets(in our work flow files) in the repo settings but we can do that later when we have the service set up***
           package: backend/target/*.jar

@@ -1,0 +1,53 @@
+name: Notifications Function CI/CD
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  build:
+    name: Build Notifications Function
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: functions/notifications
+
+      - name: Build TypeScript
+        run: npm run build
+        working-directory: functions/notifications
+
+  deploy:
+    name: Deploy to Azure Functions
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and build
+        run: |
+          npm install
+          npm run build
+        working-directory: functions/notifications
+
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: 'supa-neighbour-notifications' # as before just a temp placeholder
+          package: functions/notifications
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_NOTIFICATIONS_PUBLISH_PROFILE }}
