@@ -11,17 +11,18 @@
 * [Features](#-features)
 * [Tech Stack](#-tech-stack)
 * [Team and Information](#-team-and-information)
+* [Contact Information](#-contact)
 
 ---
 
 ## 📖 Overview
 
-**The SupaNeighbour system** aims to create a secure, community-driven platform where residents can request and provide short-term assistance for small household tasks.
-enabling the community to have:
-
-* People to request help with tasks
-* Volunteers or skilled individuals to offer assistance
-* Smart matching based on compatibility, location, and skills
+**The SupaNeighbour system** aims to create a secure, community-driven platform where residents can request and provide short-term assistance for small household. Modernised in a way such that helping others is both good for them and you
+## Enables The Community to
+* People to request help with tasks.
+* Volunteers or skilled individuals to offer assistance.
+* Smart matching based on compatibility, location, and skills.
+* create a connecting that is much closer and the gamification and sleack design connects the youth and the elders.
 
 ---
 
@@ -41,15 +42,47 @@ enabling the community to have:
 
 **Frontend**
 
-* (e.g., React / Angular / Vue)
+* Mobile App: Flutter (Dart)
+
+* Web Admin Dashboard: Flutter Web on Azure       Static Web Apps (Dart)
+
+* Maps & Geolocation: Azure Maps + flutter_map (Dart + Java) 
 
 **Backend**
 
-* (e.g., NestJS / Node.js / Spring Boot)
+* Main API: Spring Boot on Azure App Service (Java)
+
+* Matching Engine (GraphQL): Netflix DGS on Spring Boot (Java)
+
+* Admin Dashboard API Extensions: Express/Fastify * microservice (TypeScript) - optional
+
+* ORM (Relational Layer): Spring Data JPA / Hibernate (Java)
+
+* ORM (Alternative/Tooling): Prisma / TypeORM (TypeScript)
+
+* Push Notifications: Azure Notification Hubs (Java / TypeScript)
 
 **Database**
 
-* (e.g., PostgreSQL / MySQL)
+* Primary Data Store: Azure Cosmos DB (NoSQL)
+
+* Relational Data Store: Azure SQL Database (SQL)
+
+* Relative API connection SpringBoot/Java
+
+**Storage & CDN**
+
+* File Storage: Azure Blob Storage + Azure CDN
+
+**Security**
+
+* Secrets Management: Azure Key Vault
+
+* Authentication: Microsoft Entra ID B2C
+
+**DevOps & CI/CD**
+
+* CI/CD: GitHub + GitHub Actions
 
 **Other Tools**
 
@@ -58,9 +91,11 @@ enabling the community to have:
 
 ---
 
-## Github Project Board
+## Project Board 
 
-[Github](https://github.com/COS301-SE-2026/Supa-Neighbour/pulse)
+* [Github](https://github.com/COS301-SE-2026/Supa-Neighbour/pulse)
+* [Functional Requirements](https://docs.google.com/document/d/1PVcbys8ZG97wmAtsVa-1X8_czOlywJprGr-_2dYto4w/edit?usp=sharing)
+* [Capstone Demo instructions](https://drive.google.com/file/d/14-R9XofWrY65djt_qI9ZB4H_m_geZqdD/view?usp=drive_link)
 
 ---
 
