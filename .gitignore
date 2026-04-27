@@ -1,0 +1,17 @@
+# Maven build output - never commit these
+target/
+*.jar
+*.war
+
+# Downloaded installers
+*.deb
+*.exe
+*.dmg
+
+# Flutter build output
+frontend/build/
+
+# Environment files
+.env
+.env.local
+local.settings.json
