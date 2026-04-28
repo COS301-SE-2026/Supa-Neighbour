@@ -2,7 +2,7 @@ name: Jobs Function CI/CD
 
 on:
   push:
-    branches: [ main, dev, feature_ci-cd_setup ]
+    branches: [main, dev]
   pull_request:
     branches: [ dev ]
 

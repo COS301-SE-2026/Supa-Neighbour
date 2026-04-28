@@ -13,13 +13,13 @@ between the presentation, api, service, and data layers.
 
   AR1.3: The service layer shall consist of azure Functions handling:
     - Push notification dispatching (TypeScript)
-    - Background jobs (C# / .NET 9) **might consider alternatives like  TypeScipt still as its supported by azure functions 
+    - Background jobs (TypeScipt) 
     - Optional AI/CV inference (Python)
 
-  AR1.4: The data layer shall consist of:(divo please confirm if the below is fine as in where there any changes regarding the db)
-    - Azure Cosmos DB (primary NoSQL store) 
-    - Azure SQL Database (relational store)
-    - Azure Blob Storage (photo storage)
+  AR1.4: The data layer shall consist of:
+    - Azure Cosmos DB
+    - Azure SQL Database
+    - Azure Blob Storage
 
 ## AR2: Communication Architecture
 The system shall use appropriate communication protocols per use case.
