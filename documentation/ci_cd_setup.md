@@ -4,8 +4,8 @@
 We will be using GitHub Actions for CI/CD. The workflows are located in `.github/workflows/`.
 
 ## Branching Strategy
-- `feature_*` -> our separate develop on diff. features
-- `dev` -> CI would run here: build + test + liniting??
+- `feature/*` -> our separate develop on diff. features
+- `dev` -> CI would run here: build + test 
 - `main` -> CD runs here
 
 ## Workflows
@@ -18,7 +18,7 @@ We will be using GitHub Actions for CI/CD. The workflows are located in `.github
 | `functions-jobs.yml` | push/PR to `dev`, push to `main` | deploys jobs azure function |
 
 ## Note: GitHub Secrets Required
-These secrets we would later added to the repo's actions:
+These secrets are added to the repo's actions:
 
 | Secret Name | Used In | 
 |-------------|---------|
@@ -39,5 +39,5 @@ These secrets we would later added to the repo's actions:
 
 
 ## Technical Decisions
-- **Jobs Function runtime**: TypeScript (Node.js 22 LTS) — consistent with notifications function, switched from C#
+- **Jobs Function runtime**: TypeScript — consistent with notifications function, switched from C#
 - **Functions hosting plan**: Consumption (Windows) — pay-as-you-go, scales to zero( might change later to flex condisering dynamic scaling)

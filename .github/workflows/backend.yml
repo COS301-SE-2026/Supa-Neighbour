@@ -2,7 +2,7 @@ name: Backend CI/CD
 
 on:
   push:
-    branches: [ main, dev, feature_ci-cd_setup ]
+    branches: [main, dev]
   pull_request:
     branches: [ dev ]
 
@@ -44,6 +44,6 @@ jobs:
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'supa-neighbor-backend' 
+          app-name: 'supa-neighbour-backend' # TODO: confirm exact Azure App Service name
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} 
           package: backend/target/*.jar
