@@ -1,0 +1,143 @@
+# SECRETS & ENVIRONMENT — never commit these regardless of language
+.env
+.env.*
+*.local
+application-local.yml
+application-local.properties
+local.settings.json          # Azure Functions local config
+*.pem
+*.key
+*.pfx
+*.p12
+*.cert
+
+
+# JAVA / SPRING BOOT (backend/)
+
+# Maven build output
+target/
+*.jar
+*.war
+*.class
+
+# Maven wrapper (optional — remove this line if your team uses mvn wrapper)
+# .mvn/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# VS Code Java
+.factorypath
+.apt_generated/
+
+
+# FLUTTER / DART (frontend/)
+
+# Flutter build output
+frontend/build/
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.packages
+
+# Dart generated files
+*.g.dart
+*.freezed.dart
+
+# Flutter platform-specific generated folders (auto-generated, not hand-written)
+frontend/android/.gradle/
+frontend/android/local.properties
+frontend/android/key.properties          # signing keys — never commit
+frontend/ios/Pods/
+frontend/ios/.symlinks/
+frontend/ios/Flutter/flutter_export_environment.sh
+frontend/linux/flutter/
+frontend/macos/Flutter/
+frontend/windows/flutter/
+frontend/web/favicon.png                 # auto-generated
+
+# pubspec lock is fine to commit for apps (keeps versions consistent)
+# pubspec.lock — leave this commented, DO commit pubspec.lock
+
+
+# TYPESCRIPT / NODE (functions/)
+
+# Dependencies
+node_modules/
+functions/jobs/node_modules/
+functions/notifications/node_modules/
+
+# TypeScript build output
+functions/*/dist/
+functions/*/*.js
+functions/*/*.js.map
+!functions/*/jest.config.js              # keep jest config
+
+# npm / yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+# AZURE FUNCTIONS
+
+# Local settings (contains connection strings and secrets)
+local.settings.json
+**/local.settings.json
+
+# Azure Functions build output
+bin/
+obj/
+
+
+# DOCKER
+.docker/
+docker-compose.override.yml
+
+#VSCODE
+.vscode/settings.json                    # personal editor settings
+.vscode/launch.json                      # personal debug config
+.vscode/tasks.json
+.vscode/*.code-workspace
+
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+
+# GENERAL
+
+# Logs
+logs/
+*.log
+
+# Coverage reports
+coverage/
+*.lcov
+htmlcov/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.bak
