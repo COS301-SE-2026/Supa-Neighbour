@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install dependencies
         run: npm install
@@ -48,6 +48,6 @@ jobs:
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
-          app-name: 'supa-neighbour-notifications' # as before just a temp placeholder
+          app-name: 'supa-neighbour-notifications' 
           package: functions/notifications
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_NOTIFICATIONS_PUBLISH_PROFILE }}

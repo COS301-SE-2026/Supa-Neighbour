@@ -27,6 +27,17 @@ These secrets we would later added to the repo's actions:
 | `AZURE_FUNCTIONAPP_NOTIFICATIONS_PUBLISH_PROFILE` | `functions-notifications.yml` |
 | `AZURE_FUNCTIONAPP_JOBS_PUBLISH_PROFILE` | `functions-jobs.yml` |
 
-## Once we have set up azure we need to 
-1. We would need to update the app names and the token secrets
+## Azure Resources Created
 
+| Resource | Name |
+|----------|------|
+| Resource Group | `supa-neighbour-rg` |
+| App Service (Backend) | `supa-neighbour-backend` |
+| Static Web App (Frontend) | `supa-neighbour-dashboard` |
+| Function App (Notifications) | `supa-neighbour-notifications` | 
+| Function App (Jobs) | `supa-neighbour-jobs` |
+
+
+## Technical Decisions
+- **Jobs Function runtime**: TypeScript (Node.js 22 LTS) — consistent with notifications function, switched from C#
+- **Functions hosting plan**: Consumption (Windows) — pay-as-you-go, scales to zero( might change later to flex condisering dynamic scaling)

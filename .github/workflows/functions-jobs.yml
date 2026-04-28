@@ -17,6 +17,6 @@ jobs:
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
-          app-name: 'supa-neighbour-jobs' #placeholder
+          app-name: 'supa-neighbour-jobs' 
           package: functions/jobs
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_JOBS_PUBLISH_PROFILE }}
