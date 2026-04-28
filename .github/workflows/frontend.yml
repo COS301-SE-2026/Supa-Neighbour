@@ -2,7 +2,7 @@ name: Frontend CI/CD
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main, dev, feature_ci-cd_setup ]
   pull_request:
     branches: [ dev ]
 
