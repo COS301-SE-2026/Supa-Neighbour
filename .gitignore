@@ -19,6 +19,7 @@ target/
 *.jar
 *.war
 *.class
+*.class
 
 # Maven wrapper (optional — remove this line if your team uses mvn wrapper)
 # .mvn/
@@ -141,3 +142,4 @@ htmlcov/
 *.temp
 *.swp
 *.bak
+*.deb
