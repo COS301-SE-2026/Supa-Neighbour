@@ -141,4 +141,5 @@ htmlcov/
 *.tmp
 *.temp
 *.swp
-*.bak*.deb
+*.bak
+*.deb
