@@ -1,0 +1,162 @@
+erDiagram
+    UserTable {
+        INT UserID PK
+        VARCHAR UserPassword
+        VARCHAR UserName
+        VARCHAR UserSurname
+        VARCHAR UserEmail
+        INT UserPhoneNumber
+        VARCHAR UserGender
+        DATE UserDOB
+        INT UserAddressID FK
+        INT UserBadgeID FK
+        INT UserRatingID FK
+        VARCHAR UserTypeID FK
+    }
+    
+    AdminTable {
+        INT AdminID PK
+        VARCHAR AdminPassword
+        VARCHAR AdminName
+        VARCHAR AdminSurname
+        VARCHAR AdminEmail
+        INT AdminPhoneNumber
+        DATE AdminCreateDate
+        INT AdminAccessLevel
+        INT UserID FK
+        INT AdminAddressID FK
+    }
+    
+    AddressTable {
+        INT AddressID PK
+        INT AddressNumber
+        VARCHAR AddressStreet
+        INT AddressZip
+        INT NeighbourhoodID FK
+        INT ResidentID FK
+    }
+    
+    LocationTable {
+        INT LocationID PK
+        INT LocationCenterPoint
+        INT LocationRadius
+        INT NeighbourhoodID FK
+        VARCHAR NeighbourhoodName
+    }
+    
+    TaskTypeTable {
+        INT TaskTypeID PK
+        VARCHAR TypeDescription
+        INT AssociatedBadgeID FK
+        BOOL NeedsSpecialist
+        INT XPWorth
+    }
+    
+    BadgeTable {
+        VARCHAR BadgeID PK
+        VARCHAR BadgeName
+        BOOL IsSpecialist
+        INT CurrentXP
+        INT RatingID FK
+    }
+    
+    RatingTable {
+        VARCHAR RatingReview PK
+        INT TotalXPLevel
+        VARCHAR CurrentGroup
+    }
+    
+    HelperTable {
+        INT HelperID PK
+        INT UserID FK
+        VARCHAR BadgeID FK
+        INT TaskTypeID FK
+        INT CompatibleID FK
+    }
+    
+    DependentTable {
+        INT DependentID PK
+        INT UserID FK
+        INT TaskTypeID FK
+        INT CompatibleID FK
+    }
+    
+    CompatibilityTable {
+        INT CompatibilityID PK
+        INT CompatibilityScore
+        VARCHAR CompatibilityColor
+        INT DependentID FK
+        INT HelperID FK
+    }
+    
+    TaskInvoiceTable {
+        INT TaskID PK
+        INT HelperID FK
+        INT DependentID FK
+        BOOL IsImmediate
+        INT LocationID FK
+        INT TaskTypeID FK
+        BOOL NeedsSpecialist
+        INT SignedAdminID FK
+        DATE StartDate
+        DATE EndDate
+        INT HelperBadgeID FK
+        INT DependentRatingID FK
+        INT HelperRatingID FK
+        VARCHAR AdminReview
+        INT CompatibilityID FK
+    }
+    
+    AnalyticsTable {
+        INT AnalyticsID PK
+        INT UserID FK
+        INT UserTypeID FK
+    }
+    
+    HelperAnalyticsTable {
+        VARCHAR UserTypeID PK
+        INT UserID FK
+        INT TaskTypeID FK
+        INT CompatibleID FK
+        INT LocationID FK
+        FLOAT AverageRating
+        FLOAT AverageGivingRating
+    }
+    
+    DependentAnalyticsTable {
+        VARCHAR UserTypeID PK
+        INT UserID FK
+        INT TaskTypeID FK
+        INT TotalTasks
+        INT LocationID FK
+        FLOAT AverageRating
+        FLOAT AverageGivingRating
+    }
+
+    %% Relationships
+    UserTable ||--o{ AdminTable : "has"
+    UserTable ||--o{ HelperTable : "registers as"
+    UserTable ||--o{ DependentTable : "registers as"
+    UserTable ||--o{ AnalyticsTable : "tracked in"
+    
+    AddressTable ||--o{ UserTable : "contains"
+    AddressTable ||--o{ AdminTable : "contains"
+    
+    LocationTable ||--o{ TaskInvoiceTable : "used in"
+    
+    TaskTypeTable ||--o{ HelperTable : "specializes in"
+    TaskTypeTable ||--o{ DependentTable : "requires"
+    TaskTypeTable ||--o{ TaskInvoiceTable : "covers"
+    
+    BadgeTable ||--o{ HelperTable : "assigned to"
+    BadgeTable ||--o{ UserTable : "earned by"
+    
+    RatingTable ||--o{ UserTable : "assigned to"
+    RatingTable ||--o{ BadgeTable : "linked with"
+    
+    CompatibilityTable ||--o{ HelperTable : "matches"
+    CompatibilityTable ||--o{ DependentTable : "matches"
+    CompatibilityTable ||--o{ TaskInvoiceTable : "used in"
+    
+    HelperTable ||--o{ TaskInvoiceTable : "performs"
+    DependentTable ||--o{ TaskInvoiceTable : "receives"
