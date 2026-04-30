@@ -122,7 +122,7 @@ my-social-app/
   [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
 
 * David Ekele Kalu: Tester
-
+ 
   [LinkedIn](https://www.linkedin.com/in/david-kalu-504150402/)
 
 * Divo Kohler: Data Engineer/Service Engineer
@@ -131,7 +131,7 @@ my-social-app/
 
 * Amantle Keamogetse Temo: Intergration Enigeer
 
-  [LinkedIn]()
+  [LinkedIn](https://www.linkedin.com/in/amantle-temo-54bb6b369?utm_source=share_via&utm_content=profile&utm_medium=member_ios)
 
 * Michelle W Njoroge: UI Engineer/Designer
 
