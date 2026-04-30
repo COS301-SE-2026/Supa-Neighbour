@@ -135,7 +135,7 @@ my-social-app/
 
 * Michelle W Njoroge: UI Engineer/Designer
 
-  [LinkedIn]()
+  [LinkedIn](https://www.linkedin.com/in/michelle-njoroge-12264a209?utm_source=share_via&utm_content=profile&utm_medium=member_android)
 
 ---
 
@@ -143,7 +143,7 @@ my-social-app/
 
 * Mobile app integration
 * Real-time notifications
-* AI-based matching system
+* AI-based Identification system
 * Enhanced analytics dashboard
 
 ---
