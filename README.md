@@ -1,11 +1,11 @@
-# 🏡 SupaNeighbour
+#  SupaNeighbour
 ## Parse&co in conjunction with Gendac ## 
 
 > A community-driven platform that connects people who are in need with those willing to assist the people of within their neighbourhood.
 
 ---
 
-## 📌 Table of Contents
+##  Table of Contents
 
 * [Overview](#-overview)
 * [Features](#-features)
@@ -15,7 +15,7 @@
 
 ---
 
-## 📖 Overview
+##  Overview
 
 **The SupaNeighbour system** aims to create a secure, community-driven platform where residents can request and provide short-term assistance for small household. Modernised in a way such that helping others is both good for them and you
 ## Enables The Community to
@@ -26,19 +26,19 @@
 
 ---
 
-## ✨ Features
+##  Features
 
-* 👤 User roles: Admin, Helper, Dependent
-* 📍 Location-based task matching
-* 🧠 Compatibility scoring system
-* 🏆 Badge & XP system for Helpers
-* ⭐ Rating & review system
-* 📊 Analytics tracking
-* 📄 Task tracking
+*  User roles: Admin, Helper, Dependent
+*  Location-based task matching
+*  Compatibility scoring system
+*  Badge & XP system for Helpers
+*  Rating & review system
+*  Analytics tracking
+*  Task tracking
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 **Frontend**
 
@@ -100,7 +100,7 @@
 ---
 
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 my-social-app/
@@ -115,27 +115,31 @@ my-social-app/
 ```
 
 ---
-## 👥 Team and Information
+##  Team and Information
 
 * Blessing Gibendi: Team Lead
 
   [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
+
 * David Ekele Kalu: Tester
 
   [LinkedIn](https://www.linkedin.com/in/david-kalu-504150402/)
+
 * Divo Kohler: Data Engineer/Service Engineer
 
   [LinkedIn](https://www.linkedin.com/in/divo-kohler-1023b6397/)
+
 * Amantle Keamogetse Temo: Intergration Enigeer
 
-  [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
+  [LinkedIn]()
+
 * Michelle W Njoroge: UI Engineer/Designer
 
-  [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
+  [LinkedIn]()
 
 ---
 
-## 💡 Future Improvements
+##  Future Improvements
 
 * Mobile app integration
 * Real-time notifications
@@ -144,7 +148,7 @@ my-social-app/
 
 ---
 
-## 📬 Contact
+##  Contact
 
 For questions or collaboration:
 
