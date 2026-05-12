@@ -99,9 +99,8 @@ q
 
 ---
 
-## Project Board 
-
-* [Github](https://github.com/COS301-SE-2026/Supa-Neighbour/pulse)
+## Extra Links
+* [Project Board](https://github.com/orgs/COS301-SE-2026/projects/34)
 * [Functional Requirements](https://docs.google.com/document/d/1PVcbys8ZG97wmAtsVa-1X8_czOlywJprGr-_2dYto4w/edit?usp=sharing)
 * [Capstone Demo instructions](https://drive.google.com/file/d/14-R9XofWrY65djt_qI9ZB4H_m_geZqdD/view?usp=drive_link)
 * [Database Domain Model](https://docs.google.com/document/d/1nC0Un50nfuOG_E8rg6VxcGCwM4UnnsT5mpWU7TS6gRs/edit?usp=sharing)
