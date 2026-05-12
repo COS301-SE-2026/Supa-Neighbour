@@ -1,11 +1,23 @@
-# 🏡 SupaNeighbour
-## Parse&co in conjunction with Gendac ## 
+# SupaNeighbour
+## Parse&Co in conjunction with Gendac ## 
 
 > A community-driven platform that connects people who are in need with those willing to assist the people of within their neighbourhood.
 
----
+[![API Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/api.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/api.yml)
+[![Flutter Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/flutter.yml/badge.svg)](https://github.com/YOUR-USERNAME/Supa-Neighbour/actions/workflows/flutter.yml)
+[![GitHub Issues](https://img.shields.io/github/issues/COS301-SE-2026/Supa-Neighbour)](https://github.com/COS301-SE-2026/Supa-Neighbour/issues)
 
-## 📌 Table of Contents
+![Uptime](https://img.shields.io/badge/Uptime-Pending%20Deployment-lightgrey)
+![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
+![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
+![Azure](https://img.shields.io/badge/Azure-Cloud-blue?logo=microsoftazure)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-green?logo=springboot)
+![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
+![Node](https://img.shields.io/badge/Node.js-20-green?logo=nodedotjs)
+
+---
+q
+## Table of Contents
 
 * [Overview](#-overview)
 * [Features](#-features)
@@ -15,10 +27,11 @@
 
 ---
 
-## 📖 Overview
+## Overview
 
 **The SupaNeighbour system** aims to create a secure, community-driven platform where residents can request and provide short-term assistance for small household. Modernised in a way such that helping others is both good for them and you
-## Enables The Community to
+
+## Enables The Community to:
 * People to request help with tasks.
 * Volunteers or skilled individuals to offer assistance.
 * Smart matching based on compatibility, location, and skills.
@@ -26,27 +39,28 @@
 
 ---
 
-## ✨ Features
+## Features
 
-* 👤 User roles: Admin, Helper, Dependent
-* 📍 Location-based task matching
-* 🧠 Compatibility scoring system
-* 🏆 Badge & XP system for Helpers
-* ⭐ Rating & review system
-* 📊 Analytics tracking
-* 📄 Task tracking
+* User roles: Admin, Helper, Dependent
+* Location-based task matching
+* Compatibility scoring system
+* Badge & XP system for Helpers
+* Rating & review system
+* Analytics tracking
+* Task tracking
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 **Frontend**
 
 * Mobile App: Flutter (Dart)
 
-* Web Admin Dashboard: Flutter Web on Azure       Static Web Apps (Dart)
+* Web Admin Dashboard: Flutter Web on Azure  Static Web Apps (Dart)
 
 * Maps & Geolocation: Azure Maps + flutter_map (Dart + Java) 
+
 
 **Backend**
 
@@ -56,11 +70,7 @@
 
 * Admin Dashboard API Extensions: Express/Fastify * microservice (TypeScript) - optional
 
-* ORM (Relational Layer): Spring Data JPA / Hibernate (Java)
 
-* ORM (Alternative/Tooling): Prisma / TypeORM (TypeScript)
-
-* Push Notifications: Azure Notification Hubs (Java / TypeScript)
 
 **Database**
 
@@ -70,15 +80,13 @@
 
 * Relative API connection SpringBoot/Java
 
-**Storage & CDN**
-
-* File Storage: Azure Blob Storage + Azure CDN
 
 **Security**
 
 * Secrets Management: Azure Key Vault
 
 * Authentication: Microsoft Entra ID B2C
+
 
 **DevOps & CI/CD**
 
@@ -100,7 +108,7 @@
 ---
 
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 my-social-app/
@@ -115,7 +123,7 @@ my-social-app/
 ```
 
 ---
-## 👥 Team and Information
+## Team and Information
 
 * Blessing Gibendi: Team Lead
 
