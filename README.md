@@ -1,11 +1,28 @@
-#  SupaNeighbour
-## Parse&co in conjunction with Gendac ## 
+# SupaNeighbour
+## Parse&Co in conjunction with Gendac ## 
 
 > A community-driven platform that connects people who are in need with those willing to assist the people of within their neighbourhood.
 
----
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=coverage)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=bugs)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
+[![API Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/backend.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/backend.yml)
+[![Flutter Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/flutter.yml)
+[![GitHub Issues](https://img.shields.io/github/issues/COS301-SE-2026/Supa-Neighbour)](https://github.com/COS301-SE-2026/Supa-Neighbour/issues)
 
-##  Table of Contents
+[![dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)](https://github.com/COS301-SE-2026/Supa-Neighbour)
+
+![Uptime](https://img.shields.io/badge/Uptime-Pending%20Deployment-lightgrey)
+![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
+![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
+![Azure](https://img.shields.io/badge/Azure-Cloud-blue?logo=microsoftazure)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-green?logo=springboot)
+![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
+![Node](https://img.shields.io/badge/Node.js-20-green?logo=nodedotjs)
+
+---
+q
+## Table of Contents
 
 * [Overview](#-overview)
 * [Features](#-features)
@@ -15,10 +32,11 @@
 
 ---
 
-##  Overview
+## Overview
 
 **The SupaNeighbour system** aims to create a secure, community-driven platform where residents can request and provide short-term assistance for small household. Modernised in a way such that helping others is both good for them and you
-## Enables The Community to
+
+## Enables The Community to:
 * People to request help with tasks.
 * Volunteers or skilled individuals to offer assistance.
 * Smart matching based on compatibility, location, and skills.
@@ -26,27 +44,28 @@
 
 ---
 
-##  Features
+## Features
 
-*  User roles: Admin, Helper, Dependent
-*  Location-based task matching
-*  Compatibility scoring system
-*  Badge & XP system for Helpers
-*  Rating & review system
-*  Analytics tracking
-*  Task tracking
+* User roles: Admin, Helper, Dependent
+* Location-based task matching
+* Compatibility scoring system
+* Badge & XP system for Helpers
+* Rating & review system
+* Analytics tracking
+* Task tracking
 
 ---
 
-##  Tech Stack
+## Tech Stack
 
 **Frontend**
 
 * Mobile App: Flutter (Dart)
 
-* Web Admin Dashboard: Flutter Web on Azure       Static Web Apps (Dart)
+* Web Admin Dashboard: Flutter Web on Azure  Static Web Apps (Dart)
 
 * Maps & Geolocation: Azure Maps + flutter_map (Dart + Java) 
+
 
 **Backend**
 
@@ -56,11 +75,7 @@
 
 * Admin Dashboard API Extensions: Express/Fastify * microservice (TypeScript) - optional
 
-* ORM (Relational Layer): Spring Data JPA / Hibernate (Java)
 
-* ORM (Alternative/Tooling): Prisma / TypeORM (TypeScript)
-
-* Push Notifications: Azure Notification Hubs (Java / TypeScript)
 
 **Database**
 
@@ -70,15 +85,13 @@
 
 * Relative API connection SpringBoot/Java
 
-**Storage & CDN**
-
-* File Storage: Azure Blob Storage + Azure CDN
 
 **Security**
 
 * Secrets Management: Azure Key Vault
 
 * Authentication: Microsoft Entra ID B2C
+
 
 **DevOps & CI/CD**
 
@@ -91,16 +104,15 @@
 
 ---
 
-## Project Board 
-
-* [Github](https://github.com/COS301-SE-2026/Supa-Neighbour/pulse)
+## Extra Links
+* [Project Board](https://github.com/orgs/COS301-SE-2026/projects/34)
 * [Functional Requirements](https://docs.google.com/document/d/1PVcbys8ZG97wmAtsVa-1X8_czOlywJprGr-_2dYto4w/edit?usp=sharing)
 * [Capstone Demo instructions](https://drive.google.com/file/d/14-R9XofWrY65djt_qI9ZB4H_m_geZqdD/view?usp=drive_link)
 * [Database Domain Model](https://docs.google.com/document/d/1nC0Un50nfuOG_E8rg6VxcGCwM4UnnsT5mpWU7TS6gRs/edit?usp=sharing)
 ---
 
 
-##  Project Structure
+## Project Structure
 
 ```
 my-social-app/
@@ -115,7 +127,7 @@ my-social-app/
 ```
 
 ---
-##  Team and Information
+## Team and Information
 
 * Blessing Gibendi: Team Lead
 
