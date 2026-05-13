@@ -132,31 +132,35 @@ my-social-app/
 * Blessing Gibendi: Team Lead
 
   [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
-* David Ekele Kalu: Tester
 
+* David Ekele Kalu: Tester
+ 
   [LinkedIn](https://www.linkedin.com/in/david-kalu-504150402/)
+
 * Divo Kohler: Data Engineer/Service Engineer
 
   [LinkedIn](https://www.linkedin.com/in/divo-kohler-1023b6397/)
+
 * Amantle Keamogetse Temo: Intergration Enigeer
 
-  [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
+  [LinkedIn](https://www.linkedin.com/in/amantle-temo-54bb6b369?utm_source=share_via&utm_content=profile&utm_medium=member_ios)
+
 * Michelle W Njoroge: UI Engineer/Designer
 
-  [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
+  [LinkedIn](https://www.linkedin.com/in/michelle-njoroge-12264a209?utm_source=share_via&utm_content=profile&utm_medium=member_android)
 
 ---
 
-## 💡 Future Improvements
+##  Future Improvements
 
 * Mobile app integration
 * Real-time notifications
-* AI-based matching system
+* AI-based Identification system
 * Enhanced analytics dashboard
 
 ---
 
-## 📬 Contact
+##  Contact
 
 For questions or collaboration:
 
