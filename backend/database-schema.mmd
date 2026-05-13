@@ -14,6 +14,44 @@ erDiagram
         VARCHAR UserTypeID FK
     }
     
+    AnalyticsTable {
+        INT AnalyticsID PK
+        INT TaskID FK
+        INT AdminID FK
+        VARCHAR HelperTypeID FK
+        VARCHAR DependentTypeID FK
+    }
+
+    HelperAnalyticsTable {
+        VARCHAR HelperTypeID PK
+        INT UserID FK
+        INT TaskTypeID FK
+        INT CompatibleID FK
+        INT LocationID FK
+        FLOAT AverageRating
+        FLOAT AverageGivingRating
+    }
+    
+    DependentAnalyticsTable {
+        VARCHAR DependentTypeID PK
+        INT UserID FK
+        INT TaskTypeID FK
+        INT TotalTasks
+        INT LocationID FK
+        FLOAT AverageRating
+        FLOAT AverageGivingRating
+    }
+
+    AdminTable {
+        INT AdminID PK
+        VARCHAR AdminPassword
+        VARCHAR AdminName
+        VARCHAR AdminSurname
+        VARCHAR AdminEmail
+        INT HelperID FK
+        INT TaskID FK
+    }
+
     AdminTable {
         INT AdminID PK
         VARCHAR AdminPassword
@@ -107,31 +145,6 @@ erDiagram
         INT CompatibilityID FK
     }
     
-    AnalyticsTable {
-        INT AnalyticsID PK
-        INT UserID FK
-        INT UserTypeID FK
-    }
-    
-    HelperAnalyticsTable {
-        VARCHAR UserTypeID PK
-        INT UserID FK
-        INT TaskTypeID FK
-        INT CompatibleID FK
-        INT LocationID FK
-        FLOAT AverageRating
-        FLOAT AverageGivingRating
-    }
-    
-    DependentAnalyticsTable {
-        VARCHAR UserTypeID PK
-        INT UserID FK
-        INT TaskTypeID FK
-        INT TotalTasks
-        INT LocationID FK
-        FLOAT AverageRating
-        FLOAT AverageGivingRating
-    }
 
     %% Relationships
     UserTable ||--o{ AdminTable : "has"
@@ -160,3 +173,6 @@ erDiagram
     
     HelperTable ||--o{ TaskInvoiceTable : "performs"
     DependentTable ||--o{ TaskInvoiceTable : "receives"
+
+    HelperAnalyticsTable ||--o{ HelperTable : "analyzes"
+    DependentAnalyticsTable ||--o{ DependentTable : "analyzes"
