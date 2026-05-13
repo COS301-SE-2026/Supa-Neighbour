@@ -7,8 +7,10 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=coverage)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=bugs)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
 [![API Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/backend.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/backend.yml)
-[![Flutter Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend.yml/badge.svg)](https://github.com/YOUR-USERNAME/Supa-Neighbour/actions/workflows/flutter.yml)
+[![Flutter Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/flutter.yml)
 [![GitHub Issues](https://img.shields.io/github/issues/COS301-SE-2026/Supa-Neighbour)](https://github.com/COS301-SE-2026/Supa-Neighbour/issues)
+
+[![dependencies](https://img.shields.io/librariesio/github/COS301-SE-2026/Supa-Neighbour)](https://libraries.io/github/COS301-SE-2026/Supa-Neighbour)
 
 ![Uptime](https://img.shields.io/badge/Uptime-Pending%20Deployment-lightgrey)
 ![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
