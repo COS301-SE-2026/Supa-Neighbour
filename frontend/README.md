@@ -28,26 +28,6 @@ If you do not have Flutter installed on your machine yet, run:
 sudo snap install flutter --classic
 ```
 
-Verify it installed correctly:
-
-```bash
-flutter doctor
-```
-
-if you do see the folloing error:
-[!] Android toolchain - develop for Android devices (Android SDK version 36.1.0)
-    ✗ Android SDK file not found: adb.
-    
-This means that flutter isnt detecting Android Studio. This wont be a problem as we will not be using it. Some issues regarding it's setup were encoutered, thus it will not be used.
-
-if you see this error:
-[✗] Chrome - develop for the web (Cannot find Chrome executable at google-chrome)
-    ! Cannot find Chrome. Try setting CHROME_EXECUTABLE to a Chrome executable.
-
-This will be addressed in step 3
-
----
-
 ### Step 2 — Install project dependencies
 
 Navigate to the frontend folder and install all Dart packages:
@@ -58,39 +38,104 @@ flutter pub get
 ```
 
 This is the Flutter equivalent of `npm install` — it reads `pubspec.yaml` and downloads all required packages.
+---
+
+### Step 3: Verify that everything installed correctly
+Verify it installed correctly:
+
+```bash
+flutter doctor
+```
+
+## Troubleshooting flutter doctor errors
+
+Below are the two most common errors you may see and how to handle them.
 
 ---
 
-### Step 3 — Point Flutter to your browser
+### Android toolchain error
 
-Flutter needs to know where your Windows browser is located in order to open it from WSL2. Open your bash config file:
+```bash
+[!] Android toolchain - develop for Android devices
+    ✗ Android SDK file not found: adb.
+```
+
+This means Flutter cannot detect Android tooling on your machine. You have two options depending on how you want to test the mobile app:
+
+**Option A — Use Android Studio (emulator on your computer)**
+
+1. Download and install Android Studio on the **Windows side** (not inside WSL2) from [developer.android.com/studio](https://developer.android.com/studio)
+2. Open Android Studio → SDK Manager → install **Android SDK Platform 34**
+3. Add this to your `~/.bashrc` in WSL2 — replacing `YOUR_USERNAME` with your Windows username:
+```bash
+export ANDROID_HOME='/mnt/c/Users/YOUR_USERNAME/AppData/Local/Android/Sdk' - should just be the path to the Sdk of Android Studio
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+```
+4. Reload it:
+```bash
+source ~/.bashrc
+```
+5. Open Android Studio → Device Manager → create and start a virtual device
+6. Run the app:
+flutter run
+
+---
+
+**Option B — Use a physical Android phone**
+
+1. On your Android phone go to **Settings → About Phone** and tap **Build Number** 7 times to enable Developer Mode
+2. Go to **Settings → Developer Options** and enable **USB Debugging**
+3. Connect your phone to your computer via USB
+4. Verify Flutter detects it:
+```bash
+flutter devices
+```
+You should see your phone listed.
+5. Run the app:
+```bash
+flutter run
+```
+
+---
+
+> If you are only working on the **web admin dashboard** currently and not the mobile app, you can safely ignore this error entirely and proceed with `flutter run -d web-server --web-port=8080`.(Step 4)
+
+---
+
+### Chrome not found error
+
+```bash
+[✗] Chrome - develop for the web
+    ! Cannot find Chrome. Try setting CHROME_EXECUTABLE to a Chrome executable.
+```
+
+This means Flutter cannot find a browser to run the web dashboard. Fix it by pointing Flutter to your Windows browser. Open `~/.bashrc`:
 
 ```bash
 nano ~/.bashrc
 ```
 
-Add this line at the bottom, replacing the path with wherever your browser is installed on Windows:
+Add the line that matches your browser — replace `YOUR_USERNAME` with your Windows username:
 
 ```bash
-# For Brave:
+# Brave
 export CHROME_EXECUTABLE='/mnt/c/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe'
 
-# For Chrome:
+# Chrome
 export CHROME_EXECUTABLE='/mnt/c/Program Files/Google/Chrome/Application/chrome.exe'
 
-# For Edge:
+# Edge
 export CHROME_EXECUTABLE='/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'
 ```
 
-Save the file (`Ctrl + X`, then `Y`, then `Enter`) and reload it:
-
+Reload it:
 ```bash
 source ~/.bashrc
 ```
+This should enable you to run the web admin page now
 
----
-
-### Step 4 — Run the app
+### Step 4 — Run the web page
 
 Start the local development server:
 
@@ -104,7 +149,7 @@ Then open your Windows browser and go to:
 http://localhost:8080
 ```
 
-You should see the Supa-Neighbour test screen. If the button and counter work, your setup is confirmed working.
+For now,you should see the Supa-Neighbour test screen. If the button and counter work, your setup is confirmed working.
 
 ---
 
