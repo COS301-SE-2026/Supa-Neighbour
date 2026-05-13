@@ -3,6 +3,9 @@
 
 > A community-driven platform that connects people who are in need with those willing to assist the people of within their neighbourhood.
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=coverage)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=bugs)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
 [![API Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/api.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/api.yml)
 [![Flutter Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/flutter.yml/badge.svg)](https://github.com/YOUR-USERNAME/Supa-Neighbour/actions/workflows/flutter.yml)
 [![GitHub Issues](https://img.shields.io/github/issues/COS301-SE-2026/Supa-Neighbour)](https://github.com/COS301-SE-2026/Supa-Neighbour/issues)
