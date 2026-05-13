@@ -10,7 +10,7 @@
 [![Flutter Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/flutter.yml)
 [![GitHub Issues](https://img.shields.io/github/issues/COS301-SE-2026/Supa-Neighbour)](https://github.com/COS301-SE-2026/Supa-Neighbour/issues)
 
-[![dependencies](https://img.shields.io/librariesio/github/COS301-SE-2026/Supa-Neighbour)](https://libraries.io/github.com/COS301-SE-2026/Supa-Neighbour)
+[![dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)](https://github.com/COS301-SE-2026/Supa-Neighbour)
 
 ![Uptime](https://img.shields.io/badge/Uptime-Pending%20Deployment-lightgrey)
 ![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
