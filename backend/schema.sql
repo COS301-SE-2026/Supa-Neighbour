@@ -1,178 +1,193 @@
--- =========================
--- USER TABLE
--- =========================
+-- Create database
+CREATE DATABASE CommunityHelpSystem;
+USE CommunityHelpSystem;
+
+-- User Table
 CREATE TABLE UserTable (
     UserID INT PRIMARY KEY,
-    UserPassword VARCHAR(50) NOT NULL,
-    UserName VARCHAR(50) NOT NULL,
-    UserSurname VARCHAR(50) NOT NULL,
-    UserEmail VARCHAR(50) NOT NULL,
-    UserPhoneNumber INT NOT NULL,
-    UserGender VARCHAR(20) NOT NULL,
-    UserDOB DATE NOT NULL,
-    UserAddressID INT NOT NULL,
+    UserPassword VARCHAR(255) NOT NULL,
+    UserName VARCHAR(100) NOT NULL,
+    UserSurname VARCHAR(100) NOT NULL,
+    UserEmail VARCHAR(255) UNIQUE NOT NULL,
+    UserPhoneNumber INT,
+    UserGender VARCHAR(10),
+    UserDOB DATE,
+    UserAddressID INT,
     UserBadgeID INT,
     UserRatingID INT,
-    UserTypeID VARCHAR(50) NOT NULL
+    UserTypeID VARCHAR(50),
+    FOREIGN KEY (UserAddressID) REFERENCES AddressTable(AddressID),
+    FOREIGN KEY (UserBadgeID) REFERENCES BadgeTable(BadgeID),
+    FOREIGN KEY (UserRatingID) REFERENCES RatingTable(RatingReview)
 );
 
--- =========================
--- ADMIN TABLE
--- =========================
-CREATE TABLE AdminTable (
-    AdminID INT PRIMARY KEY,
-    AdminPassword VARCHAR(50) NOT NULL,
-    AdminName VARCHAR(50) NOT NULL,
-    AdminSurname VARCHAR(50) NOT NULL,
-    AdminEmail VARCHAR(50) NOT NULL,
-    AdminPhoneNumber INT NOT NULL,
-    AdminCreateDate DATE NOT NULL,
-    AdminAccessLevel INT NOT NULL,
-    UserID INT NOT NULL,
-    AdminAddressID INT NOT NULL,
-    FOREIGN KEY (UserID) REFERENCES UserTable(UserID)
-);
-
--- =========================
--- ADDRESS TABLE
--- =========================
+-- Address Table
 CREATE TABLE AddressTable (
     AddressID INT PRIMARY KEY,
-    AddressNumber INT NOT NULL,
-    AddressStreet VARCHAR(50) NOT NULL,
-    AddressZip INT NOT NULL,
-    NeighbourhoodID INT NOT NULL,
-    ResidentID INT NOT NULL
+    AddressNumber INT,
+    AddressStreet VARCHAR(200),
+    AddressZip INT,
+    NeighbourhoodID INT,
+    ResidentID INT,
+    FOREIGN KEY (NeighbourhoodID) REFERENCES LocationTable(LocationID)
 );
 
--- =========================
--- LOCATION TABLE
--- =========================
+-- Location Table
 CREATE TABLE LocationTable (
     LocationID INT PRIMARY KEY,
-    LocationCenterPoint INT NOT NULL,
-    LocationRadius INT NOT NULL,
-    NeighbourhoodID INT NOT NULL,
-    NeighbourhoodName VARCHAR(50) NOT NULL
+    LocationCenterPoint INT,
+    LocationRadius INT,
+    NeighbourhoodID INT,
+    NeighbourhoodName VARCHAR(100)
 );
 
--- =========================
--- TASK TYPE TABLE
--- =========================
-CREATE TABLE TaskTypeTable (
-    TaskTypeID INT PRIMARY KEY,
-    TypeDescription VARCHAR(50) NOT NULL,
-    AssociatedBadgeID INT NOT NULL,
-    NeedsSpecialist BOOL NOT NULL,
-    XPWorth INT NOT NULL
-);
-
--- =========================
--- BADGE TABLE
--- =========================
+-- Badge Table
 CREATE TABLE BadgeTable (
-    BadgeID VARCHAR(60) PRIMARY KEY,
-    BadgeName VARCHAR(50),
-    IsSpecialist BOOL NOT NULL,
-    CurrentXP INT NOT NULL,
-    RatingID INT NOT NULL
+    BadgeID VARCHAR(50) PRIMARY KEY,
+    BadgeName VARCHAR(100) NOT NULL,
+    IsSpecialist BOOLEAN DEFAULT FALSE,
+    CurrentXP INT DEFAULT 0,
+    RatingID INT,
+    FOREIGN KEY (RatingID) REFERENCES RatingTable(RatingReview)
 );
 
--- =========================
--- RATING TABLE
--- =========================
+-- Rating Table
 CREATE TABLE RatingTable (
-    RatingReview VARCHAR(50) PRIMARY KEY,
-    TotalXPLevel INT NOT NULL,
+    RatingID INT PRIMARY KEY,
+    RatingReview VARCHAR(50),
+    TotalXPLevel INT,
     CurrentGroup VARCHAR(50)
 );
 
--- =========================
--- HELPER TABLE
--- =========================
+-- Task Type Table
+CREATE TABLE TaskTypeTable (
+    TaskTypeID INT PRIMARY KEY,
+    TypeDescription TEXT,
+    AssociatedBadgeID VARCHAR(50),
+    NeedsSpecialist BOOLEAN DEFAULT FALSE,
+    XPWorth INT,
+    FOREIGN KEY (AssociatedBadgeID) REFERENCES BadgeTable(BadgeID)
+);
+
+-- Admin Table
+CREATE TABLE AdminTable (
+    AdminID INT PRIMARY KEY,
+    AdminPassword VARCHAR(255) NOT NULL,
+    AdminName VARCHAR(100) NOT NULL,
+    AdminSurname VARCHAR(100) NOT NULL,
+    AdminEmail VARCHAR(255) UNIQUE NOT NULL,
+    AdminPhoneNumber INT,
+    AdminCreateDate DATE,
+    AdminAccessLevel INT,
+    UserID INT,
+    AdminAddressID INT,
+    FOREIGN KEY (UserID) REFERENCES UserTable(UserID),
+    FOREIGN KEY (AdminAddressID) REFERENCES AddressTable(AddressID)
+);
+
+-- Helper Table
 CREATE TABLE HelperTable (
     HelperID INT PRIMARY KEY,
-    UserID INT NOT NULL,
-    BadgeID VARCHAR(60) NOT NULL,
-    TaskTypeID INT NOT NULL,
+    UserID INT,
+    BadgeID VARCHAR(50),
+    TaskTypeID INT,
     CompatibleID INT,
-    FOREIGN KEY (UserID) REFERENCES UserTable(UserID)
+    FOREIGN KEY (UserID) REFERENCES UserTable(UserID),
+    FOREIGN KEY (BadgeID) REFERENCES BadgeTable(BadgeID),
+    FOREIGN KEY (TaskTypeID) REFERENCES TaskTypeTable(TaskTypeID),
+    FOREIGN KEY (CompatibleID) REFERENCES CompatibilityTable(CompatibilityID)
 );
 
--- =========================
--- DEPENDENT TABLE
--- =========================
+-- Dependent Table
 CREATE TABLE DependentTable (
     DependentID INT PRIMARY KEY,
-    UserID INT NOT NULL,
-    TaskTypeID INT NOT NULL,
+    UserID INT,
+    TaskTypeID INT,
     CompatibleID INT,
-    FOREIGN KEY (UserID) REFERENCES UserTable(UserID)
+    FOREIGN KEY (UserID) REFERENCES UserTable(UserID),
+    FOREIGN KEY (TaskTypeID) REFERENCES TaskTypeTable(TaskTypeID),
+    FOREIGN KEY (CompatibleID) REFERENCES CompatibilityTable(CompatibilityID)
 );
 
--- =========================
--- COMPATIBILITY TABLE
--- =========================
+-- Compatibility Table
 CREATE TABLE CompatibilityTable (
     CompatibilityID INT PRIMARY KEY,
-    CompatibilityScore INT NOT NULL,
-    CompatibilityColor VARCHAR(50) NOT NULL,
-    DependentID INT NOT NULL,
-    HelperID INT NOT NULL
+    CompatibilityScore INT,
+    CompatibilityColor VARCHAR(20),
+    DependentID INT,
+    HelperID INT,
+    FOREIGN KEY (DependentID) REFERENCES DependentTable(DependentID),
+    FOREIGN KEY (HelperID) REFERENCES HelperTable(HelperID)
 );
 
--- =========================
--- TASK INVOICE TABLE
--- =========================
-CREATE TABLE TaskInvoiceTable (
-    TaskID INT PRIMARY KEY,
-    HelperID INT NOT NULL,
-    DependentID INT NOT NULL,
-    IsImmediate BOOL NOT NULL,
-    LocationID INT NOT NULL,
-    TaskTypeID INT NOT NULL,
-    NeedsSpecialist BOOL NOT NULL,
-    SignedAdminID INT,
-    StartDate DATE NOT NULL,
-    EndDate DATE,
-    HelperBadgeID INT NOT NULL,
-    DependentRatingID INT NOT NULL,
-    HelperRatingID INT NOT NULL,
-    AdminReview VARCHAR(50),
-    CompatibilityID INT NOT NULL
-);
-
--- =========================
--- ANALYTICS TABLE
--- =========================
+-- Analytics Table
 CREATE TABLE AnalyticsTable (
     AnalyticsID INT PRIMARY KEY,
-    UserID INT NOT NULL,
-    UserTypeID INT NOT NULL
+    TaskID INT,
+    AdminID INT,
+    HelperTypeID VARCHAR(50),
+    DependentTypeID VARCHAR(50),
+    FOREIGN KEY (TaskID) REFERENCES TaskInvoiceTable(TaskID),
+    FOREIGN KEY (AdminID) REFERENCES AdminTable(AdminID)
 );
 
--- =========================
--- HELPER ANALYTICS TABLE
--- =========================
+-- Helper Analytics Table
 CREATE TABLE HelperAnalyticsTable (
-    UserTypeID VARCHAR(50) PRIMARY KEY,
-    UserID INT NOT NULL,
-    TaskTypeID INT NOT NULL,
-    CompatibleID INT NOT NULL,
-    LocationID INT NOT NULL,
-    AverageRating FLOAT NOT NULL,
-    AverageGivingRating FLOAT NOT NULL
+    HelperTypeID VARCHAR(50) PRIMARY KEY,
+    UserID INT,
+    TaskTypeID INT,
+    CompatibleID INT,
+    LocationID INT,
+    AverageRating FLOAT,
+    AverageGivingRating FLOAT,
+    FOREIGN KEY (UserID) REFERENCES UserTable(UserID),
+    FOREIGN KEY (TaskTypeID) REFERENCES TaskTypeTable(TaskTypeID),
+    FOREIGN KEY (LocationID) REFERENCES LocationTable(LocationID)
 );
 
--- =========================
--- DEPENDENT ANALYTICS TABLE
--- =========================
+-- Dependent Analytics Table
 CREATE TABLE DependentAnalyticsTable (
-    UserTypeID VARCHAR(50) PRIMARY KEY,
-    UserID INT NOT NULL,
-    TaskTypeID INT NOT NULL,
-    TotalTasks INT NOT NULL,
-    LocationID INT NOT NULL,
-    AverageRating FLOAT NOT NULL,
-    AverageGivingRating FLOAT NOT NULL
+    DependentTypeID VARCHAR(50) PRIMARY KEY,
+    UserID INT,
+    TaskTypeID INT,
+    TotalTasks INT DEFAULT 0,
+    LocationID INT,
+    AverageRating FLOAT,
+    AverageGivingRating FLOAT,
+    FOREIGN KEY (UserID) REFERENCES UserTable(UserID),
+    FOREIGN KEY (TaskTypeID) REFERENCES TaskTypeTable(TaskTypeID),
+    FOREIGN KEY (LocationID) REFERENCES LocationTable(LocationID)
 );
+
+-- Task Invoice Table
+CREATE TABLE TaskInvoiceTable (
+    TaskID INT PRIMARY KEY,
+    HelperID INT,
+    DependentID INT,
+    IsImmediate BOOLEAN DEFAULT FALSE,
+    LocationID INT,
+    TaskTypeID INT,
+    NeedsSpecialist BOOLEAN DEFAULT FALSE,
+    SignedAdminID INT,
+    StartDate DATE,
+    EndDate DATE,
+    HelperBadgeID VARCHAR(50),
+    DependentRatingID VARCHAR(50),
+    HelperRatingID VARCHAR(50),
+    AdminReview TEXT,
+    CompatibilityID INT,
+    FOREIGN KEY (HelperID) REFERENCES HelperTable(HelperID),
+    FOREIGN KEY (DependentID) REFERENCES DependentTable(DependentID),
+    FOREIGN KEY (LocationID) REFERENCES LocationTable(LocationID),
+    FOREIGN KEY (TaskTypeID) REFERENCES TaskTypeTable(TaskTypeID),
+    FOREIGN KEY (SignedAdminID) REFERENCES AdminTable(AdminID),
+    FOREIGN KEY (CompatibilityID) REFERENCES CompatibilityTable(CompatibilityID)
+);
+
+-- Create indexes for better performance
+CREATE INDEX idx_user_email ON UserTable(UserEmail);
+CREATE INDEX idx_task_dates ON TaskInvoiceTable(StartDate, EndDate);
+CREATE INDEX idx_location_neighbourhood ON LocationTable(NeighbourhoodID);
+CREATE INDEX idx_compatibility_score ON CompatibilityTable(CompatibilityScore);
+CREATE INDEX idx_helper_badge ON HelperTable(BadgeID);
+CREATE INDEX idx_dependent_task ON DependentTable(TaskTypeID);
