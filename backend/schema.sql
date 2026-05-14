@@ -1,38 +1,3 @@
--- Create database
-CREATE DATABASE CommunityHelpSystem;
-USE CommunityHelpSystem;
-
--- User Table
-CREATE TABLE UserTable (
-    UserID INT PRIMARY KEY,
-    UserPassword VARCHAR(255) NOT NULL,
-    UserName VARCHAR(100) NOT NULL,
-    UserSurname VARCHAR(100) NOT NULL,
-    UserEmail VARCHAR(255) UNIQUE NOT NULL,
-    UserPhoneNumber INT,
-    UserGender VARCHAR(10),
-    UserDOB DATE,
-    UserAddressID INT,
-    UserBadgeID INT,
-    UserRatingID INT,
-    UserTypeID VARCHAR(50),
-    FOREIGN KEY (UserAddressID) REFERENCES AddressTable(AddressID),
-    FOREIGN KEY (UserBadgeID) REFERENCES BadgeTable(BadgeID),
-    FOREIGN KEY (UserRatingID) REFERENCES RatingTable(RatingReview)
-);
-
--- Address Table
-CREATE TABLE AddressTable (
-    AddressID INT PRIMARY KEY,
-    AddressNumber INT,
-    AddressStreet VARCHAR(200),
-    AddressZip INT,
-    NeighbourhoodID INT,
-    ResidentID INT,
-    FOREIGN KEY (NeighbourhoodID) REFERENCES LocationTable(LocationID)
-);
-
--- Location Table
 CREATE TABLE LocationTable (
     LocationID INT PRIMARY KEY,
     LocationCenterPoint INT,
@@ -41,125 +6,121 @@ CREATE TABLE LocationTable (
     NeighbourhoodName VARCHAR(100)
 );
 
--- Badge Table
+CREATE TABLE RatingTable (
+    RatingReview VARCHAR(50) PRIMARY KEY,
+    TotalXPLevel INT,
+    CurrentGroup VARCHAR(50)
+);
+
 CREATE TABLE BadgeTable (
     BadgeID VARCHAR(50) PRIMARY KEY,
     BadgeName VARCHAR(100) NOT NULL,
     IsSpecialist BOOLEAN DEFAULT FALSE,
     CurrentXP INT DEFAULT 0,
-    RatingID INT,
-    FOREIGN KEY (RatingID) REFERENCES RatingTable(RatingReview)
+    RatingID VARCHAR(50)
 );
 
--- Rating Table
-CREATE TABLE RatingTable (
-    RatingID INT PRIMARY KEY,
-    RatingReview VARCHAR(50),
-    TotalXPLevel INT,
-    CurrentGroup VARCHAR(50)
-);
-
--- Task Type Table
 CREATE TABLE TaskTypeTable (
     TaskTypeID INT PRIMARY KEY,
     TypeDescription TEXT,
     AssociatedBadgeID VARCHAR(50),
     NeedsSpecialist BOOLEAN DEFAULT FALSE,
-    XPWorth INT,
-    FOREIGN KEY (AssociatedBadgeID) REFERENCES BadgeTable(BadgeID)
+    XPWorth INT
 );
 
--- Admin Table
+CREATE TABLE AddressTable (
+    AddressID INT PRIMARY KEY,
+    AddressNumber INT,
+    AddressStreet VARCHAR(200),
+    AddressZip INT,
+    NeighbourhoodID INT,
+    ResidentID INT,
+
+    FOREIGN KEY (NeighbourhoodID)
+        REFERENCES LocationTable(LocationID)
+);
+
+CREATE TABLE UserTable (
+    UserID INT PRIMARY KEY,
+    UserPassword VARCHAR(255) NOT NULL,
+    UserName VARCHAR(100) NOT NULL,
+    UserSurname VARCHAR(100) NOT NULL,
+    UserEmail VARCHAR(255) UNIQUE NOT NULL,
+    UserPhoneNumber VARCHAR(20),
+    UserGender VARCHAR(10),
+    UserDOB DATE,
+    UserAddressID INT,
+    UserBadgeID VARCHAR(50),
+    UserRatingID VARCHAR(50),
+    UserTypeID VARCHAR(50),
+
+    FOREIGN KEY (UserAddressID)
+        REFERENCES AddressTable(AddressID),
+
+    FOREIGN KEY (UserBadgeID)
+        REFERENCES BadgeTable(BadgeID),
+
+    FOREIGN KEY (UserRatingID)
+        REFERENCES RatingTable(RatingReview)
+);
+
+CREATE TABLE CompatibilityTable (
+    CompatibilityID INT PRIMARY KEY,
+    CompatibilityScore INT,
+    CompatibilityColor VARCHAR(20),
+    DependentID INT,
+    HelperID INT
+);
+
+CREATE TABLE DependentTable (
+    DependentID INT PRIMARY KEY,
+    UserID INT,
+    TaskTypeID INT,
+    CompatibleID INT,
+
+    FOREIGN KEY (UserID)
+        REFERENCES UserTable(UserID),
+
+    FOREIGN KEY (TaskTypeID)
+        REFERENCES TaskTypeTable(TaskTypeID)
+);
+
+CREATE TABLE HelperTable (
+    HelperID INT PRIMARY KEY,
+    UserID INT,
+    TaskTypeID INT,
+    BadgeID VARCHAR(50),
+    CompatibleID INT,
+
+    FOREIGN KEY (UserID)
+        REFERENCES UserTable(UserID),
+
+    FOREIGN KEY (TaskTypeID)
+        REFERENCES TaskTypeTable(TaskTypeID),
+    
+    FOREIGN KEY (BadgeID)
+        REFERENCES BadgeTable(BadgeID)
+);
+
 CREATE TABLE AdminTable (
     AdminID INT PRIMARY KEY,
     AdminPassword VARCHAR(255) NOT NULL,
     AdminName VARCHAR(100) NOT NULL,
     AdminSurname VARCHAR(100) NOT NULL,
     AdminEmail VARCHAR(255) UNIQUE NOT NULL,
-    AdminPhoneNumber INT,
+    AdminPhoneNumber VARCHAR(20),
     AdminCreateDate DATE,
     AdminAccessLevel INT,
     UserID INT,
     AdminAddressID INT,
-    FOREIGN KEY (UserID) REFERENCES UserTable(UserID),
-    FOREIGN KEY (AdminAddressID) REFERENCES AddressTable(AddressID)
+
+    FOREIGN KEY (UserID)
+        REFERENCES UserTable(UserID),
+
+    FOREIGN KEY (AdminAddressID)
+        REFERENCES AddressTable(AddressID)
 );
 
--- Helper Table
-CREATE TABLE HelperTable (
-    HelperID INT PRIMARY KEY,
-    UserID INT,
-    BadgeID VARCHAR(50),
-    TaskTypeID INT,
-    CompatibleID INT,
-    FOREIGN KEY (UserID) REFERENCES UserTable(UserID),
-    FOREIGN KEY (BadgeID) REFERENCES BadgeTable(BadgeID),
-    FOREIGN KEY (TaskTypeID) REFERENCES TaskTypeTable(TaskTypeID),
-    FOREIGN KEY (CompatibleID) REFERENCES CompatibilityTable(CompatibilityID)
-);
-
--- Dependent Table
-CREATE TABLE DependentTable (
-    DependentID INT PRIMARY KEY,
-    UserID INT,
-    TaskTypeID INT,
-    CompatibleID INT,
-    FOREIGN KEY (UserID) REFERENCES UserTable(UserID),
-    FOREIGN KEY (TaskTypeID) REFERENCES TaskTypeTable(TaskTypeID),
-    FOREIGN KEY (CompatibleID) REFERENCES CompatibilityTable(CompatibilityID)
-);
-
--- Compatibility Table
-CREATE TABLE CompatibilityTable (
-    CompatibilityID INT PRIMARY KEY,
-    CompatibilityScore INT,
-    CompatibilityColor VARCHAR(20),
-    DependentID INT,
-    HelperID INT,
-    FOREIGN KEY (DependentID) REFERENCES DependentTable(DependentID),
-    FOREIGN KEY (HelperID) REFERENCES HelperTable(HelperID)
-);
-
--- Analytics Table
-CREATE TABLE AnalyticsTable (
-    AnalyticsID INT PRIMARY KEY,
-    TaskID INT,
-    AdminID INT,
-    HelperTypeID VARCHAR(50),
-    DependentTypeID VARCHAR(50),
-    FOREIGN KEY (TaskID) REFERENCES TaskInvoiceTable(TaskID),
-    FOREIGN KEY (AdminID) REFERENCES AdminTable(AdminID)
-);
-
--- Helper Analytics Table
-CREATE TABLE HelperAnalyticsTable (
-    HelperTypeID VARCHAR(50) PRIMARY KEY,
-    UserID INT,
-    TaskTypeID INT,
-    CompatibleID INT,
-    LocationID INT,
-    AverageRating FLOAT,
-    AverageGivingRating FLOAT,
-    FOREIGN KEY (UserID) REFERENCES UserTable(UserID),
-    FOREIGN KEY (TaskTypeID) REFERENCES TaskTypeTable(TaskTypeID),
-    FOREIGN KEY (LocationID) REFERENCES LocationTable(LocationID)
-);
-
--- Dependent Analytics Table
-CREATE TABLE DependentAnalyticsTable (
-    DependentTypeID VARCHAR(50) PRIMARY KEY,
-    UserID INT,
-    TaskTypeID INT,
-    TotalTasks INT DEFAULT 0,
-    LocationID INT,
-    AverageRating FLOAT,
-    AverageGivingRating FLOAT,
-    FOREIGN KEY (UserID) REFERENCES UserTable(UserID),
-    FOREIGN KEY (TaskTypeID) REFERENCES TaskTypeTable(TaskTypeID),
-    FOREIGN KEY (LocationID) REFERENCES LocationTable(LocationID)
-);
-
--- Task Invoice Table
 CREATE TABLE TaskInvoiceTable (
     TaskID INT PRIMARY KEY,
     HelperID INT,
@@ -176,13 +137,121 @@ CREATE TABLE TaskInvoiceTable (
     HelperRatingID VARCHAR(50),
     AdminReview TEXT,
     CompatibilityID INT,
-    FOREIGN KEY (HelperID) REFERENCES HelperTable(HelperID),
-    FOREIGN KEY (DependentID) REFERENCES DependentTable(DependentID),
-    FOREIGN KEY (LocationID) REFERENCES LocationTable(LocationID),
-    FOREIGN KEY (TaskTypeID) REFERENCES TaskTypeTable(TaskTypeID),
-    FOREIGN KEY (SignedAdminID) REFERENCES AdminTable(AdminID),
-    FOREIGN KEY (CompatibilityID) REFERENCES CompatibilityTable(CompatibilityID)
+
+    FOREIGN KEY (HelperID)
+        REFERENCES HelperTable(HelperID),
+
+    FOREIGN KEY (DependentID)
+        REFERENCES DependentTable(DependentID),
+
+    FOREIGN KEY (LocationID)
+        REFERENCES LocationTable(LocationID),
+
+    FOREIGN KEY (TaskTypeID)
+        REFERENCES TaskTypeTable(TaskTypeID),
+
+    FOREIGN KEY (SignedAdminID)
+        REFERENCES AdminTable(AdminID),
+
+    FOREIGN KEY (CompatibilityID)
+        REFERENCES CompatibilityTable(CompatibilityID)
 );
+
+CREATE TABLE HelperAnalyticsTable (
+    HelperTypeID VARCHAR(50) PRIMARY KEY,
+    UserID INT,
+    TaskTypeID INT,
+    CompatibleID INT,
+    LocationID INT,
+    AverageRating FLOAT,
+    AverageGivingRating FLOAT,
+
+    FOREIGN KEY (UserID)
+        REFERENCES UserTable(UserID),
+
+    FOREIGN KEY (TaskTypeID)
+        REFERENCES TaskTypeTable(TaskTypeID),
+
+    FOREIGN KEY (CompatibleID)
+        REFERENCES CompatibilityTable(CompatibilityID),
+
+    FOREIGN KEY (LocationID)
+        REFERENCES LocationTable(LocationID)
+);
+
+CREATE TABLE DependentAnalyticsTable (
+    DependentTypeID VARCHAR(50) PRIMARY KEY,
+    UserID INT,
+    TaskTypeID INT,
+    TotalTasks INT,
+    LocationID INT,
+    AverageRating FLOAT,
+    AverageGivingRating FLOAT,
+
+    FOREIGN KEY (UserID)
+        REFERENCES UserTable(UserID),
+
+    FOREIGN KEY (TaskTypeID)
+        REFERENCES TaskTypeTable(TaskTypeID),
+
+    FOREIGN KEY (LocationID)
+        REFERENCES LocationTable(LocationID)
+);
+
+
+CREATE TABLE AnalyticsTable (
+    AnalyticsID INT PRIMARY KEY,
+    TaskID INT,
+    AdminID INT,
+    HelperTypeID VARCHAR(50),
+    DependentTypeID VARCHAR(50),
+
+    FOREIGN KEY (TaskID)
+        REFERENCES TaskInvoiceTable(TaskID),
+    FOREIGN KEY (AdminID)
+        REFERENCES AdminTable(AdminID),
+    FOREIGN KEY (HelperTypeID)
+        REFERENCES HelperAnalyticsTable(HelperTypeID),
+    FOREIGN KEY (DependentTypeID)
+        REFERENCES DependentAnalyticsTable(DependentTypeID)
+);
+
+
+
+ALTER TABLE BadgeTable
+ADD CONSTRAINT fk_badge_rating
+FOREIGN KEY (RatingID)
+REFERENCES RatingTable(RatingReview);
+
+ALTER TABLE TaskTypeTable
+ADD CONSTRAINT fk_tasktype_badge
+FOREIGN KEY (AssociatedBadgeID)
+REFERENCES BadgeTable(BadgeID);
+
+ALTER TABLE CompatibilityTable
+ADD CONSTRAINT fk_compatibility_helper
+FOREIGN KEY (HelperID)
+REFERENCES HelperTable(HelperID);
+
+ALTER TABLE CompatibilityTable
+ADD CONSTRAINT fk_compatibility_dependent
+FOREIGN KEY (DependentID)
+REFERENCES DependentTable(DependentID);
+
+ALTER TABLE HelperTable
+ADD CONSTRAINT fk_helper_compatibility
+FOREIGN KEY (CompatibleID)
+REFERENCES CompatibilityTable(CompatibilityID);
+
+ALTER TABLE DependentTable
+ADD CONSTRAINT fk_dependent_compatibility
+FOREIGN KEY (CompatibleID)
+REFERENCES CompatibilityTable(CompatibilityID);
+
+ALTER TABLE AddressTable
+ADD CONSTRAINT fk_address_resident
+FOREIGN KEY (ResidentID)
+REFERENCES UserTable(UserID);
 
 -- Create indexes for better performance
 CREATE INDEX idx_user_email ON UserTable(UserEmail);
@@ -196,6 +265,7 @@ CREATE INDEX idx_dependent_task ON DependentTable(TaskTypeID);
 -- MOCK DATA FOR COMMUNITY HELP SYSTEM
 -- =============================================
 
+
 -- =============================================
 -- 1. LOCATION TABLE (Neighbourhoods)
 -- =============================================
@@ -208,6 +278,7 @@ INSERT INTO LocationTable (LocationID, LocationCenterPoint, LocationRadius, Neig
 (6, 180, 4, 106, 'Maplewood'),
 (7, 220, 3, 107, 'Oakridge'),
 (8, 350, 7, 108, 'Sunset Valley');
+
 
 -- =============================================
 -- 2. ADDRESS TABLE
@@ -224,6 +295,7 @@ INSERT INTO AddressTable (AddressID, AddressNumber, AddressStreet, AddressZip, N
 (9, 369, 'Willow Way', 90218, 1, NULL),
 (10, 741, 'Ash Avenue', 90219, 2, NULL);
 
+
 -- =============================================
 -- 3. RATING TABLE
 -- =============================================
@@ -234,6 +306,7 @@ INSERT INTO RatingTable (RatingReview, TotalXPLevel, CurrentGroup) VALUES
 ('Satisfactory', 250, 'Bronze'),
 ('Needs Improvement', 100, 'Novice'),
 ('Poor', 50, 'Beginner');
+
 
 -- =============================================
 -- 4. BADGE TABLE
@@ -251,6 +324,21 @@ INSERT INTO BadgeTable (BadgeID, BadgeName, IsSpecialist, CurrentXP, RatingID) V
 ('BDG010', 'Friendly Visitor', FALSE, 150, 'Needs Improvement');
 
 -- =============================================
+-- 9. TASK TYPE TABLE
+-- =============================================
+INSERT INTO TaskTypeTable (TaskTypeID, TypeDescription, AssociatedBadgeID, NeedsSpecialist, XPWorth) VALUES
+(1, 'Elder Care - Companionship and daily assistance', 'BDG001', TRUE, 150),
+(2, 'Child Care - Babysitting and tutoring', 'BDG002', TRUE, 120),
+(3, 'Tech Support - Computer and smartphone help', 'BDG003', FALSE, 80),
+(4, 'Grocery Shopping - Delivery of groceries', 'BDG004', FALSE, 60),
+(5, 'Pet Care - Walking and feeding pets', 'BDG005', TRUE, 100),
+(6, 'Home Repair - Minor fixes and maintenance', 'BDG006', TRUE, 140),
+(7, 'Tutoring - Academic help for students', 'BDG007', FALSE, 90),
+(8, 'Transportation - Ride to appointments', 'BDG008', FALSE, 70),
+(9, 'Medical Escort - Hospital visit assistance', 'BDG009', TRUE, 160),
+(10, 'Friendly Visit - Social interaction', 'BDG010', FALSE, 50);
+
+-- =============================================
 -- 5. USER TABLE
 -- =============================================
 INSERT INTO UserTable (UserID, UserPassword, UserName, UserSurname, UserEmail, UserPhoneNumber, UserGender, UserDOB, UserAddressID, UserBadgeID, UserRatingID, UserTypeID) VALUES
@@ -264,6 +352,7 @@ INSERT INTO UserTable (UserID, UserPassword, UserName, UserSurname, UserEmail, U
 (108, 'pass161', 'Maria', 'Taylor', 'maria.t@email.com', 5550108, 'Female', '1992-08-27', 8, 'BDG008', 'Satisfactory', 'H'),
 (109, 'pass718', 'Robert', 'Thomas', 'robert.t@email.com', 5550109, 'Male', '1980-04-19', 9, 'BDG009', 'Excellent', 'D'),
 (110, 'pass192', 'Patricia', 'Jackson', 'patricia.j@email.com', 5550110, 'Female', '1987-10-05', 10, 'BDG010', 'Needs Improvement', 'B');
+
 
 -- =============================================
 -- 6. COMPATIBILITY TABLE
@@ -280,6 +369,7 @@ INSERT INTO CompatibilityTable (CompatibilityID, CompatibilityScore, Compatibili
 (9, 58, 'Red', NULL, NULL),
 (10, 90, 'Green', NULL, NULL);
 
+
 -- =============================================
 -- 7. HELPER TABLE
 -- =============================================
@@ -291,6 +381,7 @@ INSERT INTO HelperTable (HelperID, UserID, BadgeID, TaskTypeID, CompatibleID) VA
 (5, 108, 'BDG008', 8, 8),
 (6, 110, 'BDG010', 10, 10);
 
+
 -- =============================================
 -- 8. DEPENDENT TABLE
 -- =============================================
@@ -299,6 +390,7 @@ INSERT INTO DependentTable (DependentID, UserID, TaskTypeID, CompatibleID) VALUE
 (2, 104, 4, 4),
 (3, 107, 7, 5),
 (4, 109, 9, 9);
+
 
 -- Update CompatibilityTable with foreign keys
 UPDATE CompatibilityTable SET DependentID = 1, HelperID = 1 WHERE CompatibilityID = 1;
@@ -312,20 +404,6 @@ UPDATE CompatibilityTable SET DependentID = 4, HelperID = 2 WHERE CompatibilityI
 UPDATE CompatibilityTable SET DependentID = 1, HelperID = 3 WHERE CompatibilityID = 9;
 UPDATE CompatibilityTable SET DependentID = 2, HelperID = 4 WHERE CompatibilityID = 10;
 
--- =============================================
--- 9. TASK TYPE TABLE
--- =============================================
-INSERT INTO TaskTypeTable (TaskTypeID, TypeDescription, AssociatedBadgeID, NeedsSpecialist, XPWorth) VALUES
-(1, 'Elder Care - Companionship and daily assistance', 'BDG001', TRUE, 150),
-(2, 'Child Care - Babysitting and tutoring', 'BDG002', TRUE, 120),
-(3, 'Tech Support - Computer and smartphone help', 'BDG003', FALSE, 80),
-(4, 'Grocery Shopping - Delivery of groceries', 'BDG004', FALSE, 60),
-(5, 'Pet Care - Walking and feeding pets', 'BDG005', TRUE, 100),
-(6, 'Home Repair - Minor fixes and maintenance', 'BDG006', TRUE, 140),
-(7, 'Tutoring - Academic help for students', 'BDG007', FALSE, 90),
-(8, 'Transportation - Ride to appointments', 'BDG008', FALSE, 70),
-(9, 'Medical Escort - Hospital visit assistance', 'BDG009', TRUE, 160),
-(10, 'Friendly Visit - Social interaction', 'BDG010', FALSE, 50);
 
 -- =============================================
 -- 10. ADMIN TABLE
@@ -336,6 +414,7 @@ INSERT INTO AdminTable (AdminID, AdminPassword, AdminName, AdminSurname, AdminEm
 (3, 'admin789', 'Carol', 'Wilson', 'carol.wilson@help.com', 5550203, '2023-06-10', 5, NULL, 3),
 (4, 'admin101', 'David', 'Garcia', 'david.garcia@help.com', 5550204, '2024-01-05', 3, NULL, 4),
 (5, 'admin112', 'Eva', 'Rodriguez', 'eva.rodriguez@help.com', 5550205, '2024-02-18', 4, NULL, 5);
+
 
 -- =============================================
 -- 11. TASK INVOICE TABLE
@@ -358,6 +437,28 @@ INSERT INTO TaskInvoiceTable (TaskID, HelperID, DependentID, IsImmediate, Locati
 (1015, 3, 2, TRUE, 7, 8, FALSE, 3, '2024-03-22', '2024-03-22', 'BDG005', 'Good', 'Very Good', 'Quick transportation service.', 8);
 
 -- =============================================
+-- 13. HELPER ANALYTICS TABLE
+-- =============================================
+INSERT INTO HelperAnalyticsTable (HelperTypeID, UserID, TaskTypeID, CompatibleID, LocationID, AverageRating, AverageGivingRating) VALUES
+('H001', 101, 1, 1, 1, 4.8, 4.5),
+('H002', 102, 2, 2, 2, 4.6, 4.3),
+('H003', 105, 5, 6, 3, 4.2, 4.0),
+('H004', 106, 6, 7, 4, 4.9, 4.7),
+('H005', 108, 8, 8, 5, 4.0, 4.1),
+('H006', 110, 10, 10, 6, 3.5, 3.8);
+
+
+-- =============================================
+-- 14. DEPENDENT ANALYTICS TABLE
+-- =============================================
+INSERT INTO DependentAnalyticsTable (DependentTypeID, UserID, TaskTypeID, TotalTasks, LocationID, AverageRating, AverageGivingRating) VALUES
+('D001', 103, 3, 5, 3, 4.5, 4.3),
+('D002', 104, 4, 4, 4, 4.3, 4.2),
+('D003', 107, 7, 3, 7, 4.0, 3.9),
+('D004', 109, 9, 3, 8, 4.2, 4.4);
+
+
+-- =============================================
 -- 12. ANALYTICS TABLE
 -- =============================================
 INSERT INTO AnalyticsTable (AnalyticsID, TaskID, AdminID, HelperTypeID, DependentTypeID) VALUES
@@ -378,26 +479,6 @@ INSERT INTO AnalyticsTable (AnalyticsID, TaskID, AdminID, HelperTypeID, Dependen
 (15, 1015, 3, 'H003', 'D002');
 
 -- =============================================
--- 13. HELPER ANALYTICS TABLE
--- =============================================
-INSERT INTO HelperAnalyticsTable (HelperTypeID, UserID, TaskTypeID, CompatibleID, LocationID, AverageRating, AverageGivingRating) VALUES
-('H001', 101, 1, 1, 1, 4.8, 4.5),
-('H002', 102, 2, 2, 2, 4.6, 4.3),
-('H003', 105, 5, 6, 3, 4.2, 4.0),
-('H004', 106, 6, 7, 4, 4.9, 4.7),
-('H005', 108, 8, 8, 5, 4.0, 4.1),
-('H006', 110, 10, 10, 6, 3.5, 3.8);
-
--- =============================================
--- 14. DEPENDENT ANALYTICS TABLE
--- =============================================
-INSERT INTO DependentAnalyticsTable (DependentTypeID, UserID, TaskTypeID, TotalTasks, LocationID, AverageRating, AverageGivingRating) VALUES
-('D001', 103, 3, 5, 3, 4.5, 4.3),
-('D002', 104, 4, 4, 4, 4.3, 4.2),
-('D003', 107, 7, 3, 7, 4.0, 3.9),
-('D004', 109, 9, 3, 8, 4.2, 4.4);
-
--- =============================================
 -- UPDATE UserTable with foreign keys after data insertion
 -- =============================================
 UPDATE UserTable SET UserAddressID = 1, UserBadgeID = 'BDG001', UserRatingID = 'Excellent', UserTypeID = 'Helper' WHERE UserID = 101;
@@ -411,12 +492,14 @@ UPDATE UserTable SET UserAddressID = 8, UserBadgeID = 'BDG008', UserRatingID = '
 UPDATE UserTable SET UserAddressID = 9, UserBadgeID = 'BDG009', UserRatingID = 'Excellent', UserTypeID = 'Dependent' WHERE UserID = 109;
 UPDATE UserTable SET UserAddressID = 10, UserBadgeID = 'BDG010', UserRatingID = 'Needs Improvement', UserTypeID = 'Both' WHERE UserID = 110;
 
+
 -- Update AdminTable with UserID foreign keys
 UPDATE AdminTable SET UserID = 101 WHERE AdminID = 1;
 UPDATE AdminTable SET UserID = 102 WHERE AdminID = 2;
 UPDATE AdminTable SET UserID = 105 WHERE AdminID = 3;
 UPDATE AdminTable SET UserID = 106 WHERE AdminID = 4;
 UPDATE AdminTable SET UserID = 108 WHERE AdminID = 5;
+
 
 -- Update AddressTable with ResidentID
 UPDATE AddressTable SET ResidentID = 101 WHERE AddressID = 1;
