@@ -13,6 +13,14 @@ local.settings.json          # Azure Functions local config
 
 
 # JAVA / SPRING BOOT (backend/)
+
+# Maven build output
+target/
+*.jar
+*.war
+*.class
+*.class
+
 # Maven wrapper (optional — remove this line if your team uses mvn wrapper)
 # .mvn/
 
