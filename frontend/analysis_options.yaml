@@ -27,7 +27,7 @@ linter:
     - non_constant_identifier_names
 
     - prefer_const_constructors
-    - prefer_final_field
+    - prefer_final_fields
     - avoid_print
 
     - directives_ordering
