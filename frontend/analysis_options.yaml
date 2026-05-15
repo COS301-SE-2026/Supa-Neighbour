@@ -21,8 +21,28 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    #Naming
+    - camel_case_types
+    - file_names
+    - non_constant_identifier_names
+
+    - prefer_const_constructors
+    - prefer_final_field
+    - avoid_print
+
+    - directives_ordering
+    - avoid_relative_lib_imports
+
+    - use_key_in_widget_constructors
+    - sized_box_for_whitespace
+
+
+    
+analyzer:
+  errors:
+    missing_required_param: error
+    dead_code: warning
+    unused_import: error
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
