@@ -71,6 +71,9 @@ jobs:
           push: true
           tags: ${{steps.meta.outputs.tags}}
           labels: ${{ steps.meta.outputs.labels}}
+      - name: Lowercase repository name
+        id: repo
+        run: echo "repo=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
           
       - name: Build and push DB image
         uses: docker/build-push-action@v5
@@ -78,7 +81,8 @@ jobs:
           context: backend
           file: backend/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/backend-db:${{ github.ref_name }}
+          tags: ghcr.io/${{ steps.repo.outputs.repo }}/backend-db:${{ github.ref_name }}
+      
 
   deploy:
     name: Deploy to Azure App Service
