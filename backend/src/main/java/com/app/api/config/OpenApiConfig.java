@@ -8,6 +8,9 @@ import io.swagger.v3.oas.models.info.Info;
 @Configuration
 public class OpenApiConfig {
 
+    /**
+     * Creates the OpenAPI bean used for Swagger/OpenAPI documentation.
+     */
     @Bean
     public OpenAPI appOpenAPI() {
         return new OpenAPI()
@@ -17,3 +20,4 @@ public class OpenApiConfig {
                 .version("1.0.0"));
     }
 }
+

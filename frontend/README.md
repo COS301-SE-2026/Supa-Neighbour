@@ -99,7 +99,7 @@ flutter run
 
 ---
 
-> If you are only working on the **web admin dashboard** currently and not the mobile app, you can safely ignore this error entirely and proceed with `flutter run -d web-server --web-port=8080`.(Step 4)
+> If you are only working on the **web admin dashboard** currently and not the mobile app, you can safely ignore this error entirely and proceed with `flutter run -d web-server --web-port=3000`.(Step 4)
 
 ---
 
@@ -140,13 +140,13 @@ This should enable you to run the web admin page now
 Start the local development server:
 
 ```bash
-flutter run -d web-server --web-port=8080
+flutter run -d web-server --web-port=3000
 ```
 
 Then open your Windows browser and go to:
 
 ```
-http://localhost:8080
+http://localhost:3000
 ```
 
 For now,you should see the Supa-Neighbour test screen. If the button and counter work, your setup is confirmed working.
@@ -170,7 +170,7 @@ frontend/
 | Command | What it does |
 |---|---|
 | `flutter pub get` | Installs/updates dependencies from pubspec.yaml |
-| `flutter run -d web-server --web-port=8080` | Runs the web dashboard locally |
+| `flutter run -d web-server --web-port=3000` | Runs the web dashboard locally |
 | `flutter test` | Runs all unit and widget tests |
 | `flutter build web` | Builds the web dashboard for deployment |
 | `flutter doctor` | Checks your Flutter setup for any issues |
