@@ -1,5 +1,9 @@
-package com.app.api.models;
+package com.app.api.repositories;
 
-public class Address {
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+import com.app.api.models.Address;
+public interface AddressRepository extends CrudRepository<Address, Integer> {
+
     
-}
+} 

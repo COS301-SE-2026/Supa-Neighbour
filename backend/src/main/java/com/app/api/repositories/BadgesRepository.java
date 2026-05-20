@@ -1,5 +1,11 @@
-package com.app.api.models;
+package com.app.api.repositories;
 
-public class Badges {
+import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
+
+import com.app.api.models.Badges;
+@Repository
+public interface BadgesRepository extends CrudRepository<Badges, Integer> {
     
 }

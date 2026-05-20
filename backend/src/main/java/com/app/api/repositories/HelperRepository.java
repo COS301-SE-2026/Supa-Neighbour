@@ -1,5 +1,12 @@
-package com.app.api.models;
+package com.app.api.repositories;
 
-public class Helper {
+import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
+
+import com.app.api.models.Helper;
+@Repository
+public interface HelperRepository extends CrudRepository<Helper, Integer> {
     
 }
+
