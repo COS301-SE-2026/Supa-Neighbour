@@ -2,8 +2,18 @@ package com.app.api.models;
 
 import java.sql.Date;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "UserTable")
 public class User 
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String firstName;
     private String lastName;
@@ -13,14 +23,14 @@ public class User
     private Date dateOfBirth;
     private String gender;
     private int addressId;
-    private int badgeId;
-    private int ratingId;
+    private String badgeId;
+    private String ratingId;
     private String typeId;
 
     public User() {
     }
 
-    public User(int id, String firstName, String lastName, String password, String email, String phoneNumber, Date dateOfBirth, String gender) {
+    public User(int id, String firstName, String lastName, String password, String email, String phoneNumber, Date dateOfBirth, String gender, int addressId, String badgeId, String ratingId, String typeId) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -28,7 +38,11 @@ public class User
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.dateOfBirth = dateOfBirth;
-        this.gender = gender;   
+        this.gender = gender;
+        this.addressId = addressId;
+        this.badgeId = badgeId;
+        this.ratingId = ratingId;
+        this.typeId = typeId;
     }
 
     public int getId() {
@@ -66,11 +80,11 @@ public class User
         return addressId;
     }
 
-    public int getBadgeId() {
+    public String getBadgeId() {
         return badgeId;
     }
 
-    public int getRatingId() {
+    public String getRatingId() {
         return ratingId;
     }
 
@@ -114,11 +128,11 @@ public class User
         this.addressId = addressId;
     }
 
-    public void setBadgeId(int badgeId) {
+    public void setBadgeId(String badgeId) {
         this.badgeId = badgeId;
     }
 
-    public void setRatingId(int ratingId) {
+    public void setRatingId(String ratingId) {
         this.ratingId = ratingId;
     }
 
