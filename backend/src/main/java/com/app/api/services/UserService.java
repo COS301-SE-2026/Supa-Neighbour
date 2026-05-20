@@ -1,32 +1,45 @@
 package com.app.api.services;
 
-import org.springframework.stereotype.Service;
-import com.app.api.models.User;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.app.api.models.User;
+import com.app.api.repositories.UserRepository;
+
+/**
+ * User service.
+ */
 @Service
-public class UserService 
-{
+public class UserService {
 
-    private List<User> users;
+    @Autowired
+    private UserRepository userRepository;
 
-    public UserService() {
-        // Initialize the users list with some dummy data
-        users = List.of(
-            new User(1, "John", "Doe", "password123", "john.doe@example.com", "1234567890", null,"Male", 123, "0", "0", "Regular"),
-            new User(2, "Jane", "Smith", "password456", "jane.smith@example.com", "0987654321", null, "Female", 456, "0", "0", "Regular")
-        );
-    };
-    
     /**
-     * Test endpoint.
-     * @return response User
+     * Get all users.
+     * @return list of users
+     */
+    public Iterable<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    /**
+     * Get user by id.
+     * @param id user id
+     * @return user
      */
     public User getUserById(int id) {
-        for(User user : users) {
-            if(user.getId() == id) {
-                return user;
-            }
-        }
-        return null; // Return null if user not found
+        return userRepository.findById(id).orElse(null);
+    }
+
+    /**
+     * Save user.
+     * @param user user
+     * @return saved user
+     */
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 }
