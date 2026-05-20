@@ -60,7 +60,7 @@ class TaskDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    task['title']!,
+                    task['title']! as String,
                     style: GoogleFonts.poppins(
                       color: const Color(0xFF264653), // Charcoal
                       fontSize: 20,
@@ -85,12 +85,12 @@ class TaskDetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _buildInfoRow(Icons.access_time, task['time']!),
+                  _buildInfoRow(Icons.access_time, task['time']! as String),
                   const SizedBox(height: 8),
-                  _buildInfoRow(Icons.location_on, task['location']!),
+                  _buildInfoRow(Icons.location_on, task['location']! as String),
                   const SizedBox(height: 12),
                   Text(
-                    task['instructions']!,
+                    task['instructions']! as String,
                     style: GoogleFonts.openSans(
                       color: const Color(0xFF264653), // Charcoal
                       fontSize: 14,
@@ -147,7 +147,7 @@ class TaskDetailScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              task['helperName']!,
+                              task['helperName']! as String,
                               style: GoogleFonts.openSans(
                                 color: const Color(0xFF264653), // Charcoal
                                 fontSize: 16,
@@ -155,7 +155,7 @@ class TaskDetailScreen extends StatelessWidget {
                               ),
                             ),
                             RatingBar.builder(
-                              initialRating: task['helperTrustScore']!,
+                              initialRating: task['helperTrustScore']! as double,
                               minRating: 1,
                               direction: Axis.horizontal,
                               allowHalfRating: true,
