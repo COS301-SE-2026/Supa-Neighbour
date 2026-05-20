@@ -2,6 +2,7 @@ package com.app.api.models;
 
 import java.sql.Date;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,22 +10,34 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "UserTable")
+@Table(name = "usertable")
 public class User 
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "userid")
     private int id;
+    @Column(name = "username")
     private String firstName;
+    @Column(name = "usersurname")
     private String lastName;
+    @Column(name = "userpassword")
     private String password;
+    @Column(name = "useremail") 
     private String email;
+    @Column(name = "userphonenumber")
     private String phoneNumber;
+    @Column(name = "userdob")
     private Date dateOfBirth;
+    @Column(name = "usergender")
     private String gender;
+    @Column(name = "useraddressid")
     private int addressId;
+    @Column(name = "userbadgeid")
     private String badgeId;
+    @Column(name = "userratingid")
     private String ratingId;
+    @Column(name = "usertypeid")
     private String typeId;
 
     public User() {
