@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app/screens/task_detail_screen.dart';
+import 'app/screens/home_screen.dart';
 
 void main() {
   runApp(const SupaNeighbourApp());
@@ -19,7 +20,7 @@ class SupaNeighbourApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const TaskDetailScreen(),
+      home: const HomeScreen(),
     );
   }
 }
