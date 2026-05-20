@@ -7,7 +7,8 @@ CREATE TABLE LocationTable (
 );
 
 CREATE TABLE RatingTable (
-    RatingReview VARCHAR(50) PRIMARY KEY,
+    RatingID INT PRIMARY KEY AUTO_INCREMENT,
+    RatingReview VARCHAR(50),
     TotalXPLevel INT,
     CurrentGroup VARCHAR(50)
 );
@@ -22,7 +23,7 @@ CREATE TABLE BadgeTable (
 
 CREATE TABLE TaskTypeTable (
     TaskTypeID INT PRIMARY KEY,
-    TypeDescription TEXT,
+    TypeDescription VARCHAR(255) NOT NULL,
     AssociatedBadgeID VARCHAR(50),
     NeedsSpecialist BOOLEAN DEFAULT FALSE,
     XPWorth INT
