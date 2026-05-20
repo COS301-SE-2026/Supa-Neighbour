@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/task_detail_screen.dart';
+import 'app/screens/task_detail_screen.dart';
 
 void main() {
   runApp(const SupaNeighbourApp());
