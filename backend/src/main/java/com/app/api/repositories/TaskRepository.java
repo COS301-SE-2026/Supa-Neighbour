@@ -4,17 +4,30 @@ import com.app.api.models.Task;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository for Task entities.
+ */
 @Repository
-public interface TaskRepository extends CrudRepository<Task, Integer>
-{
-    // basically our "WHERE residentID = 3..." filter in sql
+public interface TaskRepository extends CrudRepository<Task, Integer> {
 
-    // The below will be used by the GET /users/userId/tasks endpoint in my tasks view 
+    /**
+     * Find all tasks assigned to a specific helper.
+     * @param helperId the helper's ID
+     * @return tasks assigned to the helper
+     */
     Iterable<Task> findByHelperId(int helperId);
 
-    // Will be used by GET /tasks indashboard
+    /**
+     * Find all tasks linked to a specific dependent.
+     * @param dependentId the dependent's ID
+     * @return tasks linked to the dependent
+     */
     Iterable<Task> findByDependentId(int dependentId);
 
-    // Will be used by GET /tasks?category=.. 
+    /**
+     * Find all tasks of a specific task type.
+     * @param taskTypeId the task type ID
+     * @return tasks matching the given type
+     */
     Iterable<Task> findByTaskTypeId(int taskTypeId);
 }

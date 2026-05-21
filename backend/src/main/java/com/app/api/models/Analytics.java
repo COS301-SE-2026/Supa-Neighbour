@@ -5,47 +5,117 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * Represents an analytics record in the system.
+ */
 @Entity
 @Table(name = "AnalyticsTable")
-public class Analytics
-{
-    // 1. fields
-    
+public class Analytics {
+
+    /** The analytics ID. */
     @Id
     @Column(name = "AnalyticsID")
     private int analyticsId;
 
+    /** The task ID. */
     @Column(name = "TaskID")
     private Integer taskId;
 
-    
+    /** The admin ID. */
     @Column(name = "AdminID")
     private Integer adminId;
 
+    /** The helper type ID. */
     @Column(name = "HelperTypeID")
     private String helperTypeId;
 
+    /** The dependent type ID. */
     @Column(name = "DependentTypeID")
     private String dependentTypeId;
 
-    // 2. constuctor
-    public Analytics() {}
+    /**
+     * Default constructor.
+     */
+    public Analytics() {
+    }
 
-    // 3.getters and setters
+    /**
+     * Gets the analytics ID.
+     * @return the analytics ID
+     */
+    public int getAnalyticsId() {
+        return analyticsId;
+    }
 
-    public int getAnalyticsId() { return analyticsId; }
-    public void setAnalyticsId(int analyticsId) { this.analyticsId = analyticsId;}
-    
-    public Integer getTaskId() { return taskId; }
-    public void setTaskId(int taskId) { this.taskId = taskId; }
+    /**
+     * Sets the analytics ID.
+     * @param analyticsId the analytics ID
+     */
+    public void setAnalyticsId(int analyticsId) {
+        this.analyticsId = analyticsId;
+    }
 
-    public Integer getAdminId() { return adminId;}
-    public void setAdminId(Integer adminId) { this.adminId = adminId;}
+    /**
+     * Gets the task ID.
+     * @return the task ID
+     */
+    public Integer getTaskId() {
+        return taskId;
+    }
 
-     public String getHelperTypeId() { return helperTypeId;}
-    public void setHelperTypeId(String helperTypeId) { this.helperTypeId = helperTypeId; }
+    /**
+     * Sets the task ID.
+     * @param taskId the task ID
+     */
+    public void setTaskId(int taskId) {
+        this.taskId = taskId;
+    }
 
-    public String getDependentTypeId() { return dependentTypeId; }
-    public void setDependentTypeId(String dependentTypeId) { this.dependentTypeId = dependentTypeId;}
+    /**
+     * Gets the admin ID.
+     * @return the admin ID
+     */
+    public Integer getAdminId() {
+        return adminId;
+    }
 
+    /**
+     * Sets the admin ID.
+     * @param adminId the admin ID
+     */
+    public void setAdminId(Integer adminId) {
+        this.adminId = adminId;
+    }
+
+    /**
+     * Gets the helper type ID.
+     * @return the helper type ID
+     */
+    public String getHelperTypeId() {
+        return helperTypeId;
+    }
+
+    /**
+     * Sets the helper type ID.
+     * @param helperTypeId the helper type ID
+     */
+    public void setHelperTypeId(String helperTypeId) {
+        this.helperTypeId = helperTypeId;
+    }
+
+    /**
+     * Gets the dependent type ID.
+     * @return the dependent type ID
+     */
+    public String getDependentTypeId() {
+        return dependentTypeId;
+    }
+
+    /**
+     * Sets the dependent type ID.
+     * @param dependentTypeId the dependent type ID
+     */
+    public void setDependentTypeId(String dependentTypeId) {
+        this.dependentTypeId = dependentTypeId;
+    }
 }

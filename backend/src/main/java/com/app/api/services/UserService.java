@@ -1,7 +1,5 @@
 package com.app.api.services;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +12,13 @@ import com.app.api.repositories.UserRepository;
 @Service
 public class UserService {
 
+    /** The user repository. */
     @Autowired
     private UserRepository userRepository;
 
     /**
      * Get all users.
-     * @return list of users
+     * @return all users
      */
     public Iterable<User> getAllUsers() {
         return userRepository.findAll();
