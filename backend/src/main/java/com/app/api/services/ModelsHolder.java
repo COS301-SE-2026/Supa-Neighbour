@@ -1,4 +1,4 @@
-package com.app.api.models;
+package com.app.api.services;
 
 public class ModelsHolder {
     

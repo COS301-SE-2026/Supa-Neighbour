@@ -1,5 +1,5 @@
-package com.app.api.models;
+package com.app.api.controllers;
 
-public class Location {
+public class Controller {
     
 }
