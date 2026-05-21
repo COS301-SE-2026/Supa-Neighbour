@@ -68,4 +68,19 @@ public class TaskController
         return ResponseEntity.ok("Task deleted");
     }
 
+    @Operation(summary="Update task by ID")
+    @ApiResponse(responseCode="200", description = "Task updated")
+    @ApiResponse(responseCode="404",description = "Task not found")
+    @PutMapping("/tasks/{taskId}")
+    public ResponseEntity<Task> updateTask(@PathVariable int taskId, @RequestBody Task updates)
+    {
+        Task updated_Task = taskService.updateTask(taskId, updates);
+
+        if(updated_Task == null)
+        {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(updated_Task);
+    }
 }

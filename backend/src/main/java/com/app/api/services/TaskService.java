@@ -64,4 +64,62 @@ public class TaskService
         return true;
     }
 
+
+    /**
+     * Update an existing task by ID.
+     * @param taskId of the task to update
+     * @param updates a task containing new values
+     * @return the uploaded task else null if not found
+     */
+    public Task updateTask(int taskId, Task updates)
+    {
+
+        Task targetTask = taskRepo.findById(taskId).orElse(null);
+        if(targetTask == null){ return null;}
+
+        // update helper
+        if (updates.getHelperId() != null)
+        {
+            targetTask.setHelperId(updates.getHelperId());
+        }
+
+        // update dependent
+        if(updates.getDependentId() != null)
+        {
+            targetTask.setDependentId(updates.getDependentId());
+        }
+
+        // update :
+        // task type
+        if(updates.getTaskTypeId() != null)
+        {
+            targetTask.setTaskTypeId(updates.getTaskTypeId());
+        }
+
+        // location
+        if(updates.getLocationId() != null)
+        {
+            targetTask.setLocationId(updates.getLocationId());
+        }
+
+        // start date
+        if(updates.getStartDate() != null)
+        {
+            targetTask.setStartDate(updates.getStartDate());
+        }
+
+        // end dae
+        if(updates.getEndDate() != null)
+        {
+            targetTask.setEndDate(updates.getEndDate());
+        }
+
+        //admin review ----- need to think about this only admin can really chnage this.
+        if(updates.getAdminReview() != null)
+        {
+            targetTask.setAdminReview(updates.getAdminReview());
+        }
+        
+        return taskRepo.save(targetTask);
+    }
 }
