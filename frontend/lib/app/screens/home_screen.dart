@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../widgets/bottom_nav_bar.dart';
-import 'task_detail_screen.dart';
 import 'create_task_screen.dart';
+import 'task_detail_screen.dart';
+import 'my_tasks_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     const HomeContent(),
-    const PlaceholderScreen(title: 'Tasks'),
+    const MyTasksScreen(),
     const PlaceholderScreen(title: 'Chat'),
     const PlaceholderScreen(title: 'Leaderboard'),
     const PlaceholderScreen(title: 'Profile'),
