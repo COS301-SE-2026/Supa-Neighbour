@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'forgot_password_screen.dart';
 import '../home/home_screen.dart';
+import '../../models/auth_session.dart';
+import '../../models/user_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,17 +18,52 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _rememberMe = false;
 
   void _handleLogin() {
+    // Validation
+    if (_emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your email'),
+          backgroundColor: Color(0xFF1C9A89),
+        ),
+      );
+      return;
+    }
+
+    if (_passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your password'),
+          backgroundColor: Color(0xFF1C9A89),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
+    // Simulate API call
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
 
-        // Navigate to Home Screen after successful login
+        // Get mock user or use existing session user
+        User user = AuthSession.instance.currentUser ?? User.getMockUser();
+        
+        // Login using AuthSession
+        AuthSession.instance.login(user);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login successful!'),
+            backgroundColor: Color(0xFF1C9A89),
+          ),
+        );
+
+        // Navigate to Home Screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -40,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Responsive sizing (percentage-based)
+    // Responsive sizing
     final logoSize = screenWidth * 0.3;
     final titleSize = screenWidth * 0.08;
     final subtitleSize = screenWidth * 0.045;
@@ -288,21 +325,21 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: Center(
                                 child: _isLoading
                                     ? SizedBox(
-                                  width: buttonHeight * 0.4,
-                                  height: buttonHeight * 0.4,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
+                                        width: buttonHeight * 0.4,
+                                        height: buttonHeight * 0.4,
+                                        child: const CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
                                     : Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    fontSize: fontSize,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                        'Login',
+                                        style: TextStyle(
+                                          fontSize: fontSize,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                               ),
                             ),
                           ),

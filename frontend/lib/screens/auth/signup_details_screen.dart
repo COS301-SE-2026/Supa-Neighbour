@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import '../../models/user_model.dart';
 import 'signup_residential_screen.dart';
 
 class SignupDetailsScreen extends StatefulWidget {
   final String email;
-  const SignupDetailsScreen({super.key, required this.email});
+  final User? partialUser;
+  
+  const SignupDetailsScreen({
+    super.key, 
+    required this.email,
+    this.partialUser,
+  });
 
   @override
   State<SignupDetailsScreen> createState() => _SignupDetailsScreenState();
@@ -15,6 +22,18 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
   DateTime _selectedDate = DateTime.now();
   String _selectedGender = 'Male';
   bool _isLoading = false;
+
+  User _buildUser() {
+    return User(
+      id: widget.partialUser?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      email: widget.email,
+      firstName: _firstNameController.text,
+      lastName: _lastNameController.text,
+      birthday: _selectedDate,
+      gender: _selectedGender,
+      createdAt: widget.partialUser?.createdAt ?? DateTime.now(),
+    );
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -41,7 +60,6 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
   }
 
   void _handleNext() {
-    // Validation
     if (_firstNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -66,35 +84,29 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
       _isLoading = true;
     });
 
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
 
-        // Navigate to Signup Residential Details Screen (Step 4 of 5)
+        final user = _buildUser();
+        
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => SignupResidentialScreen(
-              email: widget.email,
-              firstname: _firstNameController.text,  // Note: parameter name is 'firstname' (lowercase n)
-              lastname: _lastNameController.text,    // Note: parameter name is 'lastname' (lowercase n)
-              birthday: _selectedDate.toLocal().toString().split(' ')[0],  // Convert DateTime to String
-              gender: _selectedGender,
-            ),
+            builder: (context) => SignupResidentialScreen(user: user),
           ),
         );
       }
     });
   }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Responsive sizing
     final titleSize = screenWidth * 0.08;
     final subtitleSize = screenWidth * 0.045;
     final buttonHeight = screenHeight * 0.07;
@@ -468,21 +480,21 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
                               child: Center(
                                 child: _isLoading
                                     ? SizedBox(
-                                  width: buttonHeight * 0.4,
-                                  height: buttonHeight * 0.4,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
+                                        width: buttonHeight * 0.4,
+                                        height: buttonHeight * 0.4,
+                                        child: const CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
                                     : Text(
-                                  'Next',
-                                  style: TextStyle(
-                                    fontSize: fontSize,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                        'Next',
+                                        style: TextStyle(
+                                          fontSize: fontSize,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                               ),
                             ),
                           ),
