@@ -4,8 +4,11 @@ import 'app/screens/home_screen.dart';
 
 void main() {
   runApp(const SupaNeighbourApp());
+  runApp(const SupaNeighbourApp());
 }
 
+class SupaNeighbourApp extends StatelessWidget {
+  const SupaNeighbourApp({super.key});
 class SupaNeighbourApp extends StatelessWidget {
   const SupaNeighbourApp({super.key});
 
@@ -13,8 +16,12 @@ class SupaNeighbourApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Supa Neighbour',
+      title: 'Supa Neighbour',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2A9D8F),
+        ),
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF2A9D8F),
         ),
