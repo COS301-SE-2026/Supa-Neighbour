@@ -100,4 +100,15 @@ public class TaskController
 
         return ResponseEntity.ok(tasks);
     }
+
+
+    @Operation(summary="Create a new task")
+    @ApiResponse(responseCode = "201" , description = "Task created successfully")
+    @ApiResponse(responseCode="500" , description= "Server error, task not created")
+    @PostMapping("/tasks/create")
+    public ResponseEntity<Task> createTask(@RequestBody Task task)
+    {
+        Task new_task = taskService.createTask(task);
+        return ResponseEntity.status(201).body(new_task);
+    }
 }

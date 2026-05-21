@@ -139,4 +139,15 @@ public class TaskService
 
         return taskRepo.findByDependentId(dependent.getDependentId());
     }
+
+
+    /**
+     * Create a new task
+     * @param task to create
+     * @return saved task
+     */
+    public Task createTask(Task task)
+    {
+        return taskRepo.save(task);
+    }
 }
