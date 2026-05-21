@@ -4,6 +4,12 @@
 >
 >
 
-## Navigation Flow
-The wireframe flow begins at the splash page which allows the user to either log in or register for the app
+## Wirefame images
+The wireframes can also be viewed in the Images/Wireframes-screenshots folder in the following order:
+1. Splash Page - Login and register page.png
+2. Login Page - Forgot Passowrd page.png
+3. Home Page - Task Management.png
+4. Home Page - Profile page.png
+5. Home Page - Chat Pages.png
+
 
