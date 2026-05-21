@@ -84,7 +84,10 @@ class _HomeContentState extends State<HomeContent> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: Color(0xFF2A9D8F)),
+            icon: const Icon(
+              Icons.notifications_none,
+              color: Color(0xFF2A9D8F),
+            ),
             onPressed: () {
               // TODO: Show notifications
             },
@@ -126,9 +129,7 @@ class _HomeContentState extends State<HomeContent> {
         onPressed: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => const CreateTaskScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const CreateTaskScreen()),
           );
           // Refresh nearby tasks when a new task is created
           _loadNearbyTasks();
@@ -210,7 +211,10 @@ class _HomeContentState extends State<HomeContent> {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE9C46A),
                     borderRadius: BorderRadius.circular(20),
@@ -234,11 +238,7 @@ class _HomeContentState extends State<HomeContent> {
               color: const Color(0xFF2A9D8F).withOpacity(0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.person,
-              color: Color(0xFF2A9D8F),
-              size: 40,
-            ),
+            child: const Icon(Icons.person, color: Color(0xFF2A9D8F), size: 40),
           ),
         ],
       ),
@@ -250,7 +250,11 @@ class _HomeContentState extends State<HomeContent> {
       children: [
         _buildStatCard('5', 'Helps Given', const Color(0xFF2A9D8F)),
         const SizedBox(width: 12),
-        _buildStatCard(_nearbyTasks.length.toString(), 'Tasks Posted', const Color(0xFFE9C46A)),
+        _buildStatCard(
+          _nearbyTasks.length.toString(),
+          'Tasks Posted',
+          const Color(0xFFE9C46A),
+        ),
         const SizedBox(width: 12),
         _buildStatCard(
           _nearbyTasks.where((t) => t.status == 'pending').length.toString(),
@@ -409,7 +413,11 @@ class _HomeContentState extends State<HomeContent> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.access_time, size: 14, color: Color(0xFF2A9D8F)),
+                      const Icon(
+                        Icons.access_time,
+                        size: 14,
+                        color: Color(0xFF2A9D8F),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${task.date.day}/${task.date.month} · ${task.time.format(context)}',

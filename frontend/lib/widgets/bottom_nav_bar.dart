@@ -1,50 +1,44 @@
 import 'package:flutter/material.dart';
 
-class CheckboxWithLabel extends StatefulWidget {
-  final String label;
-  final double fontSize;
+class BottomNavBar extends StatelessWidget {
+  final int currentIndex;
+  final Function(int) onTap;
 
-  const CheckboxWithLabel({
+  const BottomNavBar({
     super.key,
-    required this.label,
-    this.fontSize = 40,
+    required this.currentIndex,
+    required this.onTap,
   });
 
   @override
-  State<CheckboxWithLabel> createState() => _CheckboxWithLabelState();
-}
-
-class _CheckboxWithLabelState extends State<CheckboxWithLabel> {
-  bool _isChecked = false;
-
-  @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: 52,
-          height: 52,
-          child: Checkbox(
-            value: _isChecked,
-            onChanged: (value) {
-              setState(() {
-                _isChecked = value ?? false;
-              });
-            },
-            activeColor: const Color(0xFF1C9A89),
-            checkColor: Colors.white,
-            side: const BorderSide(color: Color(0xFF1C9A89), width: 3),
-          ),
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: currentIndex,
+      onTap: onTap,
+      selectedItemColor: const Color(0xFF2A9D8F),
+      unselectedItemColor: Colors.grey,
+      showUnselectedLabels: true,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Home',
         ),
-        const SizedBox(width: 16),
-        Text(
-          widget.label,
-          style: TextStyle(
-            fontSize: widget.fontSize,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFF1C9A89),
-          ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.assignment),
+          label: 'Tasks',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.chat_bubble_outline),
+          label: 'Inbox',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.bar_chart),
+          label: 'Stats',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'Profile',
         ),
       ],
     );
