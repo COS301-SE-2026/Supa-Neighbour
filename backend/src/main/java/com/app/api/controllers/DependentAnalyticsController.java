@@ -1,87 +1,49 @@
-package com.app.api.models;
+package com.app.api.controllers;
 
-import java.sql.Date;
+import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
-@Entity
-@Table(name = "dependentanalyticstable")
+import com.app.api.models.DependentAnalytics;
+import com.app.api.services.DependentAnalyticsService;
 
-public class DependentAnalytics {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "dependentanalyticsid")
-    private int dependentanalyticsid;
-    @Column(name = "userid")
-    private int userid;
-    @Column(name = "tasktypeid")
-    private int tasktypeid;
-    @Column(name = "totaltasks")
-    private int totaltasks;
-    @Column(name = "locationid")
-    private int locationid;
-    @Column(name = "aveeragerating")
-    private float aveeragerating;
-    @Column(name = "averagegivingrating")
-    private float averagegivingrating;
+/**
+ * Dependent analytics controller.
+ */
+@RestController
+@RequestMapping("api/dependent-analytics")
+public class DependentAnalyticsController {
 
-    public DependentAnalytics(int dependentanalyticsid, int userid, int tasktypeid, int totaltasks, int locationid, float aveeragerating, float averagegivingrating) {
-        this.dependentanalyticsid = dependentanalyticsid;
-        this.userid = userid;
-        this.tasktypeid = tasktypeid;
-        this.totaltasks = totaltasks;
-        this.locationid = locationid;
-        this.aveeragerating = aveeragerating;
-        this.averagegivingrating = averagegivingrating;
-    }   
+    @Autowired
+    private DependentAnalyticsService dependentAnalyticsService;
 
-    public int getDependentanalyticsid() {
-        return dependentanalyticsid;
-    }
-    public int getUserid() {
-        return userid;
-    }
-    public int getTasktypeid() {
-        return tasktypeid;
-    }
-    public int getTotaltasks() {
-        return totaltasks;
-    }
-    public int getLocationid() {
-        return locationid;
-    }
-    public float getAveeragerating() {
-        return aveeragerating;
-    }
-    public float getAveragegivingrating() {
-        return averagegivingrating;
+    /**
+     * Get all dependent analytics.
+     * @return dependent analytics
+     */
+    @GetMapping
+    public Iterable<DependentAnalytics> getAllDependentAnalytics() {
+        return dependentAnalyticsService.getAllDependentAnalytics();
     }
 
-    public void setDependentanalyticsid(int dependentanalyticsid) {
-        this.dependentanalyticsid = dependentanalyticsid;
-    }
-    public void setUserid(int userid) {
-        this.userid = userid;
-    }
-    public void setTasktypeid(int tasktypeid) {
-        this.tasktypeid = tasktypeid;
-    }
-    public void setTotaltasks(int totaltasks) {
-        this.totaltasks = totaltasks;
-    }
-    public void setLocationid(int locationid) {
-        this.locationid = locationid;
-    }
-    public void setAveeragerating(float aveeragerating) {
-        this.aveeragerating = aveeragerating;
-    }
-    public void setAveragegivingrating(float averagegivingrating) {
-        this.averagegivingrating = averagegivingrating;
+    /**
+     * Get dependent analytics by id.
+     * @param id dependent analytics id
+     * @return dependent analytics
+     */
+    @GetMapping("api/dependent-analytics/{id}")
+    public DependentAnalytics getDependentAnalyticsById(@PathVariable int id) {
+        return dependentAnalyticsService.getDependentAnalyticsById(id);
     }
 
+    /**
+     * Create dependent analytics.
+     * @param dependentAnalytics dependent analytics
+     * @return saved dependent analytics
+     */
+    @PostMapping
+    public DependentAnalytics createDependentAnalytics(@RequestBody DependentAnalytics dependentAnalytics) {
+        return dependentAnalyticsService.saveDependentAnalytics(dependentAnalytics);
+    }
 }

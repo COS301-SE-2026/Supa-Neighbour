@@ -1,80 +1,46 @@
-package com.app.api.models;
-import java.sql.Date;
+package com.app.api.services;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import java.util.List;
 
-@Entity
-@Table(name = "analyticstable")
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public class Analytics {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "analyticsid")
-    private int analyticsid;
-    @Column(name = "taskid")
-    private int taskid;
-    @Column(name = "adminid")
-    private String adminid;
-    @Column(name = "helpertypeid")
-    private String helpertypeid;
-    @Column(name = "dependenttypeid")
-    private String dependenttypeid;
+import com.app.api.models.Admin;
+import com.app.api.models.Analytics;
+import com.app.api.repositories.AnalyticsRepository;
 
-    public Analytics() {
+/**
+ * Analytics service.
+ */
+@Service
+public class AnalyticsService {
+
+    @Autowired
+    private AnalyticsRepository analyticsRepository;
+
+    /**
+     * Get all analytics.
+     * @return list of analytics
+     */
+    public Iterable<Analytics> getAllAdmins() {
+        return analyticsRepository.findAll();
     }
 
-    public Analytics(int analyticsid, int taskid, String adminid, String helpertypeid,String dependenttypeid) {
-        this.analyticsid = analyticsid;
-        this.taskid = taskid;
-        this.adminid = adminid;
-        this.helpertypeid = helpertypeid;
-        this.dependenttypeid = dependenttypeid;
+    /**
+     * Get analytics by id.
+     * @param id analytics id
+     * @return analytics
+     */
+    public Analytics getAdminById(int id) {
+        return analyticsRepository.findById(id).orElse(null);
     }
 
-    public int getAnalyticsid() {
-        return analyticsid;
-    }   
-
-    public void setAnalyticsid(int analyticsid) {
-        this.analyticsid = analyticsid;
+    /**
+     * Save analytics.
+     * @param analytics analytics
+     * @return saved analytics
+     */
+    public Analytics saveAdmin(Analytics admin) {
+        return analyticsRepository.save(admin);
     }
-
-    public int getTaskid() {
-        return taskid;
-    }   
-
-    public void setTaskid(int taskid) {
-        this.taskid = taskid;
-    }
-
-    public String getAdminid() {
-        return adminid;
-    }
-
-    public void setAdminid(String adminid) {
-        this.adminid = adminid;
-    }
-
-    public String getHelpertypeid() {
-        return helpertypeid;
-    }
-
-    public void setHelpertypeid(String helpertypeid) {
-        this.helpertypeid = helpertypeid;
-    }
-
-    public String getDependenttypeid() {
-        return dependenttypeid;
-    }
-
-    public void setDependenttypeid(String dependenttypeid) {
-        this.dependenttypeid = dependenttypeid;
-    }
-
 }

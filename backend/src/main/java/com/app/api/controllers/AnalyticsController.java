@@ -1,80 +1,42 @@
-package com.app.api.models;
-import java.sql.Date;
+package com.app.api.controllers;
+import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
-@Entity
-@Table(name = "analyticstable")
+import com.app.api.models.Analytics;
+import com.app.api.services.AnalyticsService;
+public class AnalyticsController {
 
-public class Analytics {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "analyticsid")
-    private int analyticsid;
-    @Column(name = "taskid")
-    private int taskid;
-    @Column(name = "adminid")
-    private String adminid;
-    @Column(name = "helpertypeid")
-    private String helpertypeid;
-    @Column(name = "dependenttypeid")
-    private String dependenttypeid;
+    @Autowired
+    private AnalyticsService analyticsService;
 
-    public Analytics() {
+    /**
+     * Get all admins.
+     * @return admins
+     */
+    @GetMapping
+    public Iterable<Analytics> getAllAdmins() {
+        return analyticsService.getAllAdmins();
     }
 
-    public Analytics(int analyticsid, int taskid, String adminid, String helpertypeid,String dependenttypeid) {
-        this.analyticsid = analyticsid;
-        this.taskid = taskid;
-        this.adminid = adminid;
-        this.helpertypeid = helpertypeid;
-        this.dependenttypeid = dependenttypeid;
+    /**
+     * Get admin by id.
+     * @param id admin id
+     * @return admin
+     */
+    @GetMapping("api/admins/{id}")
+    public Analytics getAdminById(@PathVariable int id) {
+        return analyticsService.getAdminById(id);
     }
 
-    public int getAnalyticsid() {
-        return analyticsid;
-    }   
-
-    public void setAnalyticsid(int analyticsid) {
-        this.analyticsid = analyticsid;
+    /**
+     * Create admin.
+     * @param admin admin
+     * @return saved admin  
+     */
+    @PostMapping("api/admins")
+    public Analytics createAdmin(@RequestBody Analytics admin) {
+        return analyticsService.saveAdmin(admin);
     }
-
-    public int getTaskid() {
-        return taskid;
-    }   
-
-    public void setTaskid(int taskid) {
-        this.taskid = taskid;
-    }
-
-    public String getAdminid() {
-        return adminid;
-    }
-
-    public void setAdminid(String adminid) {
-        this.adminid = adminid;
-    }
-
-    public String getHelpertypeid() {
-        return helpertypeid;
-    }
-
-    public void setHelpertypeid(String helpertypeid) {
-        this.helpertypeid = helpertypeid;
-    }
-
-    public String getDependenttypeid() {
-        return dependenttypeid;
-    }
-
-    public void setDependenttypeid(String dependenttypeid) {
-        this.dependenttypeid = dependenttypeid;
-    }
-
 }

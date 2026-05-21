@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "compatibilitytable")
-public class compatibility {
+public class Compatibility {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "compatibilityid")
@@ -28,10 +28,10 @@ public class compatibility {
     @Column(name = "compatibilitycolour")
     private String compatibilityColour;
 
-    public compatibility() {
+    public Compatibility() {
     }
 
-    public compatibility(int helperId, int dependentId, int compatibilityScore, String compatibilityColour) {
+    public Compatibility(int helperId, int dependentId, int compatibilityScore, String compatibilityColour) {
         this.helperId = helperId;
         this.dependentId = dependentId;
         this.compatibilityScore = compatibilityScore;
