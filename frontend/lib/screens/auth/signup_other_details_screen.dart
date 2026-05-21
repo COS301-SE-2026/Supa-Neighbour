@@ -1,0 +1,449 @@
+import 'package:flutter/material.dart';
+import 'login_screen.dart';  // Import your actual LoginScreen
+
+class SignupOtherDetailsScreen extends StatefulWidget {
+  final String email;
+  final String firstname;
+  final String lastname;
+  final String birthday;
+  final String gender;
+  final String street;
+  final String town;
+  final String zipCode;
+
+  const SignupOtherDetailsScreen({
+    super.key,
+    required this.email,
+    required this.firstname,
+    required this.lastname,
+    required this.birthday,
+    required this.gender,
+    required this.street,
+    required this.town,
+    required this.zipCode,
+  });
+
+  @override
+  State<SignupOtherDetailsScreen> createState() => _SignupOtherDetailsScreenState();
+}
+
+class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  bool _isLoading = false;
+
+  void _handleFinish() {
+    // Validation
+    if (_phoneController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your phone number'),
+          backgroundColor: Color(0xFF1C9A89),
+        ),
+      );
+      return;
+    }
+
+    if (_usernameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a username'),
+          backgroundColor: Color(0xFF1C9A89),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Simulate API call
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Navigate to Success Screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SignupSuccessScreen(
+              email: widget.email,
+              firstname: widget.firstname,
+              lastname: widget.lastname,
+              username: _usernameController.text,
+              phone: _phoneController.text,
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Responsive sizing
+    final titleSize = screenWidth * 0.08;
+    final subtitleSize = screenWidth * 0.045;
+    final buttonHeight = screenHeight * 0.07;
+    final fontSize = screenWidth * 0.04;
+    final smallFontSize = screenWidth * 0.035;
+
+    return Scaffold(
+      body: SafeArea(
+        child: Container(
+          width: screenWidth,
+          height: screenHeight,
+          color: Colors.white,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+              child: Column(
+                children: [
+                  SizedBox(height: screenHeight * 0.03),
+
+                  // Back Button
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF1C9A89),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: screenHeight * 0.02),
+
+                  // Logo Placeholder
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.edit_note,
+                        size: 50,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: screenHeight * 0.03),
+
+                  // Title
+                  Text(
+                    'Other Details',
+                    style: TextStyle(
+                      fontSize: titleSize,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1C9A89),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  SizedBox(height: screenHeight * 0.01),
+
+                  // Subtitle
+                  Text(
+                    'Almost there!',
+                    style: TextStyle(
+                      fontSize: subtitleSize,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey[600],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  SizedBox(height: screenHeight * 0.04),
+
+                  // White Card Container
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(screenWidth * 0.07),
+                      child: Column(
+                        children: [
+                          // Phone Number Field
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Phone Number',
+                                style: TextStyle(
+                                  fontSize: fontSize,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xFF1C9A89),
+                                ),
+                              ),
+                              SizedBox(height: screenHeight * 0.01),
+                              Container(
+                                width: double.infinity,
+                                height: buttonHeight,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(29),
+                                  color: Colors.white,
+                                  border: Border.all(
+                                    color: const Color(0xFF1C9A89),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: TextField(
+                                  controller: _phoneController,
+                                  style: TextStyle(fontSize: fontSize * 0.7),
+                                  keyboardType: TextInputType.phone,
+                                  decoration: InputDecoration(
+                                    hintText: 'e.g. 012 345 6789',
+                                    hintStyle: TextStyle(
+                                      fontSize: fontSize * 0.6,
+                                      color: Colors.grey,
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: screenWidth * 0.05,
+                                      vertical: screenHeight * 0.02,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: screenHeight * 0.025),
+
+                          // Username Field
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Username',
+                                style: TextStyle(
+                                  fontSize: fontSize,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xFF1C9A89),
+                                ),
+                              ),
+                              SizedBox(height: screenHeight * 0.01),
+                              Container(
+                                width: double.infinity,
+                                height: buttonHeight,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(29),
+                                  color: Colors.white,
+                                  border: Border.all(
+                                    color: const Color(0xFF1C9A89),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: TextField(
+                                  controller: _usernameController,
+                                  style: TextStyle(fontSize: fontSize * 0.7),
+                                  decoration: InputDecoration(
+                                    hintText: 'e.g. user123',
+                                    hintStyle: TextStyle(
+                                      fontSize: fontSize * 0.6,
+                                      color: Colors.grey,
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: screenWidth * 0.05,
+                                      vertical: screenHeight * 0.02,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: screenHeight * 0.04),
+
+                          // Finish Profile Button
+                          GestureDetector(
+                            onTap: _isLoading ? null : _handleFinish,
+                            child: Container(
+                              width: double.infinity,
+                              height: buttonHeight,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(29),
+                                color: const Color(0xFF1C9A89),
+                              ),
+                              child: Center(
+                                child: _isLoading
+                                    ? SizedBox(
+                                  width: buttonHeight * 0.4,
+                                  height: buttonHeight * 0.4,
+                                  child: const CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                    : Text(
+                                  'Finish Profile',
+                                  style: TextStyle(
+                                    fontSize: fontSize,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: screenHeight * 0.02),
+
+                          // Back Link
+                          Center(
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text(
+                                'Back',
+                                style: TextStyle(
+                                  fontSize: smallFontSize,
+                                  color: const Color(0xFF1C9A89),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: screenHeight * 0.03),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Success Screen - Auto navigates to login after 2 seconds
+class SignupSuccessScreen extends StatefulWidget {
+  final String email;
+  final String firstname;
+  final String lastname;
+  final String username;
+  final String phone;
+
+  const SignupSuccessScreen({
+    super.key,
+    required this.email,
+    required this.firstname,
+    required this.lastname,
+    required this.username,
+    required this.phone,
+  });
+
+  @override
+  State<SignupSuccessScreen> createState() => _SignupSuccessScreenState();
+}
+
+class _SignupSuccessScreenState extends State<SignupSuccessScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Auto navigate to login after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()), // Your actual LoginScreen
+              (route) => false,
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fullName = '${widget.firstname} ${widget.lastname}';
+
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: Colors.white,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.check_circle,
+                  size: 100,
+                  color: Color(0xFF1C9A89),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Profile Completed!',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1C9A89),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Welcome, $fullName!',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const CircularProgressIndicator(
+                  color: Color(0xFF1C9A89),
+                  strokeWidth: 2,
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Redirecting to login...',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
