@@ -2,8 +2,10 @@ package com.app.api.services;
 
 import com.app.api.models.Analytics;
 import com.app.api.models.Task;
+import com.app.api.models.Dependent;
 import com.app.api.repositories.AnalyticsRepository;
 import com.app.api.repositories.TaskRepository;
+import com.app.api.repositories.DependentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +15,15 @@ public class TaskService
     // 1. dependencies
     private final TaskRepository taskRepo;
     private final AnalyticsRepository analyticsRepo;
+    private final DependentRepository dependentRepo;
 
     // 2. constructor
     @Autowired
-    public TaskService(TaskRepository taskRepo,AnalyticsRepository analyticsRepo)
+    public TaskService(TaskRepository taskRepo,AnalyticsRepository analyticsRepo , DependentRepository dependentRepo)
     {
         this.taskRepo = taskRepo;
         this.analyticsRepo = analyticsRepo;
+        this.dependentRepo = dependentRepo;
     }
 
     // 3.
@@ -121,5 +125,18 @@ public class TaskService
         }
         
         return taskRepo.save(targetTask);
+    }
+
+    /**
+     * Get tasks for a user using dependent profile.
+     * @param userId to loop yp
+     * @return tasks linked to the user's dependent Id else null if profile not found
+     */
+    public Iterable<Task> getTasksByUserId(int userId)
+    {
+        Dependent dependent = dependentRepo.findByUserId(userId);
+        if(dependent == null) {return null;}
+
+        return taskRepo.findByDependentId(dependent.getDependentId());
     }
 }

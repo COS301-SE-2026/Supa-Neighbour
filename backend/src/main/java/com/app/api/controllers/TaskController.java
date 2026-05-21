@@ -83,4 +83,21 @@ public class TaskController
 
         return ResponseEntity.ok(updated_Task);
     }
+
+
+    @Operation(summary="Get all tasks for a specific user")
+    @ApiResponse(responseCode="200", description = "Tasks retrieved")
+    @ApiResponse(responseCode="404" , description = "No dependent profile found for user")
+    @GetMapping("/users/{userId}/tasks")
+    public ResponseEntity<Iterable<Task>> getTasksByUserId(@PathVariable int userId)
+    {
+        Iterable<Task> tasks = taskService.getTasksByUserId(userId);
+
+        if(tasks == null)
+        {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(tasks);
+    }
 }
