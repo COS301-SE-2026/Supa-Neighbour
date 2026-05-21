@@ -53,9 +53,9 @@ class _MyTasksScreenState extends State<MyTasksScreen> with SingleTickerProvider
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          const _PostedTasksTab(),
-          const _AcceptedTasksTab(),
+        children: const [
+           _PostedTasksTab(),
+           _AcceptedTasksTab(),
         ],
       ),
     );
