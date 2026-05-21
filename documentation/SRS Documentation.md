@@ -16,11 +16,11 @@ The system will allows residents to post assistance for short-term household tas
 
 The admin dashbord provides a platform for manages with the needed tools to monitor community activity, manage users and handle reported content and maintain the overall health and safety of the platform.
 
-## Domain Model
+# Domain Model
 
 Please refer to the file for the Domain model: [Domain Model](../backend/database-schema.png)
 
-## User stories
+# User stories
 
 **User Characteristics**
 The Supa-Neighbour platform serves three distinct user types. A single registered account can either be a Resident (requester) and a Helper depending on the context
@@ -72,7 +72,7 @@ An Administrator is a platform manager who oversees the health, safety, and inte
   - View platform-wide analytics and activity logs
 
 
-**User Stories**
+## User Stories
 
 **1. Account Management & Authentication**
 | ID | User Story | Requirement |
@@ -102,13 +102,14 @@ An Administrator is a platform manager who oversees the health, safety, and inte
 | US-R17 | As a Resident, I want to receive a notification when my task has been marked complete so that I can confirm and rate the helper. | R3.2.1 |
 | US-R18 | As a Resident, I want all communication with helpers to stay within the app so that my personal contact details are never exposed. | R4.1.2 |
 
-## Use cases
+# Use cases
 
 Please refer to this image for the use case Diagram: [Use Case Diagram](/documentation/Wireframe%20images/Use%20Case%20Diagram.jpg)
 
-## Functional requirements
+# Functional requirements
 
 **Use Case 1 - Authentication**
+
 R1: User Account Management
 The system shall allow users to create and manage secure accounts with verified neighbourhood information.
 
@@ -161,6 +162,7 @@ The system shall allow users to communicate in real time for task coordination.
 * R3.2.2: The system must allow helpers to mark tasks as complete with optional photo evidence
 
 **Subsystem Overview**
+
 The Supa-Neighbour platform is divided into the following subsystems, each responsible for a distinct area of functionality:
  
 | Subsystem | Responsibility | Related Requirements |
@@ -176,17 +178,17 @@ The Supa-Neighbour platform is divided into the following subsystems, each respo
 
 
 
-## API Service Contracts
+# API Service Contracts
 
 Please refer to this document for the API Contracts: [API Service Contract](/documentation/API_Service_Contractc.md)
 
-## Architectural Requirements
+# Architectural Requirements
 
-### Quality Requirements
+## Quality Requirements
 
 Quality requirements define the system's non-functional characteristics. Each requirement is traced to specific NFRs.
 
-#### QR1: Performance
+### QR1: Performance
 
 QR1.1: Matching engine response time should be  ≤ 3 seconds based on NFR1.1.1
 
@@ -197,7 +199,7 @@ QR1.3: Concurrent user support should be be ≥ 1,000 users based on NFR1.2.1
 QR1.4: Concurrent chat sessions roughly ≥ 500 sessions based on NFR1.2.2
 
 ---
-#### QR2: Security & Privacy
+### QR2: Security & Privacy
 
 QR2.1: Password storage ,Hashed + salted (bcrypt/Argon2) based on NFR2.1.1
 
@@ -214,7 +216,7 @@ QR2.8: Contact privacy,no exposure to any 3rd party; all communication in-app ba
 QR2.9: Security audit logging, All failed logins + suspicious activities logged for admin tech-team review based on NFR2.2.3
 
 ---
-#### QR3: Reliability & Availability
+### QR3: Reliability & Availability
 
 QR3.1: System uptime, 99.5% based on NFR3.1.1
 
@@ -227,7 +229,7 @@ QR3.4: Chat message queuing, Messages persisted if service down; delivered on re
 QR3.5: Data backup frequency | Daily (Cosmos DB), hourly transaction logs (Azure SQL)
 
 ---
-#### QR4: Usability
+### QR4: Usability
 
 QR4.1: First task posting time of ≤ 3 minutes from registration based on NFR4.1.1
 
@@ -242,7 +244,7 @@ QR4.5: Task workflow guidance, Step-by-step with progress indicators based on NF
 QR4.6: Age group support Intuitive for users 18-80+ based on R7.1.1
 
 ---
-#### QR5: Scalability
+### QR5: Scalability
 
 QR5.1: Horizontal scaling with Zero-downtime instance addition based on NFR5.1.1 & AR6.1
 
@@ -253,7 +255,7 @@ QR5.3: Neighbourhood zone configurability, No code changes for new regions based
 QR5.4: Proximity algorithm efficiency, prefferably O(log n) or better for zone lookup based on NFR5.2.2
 
 ---
-#### QR6: Maintainability
+### QR6: Maintainability
 
 
 QR6.1: Module coupling, Loosely coupled based on NFR6.1.1 & AR7
@@ -276,7 +278,7 @@ QR7.3: Android minimum version | API level 30 (Android 11) based on NFR7.2.1
 QR7.4: Screen size adaptation, Phones + tablets, portrait + landscape based on NFR7.2.2
 
 ---
-#### QR8: Compliance
+### QR8: Compliance
 
 QR8.1: POPIA compliance with Explicit consent for location data based on NFR8.1.1
 
@@ -286,21 +288,72 @@ QR8.4: Privacy policy which is Accessible during registration based on NFR8.2.2
 
 ---
 
-## Wireframes
-The wireframes can be viewed on Figma: [Figma](https://www.figma.com/design/MbiPBcFdcVNv9G29H4n9Sk/Supa-Neighbour?node-id=0-1&t=zB6H43BLYAxUCpzz-1)
+
+## Architectural Patterns
 
 
+The Architectural Diagram can be viewed here: [Architectural diagram]()
 
-### Architectural Diagrams
+---
 
-### Design Patterns
+## Contraints
 
-### Contraints
-1. Privacy of location and home details must be strictly protected.
-2. Verification processes must remain simple for usability.
-3. Neighbourhood boundaries may differ per region → need flexible logic.
-4. Messaging system must prevent harassment or spam.
-5. Tasks involving animals may require disclaimers or basic safety
-guidance.
+### C1: Platform & Deployment Constraints
+
+C1.1: Android app required (iOS optional), Flutter must support Android API 30+
+
+C1.2: Web dashboard for admins
+
+C1.3: Backend must deploy to Azure
+
+C1.4: CI/CD via GitHub Actions
+
+C1.5: Matching engine uses GraphQL
+
+---
+### C2: Privacy & Security Constraints
+
+C2.1: Exact address revealed ONLY after task acceptance
+
+C2.2: Personal contact numbers never exposed, All communication via in-app chat only
+
+C2.3: Location data requires explicit consent, Consent screen + preference storage
+
+C2.4: POPIA compliance, Users must havd Right to deletion & data processing records
+
+C2.5: Secrets in Azure Key Vault, No hardcoded secrets in code/config
+
+---
+### C3: Usability Constraints
+
+C3.1: Verification must remain simple, OTP only; no complex document uploads initially
+
+C3.2: Large fonts + accessible design, Flutter text scaling must work
+
+C3.3: First task within 3 minutes of registration,Onboarding must be minimal
+
+---
+### C4: Domain Constraints
+
+C4.1: Neighbourhood boundaries differ per region, Configuration-driven, not hardcoded
+
+C4.2: Messaging must prevent harassment/spam, Content filtering + rate limiting + reporting
+
+C4.3: Animal tasks require disclaimers, Safety guidance before accepting pet tasks
+
+---
+
+### C6: Budget & Resource Constraints
+
+C6.1: Approval needed from Gendac for expenses,Any paid Azure service requires sign-off
+
+C6.2: Team size = 5, limited to 5 tech memmbers
+
+---
+### C7: Timeline Constraints
+
+C7.1: Delivery within Project deadlines which we  Prioritise core (R1-R7) over wow factor (R8-R10)
+
+---
 
 
