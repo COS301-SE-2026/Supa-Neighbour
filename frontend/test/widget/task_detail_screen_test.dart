@@ -1,7 +1,6 @@
-
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:supa_neighbour/screens/task_detail_screen.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:supa_neighbour/app/screens/task_detail_screen.dart';
 
 
 void main(){
