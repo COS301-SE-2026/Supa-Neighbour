@@ -1,43 +1,50 @@
 import 'package:flutter/material.dart';
 
-class BottomNavBar extends StatelessWidget {
-  final int currentIndex;
-  final Function(int) onTap;
+class CheckboxWithLabel extends StatefulWidget {
+  final String label;
+  final double fontSize;
 
-  const BottomNavBar({
+  const CheckboxWithLabel({
     super.key,
-    required this.currentIndex,
-    required this.onTap,
+    required this.label,
+    this.fontSize = 40,
   });
 
   @override
+  State<CheckboxWithLabel> createState() => _CheckboxWithLabelState();
+}
+
+class _CheckboxWithLabelState extends State<CheckboxWithLabel> {
+  bool _isChecked = false;
+
+  @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: onTap,
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF2A9D8F), // Vibrant Teal
-      unselectedItemColor: const Color(0xFF264653), // Charcoal
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: 52,
+          height: 52,
+          child: Checkbox(
+            value: _isChecked,
+            onChanged: (value) {
+              setState(() {
+                _isChecked = value ?? false;
+              });
+            },
+            activeColor: const Color(0xFF1C9A89),
+            checkColor: Colors.white,
+            side: const BorderSide(color: Color(0xFF1C9A89), width: 3),
+          ),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.assignment),
-          label: 'Tasks',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chat),
-          label: 'Chat',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.leaderboard),
-          label: 'Leader',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
+        const SizedBox(width: 16),
+        Text(
+          widget.label,
+          style: TextStyle(
+            fontSize: widget.fontSize,
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFF1C9A89),
+          ),
         ),
       ],
     );
