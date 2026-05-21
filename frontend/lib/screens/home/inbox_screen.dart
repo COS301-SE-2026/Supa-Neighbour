@@ -65,7 +65,7 @@ class InboxScreen extends StatelessWidget {
         ),
       ),
       body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         itemCount: _chats.length,
         itemBuilder: (context, index) {
           final chat = _chats[index];
@@ -86,7 +86,7 @@ class InboxScreen extends StatelessWidget {
   }
 }
 
-// Chat Card Widget
+// Chat Card Widget - Fixed Overflow
 class ChatCard extends StatelessWidget {
   final ChatThread chat;
   final VoidCallback onTap;
@@ -99,29 +99,32 @@ class ChatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0x331C9A89).withOpacity(0.2),
-          borderRadius: BorderRadius.circular(40),
+          color: const Color(0x331C9A89).withOpacity(0.15),
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Avatar
+            // Avatar - Fixed size
             Container(
-              width: 70,
-              height: 70,
+              width: 55,
+              height: 55,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Container(
-                  width: 60,
-                  height: 60,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: chat.avatarColor,
                     shape: BoxShape.circle,
@@ -130,7 +133,7 @@ class ChatCard extends StatelessWidget {
                     child: Text(
                       chat.name[0],
                       style: const TextStyle(
-                        fontSize: 28,
+                        fontSize: 22,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
@@ -139,8 +142,8 @@ class ChatCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 16),
-            // Chat Info
+            const SizedBox(width: 12),
+            // Chat Info - Expanded to take remaining space
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,26 +155,27 @@ class ChatCard extends StatelessWidget {
                         child: Text(
                           chat.name,
                           style: GoogleFonts.poppins(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF264653),
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       if (chat.unreadCount > 0)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
+                            horizontal: 8,
+                            vertical: 2,
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFEAC059),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             '${chat.unreadCount}',
                             style: GoogleFonts.poppins(
-                              fontSize: 14,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF264653),
                             ),
@@ -185,16 +189,19 @@ class ChatCard extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.location_on,
-                        size: 16,
+                        size: 12,
                         color: Color(0xFF2A9D8F),
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        chat.location,
-                        style: GoogleFonts.openSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF6B7280),
+                      const SizedBox(width: 2),
+                      Expanded(
+                        child: Text(
+                          chat.location,
+                          style: GoogleFonts.openSans(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF6B7280),
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -204,8 +211,8 @@ class ChatCard extends StatelessWidget {
                   Text(
                     chat.lastMessage,
                     style: GoogleFonts.openSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
                       color: chat.unreadCount > 0
                           ? const Color(0xFF1A1A2E)
                           : const Color(0xFF9CA3AF),
@@ -216,21 +223,21 @@ class ChatCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
-            // Timestamp
+            const SizedBox(width: 8),
+            // Timestamp - Fixed width
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
+                horizontal: 8,
+                vertical: 4,
               ),
               decoration: BoxDecoration(
                 color: const Color(0xFF1C9A89),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
                 chat.timestamp,
                 style: GoogleFonts.openSans(
-                  fontSize: 12,
+                  fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),

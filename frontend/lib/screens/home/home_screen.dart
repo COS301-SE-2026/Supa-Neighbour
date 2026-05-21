@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../models/task_model.dart';
+import '../../models/auth_session.dart';
 import 'create_task_screen.dart';
 import 'my_tasks_screen.dart';
 import 'task_detail_screen.dart';
 import 'inbox_screen.dart';
+import '../../models/user_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -52,18 +54,32 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   List<Task> _nearbyTasks = [];
+  User? _currentUser;
 
   @override
   void initState() {
     super.initState();
     _loadNearbyTasks();
+    _loadCurrentUser();
+  }
+
+  void _loadCurrentUser() {
+    setState(() {
+      _currentUser = AuthSession.instance.currentUser;
+    });
   }
 
   void _loadNearbyTasks() {
-    // Get tasks from the same mock data source as MyTasksScreen
     setState(() {
       _nearbyTasks = Task.getMockTasks();
     });
+  }
+
+  String getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
   }
 
   @override
@@ -84,10 +100,7 @@ class _HomeContentState extends State<HomeContent> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.notifications_none,
-              color: Color(0xFF2A9D8F),
-            ),
+            icon: const Icon(Icons.notifications_none, color: Color(0xFF2A9D8F)),
             onPressed: () {
               // TODO: Show notifications
             },
@@ -104,7 +117,7 @@ class _HomeContentState extends State<HomeContent> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome Section
+              // Welcome Section - Now using AuthSession
               _buildWelcomeSection(),
               const SizedBox(height: 24),
 
@@ -116,7 +129,7 @@ class _HomeContentState extends State<HomeContent> {
               _buildNearbyTasksSection(context),
               const SizedBox(height: 12),
 
-              // Task List - Now shows the same tasks from Task.getMockTasks()
+              // Task List
               _nearbyTasks.isEmpty
                   ? _buildEmptyState()
                   : _buildNearbyTaskList(context),
@@ -129,15 +142,91 @@ class _HomeContentState extends State<HomeContent> {
         onPressed: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const CreateTaskScreen()),
+            MaterialPageRoute(
+              builder: (_) => const CreateTaskScreen(),
+            ),
           );
-          // Refresh nearby tasks when a new task is created
           _loadNearbyTasks();
         },
         backgroundColor: const Color(0xFF2A9D8F),
         child: const Icon(Icons.add, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  Widget _buildWelcomeSection() {
+    final greeting = getGreeting();
+    final userName = _currentUser?.fullName ?? 'Neighbour';
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF2A9D8F).withOpacity(0.1),
+            const Color(0xFFE9C46A).withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$greeting,',
+                  style: GoogleFonts.openSans(
+                    color: const Color(0xFF264653),
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  userName,
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF2A9D8F),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE9C46A),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '⭐ 4.8 Trust Score',
+                    style: GoogleFonts.openSans(
+                      color: const Color(0xFF264653),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A9D8F).withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.person,
+              color: Color(0xFF2A9D8F),
+              size: 40,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -174,93 +263,17 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _buildWelcomeSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF2A9D8F).withOpacity(0.1),
-            const Color(0xFFE9C46A).withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Good morning,',
-                  style: GoogleFonts.openSans(
-                    color: const Color(0xFF264653),
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  'Blessing',
-                  style: GoogleFonts.poppins(
-                    color: const Color(0xFF2A9D8F),
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE9C46A),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '⭐ 4.8 Trust Score',
-                    style: GoogleFonts.openSans(
-                      color: const Color(0xFF264653),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2A9D8F).withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.person, color: Color(0xFF2A9D8F), size: 40),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildStatsRow() {
+    final tasksCount = _nearbyTasks.length;
+    final activeCount = _nearbyTasks.where((t) => t.status == 'pending').length;
+    
     return Row(
       children: [
         _buildStatCard('5', 'Helps Given', const Color(0xFF2A9D8F)),
         const SizedBox(width: 12),
-        _buildStatCard(
-          _nearbyTasks.length.toString(),
-          'Tasks Posted',
-          const Color(0xFFE9C46A),
-        ),
+        _buildStatCard(tasksCount.toString(), 'Tasks Posted', const Color(0xFFE9C46A)),
         const SizedBox(width: 12),
-        _buildStatCard(
-          _nearbyTasks.where((t) => t.status == 'pending').length.toString(),
-          'Active',
-          const Color(0xFF69B578),
-        ),
+        _buildStatCard(activeCount.toString(), 'Active', const Color(0xFF69B578)),
       ],
     );
   }
@@ -413,11 +426,7 @@ class _HomeContentState extends State<HomeContent> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(
-                        Icons.access_time,
-                        size: 14,
-                        color: Color(0xFF2A9D8F),
-                      ),
+                      const Icon(Icons.access_time, size: 14, color: Color(0xFF2A9D8F)),
                       const SizedBox(width: 4),
                       Text(
                         '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
@@ -471,6 +480,7 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 }
+
 
 // Placeholder Screens
 class StatsPlaceholder extends StatelessWidget {
