@@ -292,7 +292,7 @@ QR8.4: Privacy policy which is Accessible during registration based on NFR8.2.2
 ## Architectural Patterns
 
 
-The Architectural Diagram can be viewed here: [Architectural diagram]()
+The Architectural Diagram can be viewed here: [Architectural diagram](../documentation/Images/Architecture%20diagram.drawio.png)
 
 ---
 
