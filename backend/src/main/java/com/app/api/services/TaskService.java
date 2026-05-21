@@ -29,4 +29,14 @@ public class TaskService
         return taskRepo.findById(taskId).orElse(null);
     }
 
+
+    /**
+     * Get all tasks
+     * @return all tasks
+     */
+    public Iterable<Task> getAllTasks()
+    {
+        return taskRepo.findAll();
+    }
+
 }

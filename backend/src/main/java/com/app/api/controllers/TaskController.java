@@ -40,4 +40,14 @@ public class TaskController
 
         return ResponseEntity.ok(task);
     }
+
+
+    @Operation(summary = "Geta all tasks")
+    @ApiResponse(responseCode = "200" , description = "Tasks retrieved")
+    @ApiResponse(responseCode = "404" , description = "Unauthorised")
+    @GetMapping("/tasks")
+    public ResponseEntity<Iterable<Task>> getAllTasks()
+    {
+        return ResponseEntity.ok(taskService.getAllTasks());
+    }
 }
