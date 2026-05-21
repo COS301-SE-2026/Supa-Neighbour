@@ -50,4 +50,22 @@ public class TaskController
     {
         return ResponseEntity.ok(taskService.getAllTasks());
     }
+
+
+    @Operation(summary = "Delete a task by ID")
+    @ApiResponse(responseCode = "200" , description = "Task deleted")
+    @ApiResponse(responseCode = "404" , description = "Task not found")
+    @DeleteMapping("/tasks/{taskId}")
+    public ResponseEntity<String> deleteTask(@PathVariable int taskId)
+    {
+        boolean deleted = taskService.deleteTask(taskId);
+
+        if(!deleted)
+        {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok("Task deleted");
+    }
+
 }
