@@ -8,15 +8,13 @@ class TaskDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Mock data - will be replaced with real data from API later
-    final task = {
-      'title': 'Water my plants',
-      'xpReward': 50,
-      'time': 'Tomorrow at 3:00 PM',
-      'location': '2 doors down • 50m away',
-      'instructions': 'Please water the 3 pots on the balcony. Use the blue watering can under the sink.',
-      'helperName': 'Sarah Johnson',
-      'helperTrustScore': 4.8,
-    };
+    const String taskTitle = 'Water my plants';
+    const int xpReward = 50;
+    const String time = 'Tomorrow at 3:00 PM';
+    const String location = '2 doors down • 50m away';
+    const String instructions = 'Please water the 3 pots on the balcony. Use the blue watering can under the sink.';
+    const String helperName = 'Sarah Johnson';
+    const double helperTrustScore = 4.8;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF), // Clean White
@@ -49,7 +47,7 @@ class TaskDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -60,7 +58,7 @@ class TaskDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    task['title']!,
+                    taskTitle,
                     style: GoogleFonts.poppins(
                       color: const Color(0xFF264653), // Charcoal
                       fontSize: 20,
@@ -76,7 +74,7 @@ class TaskDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      '+${task['xpReward']} XP',
+                      '+$xpReward XP',
                       style: GoogleFonts.openSans(
                         color: const Color(0xFF264653), // Charcoal
                         fontSize: 12,
@@ -85,12 +83,12 @@ class TaskDetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _buildInfoRow(Icons.access_time, task['time']!),
+                  _buildInfoRow(Icons.access_time, time),
                   const SizedBox(height: 8),
-                  _buildInfoRow(Icons.location_on, task['location']!),
+                  _buildInfoRow(Icons.location_on, location),
                   const SizedBox(height: 12),
                   Text(
-                    task['instructions']!,
+                    instructions,
                     style: GoogleFonts.openSans(
                       color: const Color(0xFF264653), // Charcoal
                       fontSize: 14,
@@ -107,7 +105,7 @@ class TaskDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -132,12 +130,12 @@ class TaskDetailScreen extends StatelessWidget {
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2A9D8F).withOpacity(0.2), // Vibrant Teal tint
+                          color: const Color(0xFF2A9D8F)..withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.person,
-                          color: Color(0xFF2A9D8F), // Vibrant Teal
+                          color: Color(0xFF2A9D8F),
                           size: 30,
                         ),
                       ),
@@ -147,15 +145,15 @@ class TaskDetailScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              task['helperName']!,
+                              helperName,
                               style: GoogleFonts.openSans(
-                                color: const Color(0xFF264653), // Charcoal
+                                color: const Color(0xFF264653),
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             RatingBar.builder(
-                              initialRating: task['helperTrustScore']!,
+                              initialRating: helperTrustScore,
                               minRating: 1,
                               direction: Axis.horizontal,
                               allowHalfRating: true,
@@ -164,7 +162,7 @@ class TaskDetailScreen extends StatelessWidget {
                               ignoreGestures: true,
                               itemBuilder: (_, __) => const Icon(
                                 Icons.star,
-                                color: Color(0xFFE9C46A), // Citrus Yellow
+                                color: Color(0xFFE9C46A),
                               ),
                               onRatingUpdate: (_) {},
                             ),
@@ -182,13 +180,12 @@ class TaskDetailScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Implement accept task
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Task accepted! (Coming soon)')),
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2A9D8F), // Vibrant Teal
+                  backgroundColor: const Color(0xFF2A9D8F),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -210,14 +207,13 @@ class TaskDetailScreen extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
-                  // TODO: Implement message helper
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Message helper (Coming soon)')),
                   );
                 },
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF2A9D8F)), // Vibrant Teal
-                  foregroundColor: const Color(0xFF264653), // Charcoal
+                  side: const BorderSide(color: Color(0xFF2A9D8F)),
+                  foregroundColor: const Color(0xFF264653),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -241,12 +237,12 @@ class TaskDetailScreen extends StatelessWidget {
   Widget _buildInfoRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: const Color(0xFF2A9D8F)), // Vibrant Teal
+        Icon(icon, size: 18, color: const Color(0xFF2A9D8F)),
         const SizedBox(width: 8),
         Text(
           text,
           style: GoogleFonts.openSans(
-            color: const Color(0xFF264653), // Charcoal
+            color: const Color(0xFF264653),
             fontSize: 14,
           ),
         ),
