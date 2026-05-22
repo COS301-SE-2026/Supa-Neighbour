@@ -78,6 +78,7 @@ public class Task {
      * Default constructor.
      */
     public Task() {
+        // needed by jpa
     }
 
     /**
