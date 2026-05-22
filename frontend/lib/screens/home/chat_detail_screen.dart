@@ -31,19 +31,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     switch (widget.chat.name) {
       case 'Blessing':
-        receivedMessage = "I've just watered the plants, I'm not sure if I should trim the shrubs as well or you have that sorted?";
+        receivedMessage = 'I have just watered the plants, I am not sure if I should trim the shrubs as well or you have that sorted?';
         break;
       case 'Divo':
-        receivedMessage = "Yes, that's good :)";
+        receivedMessage = 'Yes, thats good :)';
         break;
       case 'Amantle':
-        receivedMessage = "I'll go after I accompany you.";
+        receivedMessage = 'I will go after I accompany you.';
         break;
       case 'Michelle':
-        receivedMessage = "Yeah";
+        receivedMessage = 'Yeah';
         break;
       default:
-        receivedMessage = "Hello!";
+        receivedMessage = 'Hello';
     }
 
     _messages.add(
