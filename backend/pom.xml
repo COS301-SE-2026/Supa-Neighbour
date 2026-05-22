@@ -123,6 +123,14 @@
 						<goals>
 							<goal>report</goal>
 						</goals>
+						<configuration>
+							<excludes>
+								<exclude>com/app/api/models/**</exclude>
+								<exclude>com/app/api/repositories/**</exclude>
+								<exclude>com/app/api/config/**</exclude>
+								<exclude>com/app/Application.class</exclude>
+							</excludes>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
