@@ -33,6 +33,7 @@ public class Dependent {
      * Default constructor.
      */
     public Dependent() {
+        // needed by jpa
     }
 
     /**
