@@ -156,15 +156,15 @@ public class TaskServiceTest
         when(taskRepo.save(existing)).thenReturn(existing);
 
         
-        Task updated_task = taskService.updateTask(id, updates);
+        Task updatedTask = taskService.updateTask(id, updates);
 
         
-        assertNotNull(updated_task);
-        assertEquals(5, updated_task.getHelperId());
-        assertEquals(3, updated_task.getDependentId());
-        assertEquals(2, updated_task.getTaskTypeId());
-        assertEquals(4, updated_task.getLocationId());
-        assertEquals("All fields updated", updated_task.getAdminReview());
+        assertNotNull(updatedTask);
+        assertEquals(5, updatedTask.getHelperId());
+        assertEquals(3, updatedTask.getDependentId());
+        assertEquals(2, updatedTask.getTaskTypeId());
+        assertEquals(4, updatedTask.getLocationId());
+        assertEquals("All fields updated", updatedTask.getAdminReview());
         verify(taskRepo, times(1)).save(existing);
 }
 
