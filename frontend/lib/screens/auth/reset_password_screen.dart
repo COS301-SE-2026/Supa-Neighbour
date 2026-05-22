@@ -401,17 +401,17 @@ class LoginScreenRedirect extends StatelessWidget {
     return Scaffold(
       body: Container(
         color: Colors.white,
-        child: Center(
-          child: Column(
+        child: const Center(
+          child : Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.check_circle,
                 size: 80,
                 color: Color(0xFF1C9A89),
               ),
-              const SizedBox(height: 20),
-              const Text(
+              SizedBox(height: 20),
+              Text(
                 'Password Updated!',
                 style: TextStyle(
                   fontSize: 24,
@@ -419,8 +419,8 @@ class LoginScreenRedirect extends StatelessWidget {
                   color: Color(0xFF1C9A89),
                 ),
               ),
-              const SizedBox(height: 10),
-              const Text(
+              SizedBox(height: 10),
+              Text(
                 'Redirecting to login...',
                 style: TextStyle(
                   fontSize: 16,
