@@ -113,7 +113,7 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
     final buttonHeight = screenHeight * 0.07;
     final fontSize = screenWidth * 0.04;
     final smallFontSize = screenWidth * 0.035;
-    final logoSize = 100.0;
+    const logoSize = 100.0;
 
     return Scaffold(
       body: SafeArea(

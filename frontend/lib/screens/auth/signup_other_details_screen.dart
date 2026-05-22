@@ -75,7 +75,7 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final logoSize = 100.0;
+    const logoSize = 100.0;
     final titleSize = screenWidth * 0.08;
     final subtitleSize = screenWidth * 0.045;
     final buttonHeight = screenHeight * 0.07;

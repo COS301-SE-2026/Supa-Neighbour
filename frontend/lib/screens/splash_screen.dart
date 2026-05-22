@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../components/loading_bar.dart';
-import '../components/splash_logo.dart';
 import '../components/splash_title.dart';
 import 'auth_screen.dart';
 import '../components/logo_placeholder.dart';
