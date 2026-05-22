@@ -54,7 +54,7 @@ class _MyTasksScreenState extends State<MyTasksScreen> {
               Icon(
                 Icons.assignment_turned_in,
                 size: 80,
-                color: const Color(0xFF2A9D8F).withOpacity(0.3),
+                color: const Color(0xFF2A9D8F).withValues(alpha: 0.3),
               ),
               const SizedBox(height: 16),
               Text(
@@ -111,7 +111,7 @@ class _MyTasksScreenState extends State<MyTasksScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha:0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -123,7 +123,7 @@ class _MyTasksScreenState extends State<MyTasksScreen> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF2A9D8F).withOpacity(0.1),
+                color: const Color(0xFF2A9D8F).withValues(alpha:0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(

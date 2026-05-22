@@ -164,8 +164,8 @@ class _HomeContentState extends State<HomeContent> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF2A9D8F).withOpacity(0.1),
-            const Color(0xFFE9C46A).withOpacity(0.05),
+            const Color(0xFF2A9D8F).withValues(alpha: 0.1),
+            const Color(0xFFE9C46A).withValues(alpha:0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -216,7 +216,7 @@ class _HomeContentState extends State<HomeContent> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: const Color(0xFF2A9D8F).withOpacity(0.2),
+              color: const Color(0xFF2A9D8F).withValues(alpha:0.2),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -238,7 +238,7 @@ class _HomeContentState extends State<HomeContent> {
           Icon(
             Icons.assignment_outlined,
             size: 80,
-            color: const Color(0xFF2A9D8F).withOpacity(0.3),
+            color: const Color(0xFF2A9D8F).withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
@@ -287,7 +287,7 @@ class _HomeContentState extends State<HomeContent> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -357,7 +357,7 @@ class _HomeContentState extends State<HomeContent> {
           context: context,
           task: task,
           onTap: () async {
-            final result = await Navigator.push(
+            await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => TaskDetailScreen(
@@ -390,7 +390,7 @@ class _HomeContentState extends State<HomeContent> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -402,7 +402,7 @@ class _HomeContentState extends State<HomeContent> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF2A9D8F).withOpacity(0.1),
+                color: const Color(0xFF2A9D8F).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -511,7 +511,7 @@ class StatsPlaceholder extends StatelessWidget {
             Icon(
               Icons.bar_chart,
               size: 80,
-              color: const Color(0xFF2A9D8F).withOpacity(0.3),
+              color: const Color(0xFF2A9D8F).withValues(alpha:0.3),
             ),
             const SizedBox(height: 16),
             Text(
@@ -555,7 +555,7 @@ class ProfilePlaceholder extends StatelessWidget {
             Icon(
               Icons.person_outline,
               size: 80,
-              color: const Color(0xFF2A9D8F).withOpacity(0.3),
+              color: const Color(0xFF2A9D8F).withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(
