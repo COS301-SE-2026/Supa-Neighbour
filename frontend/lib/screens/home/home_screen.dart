@@ -318,36 +318,37 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildNearbyTasksSection(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'My Tasks',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF264653),
-            fontSize: 18,
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        'Available Nearby', 
+        style: GoogleFonts.poppins(
+          color: const Color(0xFF264653),
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      TextButton(
+        onPressed: () {
+          // Navigate to all available tasks (same as Home for now)
+          // Or create a dedicated AvailableTasksScreen
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('All available tasks (coming soon)')),
+          );
+        },
+        child: Text(
+          'See All',
+          style: GoogleFonts.openSans(
+            color: const Color(0xFF2A9D8F),
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
-        TextButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MyTasksScreen()),
-            );
-          },
-          child: Text(
-            'See All',
-            style: GoogleFonts.openSans(
-              color: const Color(0xFF2A9D8F),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
   Widget _buildNearbyTaskList(BuildContext context) {
     return Column(
