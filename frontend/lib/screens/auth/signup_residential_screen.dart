@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../components/logo_placeholder.dart';  // Add this import
 import '../../models/user_model.dart';
 import 'signup_other_details_screen.dart';
 
@@ -85,10 +86,10 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ... rest of your UI code (same as before, just using widget.user)
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
+    final logoSize = 100.0;
     final titleSize = screenWidth * 0.08;
     final subtitleSize = screenWidth * 0.045;
     final buttonHeight = screenHeight * 0.07;
@@ -107,6 +108,8 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
               child: Column(
                 children: [
                   SizedBox(height: screenHeight * 0.03),
+                  
+                  // Back Button
                   Align(
                     alignment: Alignment.centerLeft,
                     child: GestureDetector(
@@ -122,31 +125,30 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
                       ),
                     ),
                   ),
+                  
                   SizedBox(height: screenHeight * 0.02),
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.home_outlined, size: 50, color: Colors.grey),
-                    ),
-                  ),
+                  
+                  // Logo - Using LogoPlaceholder (replaced placeholder container)
+                  LogoPlaceholder(size: logoSize),
+                  
                   SizedBox(height: screenHeight * 0.03),
+                  
                   Text(
                     'Residential Address',
                     style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.w600, color: const Color(0xFF1C9A89)),
                     textAlign: TextAlign.center,
                   ),
+                  
                   SizedBox(height: screenHeight * 0.01),
+                  
                   Text(
                     'Where do you live?',
                     style: TextStyle(fontSize: subtitleSize, fontWeight: FontWeight.w400, color: Colors.grey[600]),
                     textAlign: TextAlign.center,
                   ),
+                  
                   SizedBox(height: screenHeight * 0.04),
+                  
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -164,6 +166,7 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
                           SizedBox(height: screenHeight * 0.025),
                           _buildTextField('Zip Code', _zipCodeController, 'e.g. 0001', isNumber: true),
                           SizedBox(height: screenHeight * 0.04),
+                          
                           GestureDetector(
                             onTap: _isLoading ? null : _handleNext,
                             child: Container(
@@ -180,7 +183,9 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
                               ),
                             ),
                           ),
+                          
                           SizedBox(height: screenHeight * 0.02),
+                          
                           Center(
                             child: GestureDetector(
                               onTap: () => Navigator.pop(context),
@@ -191,6 +196,7 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
                       ),
                     ),
                   ),
+                  
                   SizedBox(height: screenHeight * 0.03),
                 ],
               ),

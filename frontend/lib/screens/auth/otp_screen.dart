@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'reset_password_screen.dart';  // Add this import
+import 'reset_password_screen.dart';
+import '../../components/logo_placeholder.dart';  // Add this import
 
 class OTPScreen extends StatefulWidget {
   final String email;
@@ -120,22 +121,8 @@ class _OTPScreenState extends State<OTPScreen> {
 
                   SizedBox(height: screenHeight * 0.02),
 
-                  // Logo Placeholder
-                  Container(
-                    width: logoSize,
-                    height: logoSize,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.lock_outline,
-                        size: 60,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
+                  // Logo - Using LogoPlaceholder component
+                  LogoPlaceholder(size: logoSize),
 
                   SizedBox(height: screenHeight * 0.03),
 
@@ -317,21 +304,21 @@ class _OTPScreenState extends State<OTPScreen> {
                               child: Center(
                                 child: _isLoading
                                     ? SizedBox(
-                                  width: buttonHeight * 0.4,
-                                  height: buttonHeight * 0.4,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
+                                        width: buttonHeight * 0.4,
+                                        height: buttonHeight * 0.4,
+                                        child: const CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
                                     : Text(
-                                  'Verify',
-                                  style: TextStyle(
-                                    fontSize: fontSize,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                        'Verify',
+                                        style: TextStyle(
+                                          fontSize: fontSize,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                               ),
                             ),
                           ),

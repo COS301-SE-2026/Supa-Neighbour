@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'otp_screen.dart';  // Add this import
+import 'otp_screen.dart';
+import '../../components/logo_placeholder.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -95,22 +96,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                   SizedBox(height: screenHeight * 0.02),
 
-                  // Logo Placeholder
-                  Container(
-                    width: logoSize,
-                    height: logoSize,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.lock_reset,
-                        size: 60,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
+                  // Logo - Using LogoPlaceholder component (single)
+                  LogoPlaceholder(size: logoSize),
 
                   SizedBox(height: screenHeight * 0.03),
 
@@ -230,21 +217,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               child: Center(
                                 child: _isLoading
                                     ? SizedBox(
-                                  width: buttonHeight * 0.4,
-                                  height: buttonHeight * 0.4,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
+                                        width: buttonHeight * 0.4,
+                                        height: buttonHeight * 0.4,
+                                        child: const CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
                                     : Text(
-                                  'Send OTP',
-                                  style: TextStyle(
-                                    fontSize: fontSize,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                        'Send OTP',
+                                        style: TextStyle(
+                                          fontSize: fontSize,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                               ),
                             ),
                           ),

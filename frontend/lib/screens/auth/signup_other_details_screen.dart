@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../components/logo_placeholder.dart';
 import '../../models/auth_session.dart';
 import '../../models/user_model.dart';
 import '../home/home_screen.dart';
@@ -74,6 +75,7 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
+    final logoSize = 100.0;
     final titleSize = screenWidth * 0.08;
     final subtitleSize = screenWidth * 0.045;
     final buttonHeight = screenHeight * 0.07;
@@ -92,6 +94,8 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
               child: Column(
                 children: [
                   SizedBox(height: screenHeight * 0.03),
+                  
+                  // Back Button
                   Align(
                     alignment: Alignment.centerLeft,
                     child: GestureDetector(
@@ -104,18 +108,31 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
                       ),
                     ),
                   ),
+                  
                   SizedBox(height: screenHeight * 0.02),
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(color: Colors.grey[200], shape: BoxShape.circle),
-                    child: const Center(child: Icon(Icons.edit_note, size: 50, color: Colors.grey)),
-                  ),
+                  
+                  // Logo - Using LogoPlaceholder (replaced placeholder container)
+                  LogoPlaceholder(size: logoSize),
+                  
                   SizedBox(height: screenHeight * 0.03),
-                  Text('Other Details', style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.w600, color: const Color(0xFF1C9A89)), textAlign: TextAlign.center),
+                  
+                  Text(
+                    'Other Details', 
+                    style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.w600, color: const Color(0xFF1C9A89)), 
+                    textAlign: TextAlign.center
+                  ),
+                  
                   SizedBox(height: screenHeight * 0.01),
-                  Text('Almost there!', style: TextStyle(fontSize: subtitleSize, fontWeight: FontWeight.w400, color: Colors.grey[600]), textAlign: TextAlign.center),
+                  
+                  Text(
+                    'Almost there!', 
+                    style: TextStyle(fontSize: subtitleSize, fontWeight: FontWeight.w400, color: Colors.grey[600]), 
+                    textAlign: TextAlign.center
+                  ),
+                  
                   SizedBox(height: screenHeight * 0.04),
+                  
+                  // White Card Container
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -131,6 +148,8 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
                           SizedBox(height: screenHeight * 0.025),
                           _buildTextField('Username', _usernameController, 'e.g. user123'),
                           SizedBox(height: screenHeight * 0.04),
+                          
+                          // Finish Button
                           GestureDetector(
                             onTap: _isLoading ? null : _handleFinish,
                             child: Container(
@@ -144,7 +163,10 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
                               ),
                             ),
                           ),
+                          
                           SizedBox(height: screenHeight * 0.02),
+                          
+                          // Back Link
                           Center(
                             child: GestureDetector(
                               onTap: () => Navigator.pop(context),
@@ -155,6 +177,7 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
                       ),
                     ),
                   ),
+                  
                   SizedBox(height: screenHeight * 0.03),
                 ],
               ),

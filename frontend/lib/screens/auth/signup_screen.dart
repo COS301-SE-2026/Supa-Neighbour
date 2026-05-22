@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../components/logo_placeholder.dart';  // Keep this import
 import 'signup_otp_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -57,7 +58,7 @@ class _SignupScreenState extends State<SignupScreen> {
         setState(() {
           _isLoading = false;
         });
-        // Navigate back to login after signup
+        // Navigate to OTP screen after signup
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -119,22 +120,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
                   SizedBox(height: screenHeight * 0.02),
 
-                  // Logo Placeholder
-                  Container(
-                    width: logoSize,
-                    height: logoSize,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.person_add,
-                        size: 60,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
+                  // Logo - Using LogoPlaceholder (single, removed duplicate container)
+                  LogoPlaceholder(size: logoSize),
 
                   SizedBox(height: screenHeight * 0.03),
 
@@ -375,21 +362,21 @@ class _SignupScreenState extends State<SignupScreen> {
                               child: Center(
                                 child: _isLoading
                                     ? SizedBox(
-                                  width: buttonHeight * 0.4,
-                                  height: buttonHeight * 0.4,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
+                                        width: buttonHeight * 0.4,
+                                        height: buttonHeight * 0.4,
+                                        child: const CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
                                     : Text(
-                                  'Sign up',
-                                  style: TextStyle(
-                                    fontSize: fontSize,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                        'Sign up',
+                                        style: TextStyle(
+                                          fontSize: fontSize,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                               ),
                             ),
                           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../components/logo_placeholder.dart';  // Add this import
 import 'auth/login_screen.dart';
 import 'auth/signup_screen.dart';
 
@@ -17,6 +18,8 @@ class AuthScreen extends StatelessWidget {
     // Scale factors
     final scaleX = screenWidth / designWidth;
     final scaleY = screenHeight / designHeight;
+    
+    final logoSize = 286 * scaleX;
 
     return Scaffold(
       body: Container(
@@ -26,22 +29,8 @@ class AuthScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo
-            Container(
-              width: 286 * scaleX,
-              height: 286 * scaleY,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.person,
-                  size: 120,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
+            // Logo - Using LogoPlaceholder (replaced placeholder container)
+            LogoPlaceholder(size: logoSize),
 
             const SizedBox(height: 60),
 

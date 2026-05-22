@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../components/logo_placeholder.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -119,22 +120,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                   SizedBox(height: screenHeight * 0.02),
 
-                  // Logo Placeholder
-                  Container(
-                    width: logoSize,
-                    height: logoSize,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.lock_reset,
-                        size: 60,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
+                  // Logo
+                  LogoPlaceholder(size: logoSize),
 
                   SizedBox(height: screenHeight * 0.03),
 
@@ -408,14 +395,14 @@ class LoginScreenRedirect extends StatelessWidget {
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children:  [
-              const Icon(
+            children: const [
+              Icon(
                 Icons.check_circle,
                 size: 80,
                 color: Color(0xFF1C9A89),
               ),
-              const SizedBox(height: 20),
-              const Text(
+              SizedBox(height: 20),
+              Text(
                 'Password Updated!',
                 style: TextStyle(
                   fontSize: 24,
@@ -423,8 +410,8 @@ class LoginScreenRedirect extends StatelessWidget {
                   color: Color(0xFF1C9A89),
                 ),
               ),
-              const SizedBox(height: 10),
-              const Text(
+              SizedBox(height: 10),
+              Text(
                 'Redirecting to login...',
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
