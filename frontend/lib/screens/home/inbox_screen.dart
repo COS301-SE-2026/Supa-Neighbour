@@ -99,7 +99,7 @@ class ChatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+   // final screenWidth = MediaQuery.of(context).size.width;
     
     return GestureDetector(
       onTap: onTap,
@@ -107,7 +107,7 @@ class ChatCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0x331C9A89).withOpacity(0.15),
+          color: const Color(0x331C9A89).withValues(alpha:0.15),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(

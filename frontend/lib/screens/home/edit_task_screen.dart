@@ -202,7 +202,14 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
+              hint: Text(
+                'Select category',
+                style: GoogleFonts.openSans(
+                  color: const Color(0xFFB0ADB0),
+                  fontSize: 14,
+                ),
+              ),
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),

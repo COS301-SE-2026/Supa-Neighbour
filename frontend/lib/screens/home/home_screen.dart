@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../widgets/bottom_nav_bar.dart';
-import '../../models/task_model.dart';
 import '../../models/auth_session.dart';
+import '../../models/task_model.dart';
+import '../../models/user_model.dart';
+import '../../widgets/bottom_nav_bar.dart';
 import 'create_task_screen.dart';
+import 'inbox_screen.dart';
 import 'my_tasks_screen.dart';
 import 'task_detail_screen.dart';
-import 'inbox_screen.dart';
-import '../../models/user_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -140,7 +140,7 @@ class _HomeContentState extends State<HomeContent> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final result = await Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => const CreateTaskScreen(),
