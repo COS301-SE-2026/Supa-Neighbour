@@ -30,7 +30,7 @@ public class Dependent {
     private Integer compatibleId;
 
     /**
-     * Default constructor.
+     * Default constructor required by JPA.
      */
     public Dependent() {
         // needed by jpa

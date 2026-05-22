@@ -34,7 +34,7 @@ public class Analytics {
     private String dependentTypeId;
 
     /**
-     * Default constructor.
+     * Default constructor required by JPA.
      */
     public Analytics() {
         // default constructor needed by jpa

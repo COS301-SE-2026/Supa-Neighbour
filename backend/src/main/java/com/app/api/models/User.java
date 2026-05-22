@@ -63,7 +63,7 @@ public class User {
     private String typeId;
 
     /**
-     * Default constructor.
+     * Default constructor required by JPA.
      */
     public User() {
         // needed by jpa

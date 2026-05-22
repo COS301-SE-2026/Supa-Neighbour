@@ -75,7 +75,7 @@ public class Task {
     private Integer compatibilityId;
 
     /**
-     * Default constructor.
+     * Default constructor required by JPA.
      */
     public Task() {
         // needed by jpa
