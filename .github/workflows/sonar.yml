@@ -30,9 +30,8 @@ jobs:
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6 # v6.0.0
         with:
-          projectBaseDir: backend  
           args: >
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=backend/target/site/jacoco/jacoco.xml
             -Dsonar.coverage.exclusions=**/models/**,**/repositories/**,**/config/**,**/Application.java
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
