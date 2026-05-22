@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
-import 'app/screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
-  runApp(const SupaNeighbourApp());
+  runApp(const MyApp());
 }
 
-class SupaNeighbourApp extends StatelessWidget {
-  const SupaNeighbourApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Supa Neighbour',
+      title: 'Super Neighbour',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2A9D8F),
-        ),
         useMaterial3: true,
+        fontFamily: 'Google Sans Flex',
       ),
-      home: const HomeScreen(),  
+      home: const SplashScreen(),
     );
   }
 }
