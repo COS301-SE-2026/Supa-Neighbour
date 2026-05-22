@@ -1,0 +1,42 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    # Treat specific warnings as info (less strict)
+    unused_import: warning
+    unused_local_variable: warning
+    deprecated_member_use: ignore # Deprecation warnings often come from third-party packages, not our code
+  # Deprecated features still work perfectly in current stable release
+   
+    prefer_const_constructors: ignore 
+    # const constructors can prevent hot reload from working properly making development slow, hence i ignore it for development purposes.
+    prefer_const_literals_to_create_immutables: ignore # Lists contain mixed static/dynamic content - const not feasible.
+    sort_pub_dependencies: ignore #honestly, having dependencies sorted is not a priority.
+    
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "build/**"
+    - "ios/**"
+    - "android/**"
+
+linter:
+  rules:
+    # Basic style
+    - always_declare_return_types
+    - camel_case_types
+    - prefer_single_quotes
+    - sort_pub_dependencies
+    
+    # Performance
+    - avoid_print
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_final_fields
+    
+    # Best practices
+    - avoid_empty_else
+    
+    # Disable some rules (optional)
+    - avoid_catches_without_on_clauses: false
+    - avoid_dynamic_calls: false

@@ -1,0 +1,26 @@
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui
+    enabled: true
+  packages-to-scan: com.yourapp.api
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/supadb
+    username: supauser
+    password: supapassword
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none #had to switch to none so it doesnt create new tables on top of the schema
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl #this helps stop it switching to snake_case
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+server:
+  port: 8080

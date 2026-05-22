@@ -1,0 +1,37 @@
+[33m5e39d95[m[33m ([m[1;31morigin/dev[m[33m)[m Merge branch 'dev' of https://github.com/COS301-SE-2026/Supa-Neighbour into dev
+[33m2702605[m Made changes to the ci-cd pipeline
+[33m57d604e[m Merge pull request #85 from COS301-SE-2026/feature/task-details-screen
+[33medd2a7b[m Added extra documenation
+[33m41b5b8e[m[33m ([m[1;31morigin/feature/task-details-screen[m[33m)[m Merge branch 'feature/task-details-screen' of https://github.com/COS301-SE-2026/Supa-Neighbour into feature/task-details-screen
+[33meeca2ac[m const linting error
+[33m0ceb368[m fixed imports in alphabetical order
+[33md6f1f98[m Merge branch 'dev' into feature/task-details-screen
+[33mecb1c9c[m Merge branch 'dev' of https://github.com/COS301-SE-2026/Supa-Neighbour into feature/task-details-screen
+[33m6fad1f4[m Fixing flutter analyze issues
+[33mb940c0e[m link MyTasksScreen to bottom navigation, update HomeScreen and CreateTaskScreen
+[33md71b8be[m added Task Completion Screen with rating and photo upload
+[33maf79d63[m added My Tasks Screen with Posted and Accepted tabs
+[33m0aa8168[m add Edit Task Screen
+[33mb2aa1b9[m resolve merge conflict in task_detail_screen.dart
+[33m892ba19[m Added documentation
+[33m59fe608[m  added fully functional Create Task Screen with form validation
+[33mbc9e84c[m Added more changes to the SonarQube files
+[33m3dccfb1[m backend: Added a readme for the testing backend and changed sonarQube files
+[33m3715e6c[m[33m ([m[1;31morigin/feature_auth_screens[m[33m)[m Merge pull request #67 from COS301-SE-2026/feature/unit-testing-frontend
+[33mbe5e4f8[m Merge branch 'dev' into feature/unit-testing-frontend
+[33mbba5ef8[m Merging conficts in screens folder
+[33mf90025c[m Merge branch 'feature/unit-testing-frontend' of https://github.com/COS301-SE-2026/Supa-Neighbour into feature/unit-testing-frontend
+[33m4ab5fe0[m removed the screens file again
+[33mdb93f95[m Added changes to the sonar files
+[33m97632cd[m Added placeholder files for unit test folders
+[33m1944afd[m enhanceed Home Screen with task cards, stat cards, and navigation
+[33m063bc24[m Added documentation for the widget and unit testing
+[33m871cede[m Added the needed code for widget testing
+[33m2905afb[m added Profile Screen placeholder
+[33m5a36f4b[m added Leaderboard Screen placeholder
+[33m3356002[m added Chat Screen placeholder
+[33me4b4430[m added Tasks Screen placeholder
+[33m6740612[m  added Create Task Screen placeholder
+[33mc0b2f20[m Added neccesary documentation to the code
+[33m52eeb06[m added BottomNavBar and HomeScreen, and restructured widgets folder
+[33m8996366[m added TaskDetailScreen and project frontend structure
