@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../components/logo_placeholder.dart';
 import '../../models/auth_session.dart';
 import '../../models/user_model.dart';
-import '../../models/user_model.dart';
 import '../home/home_screen.dart';
 
 class SignupOtherDetailsScreen extends StatefulWidget {
