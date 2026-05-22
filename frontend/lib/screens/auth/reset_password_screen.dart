@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../components/logo_placeholder.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -9,7 +10,8 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -61,7 +63,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreenRedirect()),
-              (route) => false,
+          (route) => false,
         );
       }
     });
@@ -118,22 +120,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                   SizedBox(height: screenHeight * 0.02),
 
-                  // Logo Placeholder
-                  Container(
-                    width: logoSize,
-                    height: logoSize,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.lock_reset,
-                        size: 60,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
+                  // Logo
+                  LogoPlaceholder(size: logoSize),
 
                   SizedBox(height: screenHeight * 0.03),
 
@@ -302,7 +290,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                       ),
                                       onPressed: () {
                                         setState(() {
-                                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                                          _obscureConfirmPassword =
+                                              !_obscureConfirmPassword;
                                         });
                                       },
                                     ),
@@ -314,7 +303,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                           if (_errorMessage.isNotEmpty)
                             Padding(
-                              padding: EdgeInsets.only(top: screenHeight * 0.02),
+                              padding: EdgeInsets.only(
+                                top: screenHeight * 0.02,
+                              ),
                               child: Text(
                                 _errorMessage,
                                 style: TextStyle(
@@ -339,21 +330,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               child: Center(
                                 child: _isLoading
                                     ? SizedBox(
-                                  width: buttonHeight * 0.4,
-                                  height: buttonHeight * 0.4,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
+                                        width: buttonHeight * 0.4,
+                                        height: buttonHeight * 0.4,
+                                        child: const CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
                                     : Text(
-                                  'Update',
-                                  style: TextStyle(
-                                    fontSize: fontSize,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                        'Update',
+                                        style: TextStyle(
+                                          fontSize: fontSize,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                               ),
                             ),
                           ),
@@ -404,7 +395,7 @@ class LoginScreenRedirect extends StatelessWidget {
         child: const Center(
           child : Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+            children: const [
               Icon(
                 Icons.check_circle,
                 size: 80,
@@ -422,10 +413,7 @@ class LoginScreenRedirect extends StatelessWidget {
               SizedBox(height: 10),
               Text(
                 'Redirecting to login...',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             ],
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../components/logo_placeholder.dart';
 import '../../models/auth_session.dart';
 import '../../models/user_model.dart';
 import '../home/home_screen.dart';
@@ -98,22 +99,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   SizedBox(height: screenHeight * 0.05),
 
-                  // Logo Placeholder
-                  Container(
-                    width: logoSize,
-                    height: logoSize,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
+                  // Logo - Using LogoPlaceholder (single, no duplicate)
+                  LogoPlaceholder(size: logoSize),
 
                   SizedBox(height: screenHeight * 0.04),
 

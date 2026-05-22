@@ -102,7 +102,7 @@ class _HomeContentState extends State<HomeContent> {
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Color(0xFF2A9D8F)),
             onPressed: () {
-              // TODO: Show notifications
+              // next feature
             },
           ),
         ],
@@ -164,8 +164,8 @@ class _HomeContentState extends State<HomeContent> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF2A9D8F).withValues(alpha: 0.1),
-            const Color(0xFFE9C46A).withValues(alpha:0.05),
+            const Color(0xFFCCCCCC).withValues(alpha: 0.2),
+            const Color(0xFFE9C46A).withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -216,7 +216,7 @@ class _HomeContentState extends State<HomeContent> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: const Color(0xFF2A9D8F).withValues(alpha:0.2),
+              color: const Color(0xFF2A9D8F).withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -511,7 +511,7 @@ class StatsPlaceholder extends StatelessWidget {
             Icon(
               Icons.bar_chart,
               size: 80,
-              color: const Color(0xFF2A9D8F).withValues(alpha:0.3),
+              color: const Color(0xFF2A9D8F).withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../components/loading_bar.dart';
-import '../components/splash_logo.dart';
 import '../components/splash_title.dart';
 import 'auth_screen.dart';
+import '../components/logo_placeholder.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -51,13 +51,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
           // Logo
           Positioned(
-            left: (screenWidth - (286 * scaleX)) / 2,
-            top: 620 * scaleY,
-            child: SplashLogo(
-              width: 286 * scaleX,
-              height: 286 * scaleY,
-            ),
-          ),
+  left: (screenWidth - (286 * scaleX)) / 2,
+  top: 620 * scaleY,
+  child: LogoPlaceholder(size: 286 * scaleX),
+),
 
           // Title
           Positioned(

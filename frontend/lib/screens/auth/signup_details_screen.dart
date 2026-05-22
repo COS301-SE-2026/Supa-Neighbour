@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../components/logo_placeholder.dart';
 import '../../models/user_model.dart';
 import 'signup_residential_screen.dart';
 
@@ -112,6 +113,7 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
     final buttonHeight = screenHeight * 0.07;
     final fontSize = screenWidth * 0.04;
     final smallFontSize = screenWidth * 0.035;
+    const logoSize = 100.0;
 
     return Scaffold(
       body: SafeArea(
@@ -151,22 +153,8 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
 
                   SizedBox(height: screenHeight * 0.02),
 
-                  // Logo Placeholder
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.person_outline,
-                        size: 50,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
+                  // Logo - Using LogoPlaceholder (single, no duplicate)
+                  LogoPlaceholder(size: logoSize),
 
                   SizedBox(height: screenHeight * 0.03),
 

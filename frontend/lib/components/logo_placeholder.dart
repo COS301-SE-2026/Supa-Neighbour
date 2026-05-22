@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LogoPlaceholder extends StatelessWidget {
   final double size;
@@ -10,20 +11,11 @@ class LogoPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SvgPicture.asset(
+      'assets/Logo.svg',
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        shape: BoxShape.circle,
-      ),
-      child: const Center(
-        child: Icon(
-          Icons.person,
-          size: 120,
-          color: Colors.grey,
-        ),
-      ),
+      fit: BoxFit.contain,
     );
   }
 }
