@@ -66,6 +66,7 @@ public class User {
      * Default constructor.
      */
     public User() {
+        // needed by jpa
     }
 
     /**
