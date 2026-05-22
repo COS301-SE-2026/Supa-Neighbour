@@ -37,7 +37,7 @@ public class Analytics {
      * Default constructor required by JPA.
      */
     public Analytics() {
-        // default constructor needed by jpa
+        //  needed by jpa
     }
 
     /**
