@@ -26,9 +26,13 @@ jobs:
       - name: Build backend
         run: |
           cd backend
-          mvn clean package -DskipTests -Dspring-boot.repackage.skip=true
+          mvn clean verify
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6 # v6.0.0
+        with:
+          args: >
+            -Dsonar.coverage.jacoco.xmlReportPaths=backend/target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.exclusions=**/models/**,**/repositories/**,**/config/**,**/Application.java
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
