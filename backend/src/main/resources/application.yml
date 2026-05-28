@@ -14,7 +14,9 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: none #had to switch to none so it doesnt create new tables on top of the schema
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl #this helps stop it switching to snake_case
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
