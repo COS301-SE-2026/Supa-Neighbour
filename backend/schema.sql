@@ -343,7 +343,7 @@ create table comments_table (
     comment_content text not null,
 
     created_at timestamp default current_timestamp,
-
+    updated_at timestamp null,
     foreign key (post_id)
         references posts_table(post_id)
         on delete cascade,
@@ -369,6 +369,8 @@ create table likes_table (
     comment_id int null,
 
     created_at timestamp default current_timestamp,
+
+    updated_at timestamp null,
 
     foreign key (user_id)
         references user_table(user_id)
@@ -428,3 +430,312 @@ on likes_table(post_id);
 
 create index idx_likes_comment
 on likes_table(comment_id);
+
+-- =============================================
+-- MOCK DATA
+-- COMMUNITY HELP SYSTEM
+-- =============================================
+
+-- =============================================
+-- 1. location table
+-- =============================================
+insert into location_table
+(location_center_point, location_radius, neighbourhood_id, neighbourhood_name)
+values
+(100, 15, 1, 'Riverside'),
+(200, 20, 2, 'Hillcrest'),
+(300, 25, 3, 'Downtown'),
+(400, 18, 4, 'Westlake'),
+(500, 30, 5, 'Greenfield');
+
+-- =============================================
+-- 2. rating table
+-- =============================================
+insert into rating_table
+(rating_review, total_xp_level, current_group)
+values
+('Excellent', 5000, 'Gold'),
+('Very Good', 3500, 'Silver'),
+('Good', 2000, 'Bronze'),
+('Average', 1000, 'Starter'),
+('Outstanding', 7000, 'Platinum');
+
+-- =============================================
+-- 3. badge table
+-- =============================================
+insert into badge_table
+(badge_id, badge_name, is_specialist, current_xp, rating_review)
+values
+('MED001', 'Medical Specialist', true, 4500, 'Excellent'),
+('PET001', 'Pet Care Helper', false, 2000, 'Good'),
+('TECH001', 'Tech Assistant', false, 1500, 'Average'),
+('TRANS001', 'Transport Volunteer', false, 3000, 'Very Good'),
+('HOME001', 'Home Repair Specialist', true, 6000, 'Outstanding');
+
+-- =============================================
+-- 4. task type table
+-- =============================================
+insert into task_type_table
+(type_description, associated_badge_id, needs_specialist, xp_worth)
+values
+('Medical Assistance', 'MED001', true, 500),
+('Pet Care', 'PET001', false, 200),
+('Technology Support', 'TECH001', false, 150),
+('Transportation Support', 'TRANS001', false, 250),
+('Home Repair', 'HOME001', true, 600);
+
+-- =============================================
+-- 5. address table
+-- =============================================
+insert into address_table
+(address_number, address_street, address_zip, neighbourhood_id)
+values
+(12, 'Oak Street', 2001, 1),
+(45, 'Maple Avenue', 2002, 2),
+(88, 'River Road', 2003, 3),
+(101, 'Hill Street', 2004, 4),
+(55, 'Green Lane', 2005, 5),
+(73, 'Sunset Boulevard', 2006, 1),
+(9, 'Lake View Drive', 2007, 2),
+(64, 'Main Street', 2008, 3),
+(120, 'Forest Way', 2009, 4),
+(37, 'Palm Crescent', 2010, 5);
+
+-- =============================================
+-- 6. user table
+-- =============================================
+insert into user_table
+(
+user_password,
+user_name,
+user_surname,
+user_email,
+user_phone_number,
+user_gender,
+user_dob,
+user_address_id,
+user_badge_id,
+user_rating_review,
+user_type
+)
+values
+('pass123', 'John', 'Smith', 'john@example.com', '5550101', 'Male', '1990-01-10', 1, 'MED001', 'Excellent', 'Helper'),
+
+('pass123', 'Sarah', 'Johnson', 'sarah@example.com', '5550102', 'Female', '1988-03-15', 2, 'PET001', 'Good', 'Helper'),
+
+('pass123', 'Michael', 'Brown', 'michael@example.com', '5550103', 'Male', '1995-07-21', 3, 'TECH001', 'Average', 'Helper'),
+
+('pass123', 'Emily', 'Davis', 'emily@example.com', '5550104', 'Female', '1992-11-30', 4, 'TRANS001', 'Very Good', 'Helper'),
+
+('pass123', 'David', 'Wilson', 'david@example.com', '5550105', 'Male', '1985-05-18', 5, 'HOME001', 'Outstanding', 'Helper'),
+
+('pass123', 'Olivia', 'Taylor', 'olivia@example.com', '5550106', 'Female', '2000-04-02', 6, null, 'Good', 'Dependent'),
+
+('pass123', 'James', 'Anderson', 'james@example.com', '5550107', 'Male', '1975-08-14', 7, null, 'Average', 'Dependent'),
+
+('pass123', 'Sophia', 'Thomas', 'sophia@example.com', '5550108', 'Female', '1998-09-22', 8, null, 'Very Good', 'Dependent'),
+
+('pass123', 'Daniel', 'Jackson', 'daniel@example.com', '5550109', 'Male', '1982-12-11', 9, null, 'Excellent', 'Dependent'),
+
+('pass123', 'Emma', 'White', 'emma@example.com', '5550110', 'Female', '1996-06-25', 10, null, 'Outstanding', 'Dependent');
+
+-- =============================================
+-- 7. helper table
+-- =============================================
+insert into helper_table
+(user_id, task_type_id, badge_id)
+values
+(1, 1, 'MED001'),
+(2, 2, 'PET001'),
+(3, 3, 'TECH001'),
+(4, 4, 'TRANS001'),
+(5, 5, 'HOME001');
+
+-- =============================================
+-- 8. dependent table
+-- =============================================
+insert into dependent_table
+(user_id, task_type_id)
+values
+(6, 1),
+(7, 4),
+(8, 3),
+(9, 2),
+(10, 5);
+
+-- =============================================
+-- 9. compatibility table
+-- =============================================
+insert into compatibility_table
+(compatibility_score, compatibility_color, dependent_id, helper_id)
+values
+(95, 'Green', 1, 1),
+(80, 'Yellow', 2, 4),
+(88, 'Green', 3, 3),
+(70, 'Orange', 4, 2),
+(99, 'Green', 5, 5);
+
+-- =============================================
+-- 10. admin table
+-- =============================================
+insert into admin_table
+(
+admin_password,
+admin_name,
+admin_surname,
+admin_email,
+admin_phone_number,
+admin_create_date,
+admin_access_level,
+user_id,
+admin_address_id
+)
+values
+('admin123', 'Alice', 'Miller', 'alice.admin@example.com', '5550201', '2024-01-01', 5, 1, 1),
+
+('admin123', 'Robert', 'Moore', 'robert.admin@example.com', '5550202', '2024-02-15', 4, 2, 2);
+
+-- =============================================
+-- 11. task invoice table
+-- =============================================
+insert into task_invoice_table
+(
+helper_id,
+dependent_id,
+is_immediate,
+location_id,
+task_type_id,
+needs_specialist,
+signed_admin_id,
+start_date,
+end_date,
+helper_badge_id,
+dependent_rating_review,
+helper_rating_review,
+admin_review,
+compatibility_id
+)
+values
+(1, 1, true, 1, 1, true, 1,
+'2026-05-01', '2026-05-01',
+'MED001',
+'Excellent',
+'Outstanding',
+'Excellent medical assistance provided.',
+1),
+
+(4, 2, false, 2, 4, false, 2,
+'2026-05-02', '2026-05-03',
+'TRANS001',
+'Very Good',
+'Very Good',
+'Reliable transport support.',
+2),
+
+(3, 3, false, 3, 3, false, 1,
+'2026-05-04', '2026-05-04',
+'TECH001',
+'Good',
+'Very Good',
+'Resolved device setup issues quickly.',
+3);
+
+-- =============================================
+-- 12. helper analytics table
+-- =============================================
+insert into helper_analytics_table
+(
+helper_type_id,
+user_id,
+task_type_id,
+compatibility_id,
+location_id,
+average_rating,
+average_giving_rating
+)
+values
+('HELPER_MED', 1, 1, 1, 1, 4.9, 4.8),
+('HELPER_TRANS', 4, 4, 2, 2, 4.5, 4.4),
+('HELPER_TECH', 3, 3, 3, 3, 4.7, 4.6);
+
+-- =============================================
+-- 13. dependent analytics table
+-- =============================================
+insert into dependent_analytics_table
+(
+dependent_type_id,
+user_id,
+task_type_id,
+total_tasks,
+location_id,
+average_rating,
+average_giving_rating
+)
+values
+('DEPENDENT_MED', 6, 1, 12, 1, 4.6, 4.7),
+('DEPENDENT_TRANS', 7, 4, 5, 2, 4.2, 4.0),
+('DEPENDENT_TECH', 8, 3, 8, 3, 4.8, 4.9);
+
+-- =============================================
+-- 14. analytics table
+-- =============================================
+insert into analytics_table
+(task_id, admin_id, helper_type_id, dependent_type_id)
+values
+(1, 1, 'HELPER_MED', 'DEPENDENT_MED'),
+(2, 2, 'HELPER_TRANS', 'DEPENDENT_TRANS'),
+(3, 1, 'HELPER_TECH', 'DEPENDENT_TECH');
+
+-- =============================================
+-- 15. posts table
+-- =============================================
+insert into posts_table
+(user_id, post_content, media_url)
+values
+(1, 'Just completed an elderly care session today!', 'https://example.com/eldercare.jpg'),
+
+(2, 'Pet care services available this weekend.', 'https://example.com/petcare.jpg'),
+
+(3, 'Offering free technology support for seniors.', null),
+
+(4, 'Transportation assistance available tomorrow morning.', null),
+
+(5, 'Finished repairing a leaking sink today.', 'https://example.com/repair.jpg');
+
+-- =============================================
+-- 16. comments table
+-- =============================================
+insert into comments_table
+(post_id, user_id, parent_comment_id, comment_content)
+values
+(1, 6, null, 'Thank you for helping the community!'),
+
+(1, 1, 1, 'Happy to help anytime.'),
+
+(2, 7, null, 'Are you available on Saturday?'),
+
+(2, 2, 3, 'Yes, Saturday afternoon works.'),
+
+(3, 8, null, 'I need help setting up my phone.'),
+
+(4, 9, null, 'Transportation support is greatly appreciated.'),
+
+(5, 10, null, 'Great repair work!');
+
+-- =============================================
+-- 17. likes table
+-- =============================================
+insert into likes_table
+(user_id, post_id, comment_id)
+values
+(6, 1, null),
+(7, 1, null),
+(8, 2, null),
+(9, 3, null),
+(10, 4, null),
+
+(1, null, 1),
+(2, null, 3),
+(3, null, 5),
+(4, null, 6),
+(5, null, 7);
