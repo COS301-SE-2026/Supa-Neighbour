@@ -28,7 +28,7 @@ create table rating_table (
 -- 3. badge table
 -- =============================================
 create table badge_table (
-    badge_id varchar(50) primary key,
+    badge_id varchar(50) primary key ,
     badge_name varchar(100) not null,
     is_specialist boolean default false,
     current_xp int default 0,
