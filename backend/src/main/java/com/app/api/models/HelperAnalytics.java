@@ -6,96 +6,96 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "helpertable")
+@Table(name = "helper_analytics_table")
 public class HelperAnalytics {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "helper_analytics_id_seq")
+    private int helperAnalyticsid;
 
-    @Column(name = "helperid")
-    private int helperId;
+    @OneToOne
+    @JoinColumn(name = "helper_id")
+    private Helper helperid;
 
-    @Column(name = "tasktypeid")
-    private int taskTypeId;
+    @OneToMany
+    @JoinColumn(name = "task_type_id")
+    private TaskType taskTypeid;
 
-    @Column(name = "locationid")
-    private int locationId;
+    @OneToMany
+    @JoinColumn(name = "location_id")
+    private Location locationid;
 
-    @Column(name = "compatibilityid")
-    private int compatibilityId;
+    @OneToMany
+    @JoinColumn(name = "compatibility_id")
+    private Compatibility compatibilityid;
 
-    @Column(name = "locationid")
-    private int locationid;
-
-    @Column(name = "averagerating")
+    @Column(name = "average_rating")
     private float averageRating;
 
-    @Column(name = "averagegivingrating")
+    @Column(name = "average_giving_rating")
     private float averageGivingRating;
 
     public HelperAnalytics() {
         // Default constructor
     }
 
-    public HelperAnalytics(int helperId, int taskTypeId, int locationId, int compatibilityId, int locationid, float averageRating, float averageGivingRating) {
-        this.helperId = helperId;
-        this.taskTypeId = taskTypeId;
-        this.locationId = locationId;
-        this.compatibilityId = compatibilityId;
+    public HelperAnalytics(int helperAnalyticsid,Helper helperid, TaskType taskTypeid, Location locationid, Compatibility compatibilityid, float averageRating, float averageGivingRating) {
+        this.helperid=helperid;
+        this.helperAnalyticsid = helperAnalyticsid;
+        this.taskTypeid = taskTypeid;
         this.locationid = locationid;
+        this.compatibilityid = compatibilityid;
         this.averageRating = averageRating;
         this.averageGivingRating = averageGivingRating;
     }
 
-    public int getId() {
-        return id;
+    public int getHelperAnalyticsid() {
+        return helperAnalyticsid;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setid(int helperAnalyticsid) {
+        this.helperAnalyticsid = helperAnalyticsid;
     }
 
-    public int getHelperId() {
-        return helperId;
+    public Helper getHelperid() {
+        return helperid;
     }
 
-    public void setHelperId(int helperId) {
-        this.helperId = helperId;
+    public void setHelperid(Helper helperid) {
+        this.helperid = helperid;
     }
 
-    public int getTaskTypeId() {
-        return taskTypeId;
+    public TaskType getTaskTypeid() {
+        return taskTypeid;
     }
 
-    public void setTaskTypeId(int taskTypeId) {
-        this.taskTypeId = taskTypeId;
+    public void setTaskTypeId(TaskType taskTypeid) {
+        this.taskTypeid = taskTypeid;
     }
 
-    public int getLocationId() {
-        return locationId;
-    }
-
-    public void setLocationId(int locationId) {
-        this.locationId = locationId;
-    }
-
-    public int getCompatibilityId() {
-        return compatibilityId;
-    }
-
-    public void setCompatibilityId(int compatibilityId) {
-        this.compatibilityId = compatibilityId;
-    }
-
-    public int getLocationid() {
+    public Location getLocationid() {
         return locationid;
     }
 
-    public void setLocationid(int locationid) {
+    public void setLocationId(Location locationid) {
         this.locationid = locationid;
+    }
+
+    public Compatibility getCompatibilityid() {
+        return compatibilityid;
+    }
+
+    public void setCompatibilityId(Compatibility compatibilityid) {
+        this.compatibilityid = compatibilityid;
     }
 
     public float getAverageRating() {

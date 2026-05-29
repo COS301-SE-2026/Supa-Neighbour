@@ -7,42 +7,52 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "locationtable")
+@Table(name = "location_table")
 public class Location {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "location_id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "location_id_seq")
+    private int locationid;
 
-    @Column(name = "locationcentrepoint")
-    private int locationcentrepoint;
-    @Column(name = "locationradius")
+    @Column(name = "location_centre_point")
+    private int locationCentrePoint;
+
+    @Column(name = "location_radius")
     private int locationRadius;
-    @Column(name = "neighbourhoodid")
-    private int neighbourhoodId;
-    @Column(name = "neighbourhoodname")
-    private int neighbourhoodName;
+
+    @Column(name = "neighbourhood_id")
+    private int neighbourhoodid;
+
+    @Column(name = "neighbourhood_name")
+    private String neighbourhoodName;
 
     public Location() {
     }
 
-    public Location(int locationRadius, int neighbourhoodId, int neighbourhoodName) {
+    public Location(int locationid,int locationRadius,int locationCentrePoint, int neighbourhoodid, String neighbourhoodName) {
+        this.locationCentrePoint=locationCentrePoint;
+        this.locationid=locationid;
         this.locationRadius = locationRadius;
-        this.neighbourhoodId = neighbourhoodId;
+        this.neighbourhoodid = neighbourhoodid;
         this.neighbourhoodName = neighbourhoodName;
     }
     
-     public int getId() {
-        return id;
+     public int getLocationid() {
+        return locationid;
     }
 
-    public int getLocationcentrepoint() {
-        return locationcentrepoint;
+    public int getLocationCentrePoint() {
+        return locationCentrePoint;
     }
 
-    public void setLocationcentrepoint(int locationcentrepoint) {
-        this.locationcentrepoint = locationcentrepoint;
+    public void setLocationcentrepoint(int locationCentrePoint) {
+        this.locationCentrePoint = locationCentrePoint;
     }
 
     public int getLocationRadius() {
@@ -53,19 +63,19 @@ public class Location {
         this.locationRadius = locationRadius;
     }
 
-    public int getNeighbourhoodId() {
-        return neighbourhoodId;
+    public int getNeighbourhoodid() {
+        return neighbourhoodid;
     }
 
-    public void setNeighbourhoodId(int neighbourhoodId) {
-        this.neighbourhoodId = neighbourhoodId;
+    public void setNeighbourhoodid(int neighbourhoodid) {
+        this.neighbourhoodid = neighbourhoodid;
     }
 
-    public int getNeighbourhoodName() {
+    public String getNeighbourhoodName() {
         return neighbourhoodName;
     }
 
-    public void setNeighbourhoodName(int neighbourhoodName) {
+    public void setNeighbourhoodName(String neighbourhoodName) {
         this.neighbourhoodName = neighbourhoodName;
     }
 

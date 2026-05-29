@@ -7,43 +7,52 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "badgestable")
+@Table(name = "badges_table")
 public class Badges {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "badgeid")
-    private int badgeId;
-    @Column(name = "badgename")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "badge_id_seq")
+    @Column(name = "badge_id")
+    private int badgeid;
+
+    @Column(name = "badge_name")
     private String badgeName;
 
-    @Column(name = "isspecialist")
+    @Column(name = "is_specialist")
     private String description;
 
-    @Column(name = "currentxp")
+    @Column(name = "current_xp")
     private int xpReward;
 
-    @Column(name = "ratingid")
-    private String ratingId;
+    @OneToMany
+    @JoinColumn(name = "rating_id")
+    private Ratings ratingid;
 
     public Badges() {
     }
 
-    public Badges(String badgeName, String description, int xpReward, String ratingId) {
+    public Badges(int badgeid,String badgeName, String description, int xpReward, Ratings ratingid) {
+        this.badgeid=badgeid;
         this.badgeName = badgeName;
         this.description = description;
         this.xpReward = xpReward;
-        this.ratingId = ratingId;
+        this.ratingid = ratingid;
     }
 
-    public int getBadgeId() {
-        return badgeId;
+    public int getBadgeid() {
+        return badgeid;
     }
 
-    public void setBadgeId(int badgeId) {
-        this.badgeId = badgeId;
+    public void setBadgeid(int badgeid) {
+        this.badgeid = badgeid;
     }
 
     public String getBadgeName() {
@@ -70,12 +79,12 @@ public class Badges {
         this.xpReward = xpReward;
     }
 
-    public String getRatingId() {
-        return ratingId;
+    public Ratings getRatingId() {
+        return ratingid;
     }
 
-    public void setRatingId(String ratingId) {
-        this.ratingId = ratingId;
+    public void setRatingId(Ratings ratingid) {
+        this.ratingid = ratingid;
     }
     
 }

@@ -7,44 +7,65 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "usertable")
+@Table(name = "user_table")
 public class User 
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "userid")
-    private int id;
-    @Column(name = "username")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_id_seq")
+    @Column(name = "user_id")
+    private int userid;
+
+    @Column(name = "user_name")
     private String firstName;
-    @Column(name = "usersurname")
+
+    @Column(name = "user_surname")
     private String lastName;
-    @Column(name = "userpassword")
+
+    @Column(name = "user_password")
     private String password;
-    @Column(name = "useremail") 
+
+    @Column(name = "user_email") 
     private String email;
-    @Column(name = "userphonenumber")
+
+    @Column(name = "user_phone_number")
     private String phoneNumber;
-    @Column(name = "userdob")
+
+    @Column(name = "user_dob")
     private Date dateOfBirth;
-    @Column(name = "usergender")
+
+    @Column(name = "user_gender")
     private String gender;
-    @Column(name = "useraddressid")
-    private int addressId;
-    @Column(name = "userbadgeid")
-    private String badgeId;
-    @Column(name = "userratingid")
-    private String ratingId;
-    @Column(name = "usertypeid")
-    private String typeId;
+
+    @OneToOne
+    @JoinColumn(name = "user_address_id")
+    private Address addressid;
+
+    @OneToMany
+    @JoinColumn(name = "user_badge_id")
+    private Badges badgeid;
+
+    @OneToOne
+    @JoinColumn(name = "user_rating_review")
+    private Ratings ratingid;
+
+    @Column(name = "user_type_id")
+    private String typeid;
 
     public User() {
     }
 
-    public User(int id, String firstName, String lastName, String password, String email, String phoneNumber, Date dateOfBirth, String gender, int addressId, String badgeId, String ratingId, String typeId) {
-        this.id = id;
+    public User(int userid, String firstName, String lastName, String password, String email, String phoneNumber, Date dateOfBirth, String gender, Address addressid, Badges badgeid, Ratings ratingid, String typeid) {
+        this.userid = userid;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
@@ -52,14 +73,14 @@ public class User
         this.phoneNumber = phoneNumber;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
-        this.addressId = addressId;
-        this.badgeId = badgeId;
-        this.ratingId = ratingId;
-        this.typeId = typeId;
+        this.addressid = addressid;
+        this.badgeid = badgeid;
+        this.ratingid = ratingid;
+        this.typeid = typeid;
     }
 
-    public int getId() {
-        return id;
+    public int getUserid() {
+        return userid;
     }
 
     public String getFirstName() {
@@ -89,24 +110,24 @@ public class User
         return gender;      
     }
 
-    public int getAddressId() {
-        return addressId;
+    public Address getAddressId() {
+        return addressid;
     }
 
-    public String getBadgeId() {
-        return badgeId;
+    public Badges getBadgeId() {
+        return badgeid;
     }
 
-    public String getRatingId() {
-        return ratingId;
+    public Ratings getRatingId() {
+        return ratingid;
     }
 
     public String getTypeId() {
-        return typeId;
+        return typeid;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setId(int userid) {
+        this.userid = userid;
     }
 
     public void setFirstName(String firstName) {
@@ -137,19 +158,19 @@ public class User
         this.gender = gender;
     }
 
-    public void setAddressId(int addressId) {
-        this.addressId = addressId;
+    public void setAddressId(Address addressid) {
+        this.addressid = addressid;
     }
 
-    public void setBadgeId(String badgeId) {
-        this.badgeId = badgeId;
+    public void setBadgeId(Badges badgeid) {
+        this.badgeid = badgeid;
     }
 
-    public void setRatingId(String ratingId) {
-        this.ratingId = ratingId;
+    public void setRatingId(Ratings ratingid) {
+        this.ratingid = ratingid;
     }
 
-    public void setTypeId(String typeId) {
-        this.typeId = typeId;
+    public void setTypeId(String typeid) {
+        this.typeid = typeid;
     }
 }

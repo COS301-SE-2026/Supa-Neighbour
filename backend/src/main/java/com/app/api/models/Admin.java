@@ -6,38 +6,55 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "adminstable")
+@Table(name = "adminst_able")
 public class Admin {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "adminid")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "admin_id_seq")
+    @Column(name = "admin_id")
     private int adminid;
-    @Column(name = "adminpassword")
+
+    @Column(name = "admin_password")
     private String adminpassword;
-    @Column(name = "email")
+
+    @Column(name = "admin_email")
     private String email;
-    @Column(name = "adminname")
+
+    @Column(name = "admin_name")
     private String adminname;
-    @Column(name = "adminsurname")
+
+    @Column(name = "admin_surname")
     private String adminsurname;
-    @Column(name = "adminphonenumber")
+
+    @Column(name = "admin_phone_number")
     private String adminphonenumber;
-    @Column(name = "admincreatedate")
+
+    @Column(name = "admin_create_date")
     private Date admincreatedate;
-    @Column(name = "adminaccesslevel")
+
+    @Column(name = "admin_access_level")
     private int adminaccesslevel;
-    @Column(name = "adminaddressid")
-    private int adminaddressid;
-    @Column(name = "userid")
-    private int userid;
+
+    @OneToOne
+    @JoinColumn(name = "admin_address_id")
+    private Address adminaddressid;
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User userid;
 
     public Admin() {
     }
 
-    public Admin(int adminid, String adminpassword, String email, String adminname, String adminsurname, String adminphonenumber, Date admincreatedate, int adminaccesslevel, int adminaddressid, int userid) {
+    public Admin(int adminid, String adminpassword, String email, String adminname, String adminsurname, String adminphonenumber, Date admincreatedate, int adminaccesslevel, Address adminaddressid, User userid) {
         this.adminid = adminid;
         this.adminpassword = adminpassword;
         this.email = email;
@@ -49,6 +66,16 @@ public class Admin {
         this.adminaddressid = adminaddressid;
         this.userid = userid;
 
+    }
+
+    public User getUser()
+    {
+        return userid;
+    }
+
+    void getUser(User userid)
+    {
+        this.userid=userid;
     }
 
     public int getAdminid() {
@@ -115,11 +142,11 @@ public class Admin {
         this.adminaccesslevel = adminaccesslevel;
     }
 
-    public int getAdminaddressid() {
+    public Address getAdminaddressid() {
         return adminaddressid;
     }
 
-    public void setAdminaddressid(int adminaddressid) {
+    public void setAdminaddressid(Address adminaddressid) {
         this.adminaddressid = adminaddressid;
     }
     

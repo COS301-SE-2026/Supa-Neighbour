@@ -28,14 +28,14 @@ create table rating_table (
 -- 3. badge table
 -- =============================================
 create table badge_table (
-    badge_id varchar(50) primary key ,
+    badge_id int primary key ,
     badge_name varchar(100) not null,
     is_specialist boolean default false,
     current_xp int default 0,
-    rating_review varchar(50),
+    rating_id int,
 
-    foreign key (rating_review)
-        references rating_table(rating_review)
+    foreign key (rating_id)
+        references rating_table(rating_id)
 );
 
 -- =============================================
@@ -44,7 +44,7 @@ create table badge_table (
 create table task_type_table (
     task_type_id int generated always as identity primary key,
     type_description varchar(255) not null,
-    associated_badge_id varchar(50),
+    associated_badge_id int,
     needs_specialist boolean default false,
     xp_worth int,
 
@@ -80,8 +80,8 @@ create table user_table (
     user_dob date,
 
     user_address_id int,
-    user_badge_id varchar(50),
-    user_rating_review varchar(50),
+    user_badge_id int,
+    user_rating_id int,
 
     user_type varchar(20),
 
@@ -91,8 +91,8 @@ create table user_table (
     foreign key (user_badge_id)
         references badge_table(badge_id),
 
-    foreign key (user_rating_review)
-        references rating_table(rating_review)
+    foreign key (user_rating_id)
+        references rating_table(rating_id)
 );
 
 -- =============================================
@@ -102,7 +102,7 @@ create table helper_table (
     helper_id int generated always as identity primary key,
     user_id int not null,
     task_type_id int,
-    badge_id varchar(50),
+    badge_id int,
 
     foreign key (user_id)
         references user_table(user_id),
@@ -234,7 +234,7 @@ create table task_invoice_table (
 -- 12. helper analytics table
 -- =============================================
 create table helper_analytics_table (
-    helper_type_id varchar(50) primary key,
+    helper_analytics_id varchar(50) primary key,
 
     user_id int,
     task_type_id int,
@@ -261,7 +261,7 @@ create table helper_analytics_table (
 -- 13. dependent analytics table
 -- =============================================
 create table dependent_analytics_table (
-    dependent_type_id varchar(50) primary key,
+    dependent_analytics_id varchar(50) primary key,
 
     user_id int,
     task_type_id int,

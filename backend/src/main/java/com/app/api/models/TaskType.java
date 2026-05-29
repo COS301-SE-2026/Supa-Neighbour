@@ -7,28 +7,37 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "tasktypetable")
+@Table(name = "task_type_table")
 public class TaskType {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "tasktypeid")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_type_id_seq")
+    @Column(name = "task_type_id")
     private int tasktypeid;
-    @Column(name = "associatedbadheid")
-    private String typeName;
-    @Column(name = "typedescription")
+
+    @Column(name = "associated_badge_id")
+    private Badges badgeid;
+
+    @Column(name = "type_description")
     private String description;
-    @Column(name = "needsspecialist")
+
+    @Column(name = "needs_specialist")
     private boolean needsSpecialist;
-    @Column(name = "xpworth")
+
+    @Column(name = "xp_worth")
     private int xpWorth;
 
     public TaskType() {
     }
 
-    public TaskType(String typeName, String description, boolean needsSpecialist, int xpWorth) {
-        this.typeName = typeName;
+    public TaskType(int tasktypeid,Badges badgeid, String description, boolean needsSpecialist, int xpWorth) {
+        this.tasktypeid = tasktypeid;
+        this.badgeid=badgeid;
         this.description = description;
         this.needsSpecialist = needsSpecialist;
         this.xpWorth = xpWorth;
@@ -37,9 +46,7 @@ public class TaskType {
         public int getTasktypeid() {
             return tasktypeid;
         }
-        public String getTypeName() {
-            return typeName;
-        }
+
         public String getDescription() {
             return description;
         }
@@ -49,9 +56,16 @@ public class TaskType {
         public int getXpWorth() {
             return xpWorth;
         }
-        public void setTypeName(String typeName) {
-            this.typeName = typeName;
+
+        public Badges getBadgeid(){
+            return badgeid;
         }
+
+        public void setBadgeid(Badges badgeid){
+            this.badgeid=badgeid;
+        }
+
+
         public void setDescription(String description) {
             this.description = description;
         }

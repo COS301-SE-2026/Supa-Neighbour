@@ -7,27 +7,40 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "dependentanalyticstable")
+@Table(name = "dependent_analytics_table")
 
 public class DependentAnalytics {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "dependentanalyticsid")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "dependent_analytics_id_seq")
+    @Column(name = "dependent_analytics_id")
     private int dependentanalyticsid;
-    @Column(name = "userid")
+
+    @ManyToMany
+    @JoinColumn(name = "user_id")
     private int userid;
-    @Column(name = "tasktypeid")
+
+    @Column(name = "tasktype_id")
     private int tasktypeid;
-    @Column(name = "totaltasks")
+
+    @Column(name = "total_tasks")
     private int totaltasks;
-    @Column(name = "locationid")
+
+    @Column(name = "location_id")
     private int locationid;
-    @Column(name = "aveeragerating")
+
+    @Column(name = "average_rating")
     private float aveeragerating;
-    @Column(name = "averagegivingrating")
+
+    @Column(name = "average_giving_rating")
     private float averagegivingrating;
 
     public DependentAnalytics(int dependentanalyticsid, int userid, int tasktypeid, int totaltasks, int locationid, float aveeragerating, float averagegivingrating) {

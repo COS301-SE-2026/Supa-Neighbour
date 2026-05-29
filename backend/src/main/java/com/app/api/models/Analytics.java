@@ -6,30 +6,41 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "analyticstable")
+@Table(name = "analytics_table")
 
 public class Analytics {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "analyticsid")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "analytics_id_seq")
+    @Column(name = "analytics_id")
     private int analyticsid;
-    @Column(name = "taskid")
-    private int taskid;
-    @Column(name = "adminid")
-    private String adminid;
-    @Column(name = "helpertypeid")
-    private String helpertypeid;
-    @Column(name = "dependenttypeid")
-    private String dependenttypeid;
+
+    @OneToMany
+    @JoinColumn(name = "task_id")
+    private TaskInvoice taskid;
+
+    @Column(name = "admin_id")
+    private Admin adminid;
+
+    @Column(name = "helper_type_id")
+    private HelperAnalytics helpertypeid;
+
+    @Column(name = "dependent_type_id")
+    private DependentAnalytics dependenttypeid;
 
     public Analytics() {
     }
 
-    public Analytics(int analyticsid, int taskid, String adminid, String helpertypeid,String dependenttypeid) {
+    public Analytics(int analyticsid, TaskInvoice taskid, Admin adminid, HelperAnalytics helpertypeid,DependentAnalytics dependenttypeid) {
         this.analyticsid = analyticsid;
         this.taskid = taskid;
         this.adminid = adminid;
@@ -45,35 +56,35 @@ public class Analytics {
         this.analyticsid = analyticsid;
     }
 
-    public int getTaskid() {
+    public TaskInvoice getTaskid() {
         return taskid;
     }   
 
-    public void setTaskid(int taskid) {
+    public void setTaskid(TaskInvoice taskid) {
         this.taskid = taskid;
     }
 
-    public String getAdminid() {
+    public Admin getAdminid() {
         return adminid;
     }
 
-    public void setAdminid(String adminid) {
+    public void setAdminid(Admin adminid) {
         this.adminid = adminid;
     }
 
-    public String getHelpertypeid() {
+    public HelperAnalytics getHelpertypeid() {
         return helpertypeid;
     }
 
-    public void setHelpertypeid(String helpertypeid) {
+    public void setHelpertypeid(HelperAnalytics helpertypeid) {
         this.helpertypeid = helpertypeid;
     }
 
-    public String getDependenttypeid() {
+    public DependentAnalytics getDependenttypeid() {
         return dependenttypeid;
     }
 
-    public void setDependenttypeid(String dependenttypeid) {
+    public void setDependenttypeid(DependentAnalytics dependenttypeid) {
         this.dependenttypeid = dependenttypeid;
     }
 

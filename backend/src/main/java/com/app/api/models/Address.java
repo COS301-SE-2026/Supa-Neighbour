@@ -1,41 +1,55 @@
 package com.app.api.models;
 import java.sql.Date;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "addresstable")
+@Table(name = "address_table")
 public class Address {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "addressid")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "address_id_seq")
+    @Column(name = "address_id")
     private int addressid;
-    @Column(name = "addressnumber")
+
+    @Column(name = "address_number")
     private int streetNumber;
-    @Column(name = "addressstreet")
+
+    @Column(name = "address_street")
     private String street;
-    @Column(name = "addresszipcode")
+
+    @Column(name = "address_zip")
     private int zipcode;
-    @Column(name = "neighbourhoodId`")
-    private int neighbourhoodId;
-    @Column(name = "residentid")
+
+    @OneToOne
+    @JoinColumn(name = "neighbourhood_id")
+    private Location neighbourhoodid;
+
+    @Column(name = "resident_id")
     private int residentid;
 
     public Address() {
     }
 
-    public Address(int addressid, int streetNumber, String street, int zipcode, int neighbourhoodId, int residentid) {
+    public Address(int addressid, int streetNumber, String street, int zipcode, Location neighbourhoodid, int residentid) {
         this.addressid = addressid;
         this.streetNumber = streetNumber;
         this.street = street;
         this.zipcode = zipcode;
-        this.neighbourhoodId = neighbourhoodId;
+        this.neighbourhoodid = neighbourhoodid;
         this.residentid = residentid;
     }
 
@@ -71,12 +85,12 @@ public class Address {
         this.zipcode = zipcode;
     }
 
-    public int getNeighbourhoodId() {
-        return neighbourhoodId;
+    public Location getNeighbourhoodid() {
+        return neighbourhoodid;
     }
 
-    public void setNeighbourhoodId(int neighbourhoodId) {
-        this.neighbourhoodId = neighbourhoodId;
+    public void setNeighbourhoodid(Location neighbourhoodid) {
+        this.neighbourhoodid = neighbourhoodid;
     }
 
     public int getResidentid() {

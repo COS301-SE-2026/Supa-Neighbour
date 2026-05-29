@@ -7,34 +7,38 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "ratingstable")
+@Table(name = "ratings_table")
 public class Ratings {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ratingid")
-    private int ratingId;
-    @Column(name = "ratingreview")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ratings_id_seq")
+    @Column(name = "rating_id")
+    private int ratingid;
+    @Column(name = "rating_review")
     private String ratingReview;
-    @Column(name = "totalxplevel")
+    @Column(name = "total_xp_level")
     private int totalXpLevel;
-    @Column(name = "currentgroup")
+    @Column(name = "current_group")
     private String currentGroup;
 
-    public Ratings(int ratingId, String ratingReview, int totalXpLevel, String currentGroup) {
-        this.ratingId = ratingId;
+    public Ratings(int ratingid, String ratingReview, int totalXpLevel, String currentGroup) {
+        this.ratingid = ratingid;
         this.ratingReview = ratingReview;
         this.totalXpLevel = totalXpLevel;
         this.currentGroup = currentGroup;
     }
 
     public int getRatingId() {
-        return ratingId;
+        return ratingid;
     }
 
-    public void setRatingId(int ratingId) {
-        this.ratingId = ratingId;
+    public void setRatingId(int ratingid) {
+        this.ratingid = ratingid;
     }
 
     public String getRatingReview() {

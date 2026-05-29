@@ -7,20 +7,24 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
 @Table(name = "compatibilitytable")
 public class Compatibility {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "compatibility_id_seq")
     @Column(name = "compatibilityid")
-    private int id;
+    private int compatibilityid;
 
     @Column(name = "helperid")
-    private int helperId;
+    private Helper helperid;
 
     @Column(name = "dependentid")
-    private int dependentId;
+    private Dependent dependentid;
 
     @Column(name = "compatibilityscore")
     private int compatibilityScore;
@@ -31,39 +35,40 @@ public class Compatibility {
     public Compatibility() {
     }
 
-    public Compatibility(int helperId, int dependentId, int compatibilityScore, String compatibilityColour) {
-        this.helperId = helperId;
-        this.dependentId = dependentId;
+    public Compatibility(int compatibilityid,Helper helperid, Dependent dependentid, int compatibilityScore, String compatibilityColour) {
+        this.compatibilityid=compatibilityid;
+        this.helperid = helperid;
+        this.dependentid = dependentid;
         this.compatibilityScore = compatibilityScore;
         this.compatibilityColour = compatibilityColour;
     }
 
-    public int getId() {
-        return id;
+    public int getCompatibilityid() {
+        return compatibilityid;
     }
 
-    public int getHelperId() {
-        return helperId;
+    public Helper getHelperid() {
+        return helperid;
     }
 
-    public int getDependentId() {
-        return dependentId;
+    public Dependent getDependentId() {
+        return dependentid;
     }
 
     public int getCompatibilityScore() {
         return compatibilityScore;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setCompadibilityid(int compatibilityid) {
+        this.compatibilityid = compatibilityid;
     }
 
-    public void setHelperId(int helperId) {
-        this.helperId = helperId;
+    public void setHelperid(Helper helperid) {
+        this.helperid = helperid;
     }
 
-    public void setDependentId(int dependentId) {
-        this.dependentId = dependentId;
+    public void setDependentid(Dependent dependentid) {
+        this.dependentid = dependentid;
     }
 
     public void setCompatibilityScore(int compatibilityScore) {

@@ -6,70 +6,85 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "helpertable")
+@Table(name = "helper_table")
 public class Helper {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "helperid")
-    private int id;
-    @Column(name = "userid")
-    private String userId;
-    @Column(name = "tasktypeid")
-    private String taskTypeId;
-    @Column(name = "badgeid")
-    private String badgeId;
-    @Column(name = "compatibilityid")
-    private String compatibilityId;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "helper_id_seq")
+    @Column(name = "helper_id")
+    private int helperid;
 
-    public Helper(int id, String userId, String taskTypeId, String badgeId, String compatibilityId) {
-        this.id = id;
-        this.userId = userId;
-        this.taskTypeId = taskTypeId;
-        this.badgeId = badgeId;
-        this.compatibilityId = compatibilityId;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User userid;
+
+    @OneToMany
+    @JoinColumn(name = "tasktype_id")
+    private TaskType taskTypeid;
+
+    @OneToMany
+    @JoinColumn(name = "badge_id")
+    private Badges badgeid;
+
+    @OneToMany
+    @JoinColumn(name = "compatibility_id")
+    private Compatibility compatibilityid;
+
+    public Helper(int helperid, User userid, TaskType taskTypeid, Badges badgeid, Compatibility compatibilityid) {
+        this.helperid = helperid;
+        this.userid = userid;
+        this.taskTypeid = taskTypeid;
+        this.badgeid = badgeid;
+        this.compatibilityid = compatibilityid;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setHelperid(int helperid) {
+        this.helperid = helperid;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUserId(User userid) {
+        this.userid = userid;
     }
 
-    public int getId() {
-        return id;
+    public int getHelperid() {
+        return helperid;
     }
 
-    public String getUserId() {
-        return userId;
+    public User getUserid() {
+        return userid;
     }
 
-    public String getTaskTypeId() {
-        return taskTypeId;
+    public TaskType getTaskTypeid() {
+        return taskTypeid;
     }
 
-    public String getBadgeId() {
-        return badgeId;
+    public Badges getBadgeid() {
+        return badgeid;
     }
 
-    public String getCompatibilityId() {
-        return compatibilityId;
+    public Compatibility getCompatibilityid() {
+        return compatibilityid;
     }
 
-    public void setTaskTypeId(String taskTypeId) {
-        this.taskTypeId = taskTypeId;
+    public void setTaskTypeid(TaskType taskTypeid) {
+        this.taskTypeid = taskTypeid;
     }
 
-    public void setBadgeId(String badgeId) {
-        this.badgeId = badgeId;
+    public void setBadgeid(Badges badgeid) {
+        this.badgeid = badgeid;
     }
 
-    public void setCompatibilityId(String compatibilityId) {
-        this.compatibilityId = compatibilityId;
+    public void setCompatibilityid(Compatibility compatibilityid) {
+        this.compatibilityid = compatibilityid;
     }
     
 }

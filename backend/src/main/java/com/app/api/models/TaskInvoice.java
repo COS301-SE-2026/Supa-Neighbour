@@ -6,48 +6,75 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 @Entity
-@Table(name = "taskinvoicetable")
+@Table(name = "task_invoice_table")
 public class TaskInvoice {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "taskinvoiceid")
-    private int id;
-    @Column(name = "helperid")
-    private int helperid;
-    @Column(name = "dependentid")
-    private int dependentid;
-    @Column(name = "isImmediate")
-    private boolean isImmediate;
-    @Column(name = "locationid")
-    private int locationid;
-    @Column(name = "tasktypeid")
-    private int tasktypeid;
-    @Column(name = "needsspecialist")
-    private boolean needsspecialist;
-    @Column(name = "signedadminid")
-    private int signedadminid;
-    @Column(name = "startdate")
-    private Date startdate;
-    @Column(name = "enddate")
-    private Date enddate;
-    @Column(name = "helperbadgeid")
-    private String helperbadgeid;
-    @Column(name = "dependentbadgeid")
-    private String dependentbadgeid;
-    @Column(name = "dependentratingid")
-    private String dependentratingid;
-    @Column(name = "helperratingid")
-    private String helperratingid;
-    @Column(name = "adminreview")
-    private String adminreview;
-    @Column(name = "compatibilityid")
-    private int compatibilityid;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_invoice_id_seq")
+    @Column(name = "task_id")
+    private int taskid;
 
-    public TaskInvoice(int id, int helperid, int dependentid, boolean isImmediate, int locationid, int tasktypeid, boolean needsspecialist, int signedadminid, Date startdate, Date enddate, String helperbadgeid, String dependentbadgeid, String dependentratingid, String helperratingid, String adminreview, int compatibilityid) {
-        this.id = id;
+    @OneToOne
+    @JoinColumn(name = "helper_id")
+    private Helper helperid;
+
+    @OneToOne
+    @JoinColumn(name = "dependent_id")
+    private Dependent dependentid;
+
+    
+    @Column(name = "is_immediate")
+    private boolean isImmediate;
+
+    @OneToOne
+    @JoinColumn(name = "location_id")
+    private Location locationid;
+
+    @OneToMany
+    @JoinColumn(name = "task_type_id")
+    private TaskType tasktypeid;
+
+    @Column(name = "needs_specialist")
+    private boolean needsspecialist;
+
+    @OneToOne
+    @JoinColumn(name = "signed_admin_id")
+    private Admin signedadminid;
+
+    @Column(name = "start_date")
+    private Date startdate;
+
+    @Column(name = "end_date")
+    private Date enddate;
+
+    @OneToMany
+    @JoinColumn(name = "helper_badge_id")
+    private Badges helperbadgeid;
+
+    @OneToMany
+    @JoinColumn(name = "dependent_rating_review")
+    private String dependentRatingreview;
+
+    @Column(name = "helper_rating_review")
+    private String helperRatingreview;
+
+    @Column(name = "admin_review")
+    private String adminReview;
+
+    @Column(name = "compatibility_id")
+    private Compatibility compatibilityid;
+
+    public TaskInvoice(int taskid, Helper helperid, Dependent dependentid, boolean isImmediate, Location locationid, TaskType tasktypeid, boolean needsspecialist, Admin signedadminid, Date startdate, Date enddate, Badges helperbadgeid, String dependentRatingreview, String helpeRatingreview, String adminReview, Compatibility compatibilityid) {
+        this.taskid = taskid;
         this.helperid = helperid;
         this.dependentid = dependentid;
         this.isImmediate = isImmediate;
@@ -58,34 +85,33 @@ public class TaskInvoice {
         this.startdate = startdate;
         this.enddate = enddate;
         this.helperbadgeid = helperbadgeid;
-        this.dependentbadgeid = dependentbadgeid;
-        this.dependentratingid = dependentratingid;
-        this.helperratingid = helperratingid;
-        this.adminreview = adminreview;
+        this.dependentRatingreview = dependentRatingreview;
+        this.helperRatingreview = helperRatingreview;
+        this.adminReview = adminReview;
         this.compatibilityid = compatibilityid;
     }
 
-    public int getId() {
-        return id;
+    public int geTaskid() {
+        return taskid;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setTaskid(int taskid) {
+        this.taskid = taskid;
     }
 
-    public int getHelperid() {
+    public Helper getHelperid() {
         return helperid;
     }
 
-    public void setHelperid(int helperid) {
+    public void setHelperid(Helper helperid) {
         this.helperid = helperid;
     }
 
-    public int getDependentid() {
+    public Dependent getDependentid() {
         return dependentid;
     }
 
-    public void setDependentid(int dependentid) {
+    public void setDependentid(Dependent dependentid) {
         this.dependentid = dependentid;
     }
 
@@ -97,19 +123,19 @@ public class TaskInvoice {
         this.isImmediate = isImmediate;
     }
 
-    public int getLocationid() {
+    public Location getLocationid() {
         return locationid;
     }
 
-    public void setLocationid(int locationid) {
+    public void setLocationid(Location locationid) {
         this.locationid = locationid;
     }
 
-    public int getTasktypeid() {
+    public TaskType getTasktypeid() {
         return tasktypeid;
     }
 
-    public void setTasktypeid(int tasktypeid) {
+    public void setTasktypeid(TaskType tasktypeid) {
         this.tasktypeid = tasktypeid;
     }
 
@@ -121,11 +147,11 @@ public class TaskInvoice {
         this.needsspecialist = needsspecialist;
     }
 
-    public int getSignedadminid() {
+    public Admin getSignedadminid() {
         return signedadminid;
     }
 
-    public void setSignedadminid(int signedadminid) {
+    public void setSignedadminid(Admin signedadminid) {
         this.signedadminid = signedadminid;
     }
 
@@ -145,51 +171,43 @@ public class TaskInvoice {
         this.enddate = enddate;
     }
 
-    public String getHelperbadgeid() {
+    public Badges getHelperbadgeid() {
         return helperbadgeid;
     }
 
-    public void setHelperbadgeid(String helperbadgeid) {
+    public void setHelperbadgeid(Badges helperbadgeid) {
         this.helperbadgeid = helperbadgeid;
     }
 
-    public String getDependentbadgeid() {
-        return dependentbadgeid;
-    }
-
-    public void setDependentbadgeid(String dependentbadgeid) {
-        this.dependentbadgeid = dependentbadgeid;
-    }
-
     public String getDependentratingid() {
-        return dependentratingid;
+        return dependentRatingreview;
     }
 
-    public void setDependentratingid(String dependentratingid) {
-        this.dependentratingid = dependentratingid;
+    public void setDependentratingreview(String dependentRatingreview) {
+        this.dependentRatingreview = dependentRatingreview;
     }
 
-    public String getHelperratingid() {
-        return helperratingid;
+    public String getHelperRatingreview() {
+        return helperRatingreview;
     }
 
-    public void setHelperratingid(String helperratingid) {
-        this.helperratingid = helperratingid;
+    public void setHelperRatingreview(String helperRatingreview) {
+        this.helperRatingreview = helperRatingreview;
     }
 
-    public String getAdminreview() {
-        return adminreview;
+    public String getAdminReview() {
+        return adminReview;
     }
 
-    public void setAdminreview(String adminreview) {
-        this.adminreview = adminreview;
+    public void setAdminreview(String adminReview) {
+        this.adminReview = adminReview;
     }
 
-    public int getCompatibilityid() {
+    public Compatibility getCompatibilityid() {
         return compatibilityid;
     }
 
-    public void setCompatibilityid(int compatibilityid) {
+    public void setCompatibilityid(Compatibility compatibilityid) {
         this.compatibilityid = compatibilityid;
     }
 
