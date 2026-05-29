@@ -23,14 +23,12 @@ public class Posts {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "posts_id_seq")
-    @Column(name = "post_id")
     private int postid;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
-    @Column(name = "user_id")
     private User userid;
-    
+
     @Column(name = "post_content")
     private String postContent;
     @Column(name = "media_url")

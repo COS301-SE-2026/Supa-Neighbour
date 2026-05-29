@@ -29,12 +29,10 @@ public class Comments {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
-    @Column(name = "user_id")
     private User userid;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name ="post_id")
-    @Column(name = "post_id")
     private Posts postid;
 
     @Column(name = "parent_comment_id")
