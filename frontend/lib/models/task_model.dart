@@ -8,7 +8,7 @@ class Task {
   final TimeOfDay time;
   final int xpReward;
   final String instructions;
-  final String status; // pending, in_progress, completed
+  final String status; // pending, in_progress, completed /// remind divo to update table
   final DateTime createdAt;
 
   Task({
@@ -23,7 +23,51 @@ class Task {
     required this.createdAt,
   });
 
-  // Mock data storage
+  ////////////////////////
+  /// MAP RES TO A TASK
+  factory Task.fromJson(Map<String, dynamic> json){
+
+    final DateTime startDate = json['startDate'] != null ? DateTime.parse(json['startDate'] as String): DateTime.now();
+
+    return Task(
+      id: (json['taskId'] as int).toString(),
+      title: _resolveCategoryName(json['taskTypeId'] as int?),
+      category: _resolveCategoryName(json['taskTypeId'] as int?),
+      date: startDate,
+      time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
+      xpReward: 0 ,
+      instructions: json['adminReview'] as String? ?? 'No instructions provided',
+      status: json['helperId'] != null ? 'in_progress' : 'pending',
+      createdAt: startDate,
+    );
+  }
+
+  /// taskTypeId -> categoryName
+  static String _resolveCategoryName(int? taskTypeId){
+    switch(taskTypeId){
+      case 1:
+        return 'Plants';
+      case 2:
+        return 'Pets';
+         case 3:
+        return 'Bins';
+      case 4:
+        return 'Packages';
+      case 5:
+        return 'Home Check-in';
+      case 6:
+        return 'Pool Pump';
+      default:
+        return 'Other';
+    }
+  }
+
+
+
+
+
+////////////////////TEMP MCL DATA\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+/////////// wil remove as integration is being complete essentially
   static List<Task> _mockTasks = [];
 
   static List<Task> getMockTasks() {
@@ -58,7 +102,7 @@ class Task {
   }
 
   static void addMockTask(Task task) {
-    _mockTasks.insert(0, task); // Add to beginning of list
+    _mockTasks.insert(0, task); 
   }
 
   static void updateTaskStatus(String taskId, String newStatus) {
@@ -88,4 +132,6 @@ class Task {
   static void deleteMockTask(String taskId) {
     _mockTasks.removeWhere((task) => task.id == taskId);
   }
+  /////////////////////////////////////////////
+  /////////////////////////////////////////////
 }
