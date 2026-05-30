@@ -7,8 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
@@ -19,15 +18,15 @@ import lombok.Data;
 @Table(name = "task_invoice_table")
 public class TaskInvoice {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_invoice_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_id")
     private int taskid;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "helper_id")
     private Helper helperid;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "dependent_id")
     private Dependent dependentid;
 
@@ -35,18 +34,18 @@ public class TaskInvoice {
     @Column(name = "is_immediate")
     private boolean isImmediate;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "location_id")
     private Location locationid;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "task_type_id")
     private TaskType tasktypeid;
 
     @Column(name = "needs_specialist")
     private boolean needsspecialist;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "signed_admin_id")
     private Admin signedadminid;
 
@@ -56,12 +55,12 @@ public class TaskInvoice {
     @Column(name = "end_date")
     private Date enddate;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "helper_badge_id")
     private Badges helperbadgeid;
 
-    @OneToMany
-    @JoinColumn(name = "dependent_rating_review")
+
+    @Column(name = "dependent_rating_review")
     private String dependentRatingreview;
 
     @Column(name = "helper_rating_review")
@@ -70,10 +69,11 @@ public class TaskInvoice {
     @Column(name = "admin_review")
     private String adminReview;
 
-    @Column(name = "compatibility_id")
+    @ManyToOne
+    @JoinColumn(name = "compatibility_id")
     private Compatibility compatibilityid;
 
-    public TaskInvoice(int taskid, Helper helperid, Dependent dependentid, boolean isImmediate, Location locationid, TaskType tasktypeid, boolean needsspecialist, Admin signedadminid, Date startdate, Date enddate, Badges helperbadgeid, String dependentRatingreview, String helpeRatingreview, String adminReview, Compatibility compatibilityid) {
+    public TaskInvoice(int taskid, Helper helperid, Dependent dependentid, boolean isImmediate, Location locationid, TaskType tasktypeid, boolean needsspecialist, Admin signedadminid, Date startdate, Date enddate, Badges helperbadgeid, String dependentRatingreview, String helperRatingreview, String adminReview, Compatibility compatibilityid) {
         this.taskid = taskid;
         this.helperid = helperid;
         this.dependentid = dependentid;

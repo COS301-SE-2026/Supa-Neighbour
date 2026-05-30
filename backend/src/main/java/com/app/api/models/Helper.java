@@ -1,5 +1,4 @@
 package com.app.api.models;
-import java.sql.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,8 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
@@ -19,23 +17,23 @@ import lombok.Data;
 @Table(name = "helper_table")
 public class Helper {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "helper_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "helper_id")
     private int helperid;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User userid;
 
-    @OneToMany
-    @JoinColumn(name = "tasktype_id")
+    @ManyToOne
+    @JoinColumn(name = "task_type_id")
     private TaskType taskTypeid;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "badge_id")
     private Badges badgeid;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "compatibility_id")
     private Compatibility compatibilityid;
 

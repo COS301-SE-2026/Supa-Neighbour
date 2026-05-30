@@ -1,5 +1,4 @@
 package com.app.api.models;
-import java.sql.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,11 +16,11 @@ import lombok.Data;
 public class Location {
     @Id
     @Column(name = "location_id")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "location_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int locationid;
 
-    @Column(name = "location_centre_point")
-    private int locationCentrePoint;
+    @Column(name = "location_center_point")
+    private int locationCenterPoint;
 
     @Column(name = "location_radius")
     private int locationRadius;
@@ -35,8 +34,8 @@ public class Location {
     public Location() {
     }
 
-    public Location(int locationid,int locationRadius,int locationCentrePoint, int neighbourhoodid, String neighbourhoodName) {
-        this.locationCentrePoint=locationCentrePoint;
+    public Location(int locationid,int locationRadius,int locationCenterPoint, int neighbourhoodid, String neighbourhoodName) {
+        this.locationCenterPoint=locationCenterPoint;
         this.locationid=locationid;
         this.locationRadius = locationRadius;
         this.neighbourhoodid = neighbourhoodid;
@@ -48,11 +47,11 @@ public class Location {
     }
 
     public int getLocationCentrePoint() {
-        return locationCentrePoint;
+        return locationCenterPoint;
     }
 
-    public void setLocationcentrepoint(int locationCentrePoint) {
-        this.locationCentrePoint = locationCentrePoint;
+    public void setLocationcentrepoint(int locationCenterPoint) {
+        this.locationCenterPoint = locationCenterPoint;
     }
 
     public int getLocationRadius() {

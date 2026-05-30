@@ -1,5 +1,4 @@
 package com.app.api.models;
-import java.sql.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,8 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
@@ -19,15 +17,15 @@ import lombok.Data;
 @Table(name = "compatibility_table")
 public class Compatibility {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "compatibility_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "compatibility_id")
     private int compatibilityid;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "helper_id")
     private Helper helperid;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "dependent_id")
     private Dependent dependentid;
 

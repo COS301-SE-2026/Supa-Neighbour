@@ -8,8 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
@@ -18,10 +17,10 @@ import lombok.Data;
 @Builder
 @Entity
 @Table(name = "user_table")
-public class User 
-{
+public class User {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private int userid;
 
@@ -34,7 +33,7 @@ public class User
     @Column(name = "user_password")
     private String password;
 
-    @Column(name = "user_email") 
+    @Column(name = "user_email")
     private String email;
 
     @Column(name = "user_phone_number")
@@ -46,25 +45,25 @@ public class User
     @Column(name = "user_gender")
     private String gender;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_address_id")
     private Address addressid;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "user_badge_id")
     private Badges badgeid;
 
-    @OneToOne
-    @JoinColumn(name = "user_rating_review")
+    @ManyToOne
+    @JoinColumn(name = "user_rating_id")
     private Ratings ratingid;
 
-    @Column(name = "user_type_id")
-    private String typeid;
+    @Column(name = "user_type")
+    private String userType;
 
     public User() {
     }
 
-    public User(int userid, String firstName, String lastName, String password, String email, String phoneNumber, Date dateOfBirth, String gender, Address addressid, Badges badgeid, Ratings ratingid, String typeid) {
+    public User(int userid, String firstName, String lastName, String password, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
         this.userid = userid;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -76,101 +75,102 @@ public class User
         this.addressid = addressid;
         this.badgeid = badgeid;
         this.ratingid = ratingid;
-        this.typeid = typeid;
+        this.userType = userType;
     }
 
     public int getUserid() {
         return userid;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getPassword() {
-        return password;
-    }  
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public Date getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public String getGender() {
-        return gender;      
-    }
-
-    public Address getAddressId() {
-        return addressid;
-    }
-
-    public Badges getBadgeId() {
-        return badgeid;
-    }
-
-    public Ratings getRatingId() {
-        return ratingid;
-    }
-
-    public String getTypeId() {
-        return typeid;
-    }
-
     public void setId(int userid) {
         this.userid = userid;
+    }
+
+    public String getFirstName() {
+        return firstName;
     }
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
+    public String getLastName() {
+        return lastName;
+    }
+
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public void setPassword(String password) {
         this.password = password;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
+    public Date getDateOfBirth() {
+        return dateOfBirth;
+    }
+
     public void setDateOfBirth(Date dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getGender() {
+        return gender;
     }
 
     public void setGender(String gender) {
         this.gender = gender;
     }
 
+    public Address getAddressId() {
+        return addressid;
+    }
+
     public void setAddressId(Address addressid) {
         this.addressid = addressid;
+    }
+
+    public Badges getBadgeId() {
+        return badgeid;
     }
 
     public void setBadgeId(Badges badgeid) {
         this.badgeid = badgeid;
     }
 
+    public Ratings getRatingId() {
+        return ratingid;
+    }
+
     public void setRatingId(Ratings ratingid) {
         this.ratingid = ratingid;
     }
 
-    public void setTypeId(String typeid) {
-        this.typeid = typeid;
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 }

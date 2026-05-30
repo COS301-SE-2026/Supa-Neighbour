@@ -7,7 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
@@ -15,10 +15,10 @@ import lombok.Data;
 @Data
 @Builder
 @Entity
-@Table(name = "adminst_able")
+@Table(name = "admin_table")
 public class Admin {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "admin_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "admin_id")
     private int adminid;
 
@@ -43,11 +43,11 @@ public class Admin {
     @Column(name = "admin_access_level")
     private int adminaccesslevel;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "admin_address_id")
     private Address adminaddressid;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User userid;
 

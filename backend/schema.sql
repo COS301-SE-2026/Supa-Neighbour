@@ -97,46 +97,12 @@ create table user_table (
 );
 
 -- =============================================
--- 7. helper table
--- =============================================
-create table helper_table (
-    helper_id int generated always as identity primary key,
-    user_id int not null,
-    task_type_id int,
-    badge_id int,
-
-    foreign key (user_id)
-        references user_table(user_id),
-
-    foreign key (task_type_id)
-        references task_type_table(task_type_id),
-
-    foreign key (badge_id)
-        references badge_table(badge_id)
-);
-
--- =============================================
--- 8. dependent table
--- =============================================
-create table dependent_table (
-    dependent_id int generated always as identity primary key,
-    user_id int not null,
-    task_type_id int,
-
-    foreign key (user_id)
-        references user_table(user_id),
-
-    foreign key (task_type_id)
-        references task_type_table(task_type_id)
-);
-
--- =============================================
 -- 9. compatibility table
 -- =============================================
 create table compatibility_table (
     compatibility_id int generated always as identity primary key,
     compatibility_score int,
-    compatibility_color varchar(20),
+    compatibility_colour varchar(20),
 
     dependent_id int,
     helper_id int,
@@ -146,6 +112,48 @@ create table compatibility_table (
 
     foreign key (helper_id)
         references helper_table(helper_id)
+);
+
+-- =============================================
+-- 7. helper table
+-- =============================================
+create table helper_table (
+    helper_id int generated always as identity primary key,
+    user_id int not null,
+    task_type_id int,
+    badge_id int,
+    compatibility_id int,
+
+    foreign key (user_id)
+        references user_table(user_id),
+
+    foreign key (task_type_id)
+        references task_type_table(task_type_id),
+
+    foreign key (badge_id)
+        references badge_table(badge_id),
+    
+    foreign key(compatibility_id)
+        references compatibility_table
+);
+
+-- =============================================
+-- 8. dependent table
+-- =============================================
+create table dependent_table (
+    dependent_id int generated always as identity primary key,
+    user_id int not null,
+    task_type_id int,
+    compatibility_id int,
+
+    foreign key (user_id)
+        references user_table(user_id),
+
+    foreign key (task_type_id)
+        references task_type_table(task_type_id),
+
+    foreign key(compatibility_id)
+        references compatibility_table(compatibility_id)
 );
 
 -- =============================================
@@ -464,7 +472,7 @@ values
 -- =============================================
 -- 3. badge table
 -- =============================================
-INSERT INTO badge_table 
+insert into badge_table 
 ( badge_name, is_specialist, current_xp, rating_id)
 values
 ('Medical Specialist', true, 4500, 4),

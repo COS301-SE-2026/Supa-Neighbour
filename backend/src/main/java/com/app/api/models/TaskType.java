@@ -1,11 +1,12 @@
 package com.app.api.models;
-import java.sql.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
@@ -16,11 +17,12 @@ import lombok.Data;
 @Table(name = "task_type_table")
 public class TaskType {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_type_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_type_id")
     private int tasktypeid;
 
-    @Column(name = "associated_badge_id")
+    @ManyToOne
+    @JoinColumn(name = "associated_badge_id")
     private Badges badgeid;
 
     @Column(name = "type_description")

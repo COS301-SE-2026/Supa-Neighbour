@@ -1,5 +1,4 @@
 package com.app.api.models;
-import java.sql.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,10 +12,10 @@ import lombok.Data;
 @Data
 @Builder
 @Entity
-@Table(name = "ratings_table")
+@Table(name = "rating_table")
 public class Ratings {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ratings_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "rating_id")
     private int ratingid;
     @Column(name = "rating_review")
@@ -33,11 +32,11 @@ public class Ratings {
         this.currentGroup = currentGroup;
     }
 
-    public int getRatingId() {
+    public int getRatingid() {
         return ratingid;
     }
 
-    public void setRatingId(int ratingid) {
+    public void setRatingid(int ratingid) {
         this.ratingid = ratingid;
     }
 
@@ -65,5 +64,4 @@ public class Ratings {
         this.currentGroup = currentGroup;
     }
     
-
 }

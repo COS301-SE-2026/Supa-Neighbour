@@ -1,7 +1,5 @@
 package com.app.api.models;
-import java.sql.Date;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,7 +7,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +18,7 @@ import lombok.Data;
 public class Address {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "address_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "address_id")
     private int addressid;
 
@@ -34,23 +31,19 @@ public class Address {
     @Column(name = "address_zip")
     private int zipcode;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "neighbourhood_id")
     private Location neighbourhoodid;
-
-    @Column(name = "resident_id")
-    private int residentid;
 
     public Address() {
     }
 
-    public Address(int addressid, int streetNumber, String street, int zipcode, Location neighbourhoodid, int residentid) {
+    public Address(int addressid, int streetNumber, String street, int zipcode, Location neighbourhoodid) {
         this.addressid = addressid;
         this.streetNumber = streetNumber;
         this.street = street;
         this.zipcode = zipcode;
         this.neighbourhoodid = neighbourhoodid;
-        this.residentid = residentid;
     }
 
     public int getAddressid() {
@@ -92,13 +85,4 @@ public class Address {
     public void setNeighbourhoodid(Location neighbourhoodid) {
         this.neighbourhoodid = neighbourhoodid;
     }
-
-    public int getResidentid() {
-        return residentid;
-    }
-
-    public void setResidentid(int residentid) {
-        this.residentid = residentid;
-    }
-    
 }

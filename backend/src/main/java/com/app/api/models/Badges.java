@@ -1,14 +1,12 @@
 package com.app.api.models;
 
-import java.sql.Date;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
@@ -16,10 +14,10 @@ import lombok.Data;
 @Data
 @Builder
 @Entity
-@Table(name = "badges_table")
+@Table(name = "badge_table")
 public class Badges {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "badge_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "badge_id")
     private int badgeid;
 
@@ -32,7 +30,7 @@ public class Badges {
     @Column(name = "current_xp")
     private int xpReward;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "rating_id")
     private Ratings ratingid;
 

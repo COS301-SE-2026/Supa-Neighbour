@@ -1,6 +1,5 @@
 package com.app.api.models;
-import java.security.Timestamp;
-import java.sql.Date;
+import java.sql.Timestamp;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -11,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import kotlin.time.TimeSource;
 import lombok.Builder;
 import lombok.Data;
 
@@ -22,7 +20,7 @@ import lombok.Data;
 public class Posts {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "posts_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int postid;
 
     @ManyToOne(cascade = CascadeType.ALL)
