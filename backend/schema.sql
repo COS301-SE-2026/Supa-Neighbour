@@ -96,6 +96,35 @@ create table user_table (
         references rating_table(rating_id)
 );
 
+
+create table helper_table (
+    helper_id int generated always as identity primary key,
+    user_id int not null,
+    task_type_id int,
+    badge_id int,
+
+    foreign key (user_id) 
+        references user_table(user_id),
+
+    foreign key (task_type_id) 
+        references task_type_table(task_type_id),
+
+    foreign key (badge_id) 
+        references badge_table(badge_id)
+);
+
+create table dependent_table (
+    dependent_id int generated always as identity primary key,
+    user_id int not null,
+    task_type_id int,
+
+    foreign key (user_id) 
+        references user_table(user_id),
+
+    foreign key (task_type_id) 
+        references task_type_table(task_type_id)
+);
+
 -- =============================================
 -- 9. compatibility table
 -- =============================================
@@ -112,48 +141,6 @@ create table compatibility_table (
 
     foreign key (helper_id)
         references helper_table(helper_id)
-);
-
--- =============================================
--- 7. helper table
--- =============================================
-create table helper_table (
-    helper_id int generated always as identity primary key,
-    user_id int not null,
-    task_type_id int,
-    badge_id int,
-    compatibility_id int,
-
-    foreign key (user_id)
-        references user_table(user_id),
-
-    foreign key (task_type_id)
-        references task_type_table(task_type_id),
-
-    foreign key (badge_id)
-        references badge_table(badge_id),
-    
-    foreign key(compatibility_id)
-        references compatibility_table
-);
-
--- =============================================
--- 8. dependent table
--- =============================================
-create table dependent_table (
-    dependent_id int generated always as identity primary key,
-    user_id int not null,
-    task_type_id int,
-    compatibility_id int,
-
-    foreign key (user_id)
-        references user_table(user_id),
-
-    foreign key (task_type_id)
-        references task_type_table(task_type_id),
-
-    foreign key(compatibility_id)
-        references compatibility_table(compatibility_id)
 );
 
 -- =============================================
@@ -576,7 +563,7 @@ values
 -- 9. compatibility table
 -- =============================================
 insert into compatibility_table
-(compatibility_score, compatibility_color, dependent_id, helper_id)
+(compatibility_score, compatibility_colour, dependent_id, helper_id)
 values
 (95, 'Green', 1, 1),
 (80, 'Yellow', 2, 4),

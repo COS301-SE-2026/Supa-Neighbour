@@ -30,15 +30,16 @@ public class Dependent {
     @JoinColumn(name = "task_type_id")
     private TaskType taskTypeid;
 
-    @ManyToOne
-    @JoinColumn(name = "compatibility_id")
-    private Compatibility compatibilityid;
 
-    public Dependent(int dependentid,User userid, TaskType taskTypeid, Compatibility compatibilityid) {
+    public Dependent(int dependentid,User userid, TaskType taskTypeid) {
         this.dependentid=dependentid;
         this.userid = userid;
         this.taskTypeid = taskTypeid;
-        this.compatibilityid = compatibilityid;
+    }
+
+    public Dependent()
+    {
+        
     }
 
     

@@ -91,6 +91,10 @@ public class TaskInvoice {
         this.compatibilityid = compatibilityid;
     }
 
+    public TaskInvoice()
+    {
+        
+    }
     public int geTaskid() {
         return taskid;
     }

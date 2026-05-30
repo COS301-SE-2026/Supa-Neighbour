@@ -50,6 +50,11 @@ public class DependentAnalytics {
         this.averagegivingrating = averagegivingrating;
     }
 
+    public DependentAnalytics()
+    {
+
+    }
+    
     public String getDependentanalyticsid() {
         return dependentanalyticsid;
     }

@@ -33,18 +33,17 @@ public class Helper {
     @JoinColumn(name = "badge_id")
     private Badges badgeid;
 
-    @ManyToOne
-    @JoinColumn(name = "compatibility_id")
-    private Compatibility compatibilityid;
-
-    public Helper(int helperid, User userid, TaskType taskTypeid, Badges badgeid, Compatibility compatibilityid) {
+    public Helper(int helperid, User userid, TaskType taskTypeid, Badges badgeid) {
         this.helperid = helperid;
         this.userid = userid;
         this.taskTypeid = taskTypeid;
         this.badgeid = badgeid;
-        this.compatibilityid = compatibilityid;
     }
 
+    public Helper()
+    {
+        
+    }
     public void setHelperid(int helperid) {
         this.helperid = helperid;
     }
@@ -69,20 +68,12 @@ public class Helper {
         return badgeid;
     }
 
-    public Compatibility getCompatibilityid() {
-        return compatibilityid;
-    }
-
     public void setTaskTypeid(TaskType taskTypeid) {
         this.taskTypeid = taskTypeid;
     }
 
     public void setBadgeid(Badges badgeid) {
         this.badgeid = badgeid;
-    }
-
-    public void setCompatibilityid(Compatibility compatibilityid) {
-        this.compatibilityid = compatibilityid;
     }
     
 }

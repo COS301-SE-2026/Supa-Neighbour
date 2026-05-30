@@ -32,6 +32,10 @@ public class Ratings {
         this.currentGroup = currentGroup;
     }
 
+    public Ratings()
+    {
+
+    }
     public int getRatingid() {
         return ratingid;
     }
