@@ -23,7 +23,7 @@ public class LocationController {
      * @return locations
      */
     @GetMapping
-    public Iterable<Location> getAllLocations() {
+    public List<Location> getAllLocations() {
         return locationService.getAllLocations();
     }
 

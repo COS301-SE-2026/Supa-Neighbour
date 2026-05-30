@@ -1,4 +1,4 @@
-package com.app.api.Controllers;
+package com.app.api.controllers;
 
 public class ModelsHolder {
     

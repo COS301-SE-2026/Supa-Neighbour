@@ -16,7 +16,7 @@ public class AdminController {
      * @return admins
      */
     @GetMapping
-    public Iterable<Admin> getAllAdmins() {
+    public List<Admin> getAllAdmins() {
         return adminService.getAllAdmins();
     }
 

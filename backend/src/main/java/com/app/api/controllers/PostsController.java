@@ -23,7 +23,7 @@ public class PostsController {
      * @return addresses
      */
     @GetMapping
-    public Iterable<Posts> getAllPosts() {
+    public List<Posts> getAllPosts() {
         return postsService.getAllPosts();
     }
 

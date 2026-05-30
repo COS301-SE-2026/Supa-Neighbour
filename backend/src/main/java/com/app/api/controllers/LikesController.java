@@ -22,7 +22,7 @@ public class LikesController {
      * @return addresses
      */
     @GetMapping
-    public Iterable<Likes> getAllLikes() {
+    public List<Likes> getAllLikes() {
         return likesService.getAllLikes();
     }
 

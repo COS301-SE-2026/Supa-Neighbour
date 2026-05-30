@@ -23,7 +23,7 @@ public class TaskInvoiceController {
      * @return task invoices
      */
     @GetMapping
-    public Iterable<TaskInvoice> getAllTaskInvoices() {
+    public List<TaskInvoice> getAllTaskInvoices() {
         return taskInvoiceService.getAllTaskInvoices();
     }
 

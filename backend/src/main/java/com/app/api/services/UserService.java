@@ -21,7 +21,7 @@ public class UserService {
      * Get all users.
      * @return list of users
      */
-    public Iterable<User> getAllUsers() {
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 

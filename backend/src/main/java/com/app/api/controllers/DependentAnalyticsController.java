@@ -21,7 +21,7 @@ public class DependentAnalyticsController {
      * @return dependent analytics
      */
     @GetMapping
-    public Iterable<DependentAnalytics> getAllDependentAnalytics() {
+    public List<DependentAnalytics> getAllDependentAnalytics() {
         return dependentAnalyticsService.getAllDependentAnalytics();
     }
 

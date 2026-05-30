@@ -23,7 +23,7 @@ public class TaskTypeController {
      * @return task types
      */
     @GetMapping
-    public Iterable<TaskType> getAllTaskTypes() {
+    public List<TaskType> getAllTaskTypes() {
         return taskTypeService.getAllTaskTypes();
     }
 

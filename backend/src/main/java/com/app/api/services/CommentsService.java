@@ -21,7 +21,7 @@ public class CommentsService {
      * Get all dependent analytics.
      * @return list of dependent analytics
      */
-    public Iterable<Comments> getAllComments() {
+    public List<Comments> getAllComments() {
         return commentsRepository.findAll();
     }
 

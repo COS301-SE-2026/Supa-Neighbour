@@ -23,7 +23,7 @@ public class HelperAnalyticsController {
      * @return helper analytics
      */
     @GetMapping
-    public Iterable<HelperAnalytics> getAllHelperAnalytics() {
+    public List<HelperAnalytics> getAllHelperAnalytics() {
         return helperAnalyticsService.getAllHelperAnalytics();
     }
 

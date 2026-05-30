@@ -1,6 +1,8 @@
 package com.app.api.controllers;
 
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +24,7 @@ public class BadgesController {
      * @return badges
      */
     @GetMapping
-    public Iterable<Badges> getAllBadges() {
+    public List<Badges> getAllBadges() {
         return badgeService.getAllBadges();
     }
 

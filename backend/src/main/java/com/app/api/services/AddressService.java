@@ -21,7 +21,7 @@ public class AddressService {
      * Get all addresses.
      * @return list of addresses
      */
-    public Iterable<Address> getAllAddresses() {
+    public List<Address> getAllAddresses() {
         return addressRepository.findAll();
     }
 

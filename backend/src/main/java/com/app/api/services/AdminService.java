@@ -21,7 +21,7 @@ public class AdminService {
      * Get all admins.
      * @return list of admins
      */
-    public Iterable<Admin> getAllAdmins() {
+    public List<Admin> getAllAdmins() {
         return adminRepository.findAll();
     }
 

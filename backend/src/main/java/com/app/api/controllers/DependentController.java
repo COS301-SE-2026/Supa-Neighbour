@@ -23,7 +23,7 @@ public class DependentController {
      * @return dependents
      */
     @GetMapping
-    public Iterable<Dependent> getAllDependents() {
+    public List<Dependent> getAllDependents() {
         return dependentService.getAllDependents();
     }
 

@@ -23,7 +23,7 @@ public class HelperController {
      * @return helpers
      */
     @GetMapping
-    public Iterable<Helper> getAllHelpers() {
+    public List<Helper> getAllHelpers() {
         return helperService.getAllHelpers();
     }
 

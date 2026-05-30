@@ -16,7 +16,7 @@ public class AnalyticsController {
      * @return admins
      */
     @GetMapping
-    public Iterable<Analytics> getAllAdmins() {
+    public List<Analytics> getAllAdmins() {
         return analyticsService.getAllAdmins();
     }
 

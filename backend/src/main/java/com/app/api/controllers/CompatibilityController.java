@@ -23,7 +23,7 @@ public class CompatibilityController {
      * @return compatibilities
      */
     @GetMapping
-    public Iterable<Compatibility> getAllCompatibilities() {
+    public List<Compatibility> getAllCompatibilities() {
         return compatibilityService.getAllCompatibilities();
     }
 

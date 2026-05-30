@@ -23,7 +23,7 @@ public class RatingsController {
      * @return ratings
      */
     @GetMapping
-    public Iterable<Ratings> getAllRatings() {
+    public List<Ratings> getAllRatings() {
         return ratingsService.getAllRatings();
     }
 

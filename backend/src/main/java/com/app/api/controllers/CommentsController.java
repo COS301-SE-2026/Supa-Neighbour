@@ -23,7 +23,7 @@ public class CommentsController {
      * @return addresses
      */
     @GetMapping
-    public Iterable<Comments> getAllComments() {
+    public List<Comments> getAllComments() {
         return commentsService.getAllComments();
     }
 

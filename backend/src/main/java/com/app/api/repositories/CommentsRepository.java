@@ -1,9 +1,8 @@
 package com.app.api.repositories;
 
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import com.app.api.models.Comments;
 
-public interface CommentsRepository extends CrudRepository<Comments,Integer>{
+public interface CommentsRepository extends JpaRepository<Comments,Integer>{
     
 }

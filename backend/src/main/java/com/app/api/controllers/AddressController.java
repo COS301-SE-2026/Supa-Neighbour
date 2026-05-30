@@ -23,7 +23,7 @@ public class AddressController {
      * @return addresses
      */
     @GetMapping
-    public Iterable<Address> getAllAddresses() {
+    public List<Address> getAllAddresses() {
         return addressService.getAllAddresses();
     }
 
