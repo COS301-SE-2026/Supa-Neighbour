@@ -6,6 +6,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
@@ -13,23 +16,25 @@ import lombok.Data;
 @Data
 @Builder
 @Entity
-@Table(name = "compatibilitytable")
+@Table(name = "compatibility_table")
 public class Compatibility {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "compatibility_id_seq")
-    @Column(name = "compatibilityid")
+    @Column(name = "compatibility_id")
     private int compatibilityid;
 
-    @Column(name = "helperid")
+    @OneToOne
+    @JoinColumn(name = "helper_id")
     private Helper helperid;
 
-    @Column(name = "dependentid")
+    @OneToOne
+    @JoinColumn(name = "dependent_id")
     private Dependent dependentid;
 
-    @Column(name = "compatibilityscore")
+    @Column(name = "compatibility_score")
     private int compatibilityScore;
 
-    @Column(name = "compatibilitycolour")
+    @Column(name = "compatibility_colour")
     private String compatibilityColour;
 
     public Compatibility() {
@@ -51,7 +56,7 @@ public class Compatibility {
         return helperid;
     }
 
-    public Dependent getDependentId() {
+    public Dependent getDependentid() {
         return dependentid;
     }
 

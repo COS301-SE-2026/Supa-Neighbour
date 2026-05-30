@@ -193,7 +193,7 @@ create table task_invoice_table (
     start_date date,
     end_date date,
 
-    helper_badge_id varchar(50),
+    helper_badge_id int,
 
     dependent_rating_review varchar(50),
     helper_rating_review varchar(50),
