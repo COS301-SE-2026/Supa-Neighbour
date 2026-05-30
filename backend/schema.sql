@@ -1,3 +1,4 @@
+\set ON_ERROR_STOP on
 -- =============================================
 -- community help system database schema
 -- postgresql lowercase version
@@ -28,7 +29,7 @@ create table rating_table (
 -- 3. badge table
 -- =============================================
 create table badge_table (
-    badge_id int primary key ,
+    badge_id int generated always as identity primary key ,
     badge_name varchar(100) not null,
     is_specialist boolean default false,
     current_xp int default 0,
@@ -302,10 +303,10 @@ create table analytics_table (
         references admin_table(admin_id),
 
     foreign key (helper_type_id)
-        references helper_analytics_table(helper_type_id),
+        references helper_analytics_table(helper_analytics_id),
 
     foreign key (dependent_type_id)
-        references dependent_analytics_table(dependent_type_id)
+        references dependent_analytics_table(dependent_analytics_id)
 );
 
 -- =============================================
@@ -463,14 +464,14 @@ values
 -- =============================================
 -- 3. badge table
 -- =============================================
-insert into badge_table
-(badge_id, badge_name, is_specialist, current_xp, rating_review)
+INSERT INTO badge_table 
+( badge_name, is_specialist, current_xp, rating_id)
 values
-('MED001', 'Medical Specialist', true, 4500, 'Excellent'),
-('PET001', 'Pet Care Helper', false, 2000, 'Good'),
-('TECH001', 'Tech Assistant', false, 1500, 'Average'),
-('TRANS001', 'Transport Volunteer', false, 3000, 'Very Good'),
-('HOME001', 'Home Repair Specialist', true, 6000, 'Outstanding');
+('Medical Specialist', true, 4500, 4),
+('Pet Care Helper', false, 2000, 3),
+('Tech Assistant', false, 1500, 2),
+('Transport Volunteer', false, 3000, 3),
+('Home Repair Specialist', true, 6000, 5);
 
 -- =============================================
 -- 4. task type table
@@ -478,11 +479,11 @@ values
 insert into task_type_table
 (type_description, associated_badge_id, needs_specialist, xp_worth)
 values
-('Medical Assistance', 'MED001', true, 500),
-('Pet Care', 'PET001', false, 200),
-('Technology Support', 'TECH001', false, 150),
-('Transportation Support', 'TRANS001', false, 250),
-('Home Repair', 'HOME001', true, 600);
+('Medical Assistance', 1, true, 500),
+('Pet Care', 2, false, 200),
+('Technology Support', 3, false, 150),
+('Transportation Support', 4, false, 250),
+('Home Repair', 5, true, 600);
 
 -- =============================================
 -- 5. address table
@@ -515,29 +516,29 @@ user_gender,
 user_dob,
 user_address_id,
 user_badge_id,
-user_rating_review,
+user_rating_id,
 user_type
 )
 values
-('pass123', 'John', 'Smith', 'john@example.com', '5550101', 'Male', '1990-01-10', 1, 'MED001', 'Excellent', 'Helper'),
+('pass123', 'John', 'Smith', 'john@example.com', '5550101', 'Male', '1990-01-10', 1,2,1,'Admin' ),
 
-('pass123', 'Sarah', 'Johnson', 'sarah@example.com', '5550102', 'Female', '1988-03-15', 2, 'PET001', 'Good', 'Helper'),
+('pass123', 'Sarah', 'Johnson', 'sarah@example.com', '5550102', 'Female', '1988-03-15', 2,1,1, 'User' ),
 
-('pass123', 'Michael', 'Brown', 'michael@example.com', '5550103', 'Male', '1995-07-21', 3, 'TECH001', 'Average', 'Helper'),
+('pass123', 'Michael', 'Brown', 'michael@example.com', '5550103', 'Male', '1995-07-21', 3,1,1, 'User' ),
 
-('pass123', 'Emily', 'Davis', 'emily@example.com', '5550104', 'Female', '1992-11-30', 4, 'TRANS001', 'Very Good', 'Helper'),
+('pass123', 'Emily', 'Davis', 'emily@example.com', '5550104', 'Female', '1992-11-30', 4,1,1, 'User' ),
 
-('pass123', 'David', 'Wilson', 'david@example.com', '5550105', 'Male', '1985-05-18', 5, 'HOME001', 'Outstanding', 'Helper'),
+('pass123', 'David', 'Wilson', 'david@example.com', '5550105', 'Male', '1985-05-18', 5,1,1, 'User' ),
 
-('pass123', 'Olivia', 'Taylor', 'olivia@example.com', '5550106', 'Female', '2000-04-02', 6, null, 'Good', 'Dependent'),
+('pass123', 'Olivia', 'Taylor', 'olivia@example.com', '5550106', 'Female', '2000-04-02', 6,2,2, 'Admin'),
 
-('pass123', 'James', 'Anderson', 'james@example.com', '5550107', 'Male', '1975-08-14', 7, null, 'Average', 'Dependent'),
+('pass123', 'James', 'Anderson', 'james@example.com', '5550107', 'Male', '1975-08-14', 7,1,1, 'User' ),
 
-('pass123', 'Sophia', 'Thomas', 'sophia@example.com', '5550108', 'Female', '1998-09-22', 8, null, 'Very Good', 'Dependent'),
+('pass123', 'Sophia', 'Thomas', 'sophia@example.com', '5550108', 'Female', '1998-09-22', 8, 3,1, 'Admin'),
 
-('pass123', 'Daniel', 'Jackson', 'daniel@example.com', '5550109', 'Male', '1982-12-11', 9, null, 'Excellent', 'Dependent'),
+('pass123', 'Daniel', 'Jackson', 'daniel@example.com', '5550109', 'Male', '1982-12-11', 9, 5,2, 'Admin' ),
 
-('pass123', 'Emma', 'White', 'emma@example.com', '5550110', 'Female', '1996-06-25', 10, null, 'Outstanding', 'Dependent');
+('pass123', 'Emma', 'White', 'emma@example.com', '5550110', 'Female', '1996-06-25', 10,1,1, 'User');
 
 -- =============================================
 -- 7. helper table
@@ -545,11 +546,11 @@ values
 insert into helper_table
 (user_id, task_type_id, badge_id)
 values
-(1, 1, 'MED001'),
-(2, 2, 'PET001'),
-(3, 3, 'TECH001'),
-(4, 4, 'TRANS001'),
-(5, 5, 'HOME001');
+(1, 1, 1),
+(2, 2, 4),
+(3, 3, 2),
+(4, 4, 3),
+(5, 5, 5);
 
 -- =============================================
 -- 8. dependent table
@@ -616,36 +617,16 @@ admin_review,
 compatibility_id
 )
 values
-(1, 1, true, 1, 1, true, 1,
-'2026-05-01', '2026-05-01',
-'MED001',
-'Excellent',
-'Outstanding',
-'Excellent medical assistance provided.',
-1),
-
-(4, 2, false, 2, 4, false, 2,
-'2026-05-02', '2026-05-03',
-'TRANS001',
-'Very Good',
-'Very Good',
-'Reliable transport support.',
-2),
-
-(3, 3, false, 3, 3, false, 1,
-'2026-05-04', '2026-05-04',
-'TECH001',
-'Good',
-'Very Good',
-'Resolved device setup issues quickly.',
-3);
+(1, 1, true, 1, 1, true, 1,'2026-05-01', '2026-05-01',3,'Excellent','Outstanding','Excellent medical assistance provided.',1),
+(4, 2, false, 2, 4, false, 2,'2026-05-02', '2026-05-03',2,'Very Good','Very Good','Reliable transport support.',2),
+(3, 3, false, 3, 3, false, 1,'2026-05-04', '2026-05-04',4,'Good','Very Good','Resolved device setup issues quickly.',3);
 
 -- =============================================
 -- 12. helper analytics table
 -- =============================================
 insert into helper_analytics_table
 (
-helper_type_id,
+helper_analytics_id,
 user_id,
 task_type_id,
 compatibility_id,
@@ -663,7 +644,7 @@ values
 -- =============================================
 insert into dependent_analytics_table
 (
-dependent_type_id,
+dependent_analytics_id,
 user_id,
 task_type_id,
 total_tasks,
