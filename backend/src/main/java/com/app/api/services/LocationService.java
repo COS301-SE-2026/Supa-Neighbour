@@ -21,7 +21,7 @@ public class LocationService {
      * Get all locations.
      * @return list of locations
      */
-    public Iterable<Location> getAllLocations() {
+    public List<Location> getAllLocations() {
         return locationRepository.findAll();
     }
 

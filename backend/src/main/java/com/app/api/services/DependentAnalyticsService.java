@@ -21,7 +21,7 @@ public class DependentAnalyticsService {
      * Get all dependent analytics.
      * @return list of dependent analytics
      */
-    public Iterable<DependentAnalytics> getAllDependentAnalytics() {
+    public List<DependentAnalytics> getAllDependentAnalytics() {
         return dependentAnalyticsRepository.findAll();
     }
 
@@ -30,7 +30,7 @@ public class DependentAnalyticsService {
      * @param id dependent analytics id
      * @return dependent analytics
      */
-    public DependentAnalytics getDependentAnalyticsById(int id) {
+    public DependentAnalytics getDependentAnalyticsById(String id) {
         return dependentAnalyticsRepository.findById(id).orElse(null);
     }
 

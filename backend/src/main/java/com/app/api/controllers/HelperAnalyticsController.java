@@ -33,7 +33,7 @@ public class HelperAnalyticsController {
      * @return helper analytics
      */
     @GetMapping("api/helper-analytics/{id}")
-    public HelperAnalytics getHelperAnalyticsById(@PathVariable int id) {
+    public HelperAnalytics getHelperAnalyticsById(@PathVariable String id) {
         return helperAnalyticsService.getHelperAnalyticsById(id);
     }
 

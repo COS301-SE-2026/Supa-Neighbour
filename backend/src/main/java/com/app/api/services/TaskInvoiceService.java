@@ -21,7 +21,7 @@ public class TaskInvoiceService {
      * Get all task invoices.
      * @return list of task invoices
      */
-    public Iterable<TaskInvoice> getAllTaskInvoices() {
+    public List<TaskInvoice> getAllTaskInvoices() {
         return taskInvoiceRepository.findAll();
     }
 

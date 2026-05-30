@@ -22,7 +22,7 @@ public class AnalyticsService {
      * Get all analytics.
      * @return list of analytics
      */
-    public Iterable<Analytics> getAllAdmins() {
+    public List<Analytics> getAllAdmins() {
         return analyticsRepository.findAll();
     }
 

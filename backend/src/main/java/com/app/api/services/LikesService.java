@@ -21,7 +21,7 @@ public class LikesService {
      * Get all dependent analytics.
      * @return list of dependent analytics
      */
-    public Iterable<Likes> getAllLikes() {
+    public List<Likes> getAllLikes() {
         return likesRepository.findAll();
     }
 

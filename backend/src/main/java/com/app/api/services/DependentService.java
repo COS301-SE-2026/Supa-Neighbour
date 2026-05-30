@@ -21,7 +21,7 @@ public class DependentService {
      * Get all dependents.
      * @return list of dependents
      */
-    public Iterable<Dependent> getAllDependents() {
+    public List<Dependent> getAllDependents() {
         return dependentRepository.findAll();
     }
 

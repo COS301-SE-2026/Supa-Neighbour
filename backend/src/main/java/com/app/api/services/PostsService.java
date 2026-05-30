@@ -14,9 +14,8 @@ import com.app.api.repositories.PostsRepository;
 @Service
 public class PostsService {
 
-    private final PostsRepository postsRepository;
     @Autowired
-    private PostsService postsService;
+    private PostsRepository postsRepository;
 
     PostsService(PostsRepository postsRepository) {
         this.postsRepository = postsRepository;
@@ -26,7 +25,7 @@ public class PostsService {
      * Get all dependent analytics.
      * @return list of dependent analytics
      */
-    public Iterable<Posts> getAllPosts() {
+    public List<Posts> getAllPosts() {
         return postsRepository.findAll();
     }
 

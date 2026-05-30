@@ -21,7 +21,7 @@ public class HelperService {
      * Get all helpers.
      * @return list of helpers
      */
-    public Iterable<Helper> getAllHelpers() {
+    public List<Helper> getAllHelpers() {
         return helperRepository.findAll();
     }
 

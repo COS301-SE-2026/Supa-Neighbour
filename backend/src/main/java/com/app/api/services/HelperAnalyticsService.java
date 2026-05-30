@@ -21,7 +21,7 @@ public class HelperAnalyticsService {
      * Get all helper analytics.
      * @return list of helper analytics
      */
-    public Iterable<HelperAnalytics> getAllHelperAnalytics() {
+    public List<HelperAnalytics> getAllHelperAnalytics() {
         return helperAnalyticsRepository.findAll();
     }
 
@@ -30,7 +30,7 @@ public class HelperAnalyticsService {
      * @param id helper analytics id
      * @return helper analytics
      */
-    public HelperAnalytics getHelperAnalyticsById(int id) {
+    public HelperAnalytics getHelperAnalyticsById(String id) {
         return helperAnalyticsRepository.findById(id).orElse(null);
     }
 

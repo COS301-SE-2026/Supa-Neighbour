@@ -21,7 +21,7 @@ public class RatingsService {
      * Get all ratings.
      * @return list of ratings
      */
-    public Iterable<Ratings> getAllRatings() {
+    public List<Ratings> getAllRatings() {
         return ratingsRepository.findAll();
     }
 

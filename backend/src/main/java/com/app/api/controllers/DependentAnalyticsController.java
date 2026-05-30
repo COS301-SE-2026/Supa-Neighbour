@@ -2,7 +2,7 @@ package com.app.api.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.*;
 import com.app.api.models.DependentAnalytics;
 import com.app.api.services.DependentAnalyticsService;
 
@@ -31,7 +31,7 @@ public class DependentAnalyticsController {
      * @return dependent analytics
      */
     @GetMapping("api/dependent-analytics/{id}")
-    public DependentAnalytics getDependentAnalyticsById(@PathVariable int id) {
+    public DependentAnalytics getDependentAnalyticsById(@PathVariable String id) {
         return dependentAnalyticsService.getDependentAnalyticsById(id);
     }
 

@@ -21,7 +21,7 @@ public class BadgesService {
      * Get all badges.
      * @return list of badges
      */
-    public Iterable<Badges> getAllBadges() {
+    public List<Badges> getAllBadges() {
         return badgesRepository.findAll();
     }
 

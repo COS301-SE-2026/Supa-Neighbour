@@ -21,7 +21,7 @@ public class CompatibilityService {
      * Get all compatibilities.
      * @return list of compatibilities
      */
-    public Iterable<Compatibility> getAllCompatibilities() {
+    public List<Compatibility> getAllCompatibilities() {
         return compatibilityRepository.findAll();
     }
 

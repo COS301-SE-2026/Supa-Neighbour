@@ -21,7 +21,7 @@ public class TaskTypeService {
      * Get all task types.
      * @return list of task types
      */
-    public Iterable<TaskType> getAllTaskTypes() {
+    public List<TaskType> getAllTaskTypes() {
         return taskTypeRepository.findAll();
     }
 
