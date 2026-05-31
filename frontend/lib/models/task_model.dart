@@ -23,6 +23,11 @@ class Task {
     required this.createdAt,
   });
 
+  //note:
+  // _meansPrivate
+  // w/o underscore public
+
+  
   ////////////////////////
   /// MAP RES TO A TASK
   factory Task.fromJson(Map<String, dynamic> json){
@@ -59,6 +64,27 @@ class Task {
         return 'Pool Pump';
       default:
         return 'Other';
+    }
+  }
+
+  /// categoryName -> taskTypeId
+  static int resolveTaskTypeId(String category){
+    switch (category) {
+      case 'Plants':
+        return 1;
+      case 'Pets':
+        return 2;
+      case 'Bins':
+      return 3;
+      case 'Packages':
+        return 4;
+      case 'Home Check-in':
+        return 5;
+      case 'Pool Pump':
+        return 6;
+      default:
+        return 7;
+
     }
   }
 

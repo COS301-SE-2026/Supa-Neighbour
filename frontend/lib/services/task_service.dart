@@ -30,4 +30,28 @@ class TaskService {
       throw Exception("Couldn't load tasks: ${e.message}");
     }
   }
+
+  /// Create a new task frm POST /tasks/create.
+  /// will return created task on success else non
+  Future<Task> createTask({
+    required int dependentId,
+    required int taskTypeId,
+    required DateTime startDate,
+    required bool isImmediate,
+    required bool needsSpecialist,
+  }) async {
+    try {
+      final Response<Map<String, dynamic>> response = await _dio.post('/tasks/create', data: {
+        'dependentId': dependentId,
+        'taskTypeId': taskTypeId,
+        'startDate': startDate.toIso8601String().split('T').first,
+        'isImmediate': isImmediate,
+        'needsSpecialist': needsSpecialist,
+      });
+
+      return Task.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw Exception(" Couldn't create task: ${e.message}");
+    }
+}
 }
