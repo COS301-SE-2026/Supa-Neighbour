@@ -395,7 +395,7 @@ class LoginScreenRedirect extends StatelessWidget {
         child: const Center(
           child : Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               Icon(
                 Icons.check_circle,
                 size: 80,
