@@ -21,7 +21,7 @@ public class Comments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
-    private int commentid;
+    private Integer commentid;
 
     @ManyToOne()
     @JoinColumn(name = "user_id")
@@ -32,7 +32,7 @@ public class Comments {
     private Posts postid;
 
     @Column(name = "parent_comment_id")
-    private int parentCommentid;
+    private Integer parentCommentid;
 
     @Column(name = "comment_content")
     private String commentContent; 
@@ -44,7 +44,7 @@ public class Comments {
     public Comments() {
     }
 
-    public Comments(int commentid,User userid,Posts postid,int parentCommentid,String commentContent,Timestamp createdAt,Timestamp updatedAt) {
+    public Comments(Integer commentid,User userid,Posts postid,Integer parentCommentid,String commentContent,Timestamp createdAt,Timestamp updatedAt) {
         this.commentid=commentid;
         this.postid = postid;
         this.userid= userid;

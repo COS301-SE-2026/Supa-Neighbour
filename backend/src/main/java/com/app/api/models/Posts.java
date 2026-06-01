@@ -21,6 +21,7 @@ public class Posts {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "post_id")
     private int postid;
 
     @ManyToOne(cascade = CascadeType.ALL)

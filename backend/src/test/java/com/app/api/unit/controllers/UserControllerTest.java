@@ -33,7 +33,7 @@ public class UserControllerTest
     void getUser_success() throws Exception
     {
         User user = new User();
-        user.setId(101);
+        user.setid(101);
         user.setFirstName("John");
         when(userService.getUserById(101)).thenReturn(user);
 
