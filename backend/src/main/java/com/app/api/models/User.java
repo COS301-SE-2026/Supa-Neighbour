@@ -4,8 +4,6 @@ import java.sql.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -60,6 +58,9 @@ public class User {
     @Column(name = "user_type")
     private String userType;
 
+    /**
+     * Default constructor required by JPA.
+     */
     public User() {
     }
 
@@ -86,8 +87,12 @@ public class User {
         this.userid = userid;
     }
 
-    public String getFirstName() {
-        return firstName;
+    /**
+     * Sets the user ID.
+     * @param id the user ID
+     */
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setFirstName(String firstName) {

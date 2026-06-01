@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import com.app.api.models.User;
 import com.app.api.services.UserService;
 
+/**
+ * REST controller for user-related endpoints.
+ */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
