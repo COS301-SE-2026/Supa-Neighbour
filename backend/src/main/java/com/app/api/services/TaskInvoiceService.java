@@ -26,6 +26,7 @@ public class TaskInvoiceService {
 
     // Create
     public TaskInvoice saveTaskInvoice(TaskInvoice taskInvoice) {
+        if(taskInvoice == null) return null;
         return taskInvoiceRepository.save(taskInvoice);
     }
 

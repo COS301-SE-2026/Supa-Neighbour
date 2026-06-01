@@ -31,6 +31,7 @@ create table rating_table (
 create table badge_table (
     badge_id int generated always as identity primary key ,
     badge_name varchar(100) not null,
+    badge_description text,
     is_specialist boolean default false,
     current_xp int default 0,
     rating_id int,
@@ -460,13 +461,13 @@ values
 -- 3. badge table
 -- =============================================
 insert into badge_table 
-( badge_name, is_specialist, current_xp, rating_id)
+( badge_name, badge_description, is_specialist, current_xp, rating_id)
 values
-('Medical Specialist', true, 4500, 4),
-('Pet Care Helper', false, 2000, 3),
-('Tech Assistant', false, 1500, 2),
-('Transport Volunteer', false, 3000, 3),
-('Home Repair Specialist', true, 6000, 5);
+('Medical Specialist','has some form of medical training', true, 4500, 4),
+('Pet Care Helper', 'assists with pet care needs', false, 2000, 3),
+('Tech Assistant', 'provides technology support', false, 1500, 2),
+('Transport Volunteer', 'assists with transportation needs', false, 3000, 3),
+('Home Repair Specialist', 'specializes in home repair tasks', true, 6000, 5);
 
 -- =============================================
 -- 4. task type table

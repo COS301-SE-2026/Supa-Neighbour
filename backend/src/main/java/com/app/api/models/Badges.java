@@ -24,8 +24,12 @@ public class Badges {
     @Column(name = "badge_name")
     private String badgeName;
 
+    @Column(name = "badge_description")
+    private String badge_description;
+
     @Column(name = "is_specialist")
-    private String description;
+    private Boolean isSpecialist;
+
 
     @Column(name = "current_xp")
     private int xpReward;
@@ -37,12 +41,13 @@ public class Badges {
     public Badges() {
     }
 
-    public Badges(int badgeid,String badgeName, String description, int xpReward, Ratings ratingid) {
+    public Badges(int badgeid,String badgeName, String badge_description,Boolean isSpecialist, int xpReward, Ratings ratingid) {
         this.badgeid=badgeid;
         this.badgeName = badgeName;
-        this.description = description;
+        this.badge_description = badge_description;
         this.xpReward = xpReward;
         this.ratingid = ratingid;
+        this.isSpecialist = isSpecialist;
     }
 
     public int getBadgeid() {
@@ -61,12 +66,12 @@ public class Badges {
         this.badgeName = badgeName;
     }
 
-    public String getDescription() {
-        return description;
+    public String getBadge_description() {
+        return badge_description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setBadge_description(String badge_description) {
+        this.badge_description = badge_description;
     }
 
     public int getXpReward() {
@@ -85,4 +90,11 @@ public class Badges {
         this.ratingid = ratingid;
     }
     
+    public Boolean getIsSpecialist() {
+        return isSpecialist;
+    }
+
+    public void setIsSpecialist(Boolean isSpecialist) {
+        this.isSpecialist = isSpecialist;
+    }
 }

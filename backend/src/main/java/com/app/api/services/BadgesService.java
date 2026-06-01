@@ -36,9 +36,10 @@ public class BadgesService {
         if (existing == null) return null;
 
         existing.setXpReward(updated.getXpReward());
-        existing.setDescription(updated.getDescription());
+        existing.setBadge_description(updated.getBadge_description());
         existing.setBadgeName(updated.getBadgeName());
         existing.setRatingid(updated.getRatingid());
+        existing.setIsSpecialist(updated.getIsSpecialist());
 
         return badgesRepository.save(existing);
     }

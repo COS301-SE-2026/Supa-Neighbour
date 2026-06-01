@@ -47,7 +47,8 @@ public class BadgesController {
         if (existing == null) {
             return ResponseEntity.notFound().build();
         }
-        Badges updated = badgesService.updateBadges(id, badge);
+        Badges updated = badgesService.updateBadges
+        (id, badge);
         return ResponseEntity.ok(updated);
     }
 
