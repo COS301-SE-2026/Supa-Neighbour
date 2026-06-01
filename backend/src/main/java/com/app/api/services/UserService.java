@@ -2,7 +2,7 @@ package com.app.api.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.util.List;
 import com.app.api.models.User;
 import com.app.api.repositories.UserRepository;
 
