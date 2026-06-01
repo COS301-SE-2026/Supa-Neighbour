@@ -3,47 +3,62 @@ package com.app.api.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.app.api.models.TaskInvoice;
 import com.app.api.services.TaskInvoiceService;
 
-/**
- * Task invoice controller.
- */
 @RestController
-@RequestMapping("/api/task-invoices")
+@RequestMapping("/api/taskinvoices")
 public class TaskInvoiceController {
 
     @Autowired
     private TaskInvoiceService taskInvoiceService;
 
-    /**
-     * Get all task invoices.
-     * @return task invoices
-     */
+    // GET /api/taskinvoices    
     @GetMapping
-    public List<TaskInvoice> getAllTaskInvoices() {
-        return taskInvoiceService.getAllTaskInvoices();
+    public ResponseEntity<List<TaskInvoice>> getAllTaskInvoices() {
+        return ResponseEntity.ok(taskInvoiceService.getAllTaskInvoices());
     }
 
-    /**
-     * Get task invoice by id.
-     * @param id task invoice id
-     * @return task invoice
-     */
+    // GET /api/taskinvoices/1
     @GetMapping("/{id}")
-    public TaskInvoice getTaskInvoiceById(@PathVariable int id) {
-        return taskInvoiceService.getTaskInvoiceById(id);
+    public ResponseEntity<TaskInvoice> getTaskInvoiceById(@PathVariable int id) {
+        TaskInvoice taskInvoice = taskInvoiceService.getTaskInvoiceById(id);
+        if (taskInvoice == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(taskInvoice);
     }
 
-    /**
-     * Create task invoice.
-     * @param taskInvoice task invoice
-     * @return saved task invoice
-     */
+    // POST /api/taskinvoices
     @PostMapping
-    public TaskInvoice createTaskInvoice(@RequestBody TaskInvoice taskInvoice) {
-        return taskInvoiceService.saveTaskInvoice(taskInvoice);
+    public ResponseEntity<TaskInvoice> createTaskInvoice(@RequestBody TaskInvoice taskInvoice) {
+        TaskInvoice saved = taskInvoiceService.saveTaskInvoice(taskInvoice);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    // PUT /api/taskinvoices/1
+    @PutMapping("/{id}")
+    public ResponseEntity<TaskInvoice> updateTaskInvoice(@PathVariable int id, @RequestBody TaskInvoice taskInvoice) {
+        TaskInvoice existing = taskInvoiceService.getTaskInvoiceById(id);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        TaskInvoice updated = taskInvoiceService.updateTaskInvoice(id, taskInvoice);
+        return ResponseEntity.ok(updated);
+    }
+
+    // DELETE /api/taskinvoices/1
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTaskInvoice(@PathVariable int id) {
+        TaskInvoice existing = taskInvoiceService.getTaskInvoiceById(id);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        taskInvoiceService.deleteTaskInvoice(id);
+        return ResponseEntity.noContent().build();
     }
 }

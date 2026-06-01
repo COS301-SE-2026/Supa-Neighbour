@@ -3,47 +3,62 @@ package com.app.api.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.app.api.models.Compatibility;
 import com.app.api.services.CompatibilityService;
 
-/**
- * Compatibility controller.
- */
 @RestController
-@RequestMapping("/api/compatibilities")
+@RequestMapping("/api/compatibility")
 public class CompatibilityController {
 
     @Autowired
     private CompatibilityService compatibilityService;
 
-    /**
-     * Get all compatibilities.
-     * @return compatibilities
-     */
+    // GET /api/compatibility
     @GetMapping
-    public List<Compatibility> getAllCompatibilities() {
-        return compatibilityService.getAllCompatibilities();
+    public ResponseEntity<List<Compatibility>> getAllCompatibility() {
+        return ResponseEntity.ok(compatibilityService.getAllCompatibility());
     }
 
-    /**
-     * Get compatibility by id.
-     * @param id compatibility id
-     * @return compatibility
-     */
-    @GetMapping("api/compatibilities/{id}")
-    public Compatibility getCompatibilityById(@PathVariable int id) {
-        return compatibilityService.getCompatibilityById(id);
+    // GET /api/compatibility/1
+    @GetMapping("/{id}")
+    public ResponseEntity<Compatibility> getCompatibilityById(@PathVariable int id) {
+        Compatibility compatibility = compatibilityService.getCompatibilityById(id);
+        if (compatibility == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(compatibility);
     }
 
-    /**
-     * Create compatibility.
-     * @param compatibility compatibility
-     * @return saved compatibility
-     */
+    // POST /api/compatibility
     @PostMapping
-    public Compatibility createCompatibility(@RequestBody Compatibility compatibility) {
-        return compatibilityService.saveCompatibility(compatibility);
+    public ResponseEntity<Compatibility> createCompatibility(@RequestBody Compatibility compatibility) {
+        Compatibility saved = compatibilityService.saveCompatibility(compatibility);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    // PUT /api/compatibility/1
+    @PutMapping("/{id}")
+    public ResponseEntity<Compatibility> updateCompatibility(@PathVariable int id, @RequestBody Compatibility compatibility) {
+        Compatibility existing = compatibilityService.getCompatibilityById(id);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Compatibility updated = compatibilityService.updateCompatibility(id, compatibility);
+        return ResponseEntity.ok(updated);
+    }
+
+    // DELETE /api/compatibility/1
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCompatibility(@PathVariable int id) {
+        Compatibility existing = compatibilityService.getCompatibilityById(id);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        compatibilityService.deleteCompatibility(id);
+        return ResponseEntity.noContent().build();
     }
 }

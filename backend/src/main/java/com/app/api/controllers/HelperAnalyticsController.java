@@ -3,14 +3,13 @@ package com.app.api.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.app.api.models.HelperAnalytics;
 import com.app.api.services.HelperAnalyticsService;
 
-/**
- * HelperAnalytics controller.
- */
 @RestController
 @RequestMapping("/api/helper-analytics")
 public class HelperAnalyticsController {
@@ -18,32 +17,48 @@ public class HelperAnalyticsController {
     @Autowired
     private HelperAnalyticsService helperAnalyticsService;
 
-    /**
-     * Get all helper analytics.
-     * @return helper analytics
-     */
+    // GET /api/helper-analytics
     @GetMapping
-    public List<HelperAnalytics> getAllHelperAnalytics() {
-        return helperAnalyticsService.getAllHelperAnalytics();
+    public ResponseEntity<List<HelperAnalytics>> getAllHelperAnalytics() {
+        return ResponseEntity.ok(helperAnalyticsService.getAllHelperAnalytics());
     }
 
-    /**
-     * Get helper analytics by id.
-     * @param id helper analytics id
-     * @return helper analytics
-     */
+    // GET /api/helper-analytics/1
     @GetMapping("/{id}")
-    public HelperAnalytics getHelperAnalyticsById(@PathVariable String id) {
-        return helperAnalyticsService.getHelperAnalyticsById(id);
+    public ResponseEntity<HelperAnalytics> getHelperAnalyticsById(@PathVariable String id) {
+        HelperAnalytics helperAnalytics = helperAnalyticsService.getHelperAnalyticsById(id);
+        if (helperAnalytics == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(helperAnalytics);
     }
 
-    /**
-     * Create helper analytics.
-     * @param helperAnalytics helper analytics
-     * @return saved helper analytics
-     */
+    // POST /api/helper-analytics
     @PostMapping
-    public HelperAnalytics createHelperAnalytics(@RequestBody HelperAnalytics helperAnalytics) {
-        return helperAnalyticsService.saveHelperAnalytics(helperAnalytics);
+    public ResponseEntity<HelperAnalytics> createHelperAnalytics(@RequestBody HelperAnalytics helperAnalytics) {
+        HelperAnalytics saved = helperAnalyticsService.saveHelperAnalytics(helperAnalytics);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    // PUT /api/helper-analytics/1
+    @PutMapping("/{id}")
+    public ResponseEntity<HelperAnalytics> updateHelperAnalytics(@PathVariable String id, @RequestBody HelperAnalytics helperAnalytics) {
+        HelperAnalytics existing = helperAnalyticsService.getHelperAnalyticsById(id);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        HelperAnalytics updated = helperAnalyticsService.updateHelperAnalytics(id, helperAnalytics);
+        return ResponseEntity.ok(updated);
+    }
+
+    // DELETE /api/helper-analytics/1
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteHelperAnalytics(@PathVariable String id) {
+        HelperAnalytics existing = helperAnalyticsService.getHelperAnalyticsById(id);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        helperAnalyticsService.deleteHelperAnalytics(id);
+        return ResponseEntity.noContent().build();
     }
 }

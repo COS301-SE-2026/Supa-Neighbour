@@ -1,50 +1,64 @@
 package com.app.api.controllers;
 
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.app.api.models.Badges;
 import com.app.api.services.BadgesService;
 
-/**
- * Badges controller.
- */
 @RestController
 @RequestMapping("/api/badges")
 public class BadgesController {
 
     @Autowired
-    private BadgesService badgeService;
+    private BadgesService badgesService;
 
-    /**
-     * Get all badges.
-     * @return badges
-     */
+    // GET /api/badges
     @GetMapping
-    public List<Badges> getAllBadges() {
-        return badgeService.getAllBadges();
+    public ResponseEntity<List<Badges>> getAllBadges() {
+        return ResponseEntity.ok(badgesService.getAllBadges());
     }
 
-    /**
-     * Get badge by id.
-     * @param id badge id
-     * @return badge
-     */
-    @GetMapping("api/badges/{id}")
-    public Badges getBadgeById(@PathVariable int id) {
-        return badgeService.getBadgeById(id);
+    // GET /api/badges/1
+    @GetMapping("/{id}")
+    public ResponseEntity<Badges> getBadgeById(@PathVariable int id) {
+        Badges badge = badgesService.getBadgesById(id);
+        if (badge == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(badge);
     }
 
-    /**
-     * Create badge.
-     * @param badge badge
-     * @return saved badge
-     */
+    // POST /api/badges
     @PostMapping
-    public Badges createBadge(@RequestBody Badges badge) {
-        return badgeService.saveBadge(badge);
+    public ResponseEntity<Badges> createBadge(@RequestBody Badges badge) {
+        Badges saved = badgesService.saveBadges(badge);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    // PUT /api/badges/1
+    @PutMapping("/{id}")
+    public ResponseEntity<Badges> updateBadge(@PathVariable int id, @RequestBody Badges badge) {
+        Badges existing = badgesService.getBadgesById(id);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Badges updated = badgesService.updateBadges(id, badge);
+        return ResponseEntity.ok(updated);
+    }
+
+    // DELETE /api/badges/1
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBadge(@PathVariable int id) {
+        Badges existing = badgesService.getBadgesById(id);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        badgesService.deleteBadges(id);
+        return ResponseEntity.noContent().build();
     }
 }
