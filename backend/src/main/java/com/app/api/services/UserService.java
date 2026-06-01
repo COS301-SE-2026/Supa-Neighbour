@@ -26,6 +26,7 @@ public class UserService {
 
     // Create
     public User saveUser(User user) {
+        if(user == null) return null;
         return userRepository.save(user);
     }
 

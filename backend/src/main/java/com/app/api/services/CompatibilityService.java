@@ -26,6 +26,7 @@ public class CompatibilityService {
 
     // Create
     public Compatibility saveCompatibility(Compatibility compatibility) {
+        if(compatibility == null) return null;
         return compatibilityRepository.save(compatibility);
     }
 

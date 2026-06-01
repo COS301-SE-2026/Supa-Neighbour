@@ -21,16 +21,21 @@ public class DependentAnalyticsService {
 
     // Get by id
     public DependentAnalytics getDependentAnalyticsById(String id) {
+        if (id == null) {
+            return null;    
+        }
         return dependentAnalyticsRepository.findById(id).orElse(null);
     }
 
     // Create
     public DependentAnalytics saveDependentAnalytics(DependentAnalytics dependentAnalytics) {
+        if(dependentAnalytics == null) return null;
         return dependentAnalyticsRepository.save(dependentAnalytics);
     }
 
     // Update
     public DependentAnalytics updateDependentAnalytics(String id, DependentAnalytics updated) {
+        if(id == null || updated == null) return null;
         DependentAnalytics existing = dependentAnalyticsRepository.findById(id).orElse(null);
         if (existing == null) return null;
 
@@ -47,7 +52,7 @@ public class DependentAnalyticsService {
 
     // Delete
     public void deleteDependentAnalytics(String id) {
-        
+        if (id == null) return;
         dependentAnalyticsRepository.deleteById(id);
     }
 }

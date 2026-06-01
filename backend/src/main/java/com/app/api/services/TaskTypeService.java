@@ -26,6 +26,7 @@ public class TaskTypeService {
 
     // Create
     public TaskType saveTaskType(TaskType taskType) {
+        if(taskType == null) return null;
         return taskTypeRepository.save(taskType);
     }
 

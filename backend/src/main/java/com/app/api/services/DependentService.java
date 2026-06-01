@@ -26,6 +26,7 @@ public class DependentService {
 
     // Create
     public Dependent saveDependent(Dependent dependent) {
+        if(dependent == null) return null;
         return dependentRepository.save(dependent);
     }
 

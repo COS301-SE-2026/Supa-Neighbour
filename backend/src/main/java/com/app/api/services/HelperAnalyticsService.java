@@ -21,16 +21,19 @@ public class HelperAnalyticsService {
 
     // Get by id
     public HelperAnalytics getHelperAnalyticsById(String id) {
+        if(id == null) return null;
         return helperAnalyticsRepository.findById(id).orElse(null);
     }
 
     // Create
     public HelperAnalytics saveHelperAnalytics(HelperAnalytics helperAnalytics) {
+        if(helperAnalytics == null) return null;
         return helperAnalyticsRepository.save(helperAnalytics);
     }
 
     // Update
     public HelperAnalytics updateHelperAnalytics(String id, HelperAnalytics updated) {
+        if(id == null || updated == null) return null;
         HelperAnalytics existing = helperAnalyticsRepository.findById(id).orElse(null);
         if (existing == null) return null;
 
@@ -47,6 +50,7 @@ public class HelperAnalyticsService {
 
     // Delete
     public void deleteHelperAnalytics(String id) {
+        if(id == null) return;
         helperAnalyticsRepository.deleteById(id);
     }
 }

@@ -26,6 +26,7 @@ public class HelperService {
 
     // Create
     public Helper saveHelper(Helper helper) {
+        if(helper == null) return null;
         return helperRepository.save(helper);
     }
 

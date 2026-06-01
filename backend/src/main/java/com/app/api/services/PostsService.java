@@ -26,6 +26,7 @@ public class PostsService {
 
     // Create
     public Posts savePost(Posts post) {
+        if(post == null) return null;
         return postsRepository.save(post);
     }
 

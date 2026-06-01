@@ -26,6 +26,7 @@ public class RatingsService {
 
     // Create
     public Ratings saveRating(Ratings rating) {
+        if(rating == null) return null;
         return ratingsRepository.save(rating);
     }
 

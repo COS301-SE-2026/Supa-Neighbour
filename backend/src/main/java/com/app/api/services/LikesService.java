@@ -26,6 +26,7 @@ public class LikesService {
 
     // Create
     public Likes saveLike(Likes like) {
+        if(like == null) return null;
         return likesRepository.save(like);
     }
 
