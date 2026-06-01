@@ -2,101 +2,45 @@ package com.app.api.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
-/**
- * Represents a dependent profile in the system.
- */
+@Data
+@Builder
 @Entity
-@Table(name = "DependentTable")
+@Table(name = "dependent_table")
 public class Dependent {
 
-    /** The dependent ID. */
     @Id
-    @Column(name = "DependentID")
-    private int dependentId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "dependent_id")
+    private int dependentid;
 
-    /** The user ID. */
-    @Column(name = "UserID")
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User userid;
 
-    /** The task type ID. */
-    @Column(name = "TaskTypeID")
-    private Integer taskTypeId;
+    @ManyToOne
+    @JoinColumn(name = "task_type_id")
+    private TaskType taskTypeid;
 
-    /** The compatible ID. */
-    @Column(name = "CompatibleID")
-    private Integer compatibleId;
 
-    /**
-     * Default constructor required by JPA.
-     */
-    public Dependent() {
-        // needed by jpa
+    public Dependent(int dependentid,User userid, TaskType taskTypeid) {
+        this.dependentid=dependentid;
+        this.userid = userid;
+        this.taskTypeid = taskTypeid;
     }
 
-    /**
-     * Gets the dependent ID.
-     * @return the dependent ID
-     */
-    public int getDependentId() {
-        return dependentId;
+    public Dependent()
+    {
+        
     }
 
-    /**
-     * Sets the dependent ID.
-     * @param dependentId the dependent ID
-     */
-    public void setDependentId(int dependentId) {
-        this.dependentId = dependentId;
-    }
-
-    /**
-     * Gets the user ID.
-     * @return the user ID
-     */
-    public Integer getUserId() {
-        return userId;
-    }
-
-    /**
-     * Sets the user ID.
-     * @param userId the user ID
-     */
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    /**
-     * Gets the task type ID.
-     * @return the task type ID
-     */
-    public Integer getTaskTypeId() {
-        return taskTypeId;
-    }
-
-    /**
-     * Sets the task type ID.
-     * @param taskTypeId the task type ID
-     */
-    public void setTaskTypeId(Integer taskTypeId) {
-        this.taskTypeId = taskTypeId;
-    }
-
-    /**
-     * Gets the compatible ID.
-     * @return the compatible ID
-     */
-    public Integer getCompatibleId() {
-        return compatibleId;
-    }
-
-    /**
-     * Sets the compatible ID.
-     * @param compatibleId the compatible ID
-     */
-    public void setCompatibleId(Integer compatibleId) {
-        this.compatibleId = compatibleId;
-    }
+    
 }

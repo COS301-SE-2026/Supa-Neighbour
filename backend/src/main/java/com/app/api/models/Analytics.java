@@ -2,121 +2,90 @@ package com.app.api.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
-/**
- * Represents an analytics record in the system.
- */
+@Data
+@Builder
 @Entity
-@Table(name = "AnalyticsTable")
+@Table(name = "analytics_table")
 public class Analytics {
 
-    /** The analytics ID. */
     @Id
-    @Column(name = "AnalyticsID")
-    private int analyticsId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "analytics_id")
+    private int analyticsid;
 
-    /** The task ID. */
-    @Column(name = "TaskID")
-    private Integer taskId;
+    @ManyToOne
+    @JoinColumn(name = "task_id")
+    private TaskInvoice taskid;
 
-    /** The admin ID. */
-    @Column(name = "AdminID")
-    private Integer adminId;
+    @ManyToOne
+    @JoinColumn(name = "admin_id")
+    private Admin adminid;
 
-    /** The helper type ID. */
-    @Column(name = "HelperTypeID")
-    private String helperTypeId;
+    @ManyToOne
+    @JoinColumn(name = "helper_type_id")
+    private HelperAnalytics helpertypeid;
 
-    /** The dependent type ID. */
-    @Column(name = "DependentTypeID")
-    private String dependentTypeId;
+    @ManyToOne
+    @JoinColumn(name = "dependent_type_id")
+    private DependentAnalytics dependenttypeid;
 
-    /**
-     * Default constructor required by JPA.
-     */
     public Analytics() {
-        //  needed by jpa
     }
 
-    /**
-     * Gets the analytics ID.
-     * @return the analytics ID
-     */
-    public int getAnalyticsId() {
-        return analyticsId;
+    public Analytics(int analyticsid, TaskInvoice taskid, Admin adminid, HelperAnalytics helpertypeid,DependentAnalytics dependenttypeid) {
+        this.analyticsid = analyticsid;
+        this.taskid = taskid;
+        this.adminid = adminid;
+        this.helpertypeid = helpertypeid;
+        this.dependenttypeid = dependenttypeid;
     }
 
-    /**
-     * Sets the analytics ID.
-     * @param analyticsId the analytics ID
-     */
-    public void setAnalyticsId(int analyticsId) {
-        this.analyticsId = analyticsId;
+    public int getAnalyticsid() {
+        return analyticsid;
     }
 
-    /**
-     * Gets the task ID.
-     * @return the task ID
-     */
-    public Integer getTaskId() {
-        return taskId;
+    public void setAnalyticsid(int analyticsid) {
+        this.analyticsid = analyticsid;
     }
 
-    /**
-     * Sets the task ID.
-     * @param taskId the task ID
-     */
-    public void setTaskId(int taskId) {
-        this.taskId = taskId;
+    public TaskInvoice getTaskid() {
+        return taskid;
     }
 
-    /**
-     * Gets the admin ID.
-     * @return the admin ID
-     */
-    public Integer getAdminId() {
-        return adminId;
+    public void setTaskid(TaskInvoice taskid) {
+        this.taskid = taskid;
     }
 
-    /**
-     * Sets the admin ID.
-     * @param adminId the admin ID
-     */
-    public void setAdminId(Integer adminId) {
-        this.adminId = adminId;
+    public Admin getAdminid() {
+        return adminid;
     }
 
-    /**
-     * Gets the helper type ID.
-     * @return the helper type ID
-     */
-    public String getHelperTypeId() {
-        return helperTypeId;
+    public void setAdminid(Admin adminid) {
+        this.adminid = adminid;
     }
 
-    /**
-     * Sets the helper type ID.
-     * @param helperTypeId the helper type ID
-     */
-    public void setHelperTypeId(String helperTypeId) {
-        this.helperTypeId = helperTypeId;
+    public HelperAnalytics getHelpertypeid() {
+        return helpertypeid;
     }
 
-    /**
-     * Gets the dependent type ID.
-     * @return the dependent type ID
-     */
-    public String getDependentTypeId() {
-        return dependentTypeId;
+    public void setHelpertypeid(HelperAnalytics helpertypeid) {
+        this.helpertypeid = helpertypeid;
     }
 
-    /**
-     * Sets the dependent type ID.
-     * @param dependentTypeId the dependent type ID
-     */
-    public void setDependentTypeId(String dependentTypeId) {
-        this.dependentTypeId = dependentTypeId;
+    public DependentAnalytics getDependenttypeid() {
+        return dependenttypeid;
+    }
+
+    public void setDependenttypeid(DependentAnalytics dependenttypeid) {
+        this.dependenttypeid = dependenttypeid;
     }
 }

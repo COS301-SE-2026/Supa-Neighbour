@@ -2,13 +2,10 @@ package com.app.api.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.util.List;
 import com.app.api.models.User;
 import com.app.api.repositories.UserRepository;
 
-/**
- * User service.
- */
 @Service
 public class UserService {
 
@@ -16,29 +13,44 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    /**
-     * Get all users.
-     * @return all users
-     */
-    public Iterable<User> getAllUsers() {
+    // Get all
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    /**
-     * Get user by id.
-     * @param id user id
-     * @return user
-     */
+    // Get by id
     public User getUserById(int id) {
         return userRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Save user.
-     * @param user user
-     * @return saved user
-     */
+    // Create
     public User saveUser(User user) {
+        if(user == null) return null;
         return userRepository.save(user);
+    }
+
+    // Update
+    public User updateUser(int id, User updated) {
+        User existing = userRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setBadgeid(updated.getBadgeid());
+        existing.setAddressid(updated.getAddressid());
+        existing.setDateOfBirth(updated.getDateOfBirth());
+        existing.setEmail(updated.getEmail());
+        existing.setFirstName(updated.getFirstName());
+        existing.setGender(updated.getGender());
+        existing.setLastName(updated.getLastName());
+        existing.setPassword(updated.getPassword());
+        existing.setPhoneNumber(updated.getPhoneNumber());
+        existing.setRatingid(updated.getRatingid());
+        existing.setUserType(updated.getUserType());
+
+        return userRepository.save(existing);
+    }
+
+    // Delete
+    public void deleteUser(int id) {
+        userRepository.deleteById(id);
     }
 }
