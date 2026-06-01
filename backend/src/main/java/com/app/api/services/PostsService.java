@@ -8,42 +8,40 @@ import org.springframework.stereotype.Service;
 import com.app.api.models.Posts;
 import com.app.api.repositories.PostsRepository;
 
-/**
- * Dependent analytics service.
- */
 @Service
 public class PostsService {
 
     @Autowired
     private PostsRepository postsRepository;
 
-    PostsService(PostsRepository postsRepository) {
-        this.postsRepository = postsRepository;
-    }
-
-    /**
-     * Get all dependent analytics.
-     * @return list of dependent analytics
-     */
+    // Get all
     public List<Posts> getAllPosts() {
         return postsRepository.findAll();
     }
 
-    /**
-     * Get dependent analytics by id.
-     * @param id dependent analytics id
-     * @return dependent analytics
-     */
-    public Posts getPostsById(int id) {
+    // Get by id
+    public Posts getPostById(int id) {
         return postsRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Save dependent analytics.
-     * @param posts dependent analytics
-     * @return saved dependent analytics
-     */
-    public Posts savePosts(Posts posts) {
-        return postsRepository.save(posts);
+    // Create
+    public Posts savePost(Posts post) {
+        return postsRepository.save(post);
+    }
+
+    // Update
+    public Posts updatePost(int id, Posts updated) {
+        Posts existing = postsRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setUserid(updated.getUserid());
+        existing.setPostContent(updated.getPostContent());
+
+        return postsRepository.save(existing);
+    }
+
+    // Delete
+    public void deletePost(int id) {
+        postsRepository.deleteById(id);
     }
 }

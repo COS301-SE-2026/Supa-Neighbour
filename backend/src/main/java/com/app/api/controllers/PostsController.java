@@ -12,7 +12,7 @@ import com.app.api.services.PostsService;
  * Address controller.
  */
 @RestController
-@RequestMapping("api/posts")
+@RequestMapping("/api/posts")
 public class PostsController {
 
     @Autowired
@@ -32,7 +32,7 @@ public class PostsController {
      * @param id address id
      * @return address
      */
-    @GetMapping("api/posts/{id}")
+    @GetMapping("/{id}")
     public Posts getPostsById(@PathVariable int id) {
         return postsService.getPostsById(id);
     }

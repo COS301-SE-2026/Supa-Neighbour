@@ -70,11 +70,11 @@ public class HelperAnalytics {
         this.userid = userid;
     }
 
-    public TaskType getTaskTypeid() {
+    public TaskType getTasktypeid() {
         return taskTypeid;
     }
 
-    public void setTaskTypeId(TaskType taskTypeid) {
+    public void setTasktypeid(TaskType taskTypeid) {
         this.taskTypeid = taskTypeid;
     }
 

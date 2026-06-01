@@ -8,38 +8,41 @@ import org.springframework.stereotype.Service;
 import com.app.api.models.Address;
 import com.app.api.repositories.AddressRepository;
 
-/**
- * Address service.
- */
 @Service
 public class AddressService {
 
     @Autowired
     private AddressRepository addressRepository;
 
-    /**
-     * Get all addresses.
-     * @return list of addresses
-     */
+    // Get all
     public List<Address> getAllAddresses() {
         return addressRepository.findAll();
     }
 
-    /**
-     * Get address by id.
-     * @param id address id
-     * @return address
-     */
+    // Get by id
     public Address getAddressById(int id) {
         return addressRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Save address.
-     * @param address address
-     * @return saved address
-     */
+    // Create
     public Address saveAddress(Address address) {
         return addressRepository.save(address);
+    }
+
+    // Update
+    public Address updateAddress(int id, Address updated) {
+        Address existing = addressRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setStreet(updated.getStreet());
+        existing.setStreetNumber(updated.getStreetNumber());
+        existing.setZipcode(updated.getZipcode());
+
+        return addressRepository.save(existing);
+    }
+
+    // Delete
+    public void deleteAddress(int id) {
+        addressRepository.deleteById(id);
     }
 }

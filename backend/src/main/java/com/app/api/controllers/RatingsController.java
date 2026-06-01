@@ -12,7 +12,7 @@ import com.app.api.services.RatingsService;
  * Ratings controller.
  */
 @RestController
-@RequestMapping("api/ratings")
+@RequestMapping("/api/ratings")
 public class RatingsController {
 
     @Autowired
@@ -32,7 +32,7 @@ public class RatingsController {
      * @param id rating id
      * @return rating
      */
-    @GetMapping("api/ratings/{id}")
+    @GetMapping("/{id}")
     public Ratings getRatingById(@PathVariable int id) {
         return ratingsService.getRatingById(id);
     }

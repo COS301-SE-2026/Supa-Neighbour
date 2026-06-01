@@ -5,42 +5,45 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.app.api.models.Admin;
 import com.app.api.models.Analytics;
 import com.app.api.repositories.AnalyticsRepository;
 
-/**
- * Analytics service.
- */
 @Service
 public class AnalyticsService {
 
     @Autowired
     private AnalyticsRepository analyticsRepository;
 
-    /**
-     * Get all analytics.
-     * @return list of analytics
-     */
-    public List<Analytics> getAllAdmins() {
+    // Get all
+    public List<Analytics> getAllAnalytics() {
         return analyticsRepository.findAll();
     }
 
-    /**
-     * Get analytics by id.
-     * @param id analytics id
-     * @return analytics
-     */
-    public Analytics getAdminById(int id) {
+    // Get by id
+    public Analytics getAnalyticsById(int id) {
         return analyticsRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Save analytics.
-     * @param analytics analytics
-     * @return saved analytics
-     */
-    public Analytics saveAdmin(Analytics admin) {
-        return analyticsRepository.save(admin);
+    // Create
+    public Analytics saveAnalytics(Analytics analytics) {
+        return analyticsRepository.save(analytics);
+    }
+
+    // Update
+    public Analytics updateAnalytics(int id, Analytics updated) {
+        Analytics existing = analyticsRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setTaskid(updated.getTaskid());
+        existing.setAdminid(updated.getAdminid());
+        existing.setHelpertypeid(updated.getHelpertypeid());
+        existing.setDependenttypeid(updated.getDependenttypeid());
+
+        return analyticsRepository.save(existing);
+    }
+
+    // Delete
+    public void deleteAnalytics(int id) {
+        analyticsRepository.deleteById(id);
     }
 }

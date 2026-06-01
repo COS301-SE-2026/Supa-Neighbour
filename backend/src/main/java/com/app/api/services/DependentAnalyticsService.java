@@ -8,38 +8,40 @@ import org.springframework.stereotype.Service;
 import com.app.api.models.DependentAnalytics;
 import com.app.api.repositories.DependentAnalyticsRepository;
 
-/**
- * Dependent analytics service.
- */
 @Service
 public class DependentAnalyticsService {
 
     @Autowired
     private DependentAnalyticsRepository dependentAnalyticsRepository;
 
-    /**
-     * Get all dependent analytics.
-     * @return list of dependent analytics
-     */
+    // Get all
     public List<DependentAnalytics> getAllDependentAnalytics() {
         return dependentAnalyticsRepository.findAll();
     }
 
-    /**
-     * Get dependent analytics by id.
-     * @param id dependent analytics id
-     * @return dependent analytics
-     */
+    // Get by id
     public DependentAnalytics getDependentAnalyticsById(String id) {
         return dependentAnalyticsRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Save dependent analytics.
-     * @param dependentAnalytics dependent analytics
-     * @return saved dependent analytics
-     */
+    // Create
     public DependentAnalytics saveDependentAnalytics(DependentAnalytics dependentAnalytics) {
         return dependentAnalyticsRepository.save(dependentAnalytics);
+    }
+
+    // Update
+    public DependentAnalytics updateDependentAnalytics(String id, DependentAnalytics updated) {
+        DependentAnalytics existing = dependentAnalyticsRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setUserid(updated.getUserid());
+        existing.setTasktypeid(updated.getTasktypeid());
+
+        return dependentAnalyticsRepository.save(existing);
+    }
+
+    // Delete
+    public void deleteDependentAnalytics(String id) {
+        dependentAnalyticsRepository.deleteById(id);
     }
 }

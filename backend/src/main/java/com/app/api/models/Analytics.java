@@ -41,8 +41,7 @@ public class Analytics {
     public Analytics() {
     }
 
-    public Analytics(int analyticsid, TaskInvoice taskid, Admin adminid, HelperAnalytics helpertypeid,
-            DependentAnalytics dependenttypeid) {
+    public Analytics(int analyticsid, TaskInvoice taskid, Admin adminid, HelperAnalytics helpertypeid,DependentAnalytics dependenttypeid) {
         this.analyticsid = analyticsid;
         this.taskid = taskid;
         this.adminid = adminid;

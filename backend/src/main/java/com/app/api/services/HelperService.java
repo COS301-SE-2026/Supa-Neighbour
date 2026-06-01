@@ -8,38 +8,40 @@ import org.springframework.stereotype.Service;
 import com.app.api.models.Helper;
 import com.app.api.repositories.HelperRepository;
 
-/**
- * Helper service.
- */
 @Service
 public class HelperService {
 
     @Autowired
     private HelperRepository helperRepository;
 
-    /**
-     * Get all helpers.
-     * @return list of helpers
-     */
+    // Get all
     public List<Helper> getAllHelpers() {
         return helperRepository.findAll();
     }
 
-    /**
-     * Get helper by id.
-     * @param id helper id
-     * @return helper
-     */
+    // Get by id
     public Helper getHelperById(int id) {
         return helperRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Save helper.
-     * @param helper helper
-     * @return saved helper
-     */
+    // Create
     public Helper saveHelper(Helper helper) {
         return helperRepository.save(helper);
+    }
+
+    // Update
+    public Helper updateHelper(int id, Helper updated) {
+        Helper existing = helperRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setUserid(updated.getUserid());
+        existing.setTaskTypeid(updated.getTaskTypeid());
+
+        return helperRepository.save(existing);
+    }
+
+    // Delete
+    public void deleteHelper(int id) {
+        helperRepository.deleteById(id);
     }
 }

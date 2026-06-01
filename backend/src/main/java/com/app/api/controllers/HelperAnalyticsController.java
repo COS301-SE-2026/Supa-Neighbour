@@ -12,7 +12,7 @@ import com.app.api.services.HelperAnalyticsService;
  * HelperAnalytics controller.
  */
 @RestController
-@RequestMapping("api/helper-analytics")
+@RequestMapping("/api/helper-analytics")
 public class HelperAnalyticsController {
 
     @Autowired
@@ -32,7 +32,7 @@ public class HelperAnalyticsController {
      * @param id helper analytics id
      * @return helper analytics
      */
-    @GetMapping("api/helper-analytics/{id}")
+    @GetMapping("/{id}")
     public HelperAnalytics getHelperAnalyticsById(@PathVariable String id) {
         return helperAnalyticsService.getHelperAnalyticsById(id);
     }

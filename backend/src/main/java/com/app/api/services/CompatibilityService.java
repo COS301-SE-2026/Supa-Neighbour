@@ -8,38 +8,40 @@ import org.springframework.stereotype.Service;
 import com.app.api.models.Compatibility;
 import com.app.api.repositories.CompatibilityRepository;
 
-/**
- * Compatibility service.
- */
 @Service
 public class CompatibilityService {
 
     @Autowired
     private CompatibilityRepository compatibilityRepository;
 
-    /**
-     * Get all compatibilities.
-     * @return list of compatibilities
-     */
-    public List<Compatibility> getAllCompatibilities() {
+    // Get all
+    public List<Compatibility> getAllCompatibility() {
         return compatibilityRepository.findAll();
     }
 
-    /**
-     * Get compatibility by id.
-     * @param id compatibility id
-     * @return compatibility
-     */
+    // Get by id
     public Compatibility getCompatibilityById(int id) {
         return compatibilityRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Save compatibility.
-     * @param compatibility compatibility
-     * @return saved compatibility
-     */
+    // Create
     public Compatibility saveCompatibility(Compatibility compatibility) {
         return compatibilityRepository.save(compatibility);
+    }
+
+    // Update
+    public Compatibility updateCompatibility(int id, Compatibility updated) {
+        Compatibility existing = compatibilityRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setCompatibilityScore(updated.getCompatibilityScore());
+        existing.setCompatibilityColour(updated.getCompatibilityColour());
+
+        return compatibilityRepository.save(existing);
+    }
+
+    // Delete
+    public void deleteCompatibility(int id) {
+        compatibilityRepository.deleteById(id);
     }
 }

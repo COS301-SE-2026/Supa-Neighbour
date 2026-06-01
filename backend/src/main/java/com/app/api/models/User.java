@@ -82,7 +82,7 @@ public class User {
         return userid;
     }
 
-    public void setId(int userid) {
+    public void setid(int userid) {
         this.userid = userid;
     }
 
@@ -142,27 +142,27 @@ public class User {
         this.gender = gender;
     }
 
-    public Address getAddressId() {
+    public Address getAddressid() {
         return addressid;
     }
 
-    public void setAddressId(Address addressid) {
+    public void setAddressid(Address addressid) {
         this.addressid = addressid;
     }
 
-    public Badges getBadgeId() {
+    public Badges getBadgeid() {
         return badgeid;
     }
 
-    public void setBadgeId(Badges badgeid) {
+    public void setBadgeid(Badges badgeid) {
         this.badgeid = badgeid;
     }
 
-    public Ratings getRatingId() {
+    public Ratings getRatingid() {
         return ratingid;
     }
 
-    public void setRatingId(Ratings ratingid) {
+    public void setRatingid(Ratings ratingid) {
         this.ratingid = ratingid;
     }
 

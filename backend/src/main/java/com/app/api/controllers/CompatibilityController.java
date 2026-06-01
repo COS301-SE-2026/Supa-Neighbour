@@ -12,7 +12,7 @@ import com.app.api.services.CompatibilityService;
  * Compatibility controller.
  */
 @RestController
-@RequestMapping("api/compatibilities")
+@RequestMapping("/api/compatibilities")
 public class CompatibilityController {
 
     @Autowired

@@ -13,7 +13,7 @@ import com.app.api.services.BadgesService;
  * Badges controller.
  */
 @RestController
-@RequestMapping("api/badges")
+@RequestMapping("/api/badges")
 public class BadgesController {
 
     @Autowired

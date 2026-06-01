@@ -12,7 +12,7 @@ import com.app.api.services.UserService;
  * User controller.
  */
 @RestController
-@RequestMapping("api/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
@@ -32,7 +32,7 @@ public class UserController {
      * @param id user id
      * @return user
      */
-    @GetMapping("api/users/{id}")
+    @GetMapping("/{id}")
     public User getUserById(@PathVariable int id) {
         return userService.getUserById(id);
     }

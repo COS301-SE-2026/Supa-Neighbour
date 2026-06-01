@@ -8,38 +8,40 @@ import org.springframework.stereotype.Service;
 import com.app.api.models.Comments;
 import com.app.api.repositories.CommentsRepository;
 
-/**
- * Dependent analytics service.
- */
 @Service
 public class CommentsService {
 
     @Autowired
     private CommentsRepository commentsRepository;
 
-    /**
-     * Get all dependent analytics.
-     * @return list of dependent analytics
-     */
+    // Get all
     public List<Comments> getAllComments() {
         return commentsRepository.findAll();
     }
 
-    /**
-     * Get dependent analytics by id.
-     * @param id dependent analytics id
-     * @return dependent analytics
-     */
+    // Get by id
     public Comments getCommentsById(int id) {
         return commentsRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Save dependent analytics.
-     * @param dependentAnalytics dependent analytics
-     * @return saved dependent analytics
-     */
+    // Create
     public Comments saveComments(Comments comments) {
         return commentsRepository.save(comments);
+    }
+
+    // Update
+    public Comments updateComments(int id, Comments updated) {
+        Comments existing = commentsRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setUserid(updated.getUserid());
+        existing.setUpdatedAt(updated.getUpdatedAt());
+        existing.setCommentContent(updated.getCommentContent());
+        return commentsRepository.save(existing);
+    }
+
+    // Delete
+    public void deleteComments(int id) {
+        commentsRepository.deleteById(id);
     }
 }

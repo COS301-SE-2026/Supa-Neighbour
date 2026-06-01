@@ -8,38 +8,40 @@ import org.springframework.stereotype.Service;
 import com.app.api.models.HelperAnalytics;
 import com.app.api.repositories.HelperAnalyticsRepository;
 
-/**
- * HelperAnalytics service.
- */
 @Service
 public class HelperAnalyticsService {
 
     @Autowired
     private HelperAnalyticsRepository helperAnalyticsRepository;
 
-    /**
-     * Get all helper analytics.
-     * @return list of helper analytics
-     */
+    // Get all
     public List<HelperAnalytics> getAllHelperAnalytics() {
         return helperAnalyticsRepository.findAll();
     }
 
-    /**
-     * Get helper analytics by id.
-     * @param id helper analytics id
-     * @return helper analytics
-     */
+    // Get by id
     public HelperAnalytics getHelperAnalyticsById(String id) {
         return helperAnalyticsRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Save helper analytics.
-     * @param helperAnalytics helper analytics
-     * @return saved helper analytics
-     */
+    // Create
     public HelperAnalytics saveHelperAnalytics(HelperAnalytics helperAnalytics) {
         return helperAnalyticsRepository.save(helperAnalytics);
+    }
+
+    // Update
+    public HelperAnalytics updateHelperAnalytics(String id, HelperAnalytics updated) {
+        HelperAnalytics existing = helperAnalyticsRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setUserid(updated.getUserid());
+        existing.setTasktypeid(updated.getTasktypeid());
+
+        return helperAnalyticsRepository.save(existing);
+    }
+
+    // Delete
+    public void deleteHelperAnalytics(String id) {
+        helperAnalyticsRepository.deleteById(id);
     }
 }

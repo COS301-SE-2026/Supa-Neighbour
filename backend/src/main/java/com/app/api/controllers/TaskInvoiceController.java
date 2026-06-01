@@ -12,7 +12,7 @@ import com.app.api.services.TaskInvoiceService;
  * Task invoice controller.
  */
 @RestController
-@RequestMapping("api/task-invoices")
+@RequestMapping("/api/task-invoices")
 public class TaskInvoiceController {
 
     @Autowired
@@ -32,7 +32,7 @@ public class TaskInvoiceController {
      * @param id task invoice id
      * @return task invoice
      */
-    @GetMapping("api/task-invoices/{id}")
+    @GetMapping("/{id}")
     public TaskInvoice getTaskInvoiceById(@PathVariable int id) {
         return taskInvoiceService.getTaskInvoiceById(id);
     }

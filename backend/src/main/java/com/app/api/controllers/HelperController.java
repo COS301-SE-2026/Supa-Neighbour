@@ -12,7 +12,7 @@ import com.app.api.services.HelperService;
  * Helper controller.
  */
 @RestController
-@RequestMapping("api/helpers")
+@RequestMapping("/api/helpers")
 public class HelperController {
 
     @Autowired

@@ -8,38 +8,40 @@ import org.springframework.stereotype.Service;
 import com.app.api.models.TaskType;
 import com.app.api.repositories.TaskTypeRepository;
 
-/**
- * Task type service.
- */
 @Service
 public class TaskTypeService {
 
     @Autowired
     private TaskTypeRepository taskTypeRepository;
 
-    /**
-     * Get all task types.
-     * @return list of task types
-     */
+    // Get all
     public List<TaskType> getAllTaskTypes() {
         return taskTypeRepository.findAll();
     }
 
-    /**
-     * Get task type by id.
-     * @param id task type id
-     * @return task type
-     */
+    // Get by id
     public TaskType getTaskTypeById(int id) {
         return taskTypeRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Save task type.
-     * @param taskType task type
-     * @return saved task type
-     */
+    // Create
     public TaskType saveTaskType(TaskType taskType) {
         return taskTypeRepository.save(taskType);
+    }
+
+    // Update
+    public TaskType updateTaskType(int id, TaskType updated) {
+        TaskType existing = taskTypeRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setDescription(updated.getDescription());
+        existing.setNeedsSpecialist(updated.isNeedsSpecialist());
+
+        return taskTypeRepository.save(existing);
+    }
+
+    // Delete
+    public void deleteTaskType(int id) {
+        taskTypeRepository.deleteById(id);
     }
 }

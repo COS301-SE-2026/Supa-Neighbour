@@ -48,7 +48,7 @@ public class Helper {
         this.helperid = helperid;
     }
 
-    public void setUserId(User userid) {
+    public void setUserid(User userid) {
         this.userid = userid;
     }
 

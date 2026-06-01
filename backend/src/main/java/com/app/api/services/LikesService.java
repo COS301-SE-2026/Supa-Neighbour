@@ -8,38 +8,42 @@ import org.springframework.stereotype.Service;
 import com.app.api.models.Likes;
 import com.app.api.repositories.LikesRepository;
 
-/**
- * Dependent analytics service.
- */
 @Service
 public class LikesService {
 
     @Autowired
     private LikesRepository likesRepository;
 
-    /**
-     * Get all dependent analytics.
-     * @return list of dependent analytics
-     */
+    // Get all
     public List<Likes> getAllLikes() {
         return likesRepository.findAll();
     }
 
-    /**
-     * Get dependent analytics by id.
-     * @param id dependent analytics id
-     * @return dependent analytics
-     */
-    public Likes getLikesById(int id) {
+    // Get by id
+    public Likes getLikeById(int id) {
         return likesRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Save dependent analytics.
-     * @param likes dependent analytics
-     * @return saved dependent analytics
-     */
-    public Likes saveLikes(Likes likes) {
-        return likesRepository.save(likes);
+    // Create
+    public Likes saveLike(Likes like) {
+        return likesRepository.save(like);
+    }
+
+    // Update
+    public Likes updateLike(int id, Likes updated) {
+        Likes existing = likesRepository.findById(id).orElse(null);
+        if (existing == null) return null;
+
+        existing.setLikeid(updated.getLikeid());
+        existing.setCommentid(updated.getCommentid());
+        existing.setPostid(updated.getPostid());
+        existing.setUserid(updated.getUserid());
+
+        return likesRepository.save(existing);
+    }
+
+    // Delete
+    public void deleteLike(int id) {
+        likesRepository.deleteById(id);
     }
 }

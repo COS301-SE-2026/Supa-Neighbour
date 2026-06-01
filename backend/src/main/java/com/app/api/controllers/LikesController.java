@@ -11,7 +11,7 @@ import com.app.api.services.LikesService;
  * Address controller.
  */
 @RestController
-@RequestMapping("api/likes")
+@RequestMapping("/api/likes")
 public class LikesController {
 
     @Autowired

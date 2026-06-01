@@ -3,47 +3,62 @@ package com.app.api.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.app.api.models.Address;
 import com.app.api.services.AddressService;
 
-/**
- * Address controller.
- */
 @RestController
-@RequestMapping("api/addresses")
+@RequestMapping("/api/addresses ")
 public class AddressController {
 
     @Autowired
     private AddressService addressService;
 
-    /**
-     * Get all addresses.
-     * @return addresses
-     */
+    // GET /api/addresses
     @GetMapping
-    public List<Address> getAllAddresses() {
-        return addressService.getAllAddresses();
+    public ResponseEntity<List<Address>> getAllAddresses() {
+        return ResponseEntity.ok(addressService.getAllAddresses());
     }
 
-    /**
-     * Get address by id.
-     * @param id address id
-     * @return address
-     */
-    @GetMapping("api/addresses/{id}")
-    public Address getAddressById(@PathVariable int id) {
-        return addressService.getAddressById(id);
+    // GET /api/addresses/1
+    @GetMapping("/{id}")
+    public ResponseEntity<Address> getAddressById(@PathVariable int id) {
+        Address address = addressService.getAddressById(id);
+        if (address == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(address);
     }
 
-    /**
-     * Create address.
-     * @param address address
-     * @return saved address
-     */
+    // POST /api/addresses
     @PostMapping
-    public Address createAddress(@RequestBody Address address) {
-        return addressService.saveAddress(address);
+    public ResponseEntity<Address> createAddress(@RequestBody Address address) {
+        Address saved = addressService.saveAddress(address);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    // PUT /api/addresses/1
+    @PutMapping("/{id}")
+    public ResponseEntity<Address> updateAddress(@PathVariable int id, @RequestBody Address address) {
+        Address existing = addressService.getAddressById(id);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Address updated = addressService.updateAddress(id, address);
+        return ResponseEntity.ok(updated);
+    }
+
+    // DELETE /api/addresses/1
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAddress(@PathVariable int id) {
+        Address existing = addressService.getAddressById(id);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        addressService.deleteAddress(id);
+        return ResponseEntity.noContent().build();
     }
 }

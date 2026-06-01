@@ -12,7 +12,7 @@ import com.app.api.services.CommentsService;
  * Address controller.
  */
 @RestController
-@RequestMapping("api/comments")
+@RequestMapping("/api/comments")
 public class CommentsController {
 
     @Autowired

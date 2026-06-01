@@ -10,7 +10,7 @@ import com.app.api.services.DependentAnalyticsService;
  * Dependent analytics controller.
  */
 @RestController
-@RequestMapping("api/dependent-analytics")
+@RequestMapping("/api/dependent-analytics")
 public class DependentAnalyticsController {
 
     @Autowired

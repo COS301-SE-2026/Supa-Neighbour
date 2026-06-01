@@ -12,7 +12,7 @@ import com.app.api.services.LocationService;
  * Location controller.
  */
 @RestController
-@RequestMapping("api/locations")
+@RequestMapping("/api/locations")
 public class LocationController {
 
     @Autowired

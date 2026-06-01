@@ -12,7 +12,7 @@ import com.app.api.services.TaskTypeService;
  * Task type controller.
  */
 @RestController
-@RequestMapping("api/task-types")
+@RequestMapping("/api/task-types")
 public class TaskTypeController {
 
     @Autowired
@@ -32,7 +32,7 @@ public class TaskTypeController {
      * @param id task type id
      * @return task type
      */
-    @GetMapping("api/task-types/{id}")
+    @GetMapping("/{id}")
     public TaskType getTaskTypeById(@PathVariable int id) {
         return taskTypeService.getTaskTypeById(id);
     }

@@ -53,62 +53,62 @@ public class Likes {
         this.updatedAt = updatedAt;
     }
 
-    int getlikeid()
+    public int getLikeid()
     {
         return likeid;
     }
 
-    User getUserid()
+    public User getUserid()
     {
         return userid;
     }
     
-    Posts gePostsid()
+    public Posts getPostid()
     {
         return postid;
     }
     
-    Comments gCommentsid()
+    public Comments getCommentid()
     {
         return commentid;
     }
 
-    Timestamp getCreatedAt()
+    public Timestamp getCreatedAt()
     {
         return createdAt;
     }
 
-    Timestamp getUpdatedAt()
+    public Timestamp getUpdatedAt()
     {
         return updatedAt;
     }
 
-    void setLikesid(int likeid)
+    public void setLikeid(int likeid)
     {
         this.likeid=likeid;
     }
 
-    void setUserid(User userid)
+    public void setUserid(User userid)
     {
         this.userid=userid;
     }
 
-    void setCommentsid(Comments commentid)
+    public void setCommentid(Comments commentid)
     {
         this.commentid= commentid;
     }
 
-    void setPostid(Posts postid)
+    public void setPostid(Posts postid)
     {
         this.postid = postid;
     }
 
-    void setCreatedAt(Timestamp createdAt)
+    public void setCreatedAt(Timestamp createdAt)
     {
         this.createdAt = createdAt;
     }
 
-    void setUpdatedAt(Timestamp updatedAt)
+    public void setUpdatedAt(Timestamp updatedAt)
     {
         this.updatedAt=updatedAt;
     }

@@ -95,6 +95,7 @@ public class TaskInvoice {
     {
         
     }
+
     public int geTaskid() {
         return taskid;
     }
@@ -214,5 +215,5 @@ public class TaskInvoice {
     public void setCompatibilityid(Compatibility compatibilityid) {
         this.compatibilityid = compatibilityid;
     }
-
+    
 }
