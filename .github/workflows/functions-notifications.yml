@@ -10,6 +10,7 @@ jobs:
   build:
     name: Build Notifications Function
     runs-on: ubuntu-latest
+    if: false
     steps:
       - uses: actions/checkout@v4
 
@@ -30,7 +31,7 @@ jobs:
     name: Deploy to Azure Functions
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: false && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 

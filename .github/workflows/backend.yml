@@ -26,7 +26,7 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn clean install -DskipTests
+        run: mvn clean install -DskipTests -Dspring-boot.repackage.skip=true
         working-directory: backend
       
       - name: Lint
@@ -88,7 +88,7 @@ jobs:
     name: Deploy to Azure App Service
     runs-on: ubuntu-latest
     needs: build-and-test
-    if: github.ref == 'refs/heads/main'
+    if: false && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 

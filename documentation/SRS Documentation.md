@@ -16,11 +16,11 @@ The system will allows residents to post assistance for short-term household tas
 
 The admin dashbord provides a platform for manages with the needed tools to monitor community activity, manage users and handle reported content and maintain the overall health and safety of the platform.
 
-## Domain Model
+# Domain Model
 
 Please refer to the file for the Domain model: [Domain Model](../backend/database-schema.png)
 
-## User stories
+# User stories
 
 **User Characteristics**
 The Supa-Neighbour platform serves three distinct user types. A single registered account can either be a Resident (requester) and a Helper depending on the context
@@ -72,20 +72,20 @@ An Administrator is a platform manager who oversees the health, safety, and inte
   - View platform-wide analytics and activity logs
 
 
-**User Stories**
+## User Stories
 
-* Account Management & Authentication
+**1. Account Management & Authentication**
 | ID | User Story | Requirement |
-|---|---|---|---|
+|---|---|---|
 | US-R01 | As a Resident, I want to register using my email or phone number so that I can create a secure account on the platform. | R1.1 |
 | US-R04 | As a Resident, I want to log in securely using my email and password so that I can access my account.| R1.2.1 |
 | US-R05 | As a Resident, I want my account to be locked after too many failed login attempts so that my account is protected from unauthorised access.| R1.2.2 |
 | US-R06 | As a Resident, I want to reset my password if I forget it so that I can regain access to my account. | R1.2.2 |
 | US-R07 | As a Resident, I want to view and edit my profile, skills, and availability so that helpers and requesters can see relevant information about me. | R1.2.3 |
 
-* Task Managenment
+**2. Task Managenment**
 | ID | User Story| Requirement |
-|---|---|---|---|
+|---|---|---|
 | US-R08 | As a Resident, I want to create a task request on the app | R2.1.1, R2.1.2 |
 | US-R09 | As a Resident, I want to be able to edit my task  | R2.1 |
 | US-R10 | As a Resident, I want to view all my posted tasks and their statuses so that I can track what help I have requested.| R2.1 |
@@ -93,21 +93,23 @@ An Administrator is a platform manager who oversees the health, safety, and inte
 | US-R13 | As a Resident, I want to confirm task completion and rate my helper so that the community benefits from accurate trust scores. | R5.3.1 |
 | US-R14 | As a Resident, I want my exact home address to remain hidden until a helper has been accepted so that my privacy is protected. | R4.1.1 |
 
-* Communication
+**3. Communication**
+
 | ID | User Story| Requirement |
-|---|---|---|---|
+|---|---|---|
 | US-R15 | As a Resident, I want to chat with my accepted helper in real time so that we can coordinate task details securely.| R3.1.1 |
 | US-R16 | As a Resident, I want to receive push notifications when a helper accepts my task so that I am informed immediately. | R3.2.1 |
 | US-R17 | As a Resident, I want to receive a notification when my task has been marked complete so that I can confirm and rate the helper. | R3.2.1 |
 | US-R18 | As a Resident, I want all communication with helpers to stay within the app so that my personal contact details are never exposed. | R4.1.2 |
 
-## Use cases
+# Use cases
 
-Please refer to this image for the use cases [Use Case Diagram](../documentation/swagger_READMe.md)
+Please refer to this image for the use case Diagram: [Use Case Diagram](/documentation/Wireframe%20images/Use%20Case%20Diagram.jpg)
 
-## Functional requirements
+# Functional requirements
 
 **Use Case 1 - Authentication**
+
 R1: User Account Management
 The system shall allow users to create and manage secure accounts with verified neighbourhood information.
 
@@ -160,6 +162,7 @@ The system shall allow users to communicate in real time for task coordination.
 * R3.2.2: The system must allow helpers to mark tasks as complete with optional photo evidence
 
 **Subsystem Overview**
+
 The Supa-Neighbour platform is divided into the following subsystems, each responsible for a distinct area of functionality:
  
 | Subsystem | Responsibility | Related Requirements |
@@ -175,24 +178,182 @@ The Supa-Neighbour platform is divided into the following subsystems, each respo
 
 
 
-## API Service Contracts
+# API Service Contracts
 
 Please refer to this document for the API Contracts: [API Service Contract](/documentation/API_Service_Contractc.md)
 
-## Architectural Requirements
-### Quality Requirements
+# Architectural Requirements
+
+## Quality Requirements
+
+Quality requirements define the system's non-functional characteristics. Each requirement is traced to specific NFRs.
+
+### QR1: Performance
+
+QR1.1: Matching engine response time should be  ≤ 3 seconds based on NFR1.1.1
+
+QR1.2: Chat message delivery latency should be ≤ 2 seconds based on NFR1.1.2
+
+QR1.3: Concurrent user support should be be ≥ 1,000 users based on NFR1.2.1
+
+QR1.4: Concurrent chat sessions roughly ≥ 500 sessions based on NFR1.2.2
+
+---
+### QR2: Security & Privacy
+
+QR2.1: Password storage ,Hashed + salted (bcrypt/Argon2) based on NFR2.1.1
+
+QR2.4: Authentication via JWT via Microsoft Entra ID B2C based on AR3.1
+
+QR2.5: API rate limiting of roughly 50 requests/min/per user based on NFR2.2.1
+
+QR2.6: Spam detection for Automated flagging + admin review queue based on NFR2.2.2
+
+QR2.7: Address privacy which Revealed only post-task-acceptance based on R4.1.1
+
+QR2.8: Contact privacy,no exposure to any 3rd party; all communication in-app based on R4.1.2
+
+QR2.9: Security audit logging, All failed logins + suspicious activities logged for admin tech-team review based on NFR2.2.3
+
+---
+### QR3: Reliability & Availability
+
+QR3.1: System uptime, 99.5% based on NFR3.1.1
+
+QR3.2: Critical service failover which is Automated, < 30 seconds detection + recovery based on NFR3.1.2
+
+QR3.3: Matching engine failure recovery, User-friendly error + auto-retry within 10 seconds based on NFR3.2.1
+
+QR3.4: Chat message queuing, Messages persisted if service down; delivered on restore based on NFR3.2.2
+
+QR3.5: Data backup frequency | Daily (Cosmos DB), hourly transaction logs (Azure SQL)
+
+---
+### QR4: Usability
+
+QR4.1: First task posting time of ≤ 3 minutes from registration based on NFR4.1.1
+
+QR4.2: Mobile accessibility should allow for Adjustable text size based on NFR4.1.2 & R7.1.2
+
+QR4.3: Icon clarity, All icons include text labels based on NFR4.1.3
+
+QR4.4: Error messaging, Plain language + resolution suggestions based on NFR4.2.1
+
+QR4.5: Task workflow guidance, Step-by-step with progress indicators based on NFR4.2.2
+
+QR4.6: Age group support Intuitive for users 18-80+ based on R7.1.1
+
+---
+### QR5: Scalability
+
+QR5.1: Horizontal scaling with Zero-downtime instance addition based on NFR5.1.1 & AR6.1
+
+QR5.2: Database partitioning trigger for ≥ 100,000 users based on NFR5.1.2
+
+QR5.3: Neighbourhood zone configurability, No code changes for new regions based on NFR5.2.1
+
+QR5.4: Proximity algorithm efficiency, prefferably O(log n) or better for zone lookup based on NFR5.2.2
+
+---
+### QR6: Maintainability
 
 
-### Architectural Diagrams
+QR6.1: Module coupling, Loosely coupled based on NFR6.1.1 & AR7
 
-### Design Patterns
+QR6.2: Layer separation with Clear boundaries: Presentation → API → Service → Data based on NFR6.1.2 & AR1
 
-### Contraints
-1. Privacy of location and home details must be strictly protected.
-2. Verification processes must remain simple for usability.
-3. Neighbourhood boundaries may differ per region → need flexible logic.
-4. Messaging system must prevent harassment or spam.
-5. Tasks involving animals may require disclaimers or basic safety
-guidance.
+QR6.3: API documentation, OpenAPI/Swagger for all REST + GraphQL endpoints based on NFR6.2.1
+
+QR6.4: Logging completeness on Errors, warnings, key user actions with timestamps based on NFR6.2.2
+
+---
+### QR7: Portability
+
+QR7.1: Azure compatibility, All components deployable to Azure based on NFR7.1.1 & AR4
+
+QR7.2: CI/CD support via the GitHub Actions pipelines based on NFR7.1.2 & AR5
+
+QR7.3: Android minimum version | API level 30 (Android 11) based on NFR7.2.1
+
+QR7.4: Screen size adaptation, Phones + tablets, portrait + landscape based on NFR7.2.2
+
+---
+### QR8: Compliance
+
+QR8.1: POPIA compliance with Explicit consent for location data based on NFR8.1.1
+
+QR8.2: Right to deletion, User data deletion request supported based on NFR8.1.2
+
+QR8.4: Privacy policy which is Accessible during registration based on NFR8.2.2
+
+---
+
+
+## Architectural Patterns
+
+
+The Architectural Diagram can be viewed here: [Architectural diagram](../documentation/Images/Architecture%20diagram.drawio.png)
+
+---
+
+## Contraints
+
+### C1: Platform & Deployment Constraints
+
+C1.1: Android app required (iOS optional), Flutter must support Android API 30+
+
+C1.2: Web dashboard for admins
+
+C1.3: Backend must deploy to Azure
+
+C1.4: CI/CD via GitHub Actions
+
+C1.5: Matching engine uses GraphQL
+
+---
+### C2: Privacy & Security Constraints
+
+C2.1: Exact address revealed ONLY after task acceptance
+
+C2.2: Personal contact numbers never exposed, All communication via in-app chat only
+
+C2.3: Location data requires explicit consent, Consent screen + preference storage
+
+C2.4: POPIA compliance, Users must havd Right to deletion & data processing records
+
+C2.5: Secrets in Azure Key Vault, No hardcoded secrets in code/config
+
+---
+### C3: Usability Constraints
+
+C3.1: Verification must remain simple, OTP only; no complex document uploads initially
+
+C3.2: Large fonts + accessible design, Flutter text scaling must work
+
+C3.3: First task within 3 minutes of registration,Onboarding must be minimal
+
+---
+### C4: Domain Constraints
+
+C4.1: Neighbourhood boundaries differ per region, Configuration-driven, not hardcoded
+
+C4.2: Messaging must prevent harassment/spam, Content filtering + rate limiting + reporting
+
+C4.3: Animal tasks require disclaimers, Safety guidance before accepting pet tasks
+
+---
+
+### C6: Budget & Resource Constraints
+
+C6.1: Approval needed from Gendac for expenses,Any paid Azure service requires sign-off
+
+C6.2: Team size = 5, limited to 5 tech memmbers
+
+---
+### C7: Timeline Constraints
+
+C7.1: Delivery within Project deadlines which we  Prioritise core (R1-R7) over wow factor (R8-R10)
+
+---
 
 

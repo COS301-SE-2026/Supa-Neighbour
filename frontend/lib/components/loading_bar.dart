@@ -1,0 +1,62 @@
+import 'package:flutter/material.dart';
+
+class LoadingBar extends StatefulWidget {
+  final double width;
+  final double height;
+  final Duration duration;
+
+  const LoadingBar({
+    super.key,
+    required this.width,
+    this.height = 16,
+    this.duration = const Duration(seconds: 3),
+  });
+
+  @override
+  State<LoadingBar> createState() => _LoadingBarState();
+}
+
+class _LoadingBarState extends State<LoadingBar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          width: widget.width * _animation.value,
+          height: widget.height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(21),
+            color: const Color(0xFF1C9A89),
+          ),
+        );
+      },
+    );
+  }
+}
