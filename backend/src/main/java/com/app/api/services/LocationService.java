@@ -36,6 +36,8 @@ public class LocationService {
 
         existing.setLocationCenterPoint(updated.getLocationCenterPoint());
         existing.setLocationRadius(updated.getLocationRadius());
+        existing.setNeighbourhoodName(updated.getNeighbourhoodName());
+        existing.setNeighbourhoodid(updated.getNeighbourhoodid());
 
         return locationRepository.save(existing);
     }

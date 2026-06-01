@@ -36,6 +36,7 @@ public class HelperService {
 
         existing.setUserid(updated.getUserid());
         existing.setTaskTypeid(updated.getTaskTypeid());
+        existing.setBadgeid(updated.getBadgeid());
 
         return helperRepository.save(existing);
     }

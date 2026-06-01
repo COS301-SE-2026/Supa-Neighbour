@@ -34,8 +34,17 @@ public class UserService {
         User existing = userRepository.findById(id).orElse(null);
         if (existing == null) return null;
 
-        existing.setUserid(updated.getUserid());
         existing.setBadgeid(updated.getBadgeid());
+        existing.setAddressid(updated.getAddressid());
+        existing.setDateOfBirth(updated.getDateOfBirth());
+        existing.setEmail(updated.getEmail());
+        existing.setFirstName(updated.getFirstName());
+        existing.setGender(updated.getGender());
+        existing.setLastName(updated.getLastName());
+        existing.setPassword(updated.getPassword());
+        existing.setPhoneNumber(updated.getPhoneNumber());
+        existing.setRatingid(updated.getRatingid());
+        existing.setUserType(updated.getUserType());
 
         return userRepository.save(existing);
     }

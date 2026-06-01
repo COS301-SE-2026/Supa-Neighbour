@@ -26,6 +26,7 @@ public class AdminService {
 
     // Create
     public Admin saveAdmin(Admin admin) {
+        if(admin == null) return null;
         return adminRepository.save(admin);
     }
 
@@ -36,6 +37,13 @@ public class AdminService {
 
         existing.setUserid(updated.getUserid());
         existing.setAdminaccesslevel(updated.getAdminaccesslevel());
+        existing.setAdminpassword(updated.getAdminpassword());
+        existing.setAdminEmail(updated.getAdminEmail());
+        existing.setAdminphonenumber(updated.getAdminphonenumber());
+        existing.setAdminname(updated.getAdminname());
+        existing.setAdminsurname(updated.getAdminsurname());
+        existing.setAdmincreatedate(updated.getAdmincreatedate());
+        existing.setAdminaddressid(updated.getAdminaddressid());
 
         return adminRepository.save(existing);
     }

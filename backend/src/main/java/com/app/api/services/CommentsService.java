@@ -26,6 +26,7 @@ public class CommentsService {
 
     // Create
     public Comments saveComments(Comments comments) {
+        if(comments == null) return null;
         return commentsRepository.save(comments);
     }
 
@@ -37,6 +38,10 @@ public class CommentsService {
         existing.setUserid(updated.getUserid());
         existing.setUpdatedAt(updated.getUpdatedAt());
         existing.setCommentContent(updated.getCommentContent());
+        existing.setParentCommentid(updated.getParentCommentid());
+        existing.setCreatedAt(updated.getCreatedAt());
+        existing.setPostid(updated.getPostid());
+        existing.setUpdatedAt(updated.getUpdatedAt());
         return commentsRepository.save(existing);
     }
 

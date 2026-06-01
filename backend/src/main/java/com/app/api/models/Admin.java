@@ -73,7 +73,7 @@ public class Admin {
         return userid;
     }
 
-    void getUser(User userid)
+    void setUser(User userid)
     {
         this.userid=userid;
     }
@@ -94,11 +94,11 @@ public class Admin {
         this.adminpassword = adminpassword;
     }
 
-    public String getEmail() {
+    public String getAdminEmail() {
         return email;
     }   
 
-    public void setEmail(String email) {
+    public void setAdminEmail(String email) {
         this.email = email;
     }
 

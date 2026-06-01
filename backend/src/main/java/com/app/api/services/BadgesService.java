@@ -26,6 +26,7 @@ public class BadgesService {
 
     // Create
     public Badges saveBadges(Badges badges) {
+        if(badges == null) return null;
         return badgesRepository.save(badges);
     }
 
@@ -36,6 +37,8 @@ public class BadgesService {
 
         existing.setXpReward(updated.getXpReward());
         existing.setDescription(updated.getDescription());
+        existing.setBadgeName(updated.getBadgeName());
+        existing.setRatingid(updated.getRatingid());
 
         return badgesRepository.save(existing);
     }

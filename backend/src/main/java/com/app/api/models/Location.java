@@ -50,9 +50,6 @@ public class Location {
         return locationCenterPoint;
     }
 
-    public void setLocationcentrepoint(int locationCenterPoint) {
-        this.locationCenterPoint = locationCenterPoint;
-    }
 
     public int getLocationRadius() {
         return locationRadius;

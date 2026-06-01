@@ -34,10 +34,11 @@ public class LikesService {
         Likes existing = likesRepository.findById(id).orElse(null);
         if (existing == null) return null;
 
-        existing.setLikeid(updated.getLikeid());
         existing.setCommentid(updated.getCommentid());
         existing.setPostid(updated.getPostid());
         existing.setUserid(updated.getUserid());
+        existing.setCreatedAt(updated.getCreatedAt());
+        existing.setUpdatedAt(updated.getUpdatedAt());
 
         return likesRepository.save(existing);
     }

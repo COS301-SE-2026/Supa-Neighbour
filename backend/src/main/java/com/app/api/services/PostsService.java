@@ -36,6 +36,10 @@ public class PostsService {
 
         existing.setUserid(updated.getUserid());
         existing.setPostContent(updated.getPostContent());
+        existing.setCreatedAt(updated.getCreatedAt());
+        existing.setUpdatedAt(updated.getUpdatedAt());
+        existing.setMediaURL(updated.getMediaURL());
+
 
         return postsRepository.save(existing);
     }

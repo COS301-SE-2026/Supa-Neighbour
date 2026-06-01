@@ -82,7 +82,7 @@ public class HelperAnalytics {
         return locationid;
     }
 
-    public void setLocationId(Location locationid) {
+    public void setLocationid(Location locationid) {
         this.locationid = locationid;
     }
 
@@ -90,7 +90,7 @@ public class HelperAnalytics {
         return compatibilityid;
     }
 
-    public void setCompatibilityId(Compatibility compatibilityid) {
+    public void setCompatibilityid(Compatibility compatibilityid) {
         this.compatibilityid = compatibilityid;
     }
 

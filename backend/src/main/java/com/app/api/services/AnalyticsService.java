@@ -26,6 +26,7 @@ public class AnalyticsService {
 
     // Create
     public Analytics saveAnalytics(Analytics analytics) {
+        if(analytics == null) return null;
         return analyticsRepository.save(analytics);
     }
 

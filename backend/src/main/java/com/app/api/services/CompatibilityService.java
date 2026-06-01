@@ -36,6 +36,8 @@ public class CompatibilityService {
 
         existing.setCompatibilityScore(updated.getCompatibilityScore());
         existing.setCompatibilityColour(updated.getCompatibilityColour());
+        existing.setDependentid(updated.getDependentid());
+        existing.setHelperid(updated.getHelperid());
 
         return compatibilityRepository.save(existing);
     }

@@ -77,11 +77,11 @@ public class Badges {
         this.xpReward = xpReward;
     }
 
-    public Ratings getRatingId() {
+    public Ratings getRatingid() {
         return ratingid;
     }
 
-    public void setRatingId(Ratings ratingid) {
+    public void setRatingid(Ratings ratingid) {
         this.ratingid = ratingid;
     }
     

@@ -35,6 +35,8 @@ public class TaskTypeService {
         if (existing == null) return null;
 
         existing.setDescription(updated.getDescription());
+        existing.setBadgeid(updated.getBadgeid());
+        existing.setXpWorth(updated.getXpWorth());
         existing.setNeedsSpecialist(updated.isNeedsSpecialist());
 
         return taskTypeRepository.save(existing);

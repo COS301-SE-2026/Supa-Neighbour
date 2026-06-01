@@ -26,6 +26,7 @@ public class AddressService {
 
     // Create
     public Address saveAddress(Address address) {
+        if(address == null) return null;
         return addressRepository.save(address);
     }
 
@@ -37,6 +38,7 @@ public class AddressService {
         existing.setStreet(updated.getStreet());
         existing.setStreetNumber(updated.getStreetNumber());
         existing.setZipcode(updated.getZipcode());
+        existing.setNeighbourhoodid(updated.getNeighbourhoodid());
 
         return addressRepository.save(existing);
     }

@@ -36,6 +36,11 @@ public class HelperAnalyticsService {
 
         existing.setUserid(updated.getUserid());
         existing.setTasktypeid(updated.getTasktypeid());
+        existing.setAverageGivingRating(updated.getAverageGivingRating());
+        existing.setAverageRating(updated.getAverageRating());
+        existing.setCompatibilityid(updated.getCompatibilityid());
+        existing.setLocationid(updated.getLocationid());
+
 
         return helperAnalyticsRepository.save(existing);
     }

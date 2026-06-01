@@ -36,12 +36,18 @@ public class DependentAnalyticsService {
 
         existing.setUserid(updated.getUserid());
         existing.setTasktypeid(updated.getTasktypeid());
+        existing.setAveeragerating(updated.getAveeragerating());
+        existing.setLocationid(updated.getLocationid());
+        existing.setAveragegivingrating(updated.getAveragegivingrating());
+        existing.setTotaltasks(updated.getTotaltasks());
+
 
         return dependentAnalyticsRepository.save(existing);
     }
 
     // Delete
     public void deleteDependentAnalytics(String id) {
+        
         dependentAnalyticsRepository.deleteById(id);
     }
 }

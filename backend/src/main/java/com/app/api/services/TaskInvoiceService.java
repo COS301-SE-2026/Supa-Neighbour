@@ -36,6 +36,18 @@ public class TaskInvoiceService {
 
         existing.setHelperid(updated.getHelperid());
         existing.setTasktypeid(updated.getTasktypeid());
+        existing.setAdminreview(updated.getAdminReview());
+        existing.setCompatibilityid(updated.getCompatibilityid());
+        existing.setSignedadminid(updated.getSignedadminid());
+        existing.setDependentid(updated.getDependentid());
+        existing.setImmediate(updated.isImmediate());
+        existing.setLocationid(updated.getLocationid());
+        existing.setNeedsspecialist(updated.isNeedsspecialist());
+        existing.setDependentratingreview(updated.getDependentRatingreview());
+        existing.setHelperRatingreview(updated.getHelperRatingreview());
+        existing.setHelperbadgeid(updated.getHelperbadgeid());
+        existing.setStartdate(updated.getStartdate());
+        existing.setEnddate(updated.getEnddate());
 
         return taskInvoiceRepository.save(existing);
     }

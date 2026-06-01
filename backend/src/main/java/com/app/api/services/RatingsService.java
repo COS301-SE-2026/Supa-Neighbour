@@ -36,6 +36,7 @@ public class RatingsService {
 
         existing.setRatingReview(updated.getRatingReview());
         existing.setTotalXpLevel(updated.getTotalXpLevel());
+        existing.setCurrentGroup(updated.getCurrentGroup());
 
         return ratingsRepository.save(existing);
     }
