@@ -1,0 +1,79 @@
+package com.app.api.models;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+@Entity
+@Table(name = "helper_table")
+public class Helper {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "helper_id")
+    private int helperid;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User userid;
+
+    @ManyToOne
+    @JoinColumn(name = "task_type_id")
+    private TaskType taskTypeid;
+
+    @ManyToOne
+    @JoinColumn(name = "badge_id")
+    private Badges badgeid;
+
+    public Helper(int helperid, User userid, TaskType taskTypeid, Badges badgeid) {
+        this.helperid = helperid;
+        this.userid = userid;
+        this.taskTypeid = taskTypeid;
+        this.badgeid = badgeid;
+    }
+
+    public Helper()
+    {
+        
+    }
+    public void setHelperid(int helperid) {
+        this.helperid = helperid;
+    }
+
+    public void setUserid(User userid) {
+        this.userid = userid;
+    }
+
+    public int getHelperid() {
+        return helperid;
+    }
+
+    public User getUserid() {
+        return userid;
+    }
+
+    public TaskType getTaskTypeid() {
+        return taskTypeid;
+    }
+
+    public Badges getBadgeid() {
+        return badgeid;
+    }
+
+    public void setTaskTypeid(TaskType taskTypeid) {
+        this.taskTypeid = taskTypeid;
+    }
+
+    public void setBadgeid(Badges badgeid) {
+        this.badgeid = badgeid;
+    }
+    
+}
