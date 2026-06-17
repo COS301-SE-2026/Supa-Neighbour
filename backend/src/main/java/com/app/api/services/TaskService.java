@@ -66,7 +66,7 @@ public class TaskService {
             return false;
         }
 
-        Iterable<Analytics> linkedAnalytics = analyticsRepo.findByTaskId(taskId);
+        Iterable<Analytics> linkedAnalytics = analyticsRepo.findByTaskid_Taskid(taskId);
         analyticsRepo.deleteAll(linkedAnalytics);
 
         taskRepo.deleteById(taskId);
@@ -122,7 +122,7 @@ public class TaskService {
      * @return tasks linked to the user's dependent ID, or null if profile not found
      */
     public Iterable<Task> getTasksByUserId(int userId) {
-        Dependent dependent = dependentRepo.findByUserId(userId);
+        Dependent dependent = dependentRepo.findByUserid_Userid(userId);
         if (dependent == null) {
             return null;
         }

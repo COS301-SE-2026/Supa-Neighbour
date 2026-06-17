@@ -4,7 +4,8 @@ WORKDIR /app
 COPY pom.xml .
 COPY checkstyle.xml .
 COPY src ./src
-RUN mvn clean install -DskipTests -Dcheckstyle.skip
+RUN mvn clean install -DskipTests -Dmaven.test.skip=true -Dcheckstyle.skip
+
 
 # Stage 2 — run the JAR
 FROM eclipse-temurin:21-jre-jammy

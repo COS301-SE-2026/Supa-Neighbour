@@ -41,7 +41,7 @@ class TaskService {
     required bool needsSpecialist,
   }) async {
     try {
-      final Response<Map<String, dynamic>> response = await _dio.post('/tasks/create', data: {
+      final Response<Map<String, dynamic>> res = await _dio.post('/tasks/create', data: {
         'dependentId': dependentId,
         'taskTypeId': taskTypeId,
         'startDate': startDate.toIso8601String().split('T').first,
@@ -49,9 +49,33 @@ class TaskService {
         'needsSpecialist': needsSpecialist,
       });
 
-      return Task.fromJson(response.data!);
+      return Task.fromJson(res.data!);
     } on DioException catch (e) {
       throw Exception(" Couldn't create task: ${e.message}");
     }
 }
+
+
+  /// Updates an exisiting task from PUT /tasks/{taskId}.
+  /// should return the updated task if success
+  Future<Task> updateTask({
+    required int taskId,
+    required int taskTypeId,
+    required DateTime startDate,
+    required String adminReview,
+  }) async {
+    try{
+      final Response<Map<String, dynamic>> res = 
+      await _dio.put('/tasks/$taskId', data: {
+        'taskTypeId' : taskTypeId,
+        'startDate': startDate.toIso8601String().split('T').first,
+        'adminReview':adminReview,
+      });
+
+      return Task.fromJson(res.data!);
+    } on DioException catch (e) {
+      throw Exception("Couldn't update task: ${e.message}");
+    }
+  }
+
 }

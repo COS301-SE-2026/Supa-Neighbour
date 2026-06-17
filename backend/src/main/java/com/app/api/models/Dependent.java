@@ -20,7 +20,7 @@ public class Dependent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "dependent_id")
-    private int dependentid;
+    private int dependentId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -32,7 +32,7 @@ public class Dependent {
 
 
     public Dependent(int dependentid,User userid, TaskType taskTypeid) {
-        this.dependentid=dependentid;
+        this.dependentId=dependentid;
         this.userid = userid;
         this.taskTypeid = taskTypeid;
     }
@@ -40,6 +40,14 @@ public class Dependent {
     public Dependent()
     {
         
+    }
+
+    /**
+     * Simply a getter for the dependent id
+     * @return the id of the the Dependent
+     */
+    public int getDependentId() {
+    return dependentId;
     }
 
     

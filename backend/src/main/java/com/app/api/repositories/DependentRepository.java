@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.app.api.models.Dependent;
 @Repository
 public interface DependentRepository extends JpaRepository<Dependent, Integer> {
-    
+    Dependent findByUserid_Userid(int userId);
 }

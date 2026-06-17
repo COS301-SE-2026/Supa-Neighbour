@@ -19,7 +19,7 @@ class _MyTasksScreenState extends State<MyTasksScreen> {
   String? _errorMessage;
 
   /////// to update once login(authentication) is complete
-  static const int _currentUserId = 103;
+  static const int _currentUserId = 6;
 
   @override
   void initState() {
