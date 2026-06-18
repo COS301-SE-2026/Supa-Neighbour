@@ -8,6 +8,8 @@ import 'create_task_screen.dart';
 import 'inbox_screen.dart';
 import 'my_tasks_screen.dart';
 import 'task_detail_screen.dart';
+import '../../services/task_service.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -55,25 +57,51 @@ class HomeContent extends StatefulWidget {
 class _HomeContentState extends State<HomeContent> {
   List<Task> _nearbyTasks = [];
   User? _currentUser;
+  //
+  static const int _currentUserId = 6;
+  final TaskService _taskService = TaskService();
+  bool _isLoadingUser = false;
+
 
   @override
   void initState() {
     super.initState();
-    _loadNearbyTasks();
     _loadCurrentUser();
-  }
+    _loadNearbyTasks();
+    }
 
-  void _loadCurrentUser() {
+  Future<void> _loadCurrentUser() async {
+  setState(() => _isLoadingUser = true);
+  try {
+    final data = await _taskService.getUserById(_currentUserId);
+    final user = User.fromJson(data);
+    AuthSession.instance.login(user);
     setState(() {
-      _currentUser = AuthSession.instance.currentUser;
+      _currentUser = user;
+      _isLoadingUser = false;
+    });
+  } catch (e) {
+    // fallback to mock if API unavailable
+    setState(() {
+      _currentUser = AuthSession.instance.currentUser ?? User.getMockUser();
+      _isLoadingUser = false;
     });
   }
+}
 
-  void _loadNearbyTasks() {
+
+ Future<void> _loadNearbyTasks() async {
+  try {
+    final List<Task> tasks =
+        await _taskService.getTasksByUserId(_currentUserId);
     setState(() {
-      _nearbyTasks = Task.getMockTasks();
+      _nearbyTasks = tasks;
     });
+  } catch (e) {
+    // keep existing list on failure
   }
+}
+
 
   String getGreeting() {
     final hour = DateTime.now().hour;
@@ -109,7 +137,7 @@ class _HomeContentState extends State<HomeContent> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          _loadNearbyTasks();
+         await  _loadNearbyTasks();
           return Future.value();
         },
         child: SingleChildScrollView(
@@ -146,7 +174,7 @@ class _HomeContentState extends State<HomeContent> {
               builder: (_) => const CreateTaskScreen(),
             ),
           );
-          _loadNearbyTasks();
+          await _loadNearbyTasks();
         },
         backgroundColor: const Color(0xFF2A9D8F),
         child: const Icon(Icons.add, color: Colors.white),

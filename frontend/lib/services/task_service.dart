@@ -87,4 +87,17 @@ class TaskService {
     }
   }
 
+  /// Gets a user by ID from GET /api/users/{id}.
+Future<Map<String, dynamic>> getUserById(int userId) async {
+  try {
+    final Response<Map<String, dynamic>> res =
+        await _dio.get('/api/users/$userId');
+    return res.data!;
+
+  } on DioException catch (e) {
+    throw Exception("Couldn't load user: ${e.message}");
+  }
+}
+
+
 }
