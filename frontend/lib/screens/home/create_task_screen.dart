@@ -113,7 +113,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     
     try {
       await _taskService.createTask(
-        dependentId: 2, // will update to auth usrs
+        dependentId: 1, // will update to auth usrs
         taskTypeId: Task.resolveTaskTypeId(_selectedCategory!),
         startDate: _selectedDate,
         isImmediate: false,

@@ -78,4 +78,13 @@ class TaskService {
     }
   }
 
+  /// Deletes a task via DELETE /tasks/{taskId}.
+  Future<void> deleteTask(int taskId) async {
+    try {
+      await _dio.delete('/tasks/$taskId');
+    } on DioException catch (e) {
+      throw Exception("Couldn't delete task: ${e.message}");
+    }
+  }
+
 }
