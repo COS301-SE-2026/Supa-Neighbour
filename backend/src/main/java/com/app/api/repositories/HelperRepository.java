@@ -8,4 +8,3 @@ import com.app.api.models.Helper;
 public interface HelperRepository extends JpaRepository<Helper, Integer> {
     
 }
-
