@@ -129,7 +129,7 @@ public class User {
 
 
     /**
-     * Gets the user's first name.
+     * Sets the user's first name.
      *
      * @return the first name
      */
@@ -138,9 +138,18 @@ public class User {
     }
 
     /**
-     * Sets the user's last name.
+     * Gets the user's first name.
      *
-     * @param firstName the last name
+     * @return the first name
+     */
+    public String getFirstName() {
+        return firstName;
+    }
+
+    /**
+     * Gets the user's last name.
+     *
+     * @return the last name
      */
     public String getLastName() {
         return lastName;

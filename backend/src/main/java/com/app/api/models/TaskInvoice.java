@@ -336,6 +336,14 @@ public class TaskInvoice {
     public void setDependentratingreview(String dependentRatingreview) {
         this.dependentRatingreview = dependentRatingreview;
     }
+    /**
+     * Gets the dependent's rating and review of the task.
+     *
+     * @returnthe dependent rating review
+     */
+    public String getDependentratingreview() {
+        return dependentRatingreview;
+    }
 
     /**
      * Gets the helper's rating and review of the task.

@@ -63,4 +63,38 @@ public class Dependent {
         return dependentId;
     }
     
+    /**
+     * Gets the user associated with this dependent.
+     *
+     * @return the user
+     */
+    public User getUserid(){
+        return userid;
+    }
+
+    /**
+     * Sets the user associated with this dependent.
+     *
+     * @param userid the user
+     */
+    public void setUserid(User userid){
+        this.userid = userid;
+    }
+    /**
+     * Gets the task type associated with this dependent.
+     *
+     * @return the task type
+     */
+    public TaskType getTaskTypeid(){
+        return taskTypeid;
+    }
+    /**
+     * Sets the task type associated with this dependent.
+     *
+     * @param taskTypeid the task type
+     */
+    public void setTaskTypeid(TaskType TaskTypeid){
+        this.taskTypeid = TaskTypeid;
+    }
+
 }

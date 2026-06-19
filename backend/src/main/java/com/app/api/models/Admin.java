@@ -100,12 +100,12 @@ public class Admin {
     }
 
     /**
-     * Sets the uer identifier.
+     * Sets the user identifier.
      *
-     * @param userid the uer identifier
+     * @param userid the user identifier
      */
-    void setUser(User userid){
-        this.userid=userid;
+    public void setUser(User userid) {
+        this.userid = userid;
     }
 
        /**

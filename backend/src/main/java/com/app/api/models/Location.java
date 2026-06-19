@@ -76,6 +76,15 @@ public class Location {
         return locationCenterPoint;
     }
 
+    /**
+     * Sets the center point of the service area.
+     *
+     * @param LocationCenterPoint
+     */
+    public void setLocationCentrePoint(int LocationCenterPoint) {
+        this.locationCenterPoint = LocationCenterPoint;
+    }
+
 
     /**
      * Gets the radius of the service area.
