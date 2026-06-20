@@ -58,4 +58,22 @@ public class ChatController {
 
         return ResponseEntity.ok(result);
     }
+
+    /**
+     * Get all chat threads for a specific user.
+     * @param userId the ID of the user
+     * @return list of chat summaries with last message and unread count
+     */
+    @Operation(summary = "Get all chats for a user")
+    @ApiResponse(responseCode = "200", description = "Chats retrieved")
+    @ApiResponse(responseCode = "404", description = "No chats found for user")
+    @GetMapping("/{userId}")
+    public ResponseEntity<Map<String, Object>> getChatsByUser(
+            @PathVariable int userId) {
+
+        Map<String, Object> result = chatService.getChatsByUserId(userId);
+        return ResponseEntity.ok(result);
+    }
+
+
 }

@@ -5,6 +5,7 @@ import com.app.api.models.Message;
 
 import com.app.api.repositories.ChatRepository;
 import com.app.api.repositories.MessageRepository;
+import com.sun.jna.platform.win32.WinUser.MSG;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -59,7 +60,7 @@ public class ChatService {
         PageRequest pageable = PageRequest.of(page - 1, limit);
         Page<Message> msgPage = msgRepo.findByChat_ChatIdOrderBySentAtAsc(chatId, pageable);
 
-        // msg list
+        // Msg list
         List<Map<String, Object>> msgList = new ArrayList<>();
         for (Message msg : msgPage.getContent()) {
             Map<String, Object> m = new HashMap<>();
@@ -74,7 +75,7 @@ public class ChatService {
             msgList.add(m);
         }
 
-        // participants list
+        // Participants list
         List<Map<String, Object>> participants = new ArrayList<>();
         Map<String, Object> dependent = new HashMap<>();
         dependent.put("userID", chat.getDependentUser().getUserid());
@@ -88,7 +89,7 @@ public class ChatService {
                 + " " + chat.getHelperUser().getLastName());
         participants.add(helper);
 
-        // res
+        // Res
         Map<String, Object> res = new HashMap<>();
         res.put("chatID", chat.getChatId());
         res.put("taskID", chat.getTask().getTaskid());
@@ -99,5 +100,68 @@ public class ChatService {
 
         return res;
     }
+
+
+
+    /**
+     * Gets all chat threads for a specific user.
+     * Includes last message, unread count, and task info per thread.
+     * @param userId the user ID
+     * @return list of chat summaries, or null if the user has no chats
+     */
+    public Map<String, Object> getChatsByUserId(int userId) {
+
+        // Find all chats where this user is either the dependent or helper
+        List<Chat> chats = chatRepo
+                .findByDependentUser_UseridOrHelperUser_Userid(userId, userId);
+
+        // Chat list
+        List<Map<String, Object>> chatList = new ArrayList<>();
+
+        for (Chat chat : chats) {
+
+            // Basically used to etermine which user is the "other" person  in the convo
+            boolean isDependent = chat.getDependentUser().getUserid() == userId;
+            var otherUser = isDependent ? chat.getHelperUser() : chat.getDependentUser();
+
+            // Get the last message in this chat
+            PageRequest lastOne = PageRequest.of(0, 1);
+            Page<Message> lastMsgPage = msgRepo
+                    .findByChat_ChatIdOrderBySentAtDesc(chat.getChatId(), lastOne);
+
+            String lastMessageContent = "";
+            String lastMessageTimestamp = "";
+            if (!lastMsgPage.isEmpty()) {
+                Message last = lastMsgPage.getContent().get(0);
+                lastMessageContent = last.getContent();
+                lastMessageTimestamp = last.getSentAt().toString();
+            }
+
+            // Count of unread messages
+            long unreadCount = msgRepo
+                    .countByChat_ChatIdAndIsReadFalseAndSender_UseridNot(
+                            chat.getChatId(), userId);
+
+            // Chat summary obj
+            Map<String, Object> chatSummary = new HashMap<>();
+            chatSummary.put("chatID", chat.getChatId());
+            chatSummary.put("taskID", chat.getTask().getTaskid());
+            chatSummary.put("otherUserID", otherUser.getUserid());
+            chatSummary.put("otherUsername",
+                    otherUser.getFirstName() + " " + otherUser.getLastName());
+            chatSummary.put("lastMessage", lastMessageContent);
+            chatSummary.put("lastMessageTimestamp", lastMessageTimestamp);
+            chatSummary.put("unreadCount", unreadCount);
+
+            chatList.add(chatSummary);
+        }
+
+        // Res
+        Map<String, Object> res = new HashMap<>();
+        res.put("userID", userId);
+        res.put("chats", chatList);
+        return res;
+    }
+
 }
   
