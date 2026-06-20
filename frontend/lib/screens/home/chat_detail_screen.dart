@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../models/chat_thread.dart';
 
+import '../../models/chat_thread.dart';
 class ChatDetailScreen extends StatefulWidget {
   final ChatThread chat;
 
@@ -277,7 +277,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black..withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),
@@ -334,7 +334,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     width: 45,
                     height: 45,
                     decoration: const BoxDecoration(
-                      color:  Color(0xFF1C9A89),
+                      color: Color(0xFF1C9A89),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(

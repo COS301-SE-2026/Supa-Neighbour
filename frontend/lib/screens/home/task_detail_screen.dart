@@ -5,7 +5,7 @@ import 'edit_task_screen.dart';
 
 class TaskDetailScreen extends StatelessWidget {
   final Task task;
-  final VoidCallback? onTaskUpdated;  // Add callback
+  final VoidCallback? onTaskUpdated; 
 
   const TaskDetailScreen({super.key, required this.task, this.onTaskUpdated});
 
