@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 import java.util.Map;
 
@@ -74,6 +77,34 @@ public class ChatController {
         Map<String, Object> result = chatService.getChatsByUserId(userId);
         return ResponseEntity.ok(result);
     }
+
+    /**
+     * Send a new message to a chat thread.
+     * @param chatId the ID of the chat
+     * @param body request body containing senderID, content, and optional type
+     * @return the created message with HTTP 201, or 404 if chat not found
+     */
+    @Operation(summary = "Send a message to a chat thread")
+    @ApiResponse(responseCode = "201", description = "Message sent")
+    @ApiResponse(responseCode = "404", description = "Chat not found")
+    @PostMapping("/{chatId}/messages")
+    public ResponseEntity<Map<String, Object>> postMessage(
+        @PathVariable int chatId,
+        @RequestBody Map<String, Object> body) {
+
+        int senderId = (Integer) body.get("senderID");
+        String content = (String) body.get("content");
+        String type = body.containsKey("type") ? (String) body.get("type") : "text";
+
+        Map<String, Object> result = chatService.sendMessage(chatId, senderId, content, type);
+
+        if (result == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.status(201).body(result);
+    }
+
 
 
 }

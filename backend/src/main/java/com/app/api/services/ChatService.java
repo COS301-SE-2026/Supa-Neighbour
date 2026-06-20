@@ -5,7 +5,7 @@ import com.app.api.models.Message;
 
 import com.app.api.repositories.ChatRepository;
 import com.app.api.repositories.MessageRepository;
-import com.sun.jna.platform.win32.WinUser.MSG;
+//import com.sun.jna.platform.win32.WinUser.MSG;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -162,6 +162,53 @@ public class ChatService {
         res.put("chats", chatList);
         return res;
     }
+
+    /**
+     * Sends a new message to a chat thread.
+     * @param chatId the chat ID
+     * @param senderId the sender's user ID
+     * @param content the message text or image URL
+     * @param msgType 'text' or 'image'
+     * @return the saved message as a map, or null if chat not found
+     */
+    public Map<String, Object> sendMessage(int chatId, int senderId,
+            String content, String msgType) {
+
+        // Find the chat
+        Chat chat = chatRepo.findById(chatId).orElse(null);
+        if (chat == null) {
+            return null;
+        }
+
+        // Create nd save message
+        Message msg = new Message();
+        msg.setChat(chat);
+
+        // We need a user reference hence y we create a proxy with just the id
+        // *will be used as FK without loading the full user
+        com.app.api.models.User sender = new com.app.api.models.User();
+        sender.setUserid(senderId);
+        msg.setSender(sender);
+
+        msg.setContent(content);
+        msg.setMessageType(msgType != null ? msgType : "text");
+        msg.setRead(false);
+        msg.setSentAt(java.time.LocalDateTime.now());
+
+        Message saved = msgRepo.save(msg);
+
+        // Res
+        Map<String, Object> res = new HashMap<>();
+        res.put("messageID", saved.getMessageId());
+        res.put("chatID", chatId);
+        res.put("senderID", senderId);
+        res.put("content", saved.getContent());
+        res.put("type", saved.getMessageType());
+        res.put("timestamp", saved.getSentAt());
+        res.put("read", saved.isRead());
+        return res;
+    }
+
 
 }
   
