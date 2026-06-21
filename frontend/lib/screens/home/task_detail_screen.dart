@@ -7,7 +7,7 @@ import '../../services/task_service.dart';
 
 class TaskDetailScreen extends StatefulWidget {
   final Task task;
-  final VoidCallback? onTaskUpdated;  // Add callback
+  final VoidCallback? onTaskUpdated; 
 
   const TaskDetailScreen({super.key, required this.task, this.onTaskUpdated});
 

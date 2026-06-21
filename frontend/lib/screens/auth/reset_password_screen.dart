@@ -392,10 +392,10 @@ class LoginScreenRedirect extends StatelessWidget {
     return Scaffold(
       body: Container(
         color: Colors.white,
-        child: Center(
-          child: Column(
+        child: const Center(
+          child : Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               Icon(
                 Icons.check_circle,
                 size: 80,

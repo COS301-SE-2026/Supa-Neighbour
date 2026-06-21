@@ -6,6 +6,7 @@ import '../../models/chat_thread.dart';
 import '../../services/chat_service.dart';
 
 
+import '../../models/chat_thread.dart';
 class ChatDetailScreen extends StatefulWidget {
   final ChatThread chat;
 
@@ -298,7 +299,7 @@ String _formatTimestamp(String? raw) {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black..withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),

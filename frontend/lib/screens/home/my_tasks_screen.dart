@@ -183,7 +183,7 @@ class _MyTasksScreenState extends State<MyTasksScreen> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF2A9D8F).withValues(alpha: 0.1),
+                color: const Color(0xFF2A9D8F).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
