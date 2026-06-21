@@ -98,6 +98,7 @@
 				<version>3.3.1</version>
 				<configuration>
 					<configLocation>${project.basedir}/checkstyle.xml</configLocation>
+					<propertyExpansion>config_loc=${project.basedir}</propertyExpansion>
 					<failsOnError>true</failsOnError>
 					<consoleOutput>true</consoleOutput>
 				</configuration>

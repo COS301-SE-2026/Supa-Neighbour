@@ -4,7 +4,7 @@ import com.app.api.models.Chat;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
+import com.app.api.models.Chat;
 import java.util.List;
 
 /**
@@ -20,4 +20,11 @@ public interface ChatRepository extends JpaRepository<Chat, Integer> {
      * @return list of chats involving the user
      */
     List<Chat> findByDependentUser_UseridOrHelperUser_Userid(int dependentUserId, int helperUserId);
+
+    /**
+     * Finds all chats linked to the given task.
+     * @param taskId the task ID
+     * @return chats referencing the task
+     */
+    List<Chat> findByTask_Taskid(int taskId);
 }

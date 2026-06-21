@@ -4,7 +4,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY checkstyle.xml .
 COPY src ./src
-RUN mvn clean install -DskipTests -Dmaven.test.skip=true -Dcheckstyle.skip
+RUN mvn clean install -Dcheckstyle.skip
 
 
 # Stage 2 — run the JAR

@@ -7,6 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.app.api.models.Message;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Repository for message data access.
  */
@@ -36,4 +42,13 @@ public interface MessageRepository extends JpaRepository<Message, Integer> {
      * @return page containing the last message
      */
     Page<Message> findByChat_ChatIdOrderBySentAtDesc(int chatId, Pageable pageable);
+
+    /**
+     * Deletes all messages belonging to the given chat.
+     * @param chatId the chat ID whose messages should be deleted
+     */
+    @Modifying
+    @Transactional
+    @Query("delete from Message m where m.chat.chatId = :chatId")
+    void deleteByChatId(@Param("chatId") int chatId);
 }

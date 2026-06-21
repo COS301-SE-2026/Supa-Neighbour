@@ -56,38 +56,20 @@ public class ChatService {
         }
 
         // Fetch paginated messages ordered by sent_at ascending
-        // Need to Note that page index is 0-based internally but API accepts 1-based hence we minus 1
+        // Page index is 0-based internally but API accepts 1-based hence we minus 1
         PageRequest pageable = PageRequest.of(page - 1, limit);
         Page<Message> msgPage = msgRepo.findByChat_ChatIdOrderBySentAtAsc(chatId, pageable);
 
         // Msg list
         List<Map<String, Object>> msgList = new ArrayList<>();
         for (Message msg : msgPage.getContent()) {
-            Map<String, Object> m = new HashMap<>();
-            m.put("messageID", msg.getMessageId());
-            m.put("senderID", msg.getSender().getUserid());
-            m.put("senderUsername", msg.getSender().getFirstName()
-                    + " " + msg.getSender().getLastName());
-            m.put("content", msg.getContent());
-            m.put("type", msg.getMessageType());
-            m.put("timestamp", msg.getSentAt());
-            m.put("read", msg.isRead());
-            msgList.add(m);
+            msgList.add(toMessageMap(msg));
         }
 
         // Participants list
         List<Map<String, Object>> participants = new ArrayList<>();
-        Map<String, Object> dependent = new HashMap<>();
-        dependent.put("userID", chat.getDependentUser().getUserid());
-        dependent.put("username", chat.getDependentUser().getFirstName()
-                + " " + chat.getDependentUser().getLastName());
-        participants.add(dependent);
-
-        Map<String, Object> helper = new HashMap<>();
-        helper.put("userID", chat.getHelperUser().getUserid());
-        helper.put("username", chat.getHelperUser().getFirstName()
-                + " " + chat.getHelperUser().getLastName());
-        participants.add(helper);
+        participants.add(toParticipantMap(chat.getDependentUser()));
+        participants.add(toParticipantMap(chat.getHelperUser()));
 
         // Res
         Map<String, Object> res = new HashMap<>();
@@ -100,8 +82,6 @@ public class ChatService {
 
         return res;
     }
-
-
 
     /**
      * Gets all chat threads for a specific user.
@@ -119,41 +99,7 @@ public class ChatService {
         List<Map<String, Object>> chatList = new ArrayList<>();
 
         for (Chat chat : chats) {
-
-            // Basically used to etermine which user is the "other" person  in the convo
-            boolean isDependent = chat.getDependentUser().getUserid() == userId;
-            var otherUser = isDependent ? chat.getHelperUser() : chat.getDependentUser();
-
-            // Get the last message in this chat
-            PageRequest lastOne = PageRequest.of(0, 1);
-            Page<Message> lastMsgPage = msgRepo
-                    .findByChat_ChatIdOrderBySentAtDesc(chat.getChatId(), lastOne);
-
-            String lastMessageContent = "";
-            String lastMessageTimestamp = "";
-            if (!lastMsgPage.isEmpty()) {
-                Message last = lastMsgPage.getContent().get(0);
-                lastMessageContent = last.getContent();
-                lastMessageTimestamp = last.getSentAt().toString();
-            }
-
-            // Count of unread messages
-            long unreadCount = msgRepo
-                    .countByChat_ChatIdAndIsReadFalseAndSender_UseridNot(
-                            chat.getChatId(), userId);
-
-            // Chat summary obj
-            Map<String, Object> chatSummary = new HashMap<>();
-            chatSummary.put("chatID", chat.getChatId());
-            chatSummary.put("taskID", chat.getTask().getTaskid());
-            chatSummary.put("otherUserID", otherUser.getUserid());
-            chatSummary.put("otherUsername",
-                    otherUser.getFirstName() + " " + otherUser.getLastName());
-            chatSummary.put("lastMessage", lastMessageContent);
-            chatSummary.put("lastMessageTimestamp", lastMessageTimestamp);
-            chatSummary.put("unreadCount", unreadCount);
-
-            chatList.add(chatSummary);
+            chatList.add(toChatSummary(chat, userId));
         }
 
         // Res
@@ -161,6 +107,78 @@ public class ChatService {
         res.put("userID", userId);
         res.put("chats", chatList);
         return res;
+    }
+
+
+    /**
+     * Builds a response map for a single message.
+     * @param msg the message entity
+     * @return the message represented as a map
+     */
+    private Map<String, Object> toMessageMap(Message msg) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("messageID", msg.getMessageId());
+        m.put("senderID", msg.getSender().getUserid());
+        m.put("senderUsername", msg.getSender().getFirstName()
+                + " " + msg.getSender().getLastName());
+        m.put("content", msg.getContent());
+        m.put("type", msg.getMessageType());
+        m.put("timestamp", msg.getSentAt());
+        m.put("read", msg.isRead());
+        return m;
+    }
+
+    /**
+     * Builds a participant map for a chat user.
+     * @param user the chat participant
+     * @return the participant represented as a map
+     */
+    private Map<String, Object> toParticipantMap(com.app.api.models.User user) {
+        Map<String, Object> p = new HashMap<>();
+        p.put("userID", user.getUserid());
+        p.put("username", user.getFirstName() + " " + user.getLastName());
+        return p;
+    }
+
+    /**
+     * Builds a chat summary for one chat thread relative to the given user.
+     * @param chat the chat thread
+     * @param userId the user the summary is being built for
+     * @return the chat summary represented as a map
+     */
+    private Map<String, Object> toChatSummary(Chat chat, int userId) {
+        // Determine which user is the "other" person in the convo
+        boolean isDependent = chat.getDependentUser().getUserid() == userId;
+        var otherUser = isDependent ? chat.getHelperUser() : chat.getDependentUser();
+
+        // Get the last message in this chat
+        PageRequest lastOne = PageRequest.of(0, 1);
+        Page<Message> lastMsgPage = msgRepo
+                .findByChat_ChatIdOrderBySentAtDesc(chat.getChatId(), lastOne);
+
+        String lastMessageContent = "";
+        String lastMessageTimestamp = "";
+        if (!lastMsgPage.isEmpty()) {
+            Message last = lastMsgPage.getContent().get(0);
+            lastMessageContent = last.getContent();
+            lastMessageTimestamp = last.getSentAt().toString();
+        }
+
+        // Count of unread messages
+        long unreadCount = msgRepo
+                .countByChat_ChatIdAndIsReadFalseAndSender_UseridNot(
+                        chat.getChatId(), userId);
+
+        Map<String, Object> chatSummary = new HashMap<>();
+        chatSummary.put("chatID", chat.getChatId());
+        chatSummary.put("taskID", chat.getTask().getTaskid());
+        chatSummary.put("otherUserID", otherUser.getUserid());
+        chatSummary.put("otherUsername",
+                otherUser.getFirstName() + " " + otherUser.getLastName());
+        chatSummary.put("lastMessage", lastMessageContent);
+        chatSummary.put("lastMessageTimestamp", lastMessageTimestamp);
+        chatSummary.put("unreadCount", unreadCount);
+        return chatSummary;
     }
 
     /**
