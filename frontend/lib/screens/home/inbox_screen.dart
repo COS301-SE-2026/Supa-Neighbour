@@ -2,44 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/chat_thread.dart';
 import 'chat_detail_screen.dart';
+import '../../services/chat_service.dart';
 
-class InboxScreen extends StatelessWidget {
+
+class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
 
-  final List<ChatThread> _chats = const [
-    ChatThread(
-      name: 'Blessing',
-      location: 'Hillcrest, Pretoria',
-      lastMessage: 'I\'ve just watered the plants, I\'m not...',
-      timestamp: '08:00 AM',
-      unreadCount: 1,
-      avatarColor: Color(0xFF2A9D8F),
-    ),
-    ChatThread(
-      name: 'Divo',
-      location: 'Hatfield, Pretoria',
-      lastMessage: 'Yes, that\'s good :)',
-      timestamp: '07:20 AM',
-      unreadCount: 2,
-      avatarColor: Color(0xFFE9C46A),
-    ),
-    ChatThread(
-      name: 'Amantle',
-      location: 'Waterfalls, Midrand',
-      lastMessage: 'I\'ll go after I accompany you.',
-      timestamp: 'Yesterday',
-      unreadCount: 1,
-      avatarColor: Color(0xFF69B578),
-    ),
-    ChatThread(
-      name: 'Michelle',
-      location: 'Morningside, Sandton',
-      lastMessage: 'Yeah',
-      timestamp: '06:00 AM',
-      unreadCount: 0,
-      avatarColor: Color(0xFF2A9D8F),
-    ),
-  ];
+  @override
+  State<InboxScreen> createState() => _InboxScreenState();
+}
+
+class _InboxScreenState extends State<InboxScreen> {
+  final ChatService _chatService = ChatService();
+  List<ChatThread> _chats = [];
+  bool _isLoading = false;
+  String? _error;
+
+  static const int _currentUserId = 6; // auth user update
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChats();
+  }
+
+  Future<void> _loadChats() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final List<Map<String, dynamic>> data =
+          await _chatService.getChatsByUserId(_currentUserId);
+      setState(() {
+        _chats = data.map((c) => ChatThread.fromJson(c)).toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Could not load chats. Please try again.';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,24 +69,31 @@ class InboxScreen extends StatelessWidget {
           },
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        itemCount: _chats.length,
-        itemBuilder: (context, index) {
-          final chat = _chats[index];
-          return ChatCard(
-            chat: chat,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChatDetailScreen(chat: chat),
-                ),
-              );
-            },
-          );
-        },
-      ),
+        body: _isLoading
+      ? const Center(child: CircularProgressIndicator(color: Color(0xFF1C9A89)))
+      : _error != null
+          ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
+          : RefreshIndicator(
+              onRefresh: _loadChats,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                itemCount: _chats.length,
+                itemBuilder: (context, index) {
+                  final chat = _chats[index];
+                  return ChatCard(
+                    chat: chat,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatDetailScreen(chat: chat),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
     );
   }
 }
