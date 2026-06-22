@@ -6,7 +6,6 @@ import '../../models/chat_thread.dart';
 import '../../services/chat_service.dart';
 
 
-import '../../models/chat_thread.dart';
 class ChatDetailScreen extends StatefulWidget {
   final ChatThread chat;
 
