@@ -60,7 +60,7 @@ class _HomeContentState extends State<HomeContent> {
   //
   static const int _currentUserId = 6;
   final TaskService _taskService = TaskService();
-  bool _isLoadingUser = false;
+  //bool _isLoadingUser = false;
 
 
   @override
@@ -70,21 +70,19 @@ class _HomeContentState extends State<HomeContent> {
     _loadNearbyTasks();
     }
 
+
   Future<void> _loadCurrentUser() async {
-  setState(() => _isLoadingUser = true);
   try {
     final data = await _taskService.getUserById(_currentUserId);
     final user = User.fromJson(data);
     AuthSession.instance.login(user);
     setState(() {
       _currentUser = user;
-      _isLoadingUser = false;
     });
   } catch (e) {
     // fallback to mock if API unavailable
     setState(() {
       _currentUser = AuthSession.instance.currentUser ?? User.getMockUser();
-      _isLoadingUser = false;
     });
   }
 }

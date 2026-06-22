@@ -124,7 +124,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Task created successfully!'),
-            backgroundColor: const Color(0xFF2A9D8F),
+            backgroundColor: Color(0xFF2A9D8F),
           ),
         );
         Navigator.pop(context, true);
