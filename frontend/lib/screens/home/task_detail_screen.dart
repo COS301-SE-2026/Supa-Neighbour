@@ -2,12 +2,72 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import 'edit_task_screen.dart';
+import '../../services/task_service.dart';
 
-class TaskDetailScreen extends StatelessWidget {
+
+class TaskDetailScreen extends StatefulWidget {
   final Task task;
-  final VoidCallback? onTaskUpdated;  // Add callback
+  final VoidCallback? onTaskUpdated; 
 
   const TaskDetailScreen({super.key, required this.task, this.onTaskUpdated});
+
+  @override
+  State<TaskDetailScreen> createState() => _TaskDetailScreenState();
+}
+
+class _TaskDetailScreenState extends State<TaskDetailScreen> {
+  final TaskService _taskService = TaskService();
+  bool _isDeleting = false;
+
+  Future<void> _confirmDelete() async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Task'),
+        content: const Text('Are you sure you want to delete this task?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Color(0xFFE76F51)),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isDeleting = true);
+    try {
+      await _taskService.deleteTask(int.parse(widget.task.id));
+      if (mounted) {
+        if (widget.onTaskUpdated != null) widget.onTaskUpdated!();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Task deleted'),
+            backgroundColor: Color(0xFF2A9D8F),
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to delete task'),
+            backgroundColor: Color(0xFFE76F51),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,15 +96,32 @@ class TaskDetailScreen extends StatelessWidget {
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EditTaskScreen(task: task),
+                  builder: (context) => EditTaskScreen(task: widget.task),
                 ),
               );
               // If task was updated, call the callback
-              if (result == true && onTaskUpdated != null) {
-                onTaskUpdated!();
+              if (result == true && widget.onTaskUpdated != null) {
+                widget.onTaskUpdated!();
               }
             },
           ),
+          if (_isDeleting)
+            const Padding(
+              padding: EdgeInsets.all(14),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFFE76F51),
+                ),
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Color(0xFFE76F51)),
+              onPressed: _confirmDelete,
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -63,13 +140,13 @@ class TaskDetailScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _getCategoryIcon(task.category),
+                    _getCategoryIcon(widget.task.category),
                     size: 16,
                     color: const Color(0xFF2A9D8F),
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    task.category,
+                    widget.task.category,
                     style: GoogleFonts.openSans(
                       color: const Color(0xFF2A9D8F),
                       fontSize: 12,
@@ -83,7 +160,7 @@ class TaskDetailScreen extends StatelessWidget {
 
             // Task Title
             Text(
-              task.title,
+              widget.task.title,
               style: GoogleFonts.poppins(
                 color: const Color(0xFF264653),
                 fontSize: 24,
@@ -114,7 +191,7 @@ class TaskDetailScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '+${task.xpReward} XP',
+                        '+${widget.task.xpReward} XP',
                         style: GoogleFonts.poppins(
                           color: const Color(0xFF264653),
                           fontSize: 20,
@@ -150,7 +227,7 @@ class TaskDetailScreen extends StatelessWidget {
                         const Icon(Icons.calendar_today, color: Color(0xFF2A9D8F), size: 20),
                         const SizedBox(width: 12),
                         Text(
-                          '${task.date.day}/${task.date.month}/${task.date.year}',
+                          '${widget.task.date.day}/${widget.task.date.month}/${widget.task.date.year}',
                           style: GoogleFonts.openSans(
                             color: const Color(0xFF264653),
                             fontSize: 14,
@@ -165,7 +242,7 @@ class TaskDetailScreen extends StatelessWidget {
                         const Icon(Icons.access_time, color: Color(0xFF2A9D8F), size: 20),
                         const SizedBox(width: 12),
                         Text(
-                          task.time.format(context),
+                          widget.task.time.format(context),
                           style: GoogleFonts.openSans(
                             color: const Color(0xFF264653),
                             fontSize: 14,
@@ -196,7 +273,7 @@ class TaskDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                task.instructions,
+                widget.task.instructions,
                 style: GoogleFonts.openSans(
                   color: const Color(0xFF264653),
                   fontSize: 14,

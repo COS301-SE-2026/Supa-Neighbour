@@ -12,6 +12,10 @@ import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * Represents a like action on posts or comments in the community forum.
+ * Tracks user engagement with content through likes.
+ */
 @Data
 @Builder
 @Entity
@@ -37,13 +41,26 @@ public class Likes {
 
     @Column(name = "created_at")
     private Timestamp createdAt;
-    
+
     @Column(name = "updated_at")
     private Timestamp updatedAt;
 
+    /**
+     * Default constructor.
+     */
     public Likes() {
     }
 
+    /**
+     * Constructs a Likes record with all fields specified.
+     *
+     * @param likeid     the like identifier
+     * @param userid     the user who performed the like action
+     * @param postid     the post that was liked
+     * @param commentid  the comment that was liked
+     * @param createdAt  the timestamp when the like was created
+     * @param updatedAt  the timestamp when the like was last updated
+     */
     public Likes(int likeid,User userid,Posts postid,Comments commentid,Timestamp createdAt,Timestamp updatedAt) {
         this.likeid = likeid;
         this.commentid=commentid;
@@ -53,64 +70,111 @@ public class Likes {
         this.updatedAt = updatedAt;
     }
 
-    public int getLikeid()
-    {
+    /**
+     * Gets the like identifier.
+     *
+     * @return the like identifier
+     */
+    public int getLikeid(){
         return likeid;
     }
-
-    public User getUserid()
-    {
+   
+    /**
+     * Gets the user who performed the like action.
+     *
+     * @return the user
+     */
+    public User getUserid(){
         return userid;
     }
-    
-    public Posts getPostid()
-    {
+
+    /**
+     * Gets the post that was liked.
+     *
+     * @return the post
+     */
+    public Posts getPostid(){
         return postid;
     }
-    
-    public Comments getCommentid()
-    {
+
+    /**
+     * Gets the comment that was liked.
+     *
+     * @return the comment
+     */
+    public Comments getCommentid(){
         return commentid;
     }
 
-    public Timestamp getCreatedAt()
-    {
+    /**
+     * Gets the timestamp when the like was created.
+     *
+     * @return the creation timestamp
+     */
+    public Timestamp getCreatedAt(){
         return createdAt;
     }
 
-    public Timestamp getUpdatedAt()
-    {
+    /**
+     * Gets the timestamp when the like was last updated.
+     *
+     * @return the last updated timestamp
+     */
+    public Timestamp getUpdatedAt(){
         return updatedAt;
     }
 
-    public void setLikeid(int likeid)
-    {
+    /**
+     * Sets the like identifier.
+     *
+     * @param likeid the like identifier
+     */
+    public void setLikeid(int likeid){
         this.likeid=likeid;
     }
 
-    public void setUserid(User userid)
-    {
+    /**
+     * Sets the user who performed the like action.
+     *
+     * @param userid the user
+     */
+    public void setUserid(User userid){
         this.userid=userid;
     }
 
-    public void setCommentid(Comments commentid)
-    {
+    /**
+     * Sets the comment that was liked.
+     *
+     * @param commentid the comment
+     */
+    public void setCommentid(Comments commentid){
         this.commentid= commentid;
     }
 
-    public void setPostid(Posts postid)
-    {
+    /**
+     * Sets the post that was liked.
+     *
+     * @param postid the post
+     */
+    public void setPostid(Posts postid){
         this.postid = postid;
     }
 
-    public void setCreatedAt(Timestamp createdAt)
-    {
+    /**
+     * Sets the timestamp when the like was created.
+     *
+     * @param createdAt the creation timestamp
+     */
+    public void setCreatedAt(Timestamp createdAt){
         this.createdAt = createdAt;
     }
 
-    public void setUpdatedAt(Timestamp updatedAt)
-    {
+    /**
+     * Sets the timestamp when the like was last updated.
+     *
+     * @param updatedAt the last updated timestamp
+     */
+    public void setUpdatedAt(Timestamp updatedAt){
         this.updatedAt=updatedAt;
     }
 }
-

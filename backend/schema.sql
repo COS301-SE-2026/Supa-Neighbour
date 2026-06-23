@@ -392,6 +392,45 @@ create table likes_table (
 );
 
 -- =============================================
+-- 18. chat table
+-- =============================================
+create table chat_table (
+    chat_id int generated always as identity primary key,
+    task_id int not null,
+    dependent_user_id int not null,
+    helper_user_id int not null,
+    created_at timestamp default current_timestamp,
+
+    foreign key (task_id)
+        references task_invoice_table(task_id),
+    foreign key (dependent_user_id)
+        references user_table(user_id),
+    foreign key (helper_user_id)
+        references user_table(user_id),
+
+    constraint uq_chat_per_task unique (task_id)
+);
+
+-- =============================================
+-- 19. message table
+-- =============================================
+create table message_table (
+    message_id int generated always as identity primary key,
+    chat_id int not null,
+    sender_id int not null,
+    content text not null,
+    message_type varchar(10) default 'text',
+    is_read boolean default false,
+    sent_at timestamp default current_timestamp,
+
+    foreign key (chat_id)
+        references chat_table(chat_id)
+        on delete cascade,
+    foreign key (sender_id)
+        references user_table(user_id)
+);
+
+-- =============================================
 -- indexes
 -- =============================================
 
@@ -427,6 +466,12 @@ on likes_table(post_id);
 
 create index idx_likes_comment
 on likes_table(comment_id);
+
+create index idx_messages_chat
+on message_table(chat_id);
+
+create index idx_messages_sent_at
+on message_table(sent_at);
 
 -- =============================================
 -- MOCK DATA
@@ -716,3 +761,34 @@ values
 (3, null, 5),
 (4, null, 6),
 (5, null, 7);
+
+-- =============================================
+-- 18. chat table mock data
+-- =============================================
+insert into chat_table
+(task_id, dependent_user_id, helper_user_id)
+values
+(1, 6, 1),
+(2, 7, 4);
+
+-- =============================================
+-- 19. message table mock data
+-- =============================================
+insert into message_table
+(chat_id, sender_id, content, message_type, is_read)
+values
+-- 1: user 6 and 1 about task 1
+(1, 6, 'Hi John, thanks for helping with my medical assistance today.', 'text', true),
+(1, 1, 'Of course! I will be there at 9am. Do you need anything specific?', 'text', true),
+(1, 6, 'Just bring your kit, everything else is ready here.', 'text', true),
+(1, 1, 'Perfect. On my way now.', 'text', true),
+(1, 6, 'Great, the door is open. See you soon!', 'text', true),
+(1, 1, 'Just arrived outside.', 'text', false),
+
+-- 2: user 7 and 4 about task 2
+(2, 7, 'Hi Emily, I need transport to the clinic tomorrow morning.', 'text', true),
+(2, 4, 'Sure James, what time do you need to be there?', 'text', true),
+(2, 7, 'Around 8am please.', 'text', true),
+(2, 4, 'No problem, I will pick you up at 7:45am.', 'text', true),
+(2, 7, 'That is perfect, thank you so much!', 'text', false),
+(2, 4, 'See you tomorrow morning.', 'text', false);

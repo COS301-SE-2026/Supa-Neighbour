@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/chat_thread.dart';
+import '../../services/chat_service.dart';
+
 
 class ChatDetailScreen extends StatefulWidget {
   final ChatThread chat;
@@ -18,42 +20,51 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final List<ChatMessageWidget> _messages = [];
   final ImagePicker _picker = ImagePicker();
   File? _selectedImage;
+  // service
+  final ChatService _chatService = ChatService();
+  bool _isSending = false;
+  static const int _currentUserId = 6; // auth usr update
+
 
   @override
   void initState() {
     super.initState();
-    _loadSampleMessages();
+    _loadMessages();
   }
 
-  void _loadSampleMessages() {
-    // Only add received messages based on chat name
-    String receivedMessage = '';
 
-    switch (widget.chat.name) {
-      case 'Blessing':
-        receivedMessage = 'I have just watered the plants, I am not sure if I should trim the shrubs as well or you have that sorted?';
-        break;
-      case 'Divo':
-        receivedMessage = 'Yes, thats good :)';
-        break;
-      case 'Amantle':
-        receivedMessage = 'I will go after I accompany you.';
-        break;
-      case 'Michelle':
-        receivedMessage = 'Yeah';
-        break;
-      default:
-        receivedMessage = 'Hello';
-    }
-
-    _messages.add(
-      ChatMessageWidget(
-        text: receivedMessage,
-        isMe: false,  // Received message (from other person)
-        time: _getCurrentTime(),
-      ),
-    );
+Future<void> _loadMessages() async {
+  try {
+    final data = await _chatService.getMessages(widget.chat.chatId);
+    final msgs = data['messages'] as List<dynamic>;
+    setState(() {
+      _messages.clear();
+      for (final m in msgs) {
+        _messages.add(ChatMessageWidget(
+          text: m['content'] as String,
+          isMe: (m['senderID'] as int) == _currentUserId,
+          time: _formatTimestamp(m['timestamp'] as String?),
+        ));
+      }
+    });
+  } catch (e) {
+    //existing state kept on failure
   }
+}
+
+String _formatTimestamp(String? raw) {
+  if (raw == null) return _getCurrentTime();
+  try {
+    final dt = DateTime.parse(raw);
+    final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+    final m = dt.minute.toString().padLeft(2, '0');
+    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+    return '$h:$m $ampm';
+  } catch (_) {
+    return _getCurrentTime();
+  }
+}
+
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -153,20 +164,30 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     }
   }
 
-  void _sendMessage() {
-    if (_messageController.text.isNotEmpty) {
-      setState(() {
-        _messages.add(
-          ChatMessageWidget(
-            text: _messageController.text,
-            isMe: true,  // Sent message (from me)
-            time: _getCurrentTime(),
-          ),
-        );
-        _messageController.clear();
-      });
-    }
+  Future<void> _sendMessage() async {
+  final text = _messageController.text.trim();
+  if (text.isEmpty || _isSending) return;
+
+  setState(() => _isSending = true);
+  _messageController.clear();
+
+  setState(() {
+    _messages.add(ChatMessageWidget(
+      text: text,
+      isMe: true,
+      time: _getCurrentTime(),
+    ));
+  });
+
+  try {
+    await _chatService.sendMessage(widget.chat.chatId, _currentUserId, text);
+  } catch (e) {
+    // message already shown in UI — fail silently for now
+  } finally {
+    if (mounted) setState(() => _isSending = false);
   }
+}
+
 
   String _getCurrentTime() {
     final now = DateTime.now();
@@ -277,7 +298,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black..withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),
@@ -334,15 +355,22 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     width: 45,
                     height: 45,
                     decoration: const BoxDecoration(
-                      color:  Color(0xFF1C9A89),
+                      color: Color(0xFF1C9A89),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.send,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
+                    child: Center(
+                      child: _isSending
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(Icons.send, color: Colors.white, size: 22),
+                          ),
+                        ),
                 ),
               ],
             ),

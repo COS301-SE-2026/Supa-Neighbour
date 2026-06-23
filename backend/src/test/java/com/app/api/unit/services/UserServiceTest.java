@@ -40,7 +40,7 @@ public class UserServiceTest
     void getUserById_success()
     {
         User user = new User();
-        user.setid(101);
+        user.setUserid(101);
         when(userRepo.findById(101)).thenReturn(Optional.of(user));
 
         User usrfound = userService.getUserById(101);
@@ -67,10 +67,10 @@ public class UserServiceTest
     void getAllUsers_success()
     {
         User user1 = new User();
-        user1.setid(101);
+        user1.setUserid(101);
 
         User user2 = new User();
-        user2.setid(102);
+        user2.setUserid(102);
 
         when(userRepo.findAll()).thenReturn(List.of(user1, user2));
 
@@ -85,7 +85,7 @@ public class UserServiceTest
     void saveUser_success()
     {
         User user = new User();
-        user.setid(201);
+        user.setUserid(201);
         when(userRepo.save(user)).thenReturn(user);
 
         User newUser = userService.saveUser(user);
