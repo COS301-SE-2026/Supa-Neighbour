@@ -96,7 +96,7 @@ public class TaskServiceTest
         List<Task> tasks = List.of(task1, task2);
         when(taskRepo.findAll()).thenReturn(tasks);
 
-        Iterable<Task> allTasks = taskService.getAllTasks();
+        List<Task> allTasks = taskService.getAllTasks();
 
         assertNotNull(allTasks);
         verify(taskRepo, times(1)).findAll();
@@ -231,7 +231,7 @@ public class TaskServiceTest
         when(dependentRepo.findByUserid_Userid(userId)).thenReturn(dependent);
         when(taskRepo.findByDependentId(1)).thenReturn(List.of(task));
         
-        Iterable<Task> userTasks = taskService.getTasksByUserId(userId);
+        List<Task> userTasks = taskService.getTasksByUserId(userId);
  
         assertNotNull(userTasks);
         verify(dependentRepo, times(1)).findByUserid_Userid(userId);
@@ -244,7 +244,7 @@ public class TaskServiceTest
     {
         when(dependentRepo.findByUserid_Userid(999)).thenReturn(null);
     
-        Iterable<Task> userTasks = taskService.getTasksByUserId(999);
+        List<Task> userTasks = taskService.getTasksByUserId(999);
     
         assertNull(userTasks);
         verify(taskRepo, never()).findByDependentId(anyInt());
