@@ -10,3 +10,4 @@ import java.util.List;
 public interface AnalyticsRepository extends JpaRepository<Analytics, Integer> {
     List<Analytics> findByTaskid(TaskInvoice taskid);    
 }
+
