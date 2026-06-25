@@ -12,9 +12,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Data
 @Builder
+@Getter
+@Setter
 @Entity
 @Table(name = "user_table")
 public class User {
@@ -86,110 +90,4 @@ public class User {
         this.userType = userType;
     }
 
-    public int getUserid() {
-        return userid;
-    }
-
-    public void setid(int userid) {
-        this.userid = userid;
-    }
-
-    public String getFirebaseUid() {
-        return firebaseUid;
-    }   
-
-    public void setFirebaseUid(String firebaseUid) {
-        this.firebaseUid = firebaseUid;
-    }
-    /**
-     * Sets the user ID.
-     * @param id the user ID
-     */
-    public void setUserid(int userid) {
-        this.userid = userid;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public Date getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(Date dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public Address getAddressid() {
-        return addressid;
-    }
-
-    public void setAddressid(Address addressid) {
-        this.addressid = addressid;
-    }
-
-    public Badges getBadgeid() {
-        return badgeid;
-    }
-
-    public void setBadgeid(Badges badgeid) {
-        this.badgeid = badgeid;
-    }
-
-    public Ratings getRatingid() {
-        return ratingid;
-    }
-
-    public void setRatingid(Ratings ratingid) {
-        this.ratingid = ratingid;
-    }
-
-    public String getUserType() {
-        return userType;
-    }
-
-    public void setUserType(String userType) {
-        this.userType = userType;
-    }
 }

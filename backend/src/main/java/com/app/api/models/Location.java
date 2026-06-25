@@ -72,7 +72,7 @@ public class Location {
      *
      * @return the location center point
      */
-    public int getLocationCentrePoint() {
+    public int getLocationCenterPoint() {
         return locationCenterPoint;
     }
 
@@ -81,7 +81,7 @@ public class Location {
      *
      * @param LocationCenterPoint
      */
-    public void setLocationCentrePoint(int LocationCenterPoint) {
+    public void setLocationCenterPoint(int LocationCenterPoint) {
         this.locationCenterPoint = LocationCenterPoint;
     }
 
