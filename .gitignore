@@ -145,3 +145,8 @@ htmlcov/
 *.deb
 
 qw
+
+# Firebase service account key (contains sensitive credentials)
+Firebase/serviceAccountKey.json
+
+
