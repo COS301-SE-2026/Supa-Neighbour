@@ -115,7 +115,7 @@ public class Badges {
      *
      * @return the badge description
      */
-    public String getBadge_Description() {
+    public String getBadgeDescription() {
         return badge_description;
     }
 
