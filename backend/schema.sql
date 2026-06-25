@@ -73,6 +73,7 @@ create table address_table (
 -- =============================================
 create table user_table (
     user_id int generated always as identity primary key,
+    firebase_uid VARCHAR(128) UNIQUE NOT NULL,
     user_password varchar(255) not null,
     user_name varchar(100) not null,
     user_surname varchar(100) not null,

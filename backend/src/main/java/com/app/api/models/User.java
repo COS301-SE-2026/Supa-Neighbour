@@ -24,6 +24,9 @@ public class User {
     @Column(name = "user_id")
     private int userid;
 
+    @Column(name = "firebase_uid", unique = true)
+    private String firebaseUid;
+
     @Column(name = "user_name")
     private String firstName;
 
@@ -66,12 +69,14 @@ public class User {
     public User() {
     }
 
-    public User(int userid, String firstName, String lastName, String password, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
+    public User(int userid,String firebaseUid, String firstName, String lastName, String password, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
         this.userid = userid;
+        this.firebaseUid = firebaseUid;
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
         this.email = email;
+        this.firebaseUid = firebaseUid;
         this.phoneNumber = phoneNumber;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
@@ -89,6 +94,13 @@ public class User {
         this.userid = userid;
     }
 
+    public String getFirebaseUid() {
+        return firebaseUid;
+    }   
+
+    public void setFirebaseUid(String firebaseUid) {
+        this.firebaseUid = firebaseUid;
+    }
     /**
      * Sets the user ID.
      * @param id the user ID
