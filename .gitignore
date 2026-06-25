@@ -147,7 +147,6 @@ htmlcov/
 qw
 
 # Firebase service account key (contains sensitive credentials)
-backend/src/main/resources/Firebase/serviceAccountKey.json
 
 
 backend/src/main/resources/Firebase/serviceAccountKey.json
