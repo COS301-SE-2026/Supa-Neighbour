@@ -25,14 +25,5 @@ public class AuthController {
         this.firebaseAuthService = firebaseAuthService;
         this.userRepository = userRepository;
     }
-
-    @PostMapping("/Register")
-    public ResponseEntity<?> register(@RequestHeader("Authorization") String authHeader) throws FirebaseAuthException {
-        {
-            String idToken = authHeader.replace("Bearer ", "");
-            
-        }
-        
-    }
     
 }
