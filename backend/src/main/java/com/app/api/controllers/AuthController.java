@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.security.core.Authentication;
+import com.app.api.security.AuthenticatedUser;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -50,10 +52,15 @@ public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String idT
         FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
 
         User user =userRepository.findByUid(decodedToken.getUid()).orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         return ResponseEntity.ok(user);
     }
     
-
+    @GetMapping("/profile")
+    public User getProfile(Authentication authentication) {
+        AuthenticatedUser authenticatedUser = (AuthenticatedUser) authentication.getPrincipal();
+        return authenticatedUser.getUser();
+    }
+    
     
 }
