@@ -42,7 +42,7 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
                 String idToken = authorizationHeader.substring(7);
                 FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
                 String firebaseUid = firebaseToken.getUid();
-                User newUser = userRepository.findByUid(firebaseUid).orElse(null);
+                User newUser = userRepository.findByFirebaseUid(firebaseUid).orElse(null);
                 if(newUser != null)
                 {
                     AuthenticatedUser authenticatedUser = new AuthenticatedUser(newUser);

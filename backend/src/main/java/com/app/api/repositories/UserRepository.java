@@ -10,7 +10,7 @@ import com.app.api.models.User;
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
-    Optional<User> findByUid(String uid);
     Optional<User> findByEmail(String email);
+    Optional<User> findByFirebaseUid(String firebaseUid);
 
 }
