@@ -59,7 +59,7 @@ public class TaskController {
     @ApiResponse(responseCode = "200", description = "Tasks retrieved")
     @ApiResponse(responseCode = "404", description = "Unauthorised")
     @GetMapping("/tasks")
-    public ResponseEntity<Iterable<Task>> getAllTasks() {
+    public ResponseEntity<List<Task>> getAllTasks() {
         return ResponseEntity.ok(taskService.getAllTasks());
     }
 
@@ -111,8 +111,8 @@ public class TaskController {
     @ApiResponse(responseCode = "200", description = "Tasks retrieved")
     @ApiResponse(responseCode = "404", description = "No dependent profile found for user")
     @GetMapping("/users/{userId}/tasks")
-    public ResponseEntity<Iterable<Task>> getTasksByUserId(@PathVariable int userId) {
-        Iterable<Task> tasks = taskService.getTasksByUserId(userId);
+    public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable int userId) {
+        List<Task> tasks = taskService.getTasksByUserId(userId);
 
         if (tasks == null) {
             return ResponseEntity.notFound().build();

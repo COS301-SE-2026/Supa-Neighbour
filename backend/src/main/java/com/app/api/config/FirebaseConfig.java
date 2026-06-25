@@ -1,24 +1,30 @@
 package com.app.api.config;
-import org.springframework.context.annotation.Bean;
+
+
+import java.io.IOException;
+
+import javax.annotation.PostConstruct;
+
 import org.springframework.context.annotation.Configuration;
+
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 
 @Configuration
 public class FirebaseConfig {
     /**
-     * Initializes the Firebase application with the default configuration.
+     * Initialises the Firebase Admin SDK on application startup.
+     * Uses Application Default Credentials to authenticate with Firebase.
+     * Skips initialisation if a FirebaseApp instance already exists.
      *
-     * @return the initialized FirebaseApp instance
+     * @throws IOException if the application default credentials cannot be loaded
      */
-    @Bean
-    public com.google.firebase.FirebaseApp firebaseApp() {
-        try {
-            return com.google.firebase.FirebaseApp.getInstance();
-        } catch (IllegalStateException e) {
-            // Initialize Firebase if it hasn't been initialized yet
-            com.google.firebase.FirebaseOptions options = com.google.firebase.FirebaseOptions.builder()
-                    .setCredentials(com.google.auth.oauth2.GoogleCredentials.getApplicationDefault())
-                    .build();
-            return com.google.firebase.FirebaseApp.initializeApp(options);
+    @PostConstruct
+    public void initialize()  throws IOException{
+        if(FirebaseApp.getApps().isEmpty()){
+            FirebaseOptions options = FirebaseOptions.builder().setCredentials(GoogleCredentials.getApplicationDefault()).build();
+            FirebaseApp.initializeApp(options);
         }
     }
 }

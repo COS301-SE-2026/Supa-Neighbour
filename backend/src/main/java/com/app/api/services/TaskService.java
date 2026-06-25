@@ -68,7 +68,7 @@ public class TaskService {
      * Get all tasks.
      * @return all tasks
      */
-    public Iterable<Task> getAllTasks() {
+    public List<Task> getAllTasks() {
         return taskRepo.findAll();
     }
 
@@ -148,7 +148,7 @@ public class TaskService {
      * @param userId the user ID to look up
      * @return tasks linked to the user's dependent ID, or null if profile not found
      */
-    public Iterable<Task> getTasksByUserId(int userId) {
+    public List<Task> getTasksByUserId(int userId) {
         Dependent dependent = dependentRepo.findByUserid_Userid(userId);
         if (dependent == null) {
             return null;
