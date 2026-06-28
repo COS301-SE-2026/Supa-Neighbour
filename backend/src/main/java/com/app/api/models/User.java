@@ -15,6 +15,15 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+
+/**
+ * Represents a user within the application.
+ * <p>
+ * This entity maps to the {@code user_table} database table and stores
+ * personal information, authentication details, address, badge, rating,
+ * and user type.
+ * </p>
+ */
 @Data
 @Builder
 @Getter
@@ -23,47 +32,56 @@ import lombok.Setter;
 @Table(name = "user_table")
 public class User {
 
+    /**
+     * The unique identifier for the user.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private int userid;
 
+    /**
+     * The Firebase authentication UID associated with the user.
+     */
     @Column(name = "firebase_uid", unique = true)
     private String firebaseUid;
 
+    /** user's first name */
     @Column(name = "user_name")
     private String firstName;
 
+    /** user's surname */
     @Column(name = "user_surname")
     private String lastName;
-
+    /** user's password */
     @Column(name = "user_password")
     private String password;
 
+    /** user's email */
     @Column(name = "user_email")
     private String email;
-
+    /** user's phone number */
     @Column(name = "user_phone_number")
     private String phoneNumber;
-
+    /** user's date of birth */
     @Column(name = "user_dob")
     private Date dateOfBirth;
-
+    /** user's gender */
     @Column(name = "user_gender")
     private String gender;
-
+    /** user's address id */
     @ManyToOne
     @JoinColumn(name = "user_address_id")
     private Address addressid;
-
+    /** user's badge id */
     @ManyToOne
     @JoinColumn(name = "user_badge_id")
     private Badges badgeid;
-
+     /** user's rating id */
     @ManyToOne
     @JoinColumn(name = "user_rating_id")
     private Ratings ratingid;
-
+    /** user's type */
     @Column(name = "user_type")
     private String userType;
 
@@ -73,6 +91,23 @@ public class User {
     public User() {
     }
 
+    /**
+     * Constructs a user with all attributes.
+     *
+     * @param userid the unique identifier of the user
+     * @param firebaseUid the Firebase authentication UID
+     * @param firstName the user's first name
+     * @param lastName the user's last name
+     * @param password the user's password
+     * @param email the user's email address
+     * @param phoneNumber the user's phone number
+     * @param dateOfBirth the user's date of birth
+     * @param gender the user's gender
+     * @param addressid the user's associated address
+     * @param badgeid the badge assigned to the user
+     * @param ratingid the rating associated with the user
+     * @param userType the user's type or role
+     */
     public User(int userid,String firebaseUid, String firstName, String lastName, String password, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
         this.userid = userid;
         this.firebaseUid = firebaseUid;

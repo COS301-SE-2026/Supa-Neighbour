@@ -44,7 +44,14 @@ public class Dependent {
         // needed by jpa
     }
 
-
+    /**
+     * Constructs a new {@code Dependent} with the specified identifier,
+     * associated user, and task type.
+     *
+     * @param dependentId the unique identifier of the dependent.
+     * @param userId the user associated with this dependent.
+     * @param taskTypeId the task type associated with this dependent.
+     */
     public Dependent(int dependentId, User userId, TaskType taskTypeId) {
         this.dependentId = dependentId;
         this.userId = userId;
