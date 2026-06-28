@@ -84,50 +84,54 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   }
 
   void _submitTask() {
-    // Validate required fields
-    if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a task title')),
-      );
-      return;
-    }
-
-    if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')),
-      );
-      return;
-    }
-
-    // Create new task (XP reward set to 0 or remove from model)
-    final newTask = Task(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: _titleController.text,
-      category: _selectedCategory!,
-      date: _selectedDate,
-      time: _selectedTime,
-      xpReward: 0, // Set to 0 since XP slider is removed
-      instructions: _instructionsController.text.isNotEmpty
-          ? _instructionsController.text
-          : 'No additional instructions',
-      status: 'pending',
-      createdAt: DateTime.now(),
-    );
-
-    // Add to mock data list
-    Task.addMockTask(newTask);
-
-    // Show success message
+  // Validate required fields
+  if (_titleController.text.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Task created successfully!'),
-        backgroundColor: Color(0xFF2A9D8F),
-      ),
+      const SnackBar(content: Text('Please enter a task title')),
     );
-
-    // Navigate back
-    Navigator.pop(context, true);
+    return;
   }
+
+  if (_selectedCategory == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select a category')),
+    );
+    return;
+  }
+
+  // Create new task with all required parameters
+  final newTask = Task(
+    id: DateTime.now().millisecondsSinceEpoch.toString(),
+    title: _titleController.text,
+    category: _selectedCategory!,
+    date: _selectedDate,
+    time: _selectedTime,
+    xpReward: 50, // Default XP reward
+    instructions: _instructionsController.text.isNotEmpty
+        ? _instructionsController.text
+        : 'No additional instructions',
+    status: 'open',  // New task starts as 'open' (waiting for helper)
+    createdAt: DateTime.now(),
+    createdBy: 'currentUser',  // The current user is the creator
+    requesterName: 'You',       // Display name for requester
+    helperId: null,             // No helper yet
+    helperName: null,           // No helper yet
+  );
+
+  // Add to mock data list
+  Task.addMockTask(newTask);
+
+  // Show success message
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Task created successfully!'),
+      backgroundColor: Color(0xFF2A9D8F),
+    ),
+  );
+
+  // Navigate back
+  Navigator.pop(context, true);
+}
 
   @override
   Widget build(BuildContext context) {

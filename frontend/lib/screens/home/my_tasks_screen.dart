@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import 'task_detail_screen.dart';
+import 'task_completion_page.dart';
 
 class MyTasksScreen extends StatefulWidget {
   const MyTasksScreen({super.key});
@@ -10,19 +11,78 @@ class MyTasksScreen extends StatefulWidget {
   State<MyTasksScreen> createState() => _MyTasksScreenState();
 }
 
-class _MyTasksScreenState extends State<MyTasksScreen> {
-  List<Task> _tasks = [];
+class _MyTasksScreenState extends State<MyTasksScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  
+  List<Task> _postedTasks = [];
+  List<Task> _acceptedTasks = [];
 
   @override
   void initState() {
     super.initState();
-    _loadTasks();
+    _tabController = TabController(length: 2, vsync: this);
+    _loadAllTasks();
   }
 
-  void _loadTasks() {
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _loadAllTasks() {
+    final allTasks = Task.getMockTasks();
+    
     setState(() {
-      _tasks = Task.getMockTasks();
+      // Posted: Tasks created by THIS user (requester view)
+      _postedTasks = allTasks.where((task) => task.createdBy == 'currentUser').toList();
+      
+      // Accepted: Tasks where THIS user is the helper
+      _acceptedTasks = allTasks.where((task) => task.helperId == 'currentUser').toList();
     });
+  }
+
+  void _refreshTasks() {
+    _loadAllTasks();
+  }
+
+  String _getStatusDisplay(String status, {bool isRequesterView = false}) {
+    switch (status) {
+      case 'open':
+        return 'Waiting for helper';
+      case 'assigned':
+        return isRequesterView ? 'Helper assigned' : 'Not started';
+      case 'in_progress':
+        return 'In progress';
+      case 'pending_approval':
+        return isRequesterView ? 'Awaiting your approval' : 'Awaiting approval';
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'open':
+        return const Color(0xFFE9C46A); // Yellow
+      case 'assigned':
+        return const Color(0xFF2A9D8F); // Teal
+      case 'in_progress':
+        return const Color(0xFF2196F3); // Blue
+      case 'pending_approval':
+        return const Color(0xFFFF9800); // Orange
+      case 'completed':
+        return const Color(0xFF4CAF50); // Green
+      case 'cancelled':
+        return const Color(0xFFF44336); // Red
+      default:
+        return const Color(0xFF9CA3AF); // Grey
+    }
   }
 
   @override
@@ -41,67 +101,123 @@ class _MyTasksScreenState extends State<MyTasksScreen> {
           ),
         ),
         centerTitle: true,
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          _loadTasks();
-        },
-        child: _tasks.isEmpty
-            ? Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.assignment_turned_in,
-                size: 80,
-                color: const Color(0xFF2A9D8F).withOpacity(0.3),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No tasks yet',
-                style: GoogleFonts.openSans(
-                  color: const Color(0xFF264653),
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Create your first task by tapping the + button',
-                style: GoogleFonts.openSans(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 14,
-                ),
-              ),
-            ],
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: const Color(0xFF2A9D8F),
+          unselectedLabelColor: const Color(0xFF9CA3AF),
+          indicatorColor: const Color(0xFF2A9D8F),
+          labelStyle: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
           ),
-        )
-            : ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _tasks.length,
-          itemBuilder: (context, index) {
-            final task = _tasks[index];
-            return _buildTaskCard(task);
-          },
+          unselectedLabelStyle: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          tabs: const [
+            Tab(text: 'Posted', icon: Icon(Icons.post_add, size: 20)),
+            Tab(text: 'Accepted', icon: Icon(Icons.check_circle, size: 20)),
+          ],
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // Posted Tasks Tab (Requester view)
+          RefreshIndicator(
+            onRefresh: () async => _refreshTasks(),
+            child: _buildTaskList(_postedTasks, isRequesterView: true),
+          ),
+          // Accepted Tasks Tab (Helper view)
+          RefreshIndicator(
+            onRefresh: () async => _refreshTasks(),
+            child: _buildTaskList(_acceptedTasks, isRequesterView: false),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTaskCard(Task task) {
+  Widget _buildTaskList(List<Task> tasks, {required bool isRequesterView}) {
+    if (tasks.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isRequesterView ? Icons.post_add : Icons.assignment_turned_in,
+              size: 80,
+              color: const Color(0xFF2A9D8F).withOpacity(0.3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isRequesterView ? 'No tasks posted yet' : 'No accepted tasks',
+              style: GoogleFonts.openSans(
+                color: const Color(0xFF264653),
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isRequesterView 
+                  ? 'Create your first task by tapping the + button'
+                  : 'Browse Available Helpers and accept tasks',
+              style: GoogleFonts.openSans(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: tasks.length,
+      itemBuilder: (context, index) {
+        final task = tasks[index];
+        return _buildTaskCard(
+          task,
+          isRequesterView: isRequesterView,
+        );
+      },
+    );
+  }
+
+  Widget _buildTaskCard(Task task, {required bool isRequesterView}) {
     return GestureDetector(
       onTap: () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TaskDetailScreen(
-              task: task,
-              onTaskUpdated: () {
-                _loadTasks(); // Refresh when task is updated
-              },
+        if (!isRequesterView && task.status == 'assigned' || task.status == 'in_progress') {
+          // Helper: Navigate to Task Completion Page for active tasks
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TaskCompletionPage(
+                taskId: task.id,
+                taskTitle: task.title,
+                residentName: task.requesterName ?? 'Requester',
+                dueDate: '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
+                xpReward: task.xpReward,
+              ),
             ),
-          ),
-        );
-        _loadTasks(); // Refresh after returning from detail screen
+          );
+          _refreshTasks();
+        } else {
+          // Requester view or completed tasks: Go to detail screen
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TaskDetailScreen(
+                task: task,
+                onTaskUpdated: () {
+                  _refreshTasks();
+                },
+              ),
+            ),
+          );
+          _refreshTasks();
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -169,23 +285,57 @@ class _MyTasksScreenState extends State<MyTasksScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 6),
+                  // Status Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(task.status).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _getStatusDisplay(task.status, isRequesterView: isRequesterView),
+                      style: GoogleFonts.openSans(
+                        color: _getStatusColor(task.status),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE9C46A),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                '+${task.xpReward} XP',
-                style: GoogleFonts.openSans(
-                  color: const Color(0xFF264653),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE9C46A),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '+${task.xpReward} XP',
+                    style: GoogleFonts.openSans(
+                      color: const Color(0xFF264653),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
+                if (!isRequesterView && (task.status == 'assigned' || task.status == 'in_progress'))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Tap to complete',
+                      style: GoogleFonts.openSans(
+                        color: const Color(0xFF2A9D8F),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ],
         ),

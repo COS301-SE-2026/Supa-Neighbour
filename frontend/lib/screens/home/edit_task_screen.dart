@@ -109,25 +109,30 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       category: _selectedCategory,
       date: _selectedDate,
       time: _selectedTime,
-      xpReward: 0, // Set to 0
+      xpReward: widget.task.xpReward, 
       instructions: _instructionsController.text.isNotEmpty
           ? _instructionsController.text
           : 'No additional instructions',
-      status: widget.task.status,
+      status: widget.task.status,  
       createdAt: widget.task.createdAt,
+      createdBy: widget.task.createdBy,        
+      requesterName: widget.task.requesterName, 
+      helperId: widget.task.helperId,         
+      helperName: widget.task.helperName,      
     );
 
-    Task.updateMockTask(updatedTask);
+  Task.updateMockTask(updatedTask);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Task updated successfully!'),
-        backgroundColor: Color(0xFF2A9D8F),
-      ),
-    );
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Task updated successfully!'),
+      backgroundColor: Color(0xFF2A9D8F),
+    ),
+  );
 
-    Navigator.pop(context, true);
-  }
+  Navigator.pop(context, true);
+}
+
 
   @override
   Widget build(BuildContext context) {
