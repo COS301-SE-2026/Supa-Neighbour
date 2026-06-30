@@ -2,42 +2,62 @@ package com.app.api.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Data;
 
 /**
- * Represents a dependent profile in the system.
+ * Represents a dependent user who requires assistance with tasks.
+ * Dependents are matched with helpers based on task types and compatibility.
  */
+@Data
+@Builder
 @Entity
-@Table(name = "DependentTable")
+@Table(name = "dependent_table")
 public class Dependent {
 
-    /** The dependent ID. */
     @Id
-    @Column(name = "DependentID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "dependent_id")
     private int dependentId;
 
-    /** The user ID. */
-    @Column(name = "UserID")
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User userid;
 
-    /** The task type ID. */
-    @Column(name = "TaskTypeID")
-    private Integer taskTypeId;
+    @ManyToOne
+    @JoinColumn(name = "task_type_id")
+    private TaskType taskTypeid;
 
-    /** The compatible ID. */
-    @Column(name = "CompatibleID")
-    private Integer compatibleId;
 
     /**
-     * Default constructor required by JPA.
+     * Constructs a dependent record with all fields specified.
+     *
+     * @param dependentId  the dependent identifier
+     * @param userid       the user associated with this dependent
+     * @param taskTypeid   the task type identifier
      */
-    public Dependent() {
-        // needed by jpa
+    public Dependent(int dependentId, User userid, TaskType taskTypeid) {
+        this.dependentId = dependentId;
+        this.userid = userid;
+        this.taskTypeid = taskTypeid;
     }
 
     /**
-     * Gets the dependent ID.
+     * Default constructor.
+     */
+    public Dependent(){
+
+    }
+
+    /**
+     * Gets the dependent identifier.
+     *
      * @return the dependent ID
      */
     public int getDependentId() {
@@ -45,7 +65,8 @@ public class Dependent {
     }
 
     /**
-     * Sets the dependent ID.
+     * Sets the dependent identifier.
+     *
      * @param dependentId the dependent ID
      */
     public void setDependentId(int dependentId) {
@@ -53,50 +74,37 @@ public class Dependent {
     }
 
     /**
-     * Gets the user ID.
-     * @return the user ID
+     * Gets the user associated with this dependent.
+     *
+     * @return the user
      */
-    public Integer getUserId() {
-        return userId;
+    public User getUserid(){
+        return userid;
     }
 
     /**
-     * Sets the user ID.
-     * @param userId the user ID
+     * Sets the user associated with this dependent.
+     *
+     * @param userid the user
      */
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUserid(User userid){
+        this.userid = userid;
+    }
+    /**
+     * Gets the task type associated with this dependent.
+     *
+     * @return the task type
+     */
+    public TaskType getTaskTypeid(){
+        return taskTypeid;
+    }
+    /**
+     * Sets the task type associated with this dependent.
+     *
+     * @param taskTypeid the task type
+     */
+    public void setTaskTypeid(TaskType TaskTypeid){
+        this.taskTypeid = TaskTypeid;
     }
 
-    /**
-     * Gets the task type ID.
-     * @return the task type ID
-     */
-    public Integer getTaskTypeId() {
-        return taskTypeId;
-    }
-
-    /**
-     * Sets the task type ID.
-     * @param taskTypeId the task type ID
-     */
-    public void setTaskTypeId(Integer taskTypeId) {
-        this.taskTypeId = taskTypeId;
-    }
-
-    /**
-     * Gets the compatible ID.
-     * @return the compatible ID
-     */
-    public Integer getCompatibleId() {
-        return compatibleId;
-    }
-
-    /**
-     * Sets the compatible ID.
-     * @param compatibleId the compatible ID
-     */
-    public void setCompatibleId(Integer compatibleId) {
-        this.compatibleId = compatibleId;
-    }
 }

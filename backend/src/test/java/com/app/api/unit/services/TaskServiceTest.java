@@ -4,6 +4,8 @@ import com.app.api.models.Task;
 import com.app.api.repositories.AnalyticsRepository;
 import com.app.api.repositories.TaskRepository;
 import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.ChatRepository;
+import com.app.api.repositories.MessageRepository;
 import com.app.api.services.TaskService;
 import com.app.api.models.Dependent;
 
@@ -36,6 +38,12 @@ public class TaskServiceTest
 
     @Mock
     private DependentRepository dependentRepo;
+
+    @Mock
+    private ChatRepository chatRepo;
+
+    @Mock
+    private MessageRepository messageRepo;
 
     @InjectMocks
     private TaskService taskService;
@@ -88,7 +96,7 @@ public class TaskServiceTest
         List<Task> tasks = List.of(task1, task2);
         when(taskRepo.findAll()).thenReturn(tasks);
 
-        Iterable<Task> allTasks = taskService.getAllTasks();
+        List<Task> allTasks = taskService.getAllTasks();
 
         assertNotNull(allTasks);
         verify(taskRepo, times(1)).findAll();
@@ -112,7 +120,8 @@ public class TaskServiceTest
     {
         int id = 1005;
         when(taskRepo.existsById(id)).thenReturn(true);
-        when(analyticsRepo.findByTaskId(id)).thenReturn(List.of());
+        when(chatRepo.findByTask_Taskid(id)).thenReturn(List.of());
+        when(analyticsRepo.findByTaskid_Taskid(id)).thenReturn(List.of());
 
         boolean deletedTask = taskService.deleteTask(id);
 
@@ -198,12 +207,10 @@ public class TaskServiceTest
         
         when(taskRepo.findById(999)).thenReturn(Optional.empty());
 
-        
         Task dne = taskService.updateTask(999, new Task());
-
-        
+    
         assertNull(dne);
-        verify(taskRepo, never()).save(any());
+        verify(taskRepo, never()).save(any(Task.class));
     }
 
 
@@ -215,19 +222,19 @@ public class TaskServiceTest
 
         Dependent dependent = new com.app.api.models.Dependent();
         dependent.setDependentId(1);
-        dependent.setUserId(userId);      
+        dependent.setUserid(new com.app.api.models.User());   
 
         Task task = new Task();
         task.setTaskId(1001);
         task.setDependentId(1);
 
-        when(dependentRepo.findByUserId(userId)).thenReturn(dependent);
+        when(dependentRepo.findByUserid_Userid(userId)).thenReturn(dependent);
         when(taskRepo.findByDependentId(1)).thenReturn(List.of(task));
         
-        Iterable<Task> userTasks = taskService.getTasksByUserId(userId);
+        List<Task> userTasks = taskService.getTasksByUserId(userId);
  
         assertNotNull(userTasks);
-        verify(dependentRepo, times(1)).findByUserId(userId);
+        verify(dependentRepo, times(1)).findByUserid_Userid(userId);
         verify(taskRepo, times(1)).findByDependentId(1);
     }
 
@@ -235,11 +242,34 @@ public class TaskServiceTest
     @Test
     void getTasksByUserId_noDependentProfile()
     {
-        when(dependentRepo.findByUserId(999)).thenReturn(null);
+        when(dependentRepo.findByUserid_Userid(999)).thenReturn(null);
     
-        Iterable<Task> userTasks = taskService.getTasksByUserId(999);
+        List<Task> userTasks = taskService.getTasksByUserId(999);
     
         assertNull(userTasks);
         verify(taskRepo, never()).findByDependentId(anyInt());
     }
+
+
+    @Test
+    void deleteTask_deletesChatsAndMessages()
+    {
+        int id = 1005;
+        int chatId = 50;
+
+        com.app.api.models.Chat chat = new com.app.api.models.Chat();
+        chat.setChatId(chatId);
+
+        when(taskRepo.existsById(id)).thenReturn(true);
+        when(chatRepo.findByTask_Taskid(id)).thenReturn(List.of(chat));
+        when(analyticsRepo.findByTaskid_Taskid(id)).thenReturn(List.of());
+
+        boolean deletedTask = taskService.deleteTask(id);
+
+        assertTrue(deletedTask);
+        verify(messageRepo, times(1)).deleteByChatId(chatId);
+        verify(chatRepo, times(1)).deleteAll(List.of(chat));
+        verify(taskRepo, times(1)).deleteById(id);
+    }
 }
+

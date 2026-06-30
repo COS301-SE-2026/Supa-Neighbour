@@ -1,35 +1,67 @@
 package com.app.api.config;
 
+import com.app.api.security.FirebaseTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/// CORS handling
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.List;
+
+
+
+/**
+ * Security and CORS configuration for the API.
+ */
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
-
-    /**
-     * Configure application security to permit Swagger and OpenAPI endpoints.
+     /**
+     * Configure application security and CORS.
      *
-     * @param http the HttpSecurity builder used to customize web security
+     * @param http the HttpSecurity builder
      * @return the built SecurityFilterChain
      * @throws Exception when the security configuration cannot be built
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
+       http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/swagger-ui/index.html",
-                    "/v3/api-docs/**",
-                    "/api-docs/**"
-                ).permitAll()
-                .anyRequest().permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .anyRequest().authenticated()
             )
+            .addFilterBefore(new FirebaseTokenFilter(),
+                UsernamePasswordAuthenticationFilter.class)
             .csrf(csrf -> csrf.disable());
+
 
         return http.build();
     }
+
+     /**
+     * Allow requests from the Flutter web dev server.
+     *
+     * @return the CORS configuration source
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 }
+ 

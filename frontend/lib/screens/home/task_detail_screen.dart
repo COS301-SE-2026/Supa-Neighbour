@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import 'edit_task_screen.dart';
+import '../../services/task_service.dart';
+
 
 class TaskDetailScreen extends StatefulWidget {
   final Task task;
@@ -51,13 +53,30 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditTaskScreen(task: widget.task),
+                    builder: (context) => EditTaskScreen(task: widget.widget.task),
                   ),
                 );
-                if (result == true && widget.onTaskUpdated != null) {
-                  widget.onTaskUpdated!();
+                if (result == true && widget.widget.onTaskUpdated != null) {
+                  widget.widget.onTaskUpdated!();
                 }
               },
+            ),
+          if (_isDeleting)
+            const Padding(
+              padding: EdgeInsets.all(14),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFFE76F51),
+                ),
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Color(0xFFE76F51)),
+              onPressed: _confirmDelete,
             ),
         ],
       ),

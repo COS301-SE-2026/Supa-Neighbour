@@ -31,7 +31,77 @@ class Task {
     this.helperName
   });
 
-  // Mock data storage
+  //note:
+  // _meansPrivate
+  // w/o underscore public
+
+  
+  ////////////////////////
+  /// MAP RES TO A TASK
+  factory Task.fromJson(Map<String, dynamic> json){
+
+    final DateTime startDate = json['startDate'] != null ? DateTime.parse(json['startDate'] as String): DateTime.now();
+
+    return Task(
+      id: (json['taskId'] as int).toString(),
+      title: _resolveCategoryName(json['taskTypeId'] as int?),
+      category: _resolveCategoryName(json['taskTypeId'] as int?),
+      date: startDate,
+      time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
+      xpReward: 0 ,
+      instructions: json['adminReview'] as String? ?? 'No instructions provided',
+      status: json['helperId'] != null ? 'in_progress' : 'pending',
+      createdAt: startDate,
+    );
+  }
+
+  /// taskTypeId -> categoryName
+  static String _resolveCategoryName(int? taskTypeId){
+    switch(taskTypeId){
+      case 1:
+        return 'Plants';
+      case 2:
+        return 'Pets';
+         case 3:
+        return 'Bins';
+      case 4:
+        return 'Packages';
+      case 5:
+        return 'Home Check-in';
+      case 6:
+        return 'Pool Pump';
+      default:
+        return 'Other';
+    }
+  }
+
+  /// categoryName -> taskTypeId
+  static int resolveTaskTypeId(String category){
+    switch (category) {
+      case 'Plants':
+        return 1;
+      case 'Pets':
+        return 2;
+      case 'Bins':
+      return 3;
+      case 'Packages':
+        return 4;
+      case 'Home Check-in':
+        return 5;
+      case 'Pool Pump':
+        return 6;
+      default:
+        return 7;
+
+    }
+  }
+
+
+
+
+
+////////////////////TEMP MCL DATA\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+/////////// wil remove as integration is being complete essentially
   static List<Task> _mockTasks = [];
 
   static List<Task> getMockTasks({String currentUserId = 'currentUser'}) {
@@ -192,7 +262,7 @@ class Task {
   }
 
   static void addMockTask(Task task) {
-    _mockTasks.insert(0, task); // Add to beginning of list
+    _mockTasks.insert(0, task); 
   }
 
   static void updateTaskStatus(String taskId, String newStatus) {
@@ -226,4 +296,6 @@ class Task {
   static void deleteMockTask(String taskId) {
     _mockTasks.removeWhere((task) => task.id == taskId);
   }
+  /////////////////////////////////////////////
+  /////////////////////////////////////////////
 }

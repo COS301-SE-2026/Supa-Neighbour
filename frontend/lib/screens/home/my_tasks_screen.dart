@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import '../../services/task_service.dart';
 import 'task_detail_screen.dart';
 import 'task_completion_page.dart';
 
@@ -31,7 +32,7 @@ class _MyTasksScreenState extends State<MyTasksScreen>
     super.dispose();
   }
 
-  void _loadAllTasks() {
+  Future<void> _loadAllTasks() async {
     final allTasks = Task.getMockTasks();
     
     setState(() {
@@ -184,6 +185,8 @@ class _MyTasksScreenState extends State<MyTasksScreen>
       },
     );
   }
+
+
 
   Widget _buildTaskCard(Task task, {required bool isRequesterView}) {
     return GestureDetector(

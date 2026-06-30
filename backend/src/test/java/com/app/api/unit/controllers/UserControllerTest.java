@@ -33,13 +33,13 @@ public class UserControllerTest
     void getUser_success() throws Exception
     {
         User user = new User();
-        user.setId(101);
+        user.setUserid(101);
         user.setFirstName("John");
         when(userService.getUserById(101)).thenReturn(user);
 
-        ResultActions result = mockMvc.perform(get("/api/user?id=101"));
+        ResultActions result = mockMvc.perform(get("/api/users/101"));
 
-        result.andExpect(status().isOk()).andExpect(jsonPath("$.id").value(101));
+        result.andExpect(status().isOk()).andExpect(jsonPath("$.userid").value(101));
     }
 
     @Test
@@ -47,7 +47,7 @@ public class UserControllerTest
     void getUser_fail() throws Exception {
         when(userService.getUserById(99)).thenReturn(null);
 
-        ResultActions result = mockMvc.perform(get("/api/user?id=99"));
+        ResultActions result = mockMvc.perform(get("/api/users/99"));
 
         result.andExpect(status().isNotFound());
     }

@@ -145,3 +145,5 @@ htmlcov/
 *.deb
 
 qw
+
+backend/src/main/resources/Firebase/serviceAccountKey.json
