@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import '../../services/task_service.dart';
+
 
 class EditTaskScreen extends StatefulWidget {
   final Task task;
@@ -31,6 +33,11 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     'Pool Pump',
     'Other',
   ];
+
+  // task service
+  final TaskService _taskService = TaskService();
+  bool _isSubmitting = false;
+
 
   @override
   void initState() {
@@ -95,7 +102,8 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     }
   }
 
-  void _updateTask() {
+
+  Future<void> _updateTask() async  {
     if (_titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a task title')),
@@ -103,31 +111,60 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       return;
     }
 
+    setState(() => _isSubmitting = true);
+
+    
+  try {
+    await _taskService.updateTask(
+      taskId: int.parse(widget.task.id),
+      taskTypeId: Task.resolveTaskTypeId(_selectedCategory),
+      startDate: _selectedDate,
+      adminReview: _instructionsController.text.isNotEmpty
+          ? _instructionsController.text
+          : 'No additional instructions',
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Task updated successfully!'),
+          backgroundColor: Color(0xFF2A9D8F),
+        ),
+      );
+      Navigator.pop(context, true);
+    }
+  } catch (e) {
+    ///////fallback
     final updatedTask = Task(
       id: widget.task.id,
       title: _titleController.text,
       category: _selectedCategory,
       date: _selectedDate,
       time: _selectedTime,
-      xpReward: 0, // Set to 0
+      xpReward: 0, //Set to 0
       instructions: _instructionsController.text.isNotEmpty
           ? _instructionsController.text
           : 'No additional instructions',
       status: widget.task.status,
       createdAt: widget.task.createdAt,
     );
-
     Task.updateMockTask(updatedTask);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Task updated successfully!'),
-        backgroundColor: Color(0xFF2A9D8F),
-      ),
-    );
-
-    Navigator.pop(context, true);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Task saved locally (offline mode)'),
+          backgroundColor: Color(0xFFE9C46A),
+        ),
+      );
+      Navigator.pop(context, true);
+    }
+  } finally {
+    if (mounted) setState(() => _isSubmitting = false);
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -375,7 +412,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _updateTask,
+                onPressed: _isSubmitting ? null : _updateTask,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2A9D8F),
                   foregroundColor: Colors.white,
@@ -383,14 +420,24 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  disabledBackgroundColor: const Color(0xFFE5E2E0),
                 ),
-                child: Text(
-                  'Update Task',
-                  style: GoogleFonts.openSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'Update Task',
+                        style: GoogleFonts.openSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 32),

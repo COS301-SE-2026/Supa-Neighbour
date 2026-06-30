@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import '../../services/task_service.dart';
 
 class CreateTaskScreen extends StatefulWidget {
   const CreateTaskScreen({super.key});
@@ -10,6 +11,9 @@ class CreateTaskScreen extends StatefulWidget {
 }
 
 class _CreateTaskScreenState extends State<CreateTaskScreen> {
+ 
+
+
   // Form controllers
   final _titleController = TextEditingController();
   final _instructionsController = TextEditingController();
@@ -83,7 +87,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     }
   }
 
-  void _submitTask() {
+  /////////////create task
+   // Service
+   final TaskService _taskService = TaskService();
+   bool _isSubmit = false;
+
+  void _submitTask() async {
+
     // Validate required fields
     if (_titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -99,7 +109,29 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       return;
     }
 
-    // Create new task (XP reward set to 0 or remove from model)
+    setState(() => _isSubmit = true);
+    
+    try {
+      await _taskService.createTask(
+        dependentId: 1, // will update to auth usrs
+        taskTypeId: Task.resolveTaskTypeId(_selectedCategory!),
+        startDate: _selectedDate,
+        isImmediate: false,
+        needsSpecialist: false,
+      );
+
+      if(mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Task created successfully!'),
+            backgroundColor: Color(0xFF2A9D8F),
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch(e) {//fallback to what we mocked
+  
+      // Create new task (XP reward set to 0 or remove from model)
     final newTask = Task(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: _titleController.text,
@@ -113,21 +145,25 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       status: 'pending',
       createdAt: DateTime.now(),
     );
-
     // Add to mock data list
     Task.addMockTask(newTask);
 
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Task created successfully!'),
-        backgroundColor: Color(0xFF2A9D8F),
-      ),
-    );
-
+    if(mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Task saved locally (offline mode)'),
+          backgroundColor: Color(0xFFE9C46A),
+        ),
+      );
     // Navigate back
     Navigator.pop(context, true);
+    }
   }
+  finally {
+    if(mounted) setState(() => _isSubmit = false);
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -375,7 +411,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: (_titleController.text.isNotEmpty && _selectedCategory != null)
+                onPressed: (_titleController.text.isNotEmpty &&
+                        _selectedCategory != null &&
+                        !_isSubmit)
                     ? _submitTask
                     : null,
                 style: ElevatedButton.styleFrom(
@@ -387,13 +425,22 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   ),
                   disabledBackgroundColor: const Color(0xFFE5E2E0),
                 ),
-                child: Text(
-                  'Post Task',
-                  style: GoogleFonts.openSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: _isSubmit
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'Post Task',
+                        style: GoogleFonts.openSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 32),

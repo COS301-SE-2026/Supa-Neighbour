@@ -11,6 +11,10 @@ import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * Represents a dependent user who requires assistance with tasks.
+ * Dependents are matched with helpers based on task types and compatibility.
+ */
 @Data
 @Builder
 @Entity
@@ -20,7 +24,7 @@ public class Dependent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "dependent_id")
-    private int dependentid;
+    private int dependentId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -31,16 +35,76 @@ public class Dependent {
     private TaskType taskTypeid;
 
 
-    public Dependent(int dependentid,User userid, TaskType taskTypeid) {
-        this.dependentid=dependentid;
+    /**
+     * Constructs a dependent record with all fields specified.
+     *
+     * @param dependentId  the dependent identifier
+     * @param userid       the user associated with this dependent
+     * @param taskTypeid   the task type identifier
+     */
+    public Dependent(int dependentId, User userid, TaskType taskTypeid) {
+        this.dependentId = dependentId;
         this.userid = userid;
         this.taskTypeid = taskTypeid;
     }
 
-    public Dependent()
-    {
-        
+    /**
+     * Default constructor.
+     */
+    public Dependent(){
+
     }
 
-    
+    /**
+     * Gets the dependent identifier.
+     *
+     * @return the dependent ID
+     */
+    public int getDependentId() {
+        return dependentId;
+    }
+
+    /**
+     * Sets the dependent identifier.
+     *
+     * @param dependentId the dependent ID
+     */
+    public void setDependentId(int dependentId) {
+        this.dependentId = dependentId;
+    }
+
+    /**
+     * Gets the user associated with this dependent.
+     *
+     * @return the user
+     */
+    public User getUserid(){
+        return userid;
+    }
+
+    /**
+     * Sets the user associated with this dependent.
+     *
+     * @param userid the user
+     */
+    public void setUserid(User userid){
+        this.userid = userid;
+    }
+    /**
+     * Gets the task type associated with this dependent.
+     *
+     * @return the task type
+     */
+    public TaskType getTaskTypeid(){
+        return taskTypeid;
+    }
+    /**
+     * Sets the task type associated with this dependent.
+     *
+     * @param taskTypeid the task type
+     */
+    public void setTaskTypeid(TaskType TaskTypeid){
+        this.taskTypeid = TaskTypeid;
+    }
+
 }

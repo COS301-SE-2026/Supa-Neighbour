@@ -92,24 +92,19 @@ class User {
     };
   }
 
-  // Create from JSON (for future API integration)
+  // Create from JSON (for future API integration) - integrated now lol
   factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      email: json['email'],
-      firstName: json['firstName'],
-      lastName: json['lastName'],
-      phone: json['phone'],
-      username: json['username'],
-      birthday: json['birthday'] != null ? DateTime.parse(json['birthday']) : null,
-      gender: json['gender'],
-      street: json['street'],
-      town: json['town'],
-      zipCode: json['zipCode'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
-    );
-  }
+  return User(
+    id: json['user_id'].toString(),
+    email: json['user_email'] as String? ?? '',
+    firstName: json['user_name'] as String? ?? '',
+    lastName: json['user_surname'] as String? ?? '',
+    phone: json['user_phone_number'] as String?,
+    gender: json['user_gender'] as String?,
+    createdAt: DateTime.now(),
+  );
+}
+
 
   // Creates an empty user
   static User empty() {

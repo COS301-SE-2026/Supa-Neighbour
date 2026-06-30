@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import '../../services/task_service.dart';
 import 'task_detail_screen.dart';
 
 class MyTasksScreen extends StatefulWidget {
@@ -11,7 +12,14 @@ class MyTasksScreen extends StatefulWidget {
 }
 
 class _MyTasksScreenState extends State<MyTasksScreen> {
+  final TaskService _taskService = TaskService();
+
   List<Task> _tasks = [];
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  /////// to update once login(authentication) is complete
+  static const int _currentUserId = 6;
 
   @override
   void initState() {
@@ -19,10 +27,25 @@ class _MyTasksScreenState extends State<MyTasksScreen> {
     _loadTasks();
   }
 
-  void _loadTasks() {
+  Future<void> _loadTasks() async {
     setState(() {
-      _tasks = Task.getMockTasks();
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      final List<Task> tasks =
+          await _taskService.getTasksByUserId(_currentUserId);
+      setState(() {
+        _tasks = tasks;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Couldn't load tasks. Please try again.";
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -43,49 +66,86 @@ class _MyTasksScreenState extends State<MyTasksScreen> {
         centerTitle: true,
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          _loadTasks();
-        },
-        child: _tasks.isEmpty
-            ? Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.assignment_turned_in,
-                size: 80,
-                color: const Color(0xFF2A9D8F).withOpacity(0.3),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No tasks yet',
-                style: GoogleFonts.openSans(
-                  color: const Color(0xFF264653),
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Create your first task by tapping the + button',
-                style: GoogleFonts.openSans(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        )
-            : ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _tasks.length,
-          itemBuilder: (context, index) {
-            final task = _tasks[index];
-            return _buildTaskCard(task);
-          },
-        ),
+        onRefresh: _loadTasks,
+        child: _buildBody(),
       ),
     );
   }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF2A9D8F)),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Color(0xFFE76F51)),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              style: GoogleFonts.openSans(
+                color: const Color(0xFF264653),
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadTasks,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2A9D8F),
+              ),
+              child: const Text('Retry', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_tasks.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.assignment_turned_in,
+              size: 80,
+              color: const Color(0xFF2A9D8F).withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No tasks yet',
+              style: GoogleFonts.openSans(
+                color: const Color(0xFF264653),
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Create your first task by tapping the + button',
+              style: GoogleFonts.openSans(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _tasks.length,
+      itemBuilder: (context, index) => _buildTaskCard(_tasks[index]),
+    );
+  }
+
+
 
   Widget _buildTaskCard(Task task) {
     return GestureDetector(
@@ -96,12 +156,12 @@ class _MyTasksScreenState extends State<MyTasksScreen> {
             builder: (context) => TaskDetailScreen(
               task: task,
               onTaskUpdated: () {
-                _loadTasks(); // Refresh when task is updated
+                _loadTasks();
               },
             ),
           ),
         );
-        _loadTasks(); // Refresh after returning from detail screen
+        _loadTasks(); 
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
