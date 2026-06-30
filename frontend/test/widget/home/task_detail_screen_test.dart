@@ -15,12 +15,17 @@ void main() {
     instructions: 'Please water the 3 pots on the balcony. Use the blue watering can under the sink.',
     status: 'pending',
     createdAt: DateTime.now(),
+    createdBy: 'test_user',
+    requesterName: 'Test Requester',
+    helperId: null,
+    helperName: null,
   );
 
   Widget buildTestableWidget() {
     return MaterialApp(
       home: TaskDetailScreen(
         task: mockTask,
+        isRequesterView: true,
       ),
     );
   }

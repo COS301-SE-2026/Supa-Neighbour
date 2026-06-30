@@ -52,6 +52,10 @@ class Task {
       instructions: json['adminReview'] as String? ?? 'No instructions provided',
       status: json['helperId'] != null ? 'in_progress' : 'pending',
       createdAt: startDate,
+      createdBy: json['createdBy'] as String? ?? 'unknown',  
+      requesterName: json['requesterName'] as String?,       
+      helperId: json['helperId'] as String?,                 
+      helperName: json['helperName'] as String?,             
     );
   }
 

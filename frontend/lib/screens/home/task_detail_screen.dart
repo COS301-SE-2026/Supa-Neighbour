@@ -23,6 +23,9 @@ class TaskDetailScreen extends StatefulWidget {
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
   @override
+  bool _isDeleting = false;
+  final TaskService _taskService = TaskService();
+
   Widget build(BuildContext context) {
     final bool canEdit = widget.isRequesterView && widget.task.status == 'open';
     final bool showApproveButton = widget.isRequesterView && widget.task.status == 'pending_approval';
@@ -53,11 +56,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditTaskScreen(task: widget.widget.task),
+                    builder: (context) => EditTaskScreen(task: widget.task),
                   ),
                 );
-                if (result == true && widget.widget.onTaskUpdated != null) {
-                  widget.widget.onTaskUpdated!();
+                if (result == true && widget.onTaskUpdated != null) {
+                  widget.onTaskUpdated!();
                 }
               },
             ),
@@ -72,11 +75,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   color: Color(0xFFE76F51),
                 ),
               ),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Color(0xFFE76F51)),
-              onPressed: _confirmDelete,
             ),
         ],
       ),
