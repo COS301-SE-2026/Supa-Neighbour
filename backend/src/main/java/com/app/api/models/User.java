@@ -10,13 +10,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Data
-@Builder
 @Getter
 @Setter
 @Entity
@@ -71,23 +69,6 @@ public class User {
      * Default constructor required by JPA.
      */
     public User() {
-    }
-
-    public User(int userid,String firebaseUid, String firstName, String lastName, String password, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
-        this.userid = userid;
-        this.firebaseUid = firebaseUid;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.password = password;
-        this.email = email;
-        this.firebaseUid = firebaseUid;
-        this.phoneNumber = phoneNumber;
-        this.dateOfBirth = dateOfBirth;
-        this.gender = gender;
-        this.addressid = addressid;
-        this.badgeid = badgeid;
-        this.ratingid = ratingid;
-        this.userType = userType;
     }
 
 }
