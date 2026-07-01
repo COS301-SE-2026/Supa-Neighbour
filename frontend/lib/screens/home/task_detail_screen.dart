@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import 'edit_task_screen.dart';
-import '../../services/task_service.dart';
+
 
 
 class TaskDetailScreen extends StatefulWidget {
@@ -22,10 +22,7 @@ class TaskDetailScreen extends StatefulWidget {
 }
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
-  @override
-  bool _isDeleting = false;
-  final TaskService _taskService = TaskService();
-
+@override
   Widget build(BuildContext context) {
     final bool canEdit = widget.isRequesterView && widget.task.status == 'open';
     final bool showApproveButton = widget.isRequesterView && widget.task.status == 'pending_approval';
@@ -63,18 +60,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   widget.onTaskUpdated!();
                 }
               },
-            ),
-          if (_isDeleting)
-            const Padding(
-              padding: EdgeInsets.all(14),
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFFE76F51),
-                ),
-              ),
             ),
         ],
       ),
@@ -318,19 +303,20 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     );
   }
 
-  void _approveCompletion(BuildContext context) async {
+   void _approveCompletion(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Approve Task Completion?'),
         content: const Text('Confirming will award XP to the helper and mark this task as complete.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4CAF50),
             ),
@@ -343,18 +329,20 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     if (confirmed == true) {
       Task.updateTaskStatus(widget.task.id, 'completed');
 
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Task approved! XP awarded to helper.'),
-          backgroundColor: Color(0xFF4CAF50),
-        ),
-      );
-      if (widget.onTaskUpdated != null) {
-        widget.onTaskUpdated!();
-      }
-      Navigator.pop(context);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Task approved! XP awarded to helper.'),
+              backgroundColor: Color(0xFF4CAF50),
+            ),
+          );
+          if (widget.onTaskUpdated != null) {
+            widget.onTaskUpdated!();
+          }
+          Navigator.pop(context);
+        }
+      });
     }
   }
 
