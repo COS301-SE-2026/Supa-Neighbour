@@ -68,7 +68,7 @@ public class LocationService {
         if (existing == null) {
             return null;
         }
-        existing.setLocationCentrePoint(updated.getLocationCentrePoint());
+        existing.setLocationCenterPoint(updated.getLocationCenterPoint());
         existing.setLocationRadius(updated.getLocationRadius());
         existing.setNeighbourhoodName(updated.getNeighbourhoodName());
         existing.setNeighbourhoodid(updated.getNeighbourhoodid());
