@@ -68,8 +68,8 @@ public class DependentService {
             return null;
         }
         
-        existing.setUserid(updated.getUserid());
-        existing.setTaskTypeid(updated.getTaskTypeid());
+        existing.setUserId(updated.getUserId());
+        existing.setTaskTypeId(updated.getTaskTypeId());
 
         return dependentRepository.save(existing);
     }

@@ -5,28 +5,53 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.models.User;
 import com.app.api.services.UserService;
 
 /**
- * REST controller for user-related endpoints.
+ * REST controller that provides endpoints for managing users.
+ * <p>
+ * Supports operations to create, retrieve, update, and delete users.
+ * All endpoints are accessible under the {@code /api/users} path.
+ * </p>
  */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
+     /**
+     * Service used to perform user-related business logic.
+     */
     @Autowired
     private UserService userService;
 
-    // GET /api/users
+    /**
+     * Retrieves all users.
+     *
+     * @return a {@code ResponseEntity} containing a list of all users and
+     *         an HTTP 200 (OK) status.
+     */
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    // GET /api/users/1
+    /**
+     * Retrieves a user by their unique identifier.
+     *
+     * @param id the ID of the user to retrieve.
+     * @return a {@code ResponseEntity} containing the user and HTTP 200 (OK)
+     *         if found, or HTTP 404 (Not Found) if the user does not exist.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable int id) {
         User user = userService.getUserById(id);
@@ -36,14 +61,28 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    // POST /api/users
+    /**
+     * Creates a new user.
+     *
+     * @param user the user object containing the details of the user to create.
+     * @return a {@code ResponseEntity} containing the newly created user and
+     *         an HTTP 201 (Created) status.
+     */
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
         User saved = userService.saveUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // PUT /api/users/1
+    /**
+     * Updates an existing user.
+     *
+     * @param id the ID of the user to update.
+     * @param user the updated user information.
+     * @return a {@code ResponseEntity} containing the updated user and
+     *         an HTTP 200 (OK) status if the user exists, or
+     *         HTTP 404 (Not Found) if no user with the specified ID exists.
+     */
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable int id, @RequestBody User user) {
         User existing = userService.getUserById(id);
@@ -54,7 +93,14 @@ public class UserController {
         return ResponseEntity.ok(updated);
     }
 
-    // DELETE /api/users/1
+    /**
+     * Deletes a user by their unique identifier.
+     *
+     * @param id the ID of the user to delete.
+     * @return a {@code ResponseEntity} with HTTP 204 (No Content) if the user
+     *         was successfully deleted, or HTTP 404 (Not Found) if no user
+     *         with the specified ID exists.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable int id) {
         User existing = userService.getUserById(id);
@@ -65,4 +111,3 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 }
-

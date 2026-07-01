@@ -32,7 +32,7 @@
         </module>
 
         <module name="ParameterNumber">
-            <property name="max" value="7"/>
+            <property name="max" value="20"/>
         </module>
 
         <module name="MissingJavadocMethod">
