@@ -19,15 +19,15 @@ Our high-level principles guide the overall look and feel of the system, ensurin
 
 The **Fresh and Modern** palette is selected with accessibility in mind, ensuring sufficient contrast for readability while keeping the app inviting and energetic.
 
-| Role | Colour Name | Hex Code | Usage |
-| :--- | :--- | :--- | :--- |
-| **Primary** | Vibrant Teal | `#2A9D8F` | Buttons, active navigation, input borders, primary icons, FAB |
-| **Secondary** | Citrus Yellow | `#E9C46A` | XP badges, trust scores, highlights |
-| **Background** | Clean White | `#FFFFFF` | App background, card backgrounds |
-| **Text Dark** | Charcoal | `#264653` | Headings, primary body text, dark text on light backgrounds |
-| **Text Light** | White | `#FFFFFF` | Text on primary teal buttons, active tab text |
-| **Success** | Mint | `#69B578` | Success states, positive confirmations |
-| **Error** | Coral | `#F4A261` | Error messages, destructive actions |
+| Role | Colour Name | Hex Code | RGB | HSL | Usage |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Primary** | Vibrant Teal | `#2A9D8F` | `(42, 157, 143)` | `(172°, 58%, 39%)` | Buttons, active navigation, input borders, primary icons, FAB |
+| **Secondary** | Citrus Yellow | `#E9C46A` | `(233, 196, 106)` | `(42°, 74%, 66%)` | XP badges, trust scores, highlights |
+| **Background** | Clean White | `#FFFFFF` | `(255, 255, 255)` | `(0°, 0%, 100%)` | App background, card backgrounds |
+| **Text Dark** | Charcoal | `#264653` | `(38, 70, 83)` | `(195°, 37%, 24%)` | Headings, primary body text, dark text on light backgrounds |
+| **Text Light** | White | `#FFFFFF` | `(255, 255, 255)` | `(0°, 0%, 100%)` | Text on primary teal buttons, active tab text |
+| **Success** | Mint | `#69B578` | `(105, 181, 120)` | `(128°, 34%, 56%)` | Success states, positive confirmations |
+| **Error** | Coral | `#F4A261` | `(244, 162, 97)` | `(27°, 87%, 67%)` | Error messages, destructive actions |
 
 ---
 
@@ -115,6 +115,20 @@ Standardized font families, sizes, and weights for headings, body text, and othe
 
 All interactive icons must have a minimum size of **44x44 points** to accommodate all finger sizes and ensure accessibility.
 
+### 4.3 Clear-Space Rules
+- Minimum clear space around the logo: **16px** (or half the logo height)
+- No other elements (text, icons, images) may intrude into this space
+
+### 4.4 Forbidden Treatments
+| Treatment | Reason |
+|-----------|--------|
+| **Stretching or distorting** | Breaks brand integrity |
+| **Recolouring** | Must use approved colours only |
+| **Adding drop shadows** | Clutters the clean aesthetic |
+| **Placing on low-contrast backgrounds** | Reduces visibility and accessibility |
+| **Adding outlines** | Alters the intended design |
+| **Using outdated versions** | Inconsistent brand representation |
+
 ---
 
 ## 5. UI Component Styling
@@ -157,11 +171,31 @@ Standard styles for common interface elements to ensure uniform implementation a
 
 Guidelines to ensure the interface is usable by individuals with diverse abilities:
 
-* **Color Contrast:** Ensure sufficient contrast ratios (minimum 4.5:1 for normal text, 3:1 for large text) between text elements and backgrounds. White text on Vibrant Teal meets these requirements.
-* **Touch Targets:** All interactive elements (buttons, navigation tabs, FAB) must have a minimum touch target size of 44x44 points.
-* **Keyboard Navigability:** Interfaces must be fully navigable using a keyboard (e.g., logical tab order through login forms and list items).
-* **Screen Reader Compatibility:** Proper ARIA labels and alt-text must be utilized for all icons (e.g., leaf icon, package icon) and image-based badges.
-* **Visual Cues:** Do not rely solely on color to convey information. Use icons, text labels, and structural grouping (like the distinct layout of XP badges vs. regular text) to ensure clarity for visually impaired users.
+**Color Contrast:** Ensure sufficient contrast ratios (minimum 4.5:1 for normal text, 3:1 for large text) between text elements and backgrounds. White text on Vibrant Teal meets these requirements.
+
+**Touch Targets:** All interactive elements (buttons, navigation tabs, FAB) must have a minimum touch target size of 44x44 points.
+
+**Keyboard Navigability:** Interfaces must be fully navigable using a keyboard (e.g., logical tab order through login forms and list items).
+
+**Screen Reader Compatibility:** Proper ARIA labels and alt-text must be utilized for all icons (e.g., leaf icon, package icon) and image-based badges.
+
+**Visual Cues:** Do not rely solely on color to convey information. Use icons, text labels, and structural grouping (like the distinct layout of XP badges vs. regular text) to ensure clarity for visually impaired users.
+
+### Focus Indicator Style
+- **Colour:** Vibrant Teal (`#2A9D8F`)
+- **Size:** 2px solid outline
+- **Offset:** 2px from the element
+- **All interactive elements** must have a visible focus indicator when navigating by keyboard
+
+### Motion-Reduction Support
+- Respect the `prefers-reduced-motion` system setting
+- Disable or reduce animations (opacity fades, slide transitions) when enabled
+- Use Flutter's `AnimatedBuilder` with `vsync` to respect motion settings
+
+### Lighthouse Target
+- **Accessibility Score:** ≥ 95%
+- Run Lighthouse audits regularly and fix any identified issues
+- Include the score in the repository README
 
 ## 7. Chat Bubbles
 
