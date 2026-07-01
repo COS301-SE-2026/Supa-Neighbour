@@ -222,19 +222,19 @@ public class TaskServiceTest
 
         Dependent dependent = new com.app.api.models.Dependent();
         dependent.setDependentId(1);
-        dependent.setUserid(new com.app.api.models.User());   
+        dependent.setUserId(new com.app.api.models.User());   
 
         Task task = new Task();
         task.setTaskId(1001);
         task.setDependentId(1);
 
-        when(dependentRepo.findByUserid_Userid(userId)).thenReturn(dependent);
+        when(dependentRepo.findByUserId_Userid(userId)).thenReturn(dependent);
         when(taskRepo.findByDependentId(1)).thenReturn(List.of(task));
         
         List<Task> userTasks = taskService.getTasksByUserId(userId);
  
         assertNotNull(userTasks);
-        verify(dependentRepo, times(1)).findByUserid_Userid(userId);
+        verify(dependentRepo, times(1)).findByUserId_Userid(userId);
         verify(taskRepo, times(1)).findByDependentId(1);
     }
 
@@ -242,7 +242,7 @@ public class TaskServiceTest
     @Test
     void getTasksByUserId_noDependentProfile()
     {
-        when(dependentRepo.findByUserid_Userid(999)).thenReturn(null);
+        when(dependentRepo.findByUserId_Userid(999)).thenReturn(null);
     
         List<Task> userTasks = taskService.getTasksByUserId(999);
     
