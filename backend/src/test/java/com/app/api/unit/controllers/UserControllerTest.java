@@ -2,6 +2,9 @@ package com.app.api.unit.controllers;
 
 import com.app.api.controllers.UserController;
 import com.app.api.models.User;
+import com.app.api.repositories.UserRepository;
+import com.app.api.security.FirebaseAuthenticationFilter;
+import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +26,15 @@ public class UserControllerTest
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private FirebaseAuthService firebaseAuthService;
+
+    @MockBean
+    private UserRepository userRepository;
+
+    @MockBean
+    private FirebaseAuthenticationFilter firebaseAuthenticationFilter;
 
     @MockBean
     private UserService userService;
