@@ -59,8 +59,7 @@ public class AuthController {
      * @param userRepository the repository used to manage users
      */
 public AuthController(
-        FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository,BadgesRepository badgeRepository,RatingsRepository ratingRepository) 
-        {
+        FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository,BadgesRepository badgeRepository,RatingsRepository ratingRepository) {
             this.firebaseAuthService = firebaseAuthService;
             this.userRepository = userRepository;
             this.addressRepository = addressRepository;
