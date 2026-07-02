@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import 'available_helpers_screen.dart';
 import 'task_detail_screen.dart';
 import 'task_completion_page.dart';
+
 
 class MyTasksScreen extends StatefulWidget {
   const MyTasksScreen({super.key});
@@ -69,19 +71,19 @@ class _MyTasksScreenState extends State<MyTasksScreen>
   Color _getStatusColor(String status) {
     switch (status) {
       case 'open':
-        return const Color(0xFFE9C46A); // Yellow
+        return const Color(0xFFE9C46A); 
       case 'assigned':
-        return const Color(0xFF2A9D8F); // Teal
+        return const Color(0xFF2A9D8F); 
       case 'in_progress':
-        return const Color(0xFF2196F3); // Blue
+        return const Color(0xFF2196F3); 
       case 'pending_approval':
-        return const Color(0xFFFF9800); // Orange
+        return const Color(0xFFFF9800); 
       case 'completed':
-        return const Color(0xFF4CAF50); // Green
+        return const Color(0xFF4CAF50); 
       case 'cancelled':
-        return const Color(0xFFF44336); // Red
+        return const Color(0xFFF44336); 
       default:
-        return const Color(0xFF9CA3AF); // Grey
+        return const Color(0xFF9CA3AF); 
     }
   }
 
@@ -188,10 +190,21 @@ class _MyTasksScreenState extends State<MyTasksScreen>
 
 
   Widget _buildTaskCard(Task task, {required bool isRequesterView}) {
-    return GestureDetector(
-      onTap: () async {
-        if (!isRequesterView && task.status == 'assigned' || task.status == 'in_progress') {
-          // Helper: Navigate to Task Completion Page for active tasks
+  return GestureDetector(
+    onTap: () async {
+      // CASE 1: HELPER VIEW (Accepted Tab)
+      if (!isRequesterView) {
+        if (task.status == 'assigned') {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TaskDetailScreen(
+                task: task,
+                onTaskUpdated: () => _refreshTasks(),
+              ),
+            ),
+          );
+        } else if (task.status == 'in_progress') {
           await Navigator.push(
             context,
             MaterialPageRoute(
@@ -204,146 +217,169 @@ class _MyTasksScreenState extends State<MyTasksScreen>
               ),
             ),
           );
-          _refreshTasks();
         } else {
-          // Requester view or completed tasks: Go to detail screen
           await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => TaskDetailScreen(
                 task: task,
-                onTaskUpdated: () {
-                  _refreshTasks();
-                },
+                onTaskUpdated: () => _refreshTasks(),
               ),
             ),
           );
-          _refreshTasks();
         }
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2A9D8F).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                _getCategoryIcon(task.category),
-                color: const Color(0xFF2A9D8F),
-                size: 28,
+        _refreshTasks();
+        return;
+      }
+
+      // CASE 2: REQUESTER VIEW (Posted Tab)
+      if (isRequesterView) {
+        if (task.status == 'open' || task.status == 'assigned') {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AvailableHelpersScreen(
+                task: task,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    task.title,
-                    style: GoogleFonts.poppins(
-                      color: const Color(0xFF264653),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.category, size: 14, color: Color(0xFF2A9D8F)),
-                      const SizedBox(width: 4),
-                      Text(
-                        task.category,
-                        style: GoogleFonts.openSans(
-                          color: const Color(0xFF6B7280),
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Icon(Icons.access_time, size: 14, color: Color(0xFF2A9D8F)),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
-                        style: GoogleFonts.openSans(
-                          color: const Color(0xFF6B7280),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  // Status Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(task.status).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _getStatusDisplay(task.status, isRequesterView: isRequesterView),
-                      style: GoogleFonts.openSans(
-                        color: _getStatusColor(task.status),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+          );
+        } else {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TaskDetailScreen(
+                task: task,
+                onTaskUpdated: () => _refreshTasks(),
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+          );
+        }
+        _refreshTasks();
+      }
+    },
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A9D8F).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              _getCategoryIcon(task.category),
+              color: const Color(0xFF2A9D8F),
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  task.title,
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF264653),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.category, size: 14, color: Color(0xFF2A9D8F)),
+                    const SizedBox(width: 4),
+                    Text(
+                      task.category,
+                      style: GoogleFonts.openSans(
+                        color: const Color(0xFF6B7280),
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Icon(Icons.access_time, size: 14, color: Color(0xFF2A9D8F)),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
+                      style: GoogleFonts.openSans(
+                        color: const Color(0xFF6B7280),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE9C46A),
-                    borderRadius: BorderRadius.circular(20),
+                    color: _getStatusColor(task.status).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '+${task.xpReward} XP',
+                    _getStatusDisplay(task.status, isRequesterView: isRequesterView),
                     style: GoogleFonts.openSans(
-                      color: const Color(0xFF264653),
-                      fontSize: 12,
+                      color: _getStatusColor(task.status),
+                      fontSize: 10,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                if (!isRequesterView && (task.status == 'assigned' || task.status == 'in_progress'))
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      'Tap to complete',
-                      style: GoogleFonts.openSans(
-                        color: const Color(0xFF2A9D8F),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
               ],
             ),
-          ],
-        ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE9C46A),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '+${task.xpReward} XP',
+                  style: GoogleFonts.openSans(
+                    color: const Color(0xFF264653),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              if (!isRequesterView && (task.status == 'assigned' || task.status == 'in_progress'))
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'Tap to complete',
+                    style: GoogleFonts.openSans(
+                      color: const Color(0xFF2A9D8F),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
