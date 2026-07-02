@@ -107,13 +107,13 @@ public AuthController(
         newUser.setAddressid(address);
 
     // Default badge
-        Badges badge = badgeRepository.findById(1)
+        Badges badge = badgeRepository.findById(request.getBadgeId())
             .orElseThrow();
 
         newUser.setBadgeid(badge);
 
     // Default rating
-        Ratings rating = ratingRepository.findById(1)
+        Ratings rating = ratingRepository.findById(request.getRatingId())
             .orElseThrow();
 
         newUser.setRatingid(rating);
