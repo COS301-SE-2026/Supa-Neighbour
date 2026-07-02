@@ -76,7 +76,7 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,@NonNull FilterChain filterChain) 
             throws ServletException, IOException {
         String authorizationHeader = request.getHeader("Authorization");
-
+        System.out.println("Authorization header = " + authorizationHeader);
         if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")){
             filterChain.doFilter(request, response);
             return;
@@ -85,8 +85,10 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
         try{
             String idToken = authorizationHeader.substring(7);
             FirebaseToken firebaseToken = firebaseAuthService.verifyIdToken(idToken);
+            System.out.println("Verified UID = " + firebaseToken.getUid());
             String firebaseUid = firebaseToken.getUid();
             User newUser = userRepository.findByFirebaseUid(firebaseUid).orElse(null);
+            System.out.println("Database user = " + newUser);
                 if(newUser != null){
                     AuthenticatedUser authenticatedUser = new AuthenticatedUser(newUser);
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(authenticatedUser, null, Collections.emptyList());
@@ -94,9 +96,14 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }catch(Exception e){
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-        }
+                e.printStackTrace();
+                System.out.println("Authentication failed:");
+    System.out.println(e.getClass().getName());
+    System.out.println(e.getMessage());
+
+    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    return;
+}
         filterChain.doFilter(request, response);
     }
     

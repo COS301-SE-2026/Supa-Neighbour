@@ -41,7 +41,7 @@ public class User {
     /**
      * The Firebase authentication UID associated with the user.
      */
-    @Column(name = "firebase_uid", unique = true)
+    @Column(name = "user_firebase_uid", unique = true)
     private String firebaseUid;
 
     /** user's first name */
