@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
-class CheckboxWithLabel extends StatefulWidget {
+class CheckboxWithLabel extends StatelessWidget {
   final String label;
+  final bool value;
+  final ValueChanged<bool?> onChanged;
   final double fontSize;
+  final Color activeColor;
 
   const CheckboxWithLabel({
     super.key,
     required this.label,
-    this.fontSize = 40,
+    required this.value,
+    required this.onChanged,
+    this.fontSize = 14,
+    this.activeColor = AppColors.primaryTeal,
   });
-
-  @override
-  State<CheckboxWithLabel> createState() => _CheckboxWithLabelState();
-}
-
-class _CheckboxWithLabelState extends State<CheckboxWithLabel> {
-  bool _isChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -23,27 +23,30 @@ class _CheckboxWithLabelState extends State<CheckboxWithLabel> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 52,
-          height: 52,
+          width: 44,
+          height: 44,
           child: Checkbox(
-            value: _isChecked,
-            onChanged: (value) {
-              setState(() {
-                _isChecked = value ?? false;
-              });
-            },
-            activeColor: const Color(0xFF1C9A89),
+            value: value,
+            onChanged: onChanged,
+            activeColor: activeColor,
             checkColor: Colors.white,
-            side: const BorderSide(color: Color(0xFF1C9A89), width: 3),
+            side: BorderSide(
+              color: activeColor,
+              width: 2,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         Text(
-          widget.label,
+          label,
           style: TextStyle(
-            fontSize: widget.fontSize,
+            fontSize: fontSize,
             fontWeight: FontWeight.w400,
-            color: const Color(0xFF1C9A89),
+            fontFamily: 'Open Sans',
+            color: AppColors.charcoal,
           ),
         ),
       ],
