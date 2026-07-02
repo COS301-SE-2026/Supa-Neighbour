@@ -13,7 +13,7 @@ public class RegisterRequest {
     private Date dateOfBirth;
     private String gender;
     private String userType;
-
+    private String username;
     private Integer addressId;
     private Integer badgeId;
     private Integer ratingId;

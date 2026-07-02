@@ -44,6 +44,12 @@ public class User {
     @Column(name = "user_firebase_uid", unique = true)
     private String firebaseUid;
 
+    /**
+     * The username of the user
+     */
+    @Column(name = "user_username", unique = true)
+    private String username;
+
     /** user's first name */
     @Column(name = "user_name")
     private String firstName;

@@ -1,28 +1,28 @@
 package com.app.api.controllers;
 
+import org.apache.hc.core5.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.app.api.services.FirebaseAuthService;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
-import com.app.api.repositories.AddressRepository;
-import com.app.api.repositories.UserRepository;
-import com.app.api.models.User;
-import com.app.api.repositories.BadgesRepository;  
-import com.app.api.repositories.RatingsRepository;  
-import org.springframework.web.bind.annotation.RequestHeader;
+
 import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
 import com.app.api.models.Badges;
 import com.app.api.models.Ratings;
-import org.apache.hc.core5.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.security.core.Authentication;
+import com.app.api.models.User;
+import com.app.api.repositories.AddressRepository;
+import com.app.api.repositories.BadgesRepository;
+import com.app.api.repositories.RatingsRepository;
+import com.app.api.repositories.UserRepository;
 import com.app.api.security.AuthenticatedUser;
-import org.springframework.web.bind.annotation.RequestBody;
+import com.app.api.services.FirebaseAuthService;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 /**
  * REST controller responsible for user authentication and account management.
  * <p>
@@ -80,7 +80,7 @@ public AuthController(
      *         an error response if the user already exists
      * @throws FirebaseAuthException if the Firebase token is invalid or cannot be verified
      */
-@   PostMapping("/register")
+    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String idToken,@RequestBody RegisterRequest request)
             throws FirebaseAuthException {
 
@@ -110,6 +110,7 @@ public AuthController(
 
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
+        user.setUsername(request.getUsername());
 
         // Optional because Firebase already authenticates users
         user.setPassword(request.getPassword());
