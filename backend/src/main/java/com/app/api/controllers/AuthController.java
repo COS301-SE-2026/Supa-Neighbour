@@ -80,47 +80,52 @@ public AuthController(
      *         an error response if the user already exists
      * @throws FirebaseAuthException if the Firebase token is invalid or cannot be verified
      */
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String idToken, @RequestBody RegisterRequest request) throws FirebaseAuthException {
-        System.out.println("REGISTER ENDPOINT HIT");
+@   PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String idToken,@RequestBody RegisterRequest request)
+            throws FirebaseAuthException {
+
         String token = idToken.replace("Bearer ", "");
+
         FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
 
-        if(userRepository.findByFirebaseUid(decodedToken.getUid()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.SC_CONFLICT).body("User already exists");
+        if (userRepository.findByFirebaseUid(decodedToken.getUid()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.SC_CONFLICT)
+                .body("User already exists");
         }
-
-        User newUser = new User();
-        newUser.setFirebaseUid(decodedToken.getUid());
-        newUser.setEmail(decodedToken.getEmail());
-
-        newUser.setFirstName(request.getFirstName());
-        newUser.setLastName(request.getLastName());
-        newUser.setPhoneNumber(request.getPhoneNumber());
-        newUser.setDateOfBirth(request.getDateOfBirth());
-        newUser.setGender(request.getGender());
-        newUser.setUserType(request.getUserType());
 
         Address address = addressRepository.findById(request.getAddressId())
             .orElseThrow(() -> new RuntimeException("Address not found"));
 
-        newUser.setAddressid(address);
-
-    // Default badge
         Badges badge = badgeRepository.findById(request.getBadgeId())
-            .orElseThrow();
+            .orElseThrow(() -> new RuntimeException("Badge not found"));
 
-        newUser.setBadgeid(badge);
-
-    // Default rating
         Ratings rating = ratingRepository.findById(request.getRatingId())
-            .orElseThrow();
+            .orElseThrow(() -> new RuntimeException("Rating not found"));
 
-        newUser.setRatingid(rating);
+        User user = new User();
 
-        userRepository.save(newUser);
+        user.setFirebaseUid(decodedToken.getUid());
 
-        return ResponseEntity.ok(newUser);
+        user.setEmail(decodedToken.getEmail());
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+
+        // Optional because Firebase already authenticates users
+        user.setPassword(request.getPassword());
+
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setDateOfBirth(request.getDateOfBirth());
+        user.setGender(request.getGender());
+        user.setUserType(request.getUserType());
+
+        user.setAddressid(address);
+        user.setBadgeid(badge);
+        user.setRatingid(rating);
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(user);
     }
 
     /**
