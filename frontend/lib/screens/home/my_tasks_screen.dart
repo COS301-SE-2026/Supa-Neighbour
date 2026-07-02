@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import 'available_helpers_screen.dart';
+import 'task_start_screen.dart';
 import 'task_detail_screen.dart';
 import 'task_completion_page.dart';
-import 'task_awaiting_approval_screen.dart';  
-import 'task_approval_screen.dart';        
-
+import 'task_awaiting_approval_screen.dart';
+import 'task_approval_screen.dart';
 
 class MyTasksScreen extends StatefulWidget {
   const MyTasksScreen({super.key});
@@ -18,7 +18,7 @@ class MyTasksScreen extends StatefulWidget {
 class _MyTasksScreenState extends State<MyTasksScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+
   List<Task> _postedTasks = [];
   List<Task> _acceptedTasks = [];
 
@@ -37,12 +37,9 @@ class _MyTasksScreenState extends State<MyTasksScreen>
 
   Future<void> _loadAllTasks() async {
     final allTasks = Task.getMockTasks();
-    
+
     setState(() {
-      // Posted: Tasks created by THIS user (requester view)
       _postedTasks = allTasks.where((task) => task.createdBy == 'currentUser').toList();
-      
-      // Accepted: Tasks where THIS user is the helper
       _acceptedTasks = allTasks.where((task) => task.helperId == 'currentUser').toList();
     });
   }
@@ -73,19 +70,19 @@ class _MyTasksScreenState extends State<MyTasksScreen>
   Color _getStatusColor(String status) {
     switch (status) {
       case 'open':
-        return const Color(0xFFE9C46A); 
+        return const Color(0xFFE9C46A);
       case 'assigned':
-        return const Color(0xFF2A9D8F); 
+        return const Color(0xFF2A9D8F);
       case 'in_progress':
-        return const Color(0xFF2196F3); 
+        return const Color(0xFF2196F3);
       case 'pending_approval':
-        return const Color(0xFFFF9800); 
+        return const Color(0xFFFF9800);
       case 'completed':
-        return const Color(0xFF4CAF50); 
+        return const Color(0xFF4CAF50);
       case 'cancelled':
-        return const Color(0xFFF44336); 
+        return const Color(0xFFF44336);
       default:
-        return const Color(0xFF9CA3AF); 
+        return const Color(0xFF9CA3AF);
     }
   }
 
@@ -127,12 +124,10 @@ class _MyTasksScreenState extends State<MyTasksScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Posted Tasks Tab (Requester view)
           RefreshIndicator(
             onRefresh: () async => _refreshTasks(),
             child: _buildTaskList(_postedTasks, isRequesterView: true),
           ),
-          // Accepted Tasks Tab (Helper view)
           RefreshIndicator(
             onRefresh: () async => _refreshTasks(),
             child: _buildTaskList(_acceptedTasks, isRequesterView: false),
@@ -163,7 +158,7 @@ class _MyTasksScreenState extends State<MyTasksScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              isRequesterView 
+              isRequesterView
                   ? 'Create your first task by tapping the + button'
                   : 'Browse Available Helpers and accept tasks',
               style: GoogleFonts.openSans(
@@ -189,224 +184,213 @@ class _MyTasksScreenState extends State<MyTasksScreen>
     );
   }
 
-
-
   Widget _buildTaskCard(Task task, {required bool isRequesterView}) {
-  return GestureDetector(
-    onTap: () async {
-      // CASE 1: HELPER VIEW (Accepted Tab)
-      if (!isRequesterView) {
-        if (task.status == 'assigned') {
-          // Helper: View assigned task before starting
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TaskDetailScreen(
-                task: task,
-                onTaskUpdated: () => _refreshTasks(),
+    return GestureDetector(
+      onTap: () async {
+        // CASE 1: HELPER VIEW (Accepted Tab)
+        if (!isRequesterView) {
+          if (task.status == 'assigned') {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskStartScreen(
+                  task: task,
+                ),
               ),
-            ),
-          );
-        } else if (task.status == 'in_progress') {
-          // Helper: Mark task as complete
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TaskCompletionPage(
-                taskId: task.id,
-                taskTitle: task.title,
-                residentName: task.requesterName ?? 'Requester',
-                dueDate: '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
-                xpReward: task.xpReward,
+            );
+          } else if (task.status == 'in_progress') {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskCompletionPage(
+                  taskId: task.id,
+                  taskTitle: task.title,
+                  residentName: task.requesterName ?? 'Requester',
+                  dueDate: '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
+                  xpReward: task.xpReward,
+                ),
               ),
-            ),
-          );
-        } else if (task.status == 'pending_approval') {
-          // Helper: View awaiting approval screen
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TaskAwaitingApprovalScreen(
-                task: task,
+            );
+          } else if (task.status == 'pending_approval') {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskAwaitingApprovalScreen(
+                  task: task,
+                ),
               ),
-            ),
-          );
-        } else {
-          // All other states to Task Detail (read-only)
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TaskDetailScreen(
-                task: task,
-                onTaskUpdated: () => _refreshTasks(),
+            );
+          } else {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskDetailScreen(
+                  task: task,
+                  onTaskUpdated: () => _refreshTasks(),
+                ),
               ),
-            ),
-          );
+            );
+          }
+          _refreshTasks();
+          return;
         }
-        _refreshTasks();
-        return;
-      }
 
-      // CASE 2: REQUESTER VIEW (Posted Tab)
-      if (isRequesterView) {
-        if (task.status == 'open' || task.status == 'assigned') {
-          // Requester: View available helpers
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AvailableHelpersScreen(
-                task: task,
+        // CASE 2: REQUESTER VIEW (Posted Tab)
+        if (isRequesterView) {
+          if (task.status == 'open' || task.status == 'assigned') {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AvailableHelpersScreen(
+                  task: task,
+                ),
               ),
-            ),
-          );
-        } else if (task.status == 'pending_approval') {
-          // Requester: Approve & rate
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TaskApprovalScreen(
-                task: task,
+            );
+          } else if (task.status == 'pending_approval') {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskApprovalScreen(
+                  task: task,
+                ),
               ),
-            ),
-          );
-        } else {
-          // All other states to Task Detail (read-only)
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TaskDetailScreen(
-                task: task,
-                onTaskUpdated: () => _refreshTasks(),
+            );
+          } else {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskDetailScreen(
+                  task: task,
+                  onTaskUpdated: () => _refreshTasks(),
+                ),
               ),
-            ),
-          );
+            );
+          }
+          _refreshTasks();
         }
-        _refreshTasks();
-      }
-    },
-    child: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2A9D8F).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: Icon(
-              _getCategoryIcon(task.category),
-              color: const Color(0xFF2A9D8F),
-              size: 28,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2A9D8F).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                _getCategoryIcon(task.category),
+                color: const Color(0xFF2A9D8F),
+                size: 28,
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  task.title,
-                  style: GoogleFonts.poppins(
-                    color: const Color(0xFF264653),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.title,
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF264653),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.category, size: 14, color: Color(0xFF2A9D8F)),
-                    const SizedBox(width: 4),
-                    Text(
-                      task.category,
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.category, size: 14, color: Color(0xFF2A9D8F)),
+                      const SizedBox(width: 4),
+                      Text(
+                        task.category,
+                        style: GoogleFonts.openSans(
+                          color: const Color(0xFF6B7280),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Icon(Icons.access_time, size: 14, color: Color(0xFF2A9D8F)),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
+                        style: GoogleFonts.openSans(
+                          color: const Color(0xFF6B7280),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(task.status).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _getStatusDisplay(task.status, isRequesterView: isRequesterView),
                       style: GoogleFonts.openSans(
-                        color: const Color(0xFF6B7280),
-                        fontSize: 12,
+                        color: _getStatusColor(task.status),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.access_time, size: 14, color: Color(0xFF2A9D8F)),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
-                      style: GoogleFonts.openSans(
-                        color: const Color(0xFF6B7280),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(task.status).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    color: const Color(0xFFE9C46A),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    _getStatusDisplay(task.status, isRequesterView: isRequesterView),
+                    '+${task.xpReward} XP',
                     style: GoogleFonts.openSans(
-                      color: _getStatusColor(task.status),
-                      fontSize: 10,
+                      color: const Color(0xFF264653),
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE9C46A),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '+${task.xpReward} XP',
-                  style: GoogleFonts.openSans(
-                    color: const Color(0xFF264653),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              if (!isRequesterView && (task.status == 'assigned' || task.status == 'in_progress'))
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    'Tap to complete',
-                    style: GoogleFonts.openSans(
-                      color: const Color(0xFF2A9D8F),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
+                if (!isRequesterView && (task.status == 'assigned' || task.status == 'in_progress'))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Tap to complete',
+                      style: GoogleFonts.openSans(
+                        color: const Color(0xFF2A9D8F),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   IconData _getCategoryIcon(String category) {
     switch (category) {

@@ -65,7 +65,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -82,8 +81,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Category Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -111,8 +108,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Task Title
             Text(
               widget.task.title,
               style: GoogleFonts.poppins(
@@ -122,8 +117,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Helper/Requester Info
             if (widget.task.helperName != null && widget.task.helperName != 'You')
               Container(
                 padding: const EdgeInsets.all(12),
@@ -148,8 +141,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 ),
               ),
             const SizedBox(height: 16),
-
-            // XP Reward
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -184,8 +175,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Date and Time
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -235,8 +224,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Instructions
             const Text(
               'Instructions',
               style: TextStyle(
@@ -262,8 +249,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Info message for non-editable tasks
             if (!canEdit && widget.isRequesterView &&
                 widget.task.status != 'completed' &&
                 widget.task.status != 'pending_approval')
