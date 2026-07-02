@@ -63,8 +63,9 @@ public class AuthController {
      *         an error response if the user already exists
      * @throws FirebaseAuthException if the Firebase token is invalid or cannot be verified
      */
-@PostMapping("/register")
-public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String idToken) throws FirebaseAuthException {
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String idToken) throws FirebaseAuthException {
+        System.out.println("REGISTER ENDPOINT HIT");
         String token = idToken.replace("Bearer ", "");
         FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
 
@@ -94,6 +95,7 @@ public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String idT
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestHeader("Authorization") String idToken) throws FirebaseAuthException {
+        System.out.println("REGISTER ENDPOINT HIT");
         String token = idToken.replace("Bearer ", "");
         FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
 

@@ -73,10 +73,11 @@ create table address_table (
 -- =============================================
 create table user_table (
     user_id int generated always as identity primary key,
-    firebase_uid VARCHAR(128) UNIQUE NOT NULL,
+    user_firebase_uid VARCHAR(128) UNIQUE NOT NULL,
     user_password varchar(255) not null,
     user_name varchar(100) not null,
     user_surname varchar(100) not null,
+    user_username varchar(100) unique not null,
     user_email varchar(255) unique not null,
     user_phone_number varchar(20),
     user_gender varchar(10),
@@ -550,8 +551,10 @@ values
 insert into user_table
 (
 user_password,
+user_firebase_uid,
 user_name,
 user_surname,
+user_username,
 user_email,
 user_phone_number,
 user_gender,
@@ -562,25 +565,11 @@ user_rating_id,
 user_type
 )
 values
-('pass123', 'John', 'Smith', 'john@example.com', '5550101', 'Male', '1990-01-10', 1,2,1,'Admin' ),
+('pass123','PDFxzgQ9KwNrAvMgWzfEvhkhJoj1', 'John', 'Smith', 'johnsmith', 'john.example.298@gmail.com', '5550101', 'Male', '1990-01-10', 1,2,1,'Admin' ),
 
-('pass123', 'Sarah', 'Johnson', 'sarah@example.com', '5550102', 'Female', '1988-03-15', 2,1,1, 'User' ),
+('pass123','1ZkC0pAHZ9UBVKRtbQtrUXuYjKp1', 'Sarah', 'Johnson', 'sarahj', 'sarah.example.298@gmail.com', '5550102', 'Female', '1988-03-15', 2,1,1, 'User' ),
 
-('pass123', 'Michael', 'Brown', 'michael@example.com', '5550103', 'Male', '1995-07-21', 3,1,1, 'User' ),
-
-('pass123', 'Emily', 'Davis', 'emily@example.com', '5550104', 'Female', '1992-11-30', 4,1,1, 'User' ),
-
-('pass123', 'David', 'Wilson', 'david@example.com', '5550105', 'Male', '1985-05-18', 5,1,1, 'User' ),
-
-('pass123', 'Olivia', 'Taylor', 'olivia@example.com', '5550106', 'Female', '2000-04-02', 6,2,2, 'Admin'),
-
-('pass123', 'James', 'Anderson', 'james@example.com', '5550107', 'Male', '1975-08-14', 7,1,1, 'User' ),
-
-('pass123', 'Sophia', 'Thomas', 'sophia@example.com', '5550108', 'Female', '1998-09-22', 8, 3,1, 'Admin'),
-
-('pass123', 'Daniel', 'Jackson', 'daniel@example.com', '5550109', 'Male', '1982-12-11', 9, 5,2, 'Admin' ),
-
-('pass123', 'Emma', 'White', 'emma@example.com', '5550110', 'Female', '1996-06-25', 10,1,1, 'User');
+('pass123','WlMsgj9xKRNnLKhBCACGdZsMXVJ3','Michael', 'Brown', 'michaelb', 'michael.example.298@gmail.com', '5550103', 'Male', '1995-07-21', 3,1,1, 'User' );
 
 -- =============================================
 -- 7. helper table
