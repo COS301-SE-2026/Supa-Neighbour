@@ -4,6 +4,8 @@ import '../../models/task_model.dart';
 import 'available_helpers_screen.dart';
 import 'task_detail_screen.dart';
 import 'task_completion_page.dart';
+import 'task_awaiting_approval_screen.dart';  
+import 'task_approval_screen.dart';        
 
 
 class MyTasksScreen extends StatefulWidget {
@@ -195,6 +197,7 @@ class _MyTasksScreenState extends State<MyTasksScreen>
       // CASE 1: HELPER VIEW (Accepted Tab)
       if (!isRequesterView) {
         if (task.status == 'assigned') {
+          // Helper: View assigned task before starting
           await Navigator.push(
             context,
             MaterialPageRoute(
@@ -205,6 +208,7 @@ class _MyTasksScreenState extends State<MyTasksScreen>
             ),
           );
         } else if (task.status == 'in_progress') {
+          // Helper: Mark task as complete
           await Navigator.push(
             context,
             MaterialPageRoute(
@@ -217,7 +221,18 @@ class _MyTasksScreenState extends State<MyTasksScreen>
               ),
             ),
           );
+        } else if (task.status == 'pending_approval') {
+          // Helper: View awaiting approval screen
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TaskAwaitingApprovalScreen(
+                task: task,
+              ),
+            ),
+          );
         } else {
+          // All other states to Task Detail (read-only)
           await Navigator.push(
             context,
             MaterialPageRoute(
@@ -235,6 +250,7 @@ class _MyTasksScreenState extends State<MyTasksScreen>
       // CASE 2: REQUESTER VIEW (Posted Tab)
       if (isRequesterView) {
         if (task.status == 'open' || task.status == 'assigned') {
+          // Requester: View available helpers
           await Navigator.push(
             context,
             MaterialPageRoute(
@@ -243,7 +259,18 @@ class _MyTasksScreenState extends State<MyTasksScreen>
               ),
             ),
           );
+        } else if (task.status == 'pending_approval') {
+          // Requester: Approve & rate
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TaskApprovalScreen(
+                task: task,
+              ),
+            ),
+          );
         } else {
+          // All other states to Task Detail (read-only)
           await Navigator.push(
             context,
             MaterialPageRoute(
