@@ -5,9 +5,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.app.api.repositories.AddressRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.models.User;
-
+import com.app.api.repositories.BadgesRepository;  
+import com.app.api.repositories.RatingsRepository;  
+import org.springframework.web.bind.annotation.RequestHeader;
+import com.app.api.dtos.RegisterRequest;
+import com.app.api.models.Address;
+import com.app.api.models.Badges;
+import com.app.api.models.Ratings;
 import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +40,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/api/auth")
 public class AuthController {
     
+    private final AddressRepository addressRepository;
+    private final BadgesRepository badgeRepository;
+    private final RatingsRepository ratingRepository;
     /**
      * Service responsible for verifying Firebase ID tokens.
      */
@@ -48,10 +58,15 @@ public class AuthController {
      * @param firebaseAuthService the Firebase authentication service
      * @param userRepository the repository used to manage users
      */
-    public AuthController(FirebaseAuthService firebaseAuthService, UserRepository userRepository) {
-        this.firebaseAuthService = firebaseAuthService;
-        this.userRepository = userRepository;
-    }
+public AuthController(
+        FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository,BadgesRepository badgeRepository,RatingsRepository ratingRepository) 
+        {
+            this.firebaseAuthService = firebaseAuthService;
+            this.userRepository = userRepository;
+            this.addressRepository = addressRepository;
+            this.badgeRepository = badgeRepository;
+            this.ratingRepository = ratingRepository;
+        }
 
     /**
      * Registers a new user using a Firebase ID token.
@@ -66,7 +81,7 @@ public class AuthController {
      * @throws FirebaseAuthException if the Firebase token is invalid or cannot be verified
      */
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String idToken) throws FirebaseAuthException {
+    public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String idToken, @RequestBody RegisterRequest request) throws FirebaseAuthException {
         System.out.println("REGISTER ENDPOINT HIT");
         String token = idToken.replace("Bearer ", "");
         FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
@@ -78,6 +93,31 @@ public class AuthController {
         User newUser = new User();
         newUser.setFirebaseUid(decodedToken.getUid());
         newUser.setEmail(decodedToken.getEmail());
+
+        newUser.setFirstName(request.getFirstName());
+        newUser.setLastName(request.getLastName());
+        newUser.setPhoneNumber(request.getPhoneNumber());
+        newUser.setDateOfBirth(request.getDateOfBirth());
+        newUser.setGender(request.getGender());
+        newUser.setUserType(request.getUserType());
+
+        Address address = addressRepository.findById(request.getAddressId())
+            .orElseThrow(() -> new RuntimeException("Address not found"));
+
+        newUser.setAddressid(address);
+
+    // Default badge
+        Badges badge = badgeRepository.findById(1)
+            .orElseThrow();
+
+        newUser.setBadgeid(badge);
+
+    // Default rating
+        Ratings rating = ratingRepository.findById(1)
+            .orElseThrow();
+
+        newUser.setRatingid(rating);
+
         userRepository.save(newUser);
 
         return ResponseEntity.ok(newUser);
