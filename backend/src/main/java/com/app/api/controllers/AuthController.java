@@ -7,13 +7,15 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.app.api.repositories.UserRepository;
 import com.app.api.models.User;
+
+import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.security.core.Authentication;
 import com.app.api.security.AuthenticatedUser;
-
+import org.springframework.web.bind.annotation.RequestBody;
 /**
  * REST controller responsible for user authentication and account management.
  * <p>
@@ -70,7 +72,7 @@ public class AuthController {
         FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
 
         if(userRepository.findByFirebaseUid(decodedToken.getUid()).isPresent()) {
-            return ResponseEntity.badRequest().body("User already exists");
+            return ResponseEntity.status(HttpStatus.SC_CONFLICT).body("User already exists");
         }
 
         User newUser = new User();
@@ -111,8 +113,8 @@ public class AuthController {
      * @return the authenticated {@link User}
      */
     @GetMapping("/profile")
-    public User getProfile(Authentication authentication) {
+    public ResponseEntity<User> getProfile(Authentication authentication) {
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) authentication.getPrincipal();
-        return authenticatedUser.getUser();
+        return ResponseEntity.ok(authenticatedUser.getUser());
     } 
 }

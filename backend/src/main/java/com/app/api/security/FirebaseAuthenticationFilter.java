@@ -76,12 +76,17 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,@NonNull FilterChain filterChain) 
             throws ServletException, IOException {
         String authorizationHeader = request.getHeader("Authorization");
-        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
-            try{
-                String idToken = authorizationHeader.substring(7);
-                FirebaseToken firebaseToken = firebaseAuthService.verifyIdToken(idToken);
-                String firebaseUid = firebaseToken.getUid();
-                User newUser = userRepository.findByFirebaseUid(firebaseUid).orElse(null);
+
+        if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")){
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        try{
+            String idToken = authorizationHeader.substring(7);
+            FirebaseToken firebaseToken = firebaseAuthService.verifyIdToken(idToken);
+            String firebaseUid = firebaseToken.getUid();
+            User newUser = userRepository.findByFirebaseUid(firebaseUid).orElse(null);
                 if(newUser != null){
                     AuthenticatedUser authenticatedUser = new AuthenticatedUser(newUser);
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(authenticatedUser, null, Collections.emptyList());
@@ -91,18 +96,15 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
             }catch(Exception e){
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
-            }
-
         }
         filterChain.doFilter(request, response);
-        
     }
     
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
 
-        return path.startsWith("/api/auth/") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs");
+        return path.equals("/api/auth/register") || path.equals("/api/auth/login") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs");
     }
 
     
