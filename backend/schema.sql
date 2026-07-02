@@ -569,7 +569,27 @@ values
 
 ('pass123','1ZkC0pAHZ9UBVKRtbQtrUXuYjKp1', 'Sarah', 'Johnson', 'sarahj', 'sarah.example.298@gmail.com', '5550102', 'Female', '1988-03-15', 2,1,1, 'User' ),
 
-('pass123','WlMsgj9xKRNnLKhBCACGdZsMXVJ3','Michael', 'Brown', 'michaelb', 'michael.example.298@gmail.com', '5550103', 'Male', '1995-07-21', 3,1,1, 'User' );
+('pass123','WlMsgj9xKRNnLKhBCACGdZsMXVJ3','Michael', 'Brown', 'michaelb', 'michael.example.298@gmail.com', '5550103', 'Male', '1995-07-21', 3,1,1, 'User' ),
+
+('pass123','mdW5NZdYeyernK7Dh5J49EQqdaN2', 'Emily', 'Davis', 'emilyd', 'emily.example.298@gmail.com', '5550104', 'Female', '1992-11-30', 4, 1, 1, 'User'),
+
+('pass123', 'o1Efo9cDkOVqeTBnrlkzD2TUMs43', 'David', 'Wilson', 'davidw', 'david.example.298@gmail.com', '5550105', 'Male', '1985-05-18', 5, 1, 1, 'User'),
+
+('pass123', 'bUv58sF4iagkhjUWj93GHRN3tvH3', 'Olivia', 'Taylor', 'oliviat', 'olivia.example.298@gmail.com', '5550106', 'Female', '2000-04-02', 6, 2, 2, 'Admin'),
+
+('pass123', 'yA9Jcgl0P0cMgYrpDp6JonWIRgF2', 'James', 'Anderson', 'jamesa', 'james.example.298@gmail.com', '5550107', 'Male', '1975-08-14', 7, 1, 1, 'User'),
+
+('pass123', '0gRA3wfNjNOGHaJZ84j6sybUvPs2', 'Sophia', 'Thomas', 'sophiat', 'sophia.example.298@gmail.com', '5550108', 'Female', '1998-09-22', 8, 3, 1, 'Admin'),
+
+('pass123', 'hJUI8ixYgvY0YqYVFnjPlm0CxIa2', 'Daniel', 'Jackson', 'danielj', 'daniel.example.298@gmail.com', '5550109', 'Male', '1982-12-11', 9, 5, 2, 'Admin'),
+
+('pass123', 'wwEa5s6GFUWzXGujlt67xHNDti73', 'Emma', 'White', 'emmaw', 'emma.example.298@gmail.com', '5550110', 'Female', '1996-06-25', 10, 1, 1, 'User'),
+
+('pass123', 'tV2skp5AgyQQCxkKNrA5FP4P5Pf2', 'Matthew', 'Harris', 'matthewh', 'matthew.example.298@gmail.com', '5550111', 'Male', '1991-03-12', 1, 4, 3, 'User'),
+
+('pass123', 'b797OnSbqFe9V2KTiJbKhjEs6ji1', 'Isabella', 'Martin', 'isabellam', 'isabella.example.298@gmail.com', '5550112', 'Female', '1987-07-19', 2, 2, 2, 'User'),
+
+('pass123', 'vRe60bMKSvVRXvCy1EJpRhh0kOy2', 'William', 'Thompson', 'williamt', 'william.example.298@gmail.com', '5550113', 'Male', '1993-09-28', 3, 3, 1, 'User');
 
 -- =============================================
 -- 7. helper table
