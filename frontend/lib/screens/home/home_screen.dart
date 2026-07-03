@@ -5,6 +5,7 @@ import '../../models/task_model.dart';
 import '../../models/user_model.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'create_task_screen.dart';
+import 'leaderboard_screen.dart';
 import 'inbox_screen.dart';
 import 'my_tasks_screen.dart';
 import 'task_detail_screen.dart';
@@ -25,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const HomeContent(),
     const MyTasksScreen(),
     const InboxScreen(),
-    const StatsPlaceholder(),
+    const LeaderboardScreen(),
     const ProfilePlaceholder(),
   ];
 

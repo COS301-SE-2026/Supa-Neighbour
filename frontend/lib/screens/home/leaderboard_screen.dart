@@ -268,10 +268,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: 3, //Leaderboard tab
-        onTap: (_) {},
-      ),
     );
   }
 
@@ -307,81 +303,81 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   Widget _buildTop3Circles() {
-    final top3 = _leaderboardData!.entries.take(3).toList();
+  final top3 = _leaderboardData!.entries.take(3).toList();
 
-    if (top3.length < 3) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildTopCircle(top3[1]), //Silver (2nd)
-          _buildTopCircle(top3[0], isFirst: true), //Gold (1st)
-          _buildTopCircle(top3[2]), //Bronze (3rd)
-        ],
-      ),
-    );
+  if (top3.length < 3) {
+    return const SizedBox.shrink();
   }
 
-  Widget _buildTopCircle(LeaderboardEntry entry, {bool isFirst = false}) {
-    final size = isFirst ? 70.0 : 56.0;
-    final fontSize = isFirst ? 28.0 : 20.0;
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 8), // Reduced from 16 to 8, 16 was too large
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildTopCircle(top3[1]), // Silver (2nd)
+        _buildTopCircle(top3[0], isFirst: true), // Gold (1st)
+        _buildTopCircle(top3[2]), // Bronze (3rd)
+      ],
+    ),
+  );
+}
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: isFirst ? 16 : 8),
-      child: Column(
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              CircleAvatar(
-                radius: size / 2,
-                backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
-                child: Text(
-                  entry.displayName[0],
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryTeal,
+ Widget _buildTopCircle(LeaderboardEntry entry, {bool isFirst = false}) {
+  final size = isFirst ? 56.0 : 44.0; 
+  final fontSize = isFirst ? 22.0 : 16.0;
+
+  return Container(
+    margin: EdgeInsets.symmetric(horizontal: isFirst ? 12 : 6),
+    child: Column(
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            CircleAvatar(
+              radius: size / 2,
+              backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+              child: Text(
+                entry.displayName[0],
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primaryTeal,
+                ),
+              ),
+            ),
+            if (isFirst)
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE9C46A),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.star,
+                    color: Colors.white,
+                    size: 14, 
                   ),
                 ),
               ),
-              if (isFirst)
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE9C46A),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.star,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
-                ),
-            ],
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          entry.displayName.split(' ').first,
+          style: GoogleFonts.openSans(
+            color: AppColors.charcoal,
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
           ),
-          const SizedBox(height: 4),
-          Text(
-            entry.displayName.split(' ').first,
-            style: GoogleFonts.openSans(
-              color: AppColors.charcoal,
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildLeaderboardItem(LeaderboardEntry entry) {
     final isTop3 = entry.rank <= 3;
@@ -554,101 +550,111 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   Widget _buildYourRankCard(LeaderboardEntry entry) {
-    final nextRank = entry.rank - 1;
-    final xpNeeded = 100; // These are mock values for now, replace with actual logic later
-    final progress = 0.65; 
+  final nextRank = entry.rank - 1;
+  final xpNeeded = 100; // Mock value
+  final progress = 0.65; // Mock value
 
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.primaryTeal.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primaryTeal,
-          width: 1.5,
-        ),
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    decoration: BoxDecoration(
+      color: AppColors.primaryTeal.withValues(alpha: 0.05),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: AppColors.primaryTeal,
+        width: 1,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.person_pin,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Rank and Name Row
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
                 color: AppColors.primaryTeal,
-                size: 20,
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(width: 8),
-              Text(
-                'Your Rank: #${entry.rank}',
+              child: Text(
+                '#${entry.rank}',
                 style: GoogleFonts.poppins(
-                  color: AppColors.primaryTeal,
-                  fontSize: 16,
+                  color: Colors.white,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
-                child: Text(
-                  entry.displayName[0],
-                  style: TextStyle(
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'You',
+              style: GoogleFonts.poppins(
+                color: AppColors.primaryTeal,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                ..._buildTrustStars(entry.trustScore),
+                const SizedBox(width: 4),
+                Text(
+                  '${entry.trustScore.toStringAsFixed(1)}',
+                  style: GoogleFonts.openSans(
+                    color: AppColors.charcoal,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primaryTeal,
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                entry.displayName,
-                style: GoogleFonts.openSans(
-                  color: AppColors.charcoal,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(width: 12),
+                Text(
+                  '${entry.xp} XP',
+                  style: GoogleFonts.openSans(
+                    color: AppColors.primaryTeal,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Text(
-                '${entry.xp} XP',
-                style: GoogleFonts.openSans(
-                  color: AppColors.primaryTeal,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${xpNeeded} XP to reach Top $nextRank',
-            style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
-              fontSize: 12,
+              ],
             ),
-          ),
-          const SizedBox(height: 4),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.2),
-              color: const Color(0xFFE9C46A),
-              minHeight: 8,
+          ],
+        ),
+        const SizedBox(height: 6),
+        // Progress section
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${xpNeeded} XP to reach Top $nextRank',
+                    style: GoogleFonts.openSans(
+                      color: AppColors.textGrey,
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.2),
+                      color: const Color(0xFFE9C46A),
+                      minHeight: 6,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
+          ],
+        ),
+      ],
+    ),
+  );
+}  Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
