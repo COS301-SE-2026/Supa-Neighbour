@@ -1,0 +1,764 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../constants/app_colors.dart';
+import '../../widgets/bottom_nav_bar.dart';
+import '../../models/leaderboard_model.dart';
+
+class LeaderboardScreen extends StatefulWidget {
+  const LeaderboardScreen({super.key});
+
+  @override
+  State<LeaderboardScreen> createState() => _LeaderboardScreenState();
+}
+
+class _LeaderboardScreenState extends State<LeaderboardScreen> {
+  String _selectedPeriod = 'week';
+  LeaderboardData? _leaderboardData;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLeaderboard();
+  }
+
+  Future<void> _loadLeaderboard() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    //Replace with actual API call later
+    await Future.delayed(const Duration(seconds: 1));
+
+    //Mock data
+    final mockEntries = [
+      LeaderboardEntry(
+        rank: 1,
+        userId: 'helper_1',
+        displayName: 'Sarah Johnson',
+        trustScore: 4.9,
+        level: 'Gold',
+        xp: 1250,
+        completedTasks: 47,
+      ),
+      LeaderboardEntry(
+        rank: 2,
+        userId: 'helper_2',
+        displayName: 'Mike Johnson',
+        trustScore: 4.7,
+        level: 'Silver',
+        xp: 980,
+        completedTasks: 32,
+      ),
+      LeaderboardEntry(
+        rank: 3,
+        userId: 'helper_3',
+        displayName: 'Lisa Wong',
+        trustScore: 4.8,
+        level: 'Bronze',
+        xp: 850,
+        completedTasks: 28,
+      ),
+      LeaderboardEntry(
+        rank: 4,
+        userId: 'helper_4',
+        displayName: 'Tom Brown',
+        trustScore: 4.6,
+        level: 'Silver',
+        xp: 720,
+        completedTasks: 21,
+      ),
+      LeaderboardEntry(
+        rank: 5,
+        userId: 'helper_5',
+        displayName: 'Sarah Adams',
+        trustScore: 4.5,
+        level: 'Bronze',
+        xp: 650,
+        completedTasks: 18,
+      ),
+      LeaderboardEntry(
+        rank: 6,
+        userId: 'helper_6',
+        displayName: 'James Wilson',
+        trustScore: 4.4,
+        level: 'Bronze',
+        xp: 580,
+        completedTasks: 15,
+      ),
+      LeaderboardEntry(
+        rank: 7,
+        userId: 'helper_7',
+        displayName: 'Emily Davis',
+        trustScore: 4.3,
+        level: 'Bronze',
+        xp: 520,
+        completedTasks: 12,
+      ),
+      LeaderboardEntry(
+        rank: 8,
+        userId: 'helper_8',
+        displayName: 'David Miller',
+        trustScore: 4.2,
+        level: 'Bronze',
+        xp: 480,
+        completedTasks: 10,
+      ),
+    ];
+
+    final currentUserEntry = LeaderboardEntry(
+      rank: 12,
+      userId: 'currentUser',
+      displayName: 'You',
+      trustScore: 4.2,
+      level: 'Bronze',
+      xp: 450,
+      completedTasks: 9,
+      isCurrentUser: true,
+    );
+
+    setState(() {
+      _leaderboardData = LeaderboardData(
+        period: _selectedPeriod,
+        entries: mockEntries,
+        currentUserEntry: currentUserEntry,
+      );
+      _isLoading = false;
+    });
+  }
+
+  void _changePeriod(String period) {
+    setState(() {
+      _selectedPeriod = period;
+    });
+    _loadLeaderboard();
+  }
+
+  Color _getLevelColor(String level) {
+    switch (level) {
+      case 'Gold':
+        return const Color(0xFFE9C46A);
+      case 'Silver':
+        return const Color(0xFFC0C0C0);
+      case 'Bronze':
+        return const Color(0xFFCD7F32);
+      default:
+        return AppColors.primaryTeal;
+    }
+  }
+
+  Color _getLevelTextColor(String level) {
+    switch (level) {
+      case 'Gold':
+        return AppColors.charcoal;
+      case 'Silver':
+        return AppColors.charcoal;
+      case 'Bronze':
+        return Colors.white;
+      default:
+        return AppColors.charcoal;
+    }
+  }
+
+  Widget _buildMedalIcon(int rank) {
+    if (rank == 1) {
+      return const Icon(Icons.emoji_events, color: Color(0xFFE9C46A), size: 24);
+    } else if (rank == 2) {
+      return const Icon(Icons.emoji_events, color: Color(0xFFC0C0C0), size: 22);
+    } else if (rank == 3) {
+      return const Icon(Icons.emoji_events, color: Color(0xFFCD7F32), size: 22);
+    } else {
+      return Container(
+        width: 24,
+        height: 24,
+        alignment: Alignment.center,
+        child: Text(
+          '$rank',
+          style: GoogleFonts.openSans(
+            color: AppColors.textGrey,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: Text(
+          'Leaderboard',
+          style: GoogleFonts.poppins(
+            color: AppColors.charcoal,
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline, color: AppColors.primaryTeal),
+            onPressed: () {
+              _showInfoDialog();
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          //Period Selector
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.surfaceGrey,
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                _buildPeriodTab('week', 'This Week'),
+                _buildPeriodTab('month', 'This Month'),
+                _buildPeriodTab('all', 'All Time'),
+              ],
+            ),
+          ),
+
+          //Content
+          Expanded(
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryTeal,
+                    ),
+                  )
+                : _leaderboardData == null
+                    ? _buildEmptyState()
+                    : Column(
+                        children: [
+                          //Top 3 Circles
+                          _buildTop3Circles(),
+                          const SizedBox(height: 8),
+
+                          //Leaderboard List
+                          Expanded(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: _leaderboardData!.entries.length,
+                              itemBuilder: (context, index) {
+                                final entry = _leaderboardData!.entries[index];
+                                return _buildLeaderboardItem(entry);
+                              },
+                            ),
+                          ),
+
+                          //Rank Card
+                          if (_leaderboardData!.currentUserEntry != null)
+                            _buildYourRankCard(_leaderboardData!.currentUserEntry!),
+                        ],
+                      ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: 3, //Leaderboard tab
+        onTap: (_) {},
+      ),
+    );
+  }
+
+  Widget _buildPeriodTab(String period, String label) {
+    final isSelected = _selectedPeriod == period;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _changePeriod(period),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isSelected ? AppColors.primaryTeal : Colors.transparent,
+                width: 3,
+              ),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.openSans(
+                color: isSelected ? AppColors.primaryTeal : AppColors.textGrey,
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTop3Circles() {
+    final top3 = _leaderboardData!.entries.take(3).toList();
+
+    if (top3.length < 3) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildTopCircle(top3[1]), //Silver (2nd)
+          _buildTopCircle(top3[0], isFirst: true), //Gold (1st)
+          _buildTopCircle(top3[2]), //Bronze (3rd)
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopCircle(LeaderboardEntry entry, {bool isFirst = false}) {
+    final size = isFirst ? 70.0 : 56.0;
+    final fontSize = isFirst ? 28.0 : 20.0;
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: isFirst ? 16 : 8),
+      child: Column(
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              CircleAvatar(
+                radius: size / 2,
+                backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+                child: Text(
+                  entry.displayName[0],
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryTeal,
+                  ),
+                ),
+              ),
+              if (isFirst)
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE9C46A),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.star,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            entry.displayName.split(' ').first,
+            style: GoogleFonts.openSans(
+              color: AppColors.charcoal,
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeaderboardItem(LeaderboardEntry entry) {
+    final isTop3 = entry.rank <= 3;
+    final bgColor = entry.isCurrentUser
+        ? AppColors.primaryTeal.withValues(alpha: 0.05)
+        : Colors.transparent;
+
+    return GestureDetector(
+      onTap: () {
+        //Navigate to Helper Profile Preview when a user on the lb is clicked
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('View profile of ${entry.displayName}'),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 2),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 36,
+              child: _buildMedalIcon(entry.rank),
+            ),
+
+            //Avatar, might change later
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+              child: Text(
+                entry.displayName[0],
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primaryTeal,
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            //Name and Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        entry.displayName,
+                        style: GoogleFonts.poppins(
+                          color: entry.isCurrentUser
+                              ? AppColors.primaryTeal
+                              : AppColors.charcoal,
+                          fontSize: 14,
+                          fontWeight: entry.isCurrentUser
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getLevelColor(entry.level).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          entry.level,
+                          style: GoogleFonts.openSans(
+                            color: _getLevelColor(entry.level),
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (entry.isCurrentUser)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'You',
+                            style: GoogleFonts.openSans(
+                              color: AppColors.primaryTeal,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      ..._buildTrustStars(entry.trustScore),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${entry.trustScore.toStringAsFixed(1)} ★',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.textGrey,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '${entry.xp} XP',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.primaryTeal,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildTrustStars(double score) {
+    final fullStars = score.floor();
+    final hasHalfStar = score - fullStars >= 0.5;
+    final stars = <Widget>[];
+
+    for (int i = 0; i < fullStars; i++) {
+      stars.add(const Icon(
+        Icons.star,
+        size: 12,
+        color: Color(0xFFE9C46A),
+      ));
+    }
+
+    if (hasHalfStar) {
+      stars.add(const Icon(
+        Icons.star_half,
+        size: 12,
+        color: Color(0xFFE9C46A),
+      ));
+    }
+
+    final remaining = 5 - stars.length;
+    for (int i = 0; i < remaining; i++) {
+      stars.add(const Icon(
+        Icons.star_border,
+        size: 12,
+        color: Color(0xFFE9C46A),
+      ));
+    }
+
+    return stars;
+  }
+
+  Widget _buildYourRankCard(LeaderboardEntry entry) {
+    final nextRank = entry.rank - 1;
+    final xpNeeded = 100; // These are mock values for now, replace with actual logic later
+    final progress = 0.65; 
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.primaryTeal.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primaryTeal,
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.person_pin,
+                color: AppColors.primaryTeal,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Your Rank: #${entry.rank}',
+                style: GoogleFonts.poppins(
+                  color: AppColors.primaryTeal,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+                child: Text(
+                  entry.displayName[0],
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryTeal,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                entry.displayName,
+                style: GoogleFonts.openSans(
+                  color: AppColors.charcoal,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${entry.xp} XP',
+                style: GoogleFonts.openSans(
+                  color: AppColors.primaryTeal,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${xpNeeded} XP to reach Top $nextRank',
+            style: GoogleFonts.openSans(
+              color: AppColors.textGrey,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.2),
+              color: const Color(0xFFE9C46A),
+              minHeight: 8,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.leaderboard,
+            size: 64,
+            color: AppColors.textGrey.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No Leaderboard Data',
+            style: GoogleFonts.poppins(
+              color: AppColors.charcoal,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Helpers will appear here as they complete tasks',
+            style: GoogleFonts.openSans(
+              color: AppColors.textGrey,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showInfoDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'How Rankings Work',
+          style: GoogleFonts.poppins(
+            color: AppColors.charcoal,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '• Ranked by trust score',
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '• Trust score is calculated from completed tasks and ratings',
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '• Leaderboard resets monthly',
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '• Gold = Trust ≥ 4.8',
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal,
+                fontSize: 14,
+              ),
+            ),
+            Text(
+              '• Silver = Trust ≥ 4.5',
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal,
+                fontSize: 14,
+              ),
+            ),
+            Text(
+              '• Bronze = Trust ≥ 4.0',
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Got it',
+              style: GoogleFonts.openSans(
+                color: AppColors.primaryTeal,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
