@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'helper_profile_preview_screen.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../models/leaderboard_model.dart';
+import '../../models/user_model.dart';
+
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -310,13 +313,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   return Container(
-    padding: const EdgeInsets.symmetric(vertical: 8), // Reduced from 16 to 8, 16 was too large
+    padding: const EdgeInsets.symmetric(vertical: 8),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildTopCircle(top3[1]), // Silver (2nd)
-        _buildTopCircle(top3[0], isFirst: true), // Gold (1st)
-        _buildTopCircle(top3[2]), // Bronze (3rd)
+        _buildTopCircle(top3[1]), // Silver
+        _buildTopCircle(top3[0], isFirst: true), // Gold
+        _buildTopCircle(top3[2]), // Bronze
       ],
     ),
   );
@@ -387,11 +390,21 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
     return GestureDetector(
       onTap: () {
-        //Navigate to Helper Profile Preview when a user on the lb is clicked
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('View profile of ${entry.displayName}'),
-            duration: const Duration(seconds: 1),
+        // Navigate to Helper Profile Preview
+        // Get actual user data from API
+        final mockHelper = User(
+          id: entry.userId,
+          email: '${entry.displayName.toLowerCase().replaceAll(' ', '.')}@example.com',
+          firstName: entry.displayName.split(' ').first,
+          lastName: entry.displayName.split(' ').last,
+          createdAt: DateTime.now(),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HelperProfilePreviewScreen(
+              helper: mockHelper,
+            ),
           ),
         );
       },

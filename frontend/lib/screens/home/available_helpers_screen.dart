@@ -5,6 +5,7 @@ import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
+import 'helper_profile_preview_screen.dart';
 
 class AvailableHelpersScreen extends StatefulWidget {
   final Task task;
@@ -35,7 +36,7 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
       _isLoading = true;
     });
 
-    //Replace with actual API call later
+    //Will need to replace this with actual API call later
     await Future.delayed(const Duration(seconds: 1));
 
     // Mock data for now
@@ -89,7 +90,7 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
       _selectedHelperId = helperId;
     });
 
-    // TODO: Implement invite logic
+    //Implement invite logic
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Invitation sent to ${_getHelperName(helperId)}!'),
@@ -408,13 +409,25 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
   }
 
   Widget _buildHelperCard(User helper, int index) {
-    final String level = _getLevel(index);
-    final double trustScore = _getTrustScore(index);
-    final List<String> skills = _getSkills(index);
-    final String distance = _getDistance(index);
-    final bool isInvited = _selectedHelperId == helper.id;
+  final String level = _getLevel(index);
+  final double trustScore = _getTrustScore(index);
+  final List<String> skills = _getSkills(index);
+  final String distance = _getDistance(index);
+  final bool isInvited = _selectedHelperId == helper.id;
 
-    return Container(
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HelperProfilePreviewScreen(
+            helper: helper,
+            taskId: widget.task.id,
+          ),
+        ),
+      );
+    },
+    child: Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -433,7 +446,7 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //Profile Photo
+          // Profile Photo
           CircleAvatar(
             radius: 28,
             backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
@@ -448,7 +461,7 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
           ),
           const SizedBox(width: 12),
 
-          //Details
+          // Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -568,8 +581,9 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   List<Widget> _buildTrustStars(double score) {
     final fullStars = score.floor();
