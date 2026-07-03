@@ -7,12 +7,14 @@ import '../../models/review_model.dart';
 
 class HelperProfilePreviewScreen extends StatefulWidget {
   final User helper;
-  final String? taskId; // Optional — for inviting to a specific task
+  final String? taskId;
+  final bool showRequestButton;
 
   const HelperProfilePreviewScreen({
     super.key,
     required this.helper,
     this.taskId,
+    this.showRequestButton = true,
   });
 
   @override
@@ -23,7 +25,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
   bool _isInviting = false;
   bool _isInvited = false;
 
-  // Mock data — replace with actual API call later
+  // Mock data, replace with actual API call later
   List<Review> _reviews = [];
   bool _isAvailable = true;
 
@@ -87,7 +89,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
   }
 
   List<String> _getSkills() {
-    // Mock skills — replace with actual data
+    // Mock skills, replace this with actual data
     return ['Plants', 'Pets', 'Home Check-in', 'Bins'];
   }
 
@@ -213,10 +215,12 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
             const SizedBox(height: 24),
 
             // Invite Button
+            // Request Help Button only shows in Available helpers screen, not leaderboard
+          if (widget.showRequestButton)
             SizedBox(
               width: double.infinity,
               child: CustomButton(
-                text: _isInvited ? 'Invited ✓' : 'Invite Helper',
+                text: _isInvited ? 'Requested ✓' : 'Request Help',
                 onTap: _isInvited ? null : _inviteHelper,
                 isLoading: _isInviting,
                 isDisabled: _isInvited,

@@ -404,6 +404,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           MaterialPageRoute(
             builder: (context) => HelperProfilePreviewScreen(
               helper: mockHelper,
+              showRequestButton: false,
             ),
           ),
         );
