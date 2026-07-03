@@ -94,20 +94,20 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
   void _submitTask() async {
 
-    // Validate required fields
-    if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a task title')),
-      );
-      return;
-    }
+  // Validate required fields
+  if (_titleController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter a task title')),
+    );
+    return;
+  }
 
-    if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')),
-      );
-      return;
-    }
+  if (_selectedCategory == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select a category')),
+    );
+    return;
+  }
 
     setState(() => _isSubmit = true);
     
@@ -131,33 +131,37 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       }
     } catch(e) {//fallback to what we mocked
   
-      // Create new task (XP reward set to 0 or remove from model)
-    final newTask = Task(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: _titleController.text,
-      category: _selectedCategory!,
-      date: _selectedDate,
-      time: _selectedTime,
-      xpReward: 0, // Set to 0 since XP slider is removed
-      instructions: _instructionsController.text.isNotEmpty
-          ? _instructionsController.text
-          : 'No additional instructions',
-      status: 'pending',
-      createdAt: DateTime.now(),
-    );
-    // Add to mock data list
-    Task.addMockTask(newTask);
+    // Create new task with all required parameters
+  final newTask = Task(
+    id: DateTime.now().millisecondsSinceEpoch.toString(),
+    title: _titleController.text,
+    category: _selectedCategory!,
+    date: _selectedDate,
+    time: _selectedTime,
+    xpReward: 50, // Default XP reward
+    instructions: _instructionsController.text.isNotEmpty
+        ? _instructionsController.text
+        : 'No additional instructions',
+    status: 'open',  // New task starts as 'open' (waiting for helper)
+    createdAt: DateTime.now(),
+    createdBy: 'currentUser',  // The current user is the creator
+    requesterName: 'You',       // Display name for requester
+    helperId: null,             // No helper yet
+    helperName: null,           // No helper yet
+  );
+  // Add to mock data list
+  Task.addMockTask(newTask);
 
-    if(mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Task saved locally (offline mode)'),
-          backgroundColor: Color(0xFFE9C46A),
-        ),
-      );
-    // Navigate back
-    Navigator.pop(context, true);
-    }
+  if(mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Task saved locally (offline mode)'),
+        backgroundColor: Color(0xFFE9C46A),
+      ),
+    );
+  // Navigate back
+  Navigator.pop(context, true);
+  }
   }
   finally {
     if(mounted) setState(() => _isSubmit = false);

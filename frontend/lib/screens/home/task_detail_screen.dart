@@ -2,75 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import 'edit_task_screen.dart';
-import '../../services/task_service.dart';
+
 
 
 class TaskDetailScreen extends StatefulWidget {
   final Task task;
-  final VoidCallback? onTaskUpdated; 
+  final VoidCallback? onTaskUpdated;
+  final bool isRequesterView;
 
-  const TaskDetailScreen({super.key, required this.task, this.onTaskUpdated});
+  const TaskDetailScreen({
+    super.key,
+    required this.task,
+    this.onTaskUpdated,
+    this.isRequesterView = true,
+  });
 
   @override
   State<TaskDetailScreen> createState() => _TaskDetailScreenState();
 }
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
-  final TaskService _taskService = TaskService();
-  bool _isDeleting = false;
-
-  Future<void> _confirmDelete() async {
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Task'),
-        content: const Text('Are you sure you want to delete this task?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Color(0xFFE76F51)),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
-    setState(() => _isDeleting = true);
-    try {
-      await _taskService.deleteTask(int.parse(widget.task.id));
-      if (mounted) {
-        if (widget.onTaskUpdated != null) widget.onTaskUpdated!();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Task deleted'),
-            backgroundColor: Color(0xFF2A9D8F),
-          ),
-        );
-        Navigator.pop(context, true);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isDeleting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to delete task'),
-            backgroundColor: Color(0xFFE76F51),
-          ),
-        );
-      }
-    }
-  }
-
-  @override
+@override
   Widget build(BuildContext context) {
+    final bool canEdit = widget.isRequesterView && widget.task.status == 'open';
+    final bool showApproveButton = widget.isRequesterView && widget.task.status == 'pending_approval';
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
@@ -90,37 +46,20 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit, color: Color(0xFF2A9D8F)),
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditTaskScreen(task: widget.task),
-                ),
-              );
-              // If task was updated, call the callback
-              if (result == true && widget.onTaskUpdated != null) {
-                widget.onTaskUpdated!();
-              }
-            },
-          ),
-          if (_isDeleting)
-            const Padding(
-              padding: EdgeInsets.all(14),
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFFE76F51),
-                ),
-              ),
-            )
-          else
+          if (canEdit)
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: Color(0xFFE76F51)),
-              onPressed: _confirmDelete,
+              icon: const Icon(Icons.edit, color: Color(0xFF2A9D8F)),
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditTaskScreen(task: widget.task),
+                  ),
+                );
+                if (result == true && widget.onTaskUpdated != null) {
+                  widget.onTaskUpdated!();
+                }
+              },
             ),
         ],
       ),
@@ -129,7 +68,22 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Category Badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: _getStatusColor(widget.task.status).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                _getStatusDisplay(widget.task.status),
+                style: GoogleFonts.openSans(
+                  color: _getStatusColor(widget.task.status),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -157,8 +111,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Task Title
             Text(
               widget.task.title,
               style: GoogleFonts.poppins(
@@ -168,8 +120,30 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // XP Reward Card
+            if (widget.task.helperName != null && widget.task.helperName != 'You')
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A9D8F).withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person, color: Color(0xFF2A9D8F), size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      widget.isRequesterView
+                          ? 'Helper: ${widget.task.helperName}'
+                          : 'Requester: ${widget.task.requesterName}',
+                      style: GoogleFonts.openSans(
+                        color: const Color(0xFF264653),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -204,8 +178,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Date and Time
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -255,8 +227,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Instructions
             const Text(
               'Instructions',
               style: TextStyle(
@@ -282,38 +252,149 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Status and Actions
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Task accepted!'),
-                          backgroundColor: Color(0xFF2A9D8F),
+            if (showApproveButton)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    _approveCompletion(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4CAF50),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Approve Completion'),
+                ),
+              ),
+            if (showApproveButton) const SizedBox(height: 16),
+            if (!canEdit && widget.isRequesterView &&
+                widget.task.status != 'completed' &&
+                widget.task.status != 'pending_approval')
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: Color(0xFF9CA3AF), size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _getNonEditableMessage(widget.task.status),
+                        style: GoogleFonts.openSans(
+                          color: const Color(0xFF6B7280),
+                          fontSize: 12,
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2A9D8F),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Accept Task'),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
             const SizedBox(height: 32),
           ],
         ),
       ),
     );
+  }
+
+   void _approveCompletion(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Approve Task Completion?'),
+        content: const Text('Confirming will award XP to the helper and mark this task as complete.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+            ),
+            child: const Text('Approve'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      Task.updateTaskStatus(widget.task.id, 'completed');
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Task approved! XP awarded to helper.'),
+              backgroundColor: Color(0xFF4CAF50),
+            ),
+          );
+          if (widget.onTaskUpdated != null) {
+            widget.onTaskUpdated!();
+          }
+          Navigator.pop(context);
+        }
+      });
+    }
+  }
+
+  String _getStatusDisplay(String status) {
+    switch (status) {
+      case 'open':
+        return 'Waiting for helper';
+      case 'assigned':
+        return 'Helper assigned';
+      case 'in_progress':
+        return 'In progress';
+      case 'pending_approval':
+        return 'Awaiting your approval';
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'open':
+        return const Color(0xFFE9C46A);
+      case 'assigned':
+        return const Color(0xFF2A9D8F);
+      case 'in_progress':
+        return const Color(0xFF2196F3);
+      case 'pending_approval':
+        return const Color(0xFFFF9800);
+      case 'completed':
+        return const Color(0xFF4CAF50);
+      case 'cancelled':
+        return const Color(0xFFF44336);
+      default:
+        return const Color(0xFF9CA3AF);
+    }
+  }
+
+  String _getNonEditableMessage(String status) {
+    switch (status) {
+      case 'assigned':
+        return 'A helper has been assigned. You cannot edit this task anymore.';
+      case 'in_progress':
+        return 'A helper is working on this task. You cannot edit it.';
+      case 'pending_approval':
+        return 'Waiting for your approval. Review the completion proof.';
+      default:
+        return 'This task cannot be edited at this stage.';
+    }
   }
 
   IconData _getCategoryIcon(String category) {
