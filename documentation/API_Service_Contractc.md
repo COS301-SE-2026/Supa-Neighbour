@@ -897,7 +897,171 @@ GET /api/helpers/5/profile?taskId=12
 | `404 Not Found` | Task or helper does not exist | `{ "error": "Task not found" }` |
 | `409 Conflict` | Helper has already been invited to this task | `{ "error": "Helper already invited" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
+### 5.4 POST /api/task/{taskId}/accept
+
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/task/{taskId}/accept` |
+| **Method** | `POST` |
+| **Purpose** | Called by the **helper** when they see an open task listed on their side and choose to accept it. Creates a `task_invoice_table` row, locks the task to that helper, and triggers the address reveal flow (UC6-US1) — the requester's exact address becomes visible to the helper. |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+
+#### Path Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `taskId` | int | The unique ID of the task being accepted |
+
+> No request body is needed — the helper is resolved from the JWT.
+
+#### Request Headers
+
+```
+Authorization: Bearer <token>
+```
+
+#### Success Response — `201 Created`
+
+```json
+{
+  "message": "Task accepted successfully.",
+  "taskId": 12,
+  "status": "Accepted",
+  "addressRevealed": true
+}
+```
+
+> `addressRevealed: true` signals to the Flutter client to navigate to the Address Confirmation screen (UC6-US1).
+
+#### Error Responses
+
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Authenticated user is not registered as a helper | `{ "error": "User is not a helper" }` |
+| `404 Not Found` | Task does not exist | `{ "error": "Task not found" }` |
+| `409 Conflict` | Task has already been accepted by another helper | `{ "error": "This task has already been accepted" }` |
+| `422 Unprocessable Entity` | Task is not in an open/available state | `{ "error": "Task is not available for acceptance" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
+### 5.5 POST /api/task/{taskId}/decline
  
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/task/{taskId}/decline` |
+| **Method** | `POST` |
+| **Purpose** | Called by the **helper** when they see an open task listed on their side and choose to decline it. The task remains open and visible to other helpers. |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `taskId` | int | The unique ID of the task being declined |
+ 
+> No request body is needed — the helper is resolved from the JWT.
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "message": "Task declined.",
+  "taskId": 12,
+  "status": "Declined"
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Authenticated user is not registered as a helper | `{ "error": "User is not a helper" }` |
+| `404 Not Found` | Task does not exist | `{ "error": "Task not found" }` |
+| `409 Conflict` | Task has already been accepted or declined | `{ "error": "Task cannot be declined in its current state" }` |
+| `422 Unprocessable Entity` | Task is not in an open/available state | `{ "error": "Task is not available for declining" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
+### 5.6 GET /api/helpers/me/tasks
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/helpers/me/tasks` |
+| **Method** | `GET` |
+| **Purpose** | Returns the full task history for the authenticated helper — all tasks they've been invited to, are currently assigned to, or have previously completed. Backs the helper-side task list view. The helper is resolved from the JWT. |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Query Parameters (optional)
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `status` | String | Filter by task status: `Invited`, `Accepted`, `Completed`, `Declined`. Omit to return all. |
+| `limit` | int | Number of results to return. Default `20` |
+| `offset` | int | Pagination offset. Default `0` |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Example Request
+ 
+```
+GET /api/helpers/me/tasks?status=Completed&limit=10
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "helperId": 5,
+  "total": 27,
+  "tasks": [
+    {
+      "taskId": 1,
+      "taskType": "Home Repair",
+      "status": "Completed",
+      "startDate": "2026-05-01",
+      "endDate": "2026-05-01",
+      "neighbourhood": "Greenfield",
+      "xpAwarded": 600
+    },
+    {
+      "taskId": 8,
+      "taskType": "Pet Care",
+      "status": "Invited",
+      "startDate": "2026-07-10",
+      "endDate": "2026-07-10",
+      "neighbourhood": "Riverside",
+      "xpAwarded": null
+    }
+  ]
+}
+```
+ 
+> `xpAwarded` is `null` for tasks not yet completed.  
+> The requester's exact address is **not** included in this list view — it is only revealed on the individual task detail screen after acceptance (R4.1.1).
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | Invalid `status` value supplied | `{ "error": "status must be one of: Invited, Accepted, Completed, Declined" }` |
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Authenticated user is not registered as a helper | `{ "error": "User is not a helper" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
 ---
  
 ## 6. Profile & Gamification
@@ -1105,6 +1269,59 @@ Authorization: Bearer <token>
 | `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
 | `403 Forbidden` | User is not a participant in this chat | `{ "error": "You are not authorised to view this chat" }` |
 | `404 Not Found` | Chat does not exist | `{ "error": "Chat not found" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
+### 6.5 POST /api/tasks/{taskId}/rate
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/tasks/{taskId}/rate` |
+| **Method** | `POST` |
+| **Purpose** | Called by the **requester** after a task is marked complete. Submits a rating category and a free-text review for the helper. Writes to `task_invoice_table.helper_rating_review` (FK into `rating_table`) and a review snippet field. Contributes to the helper's overall trust score (R5.3.1). |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `taskId` | int | The unique ID of the completed task being rated |
+ 
+#### Request Body
+ 
+| Field | Type | Description |
+|---|---|---|
+| `rating` | String | **Required.** One of the valid `rating_table` categories: `"Outstanding"`, `"Excellent"`, `"Very Good"`, `"Good"`, `"Average"` |
+| `reviewSnippet` | String | Optional. Short free-text comment (max 300 characters) displayed on the helper's profile |
+ 
+```json
+{
+  "rating": "Excellent",
+  "reviewSnippet": "Arrived on time and did a great job fixing the sink."
+}
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "message": "Rating submitted successfully.",
+  "taskId": 12,
+  "rating": "Excellent",
+  "reviewSnippet": "Arrived on time and did a great job fixing the sink."
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | `rating` missing or not a valid category | `{ "error": "rating must be one of: Outstanding, Excellent, Very Good, Good, Average" }` |
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Caller is not the requester for this task | `{ "error": "You are not authorised to rate this task" }` |
+| `404 Not Found` | Task does not exist | `{ "error": "Task not found" }` |
+| `409 Conflict` | Task has already been rated by this requester | `{ "error": "You have already submitted a rating for this task" }` |
+| `422 Unprocessable Entity` | Task is not yet in `Completed` status | `{ "error": "Task must be completed before it can be rated" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
 ---

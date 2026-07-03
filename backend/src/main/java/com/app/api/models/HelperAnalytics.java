@@ -87,7 +87,7 @@ public class HelperAnalytics {
      *
      * @param helperAnalyticsid the helper analytics identifier
      */
-    public void setid(String helperAnalyticsid) {
+    public void setHelperAnalyticsid(String helperAnalyticsid) {
         this.helperAnalyticsid = helperAnalyticsid;
     }
 
@@ -100,6 +100,14 @@ public class HelperAnalytics {
         return userid;
     }
 
+    /**
+     * Sets the user associated with this analytics record.
+     *
+     * @param userid the user
+     */
+    public void setUserid(User userid) {
+        this.userid = userid;
+    }
     /**
      * Get the id of a helper.
      * @return id of helper
