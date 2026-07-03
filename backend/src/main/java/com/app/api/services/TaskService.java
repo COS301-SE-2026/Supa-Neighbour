@@ -1,19 +1,20 @@
 package com.app.api.services;
 
-import com.app.api.models.Analytics;
-import com.app.api.models.Chat;
-import com.app.api.models.Task;
-import com.app.api.models.Dependent;
-import com.app.api.repositories.AnalyticsRepository;
-import com.app.api.repositories.ChatRepository;
-import com.app.api.repositories.MessageRepository;
-import com.app.api.repositories.TaskRepository;
-import com.app.api.repositories.DependentRepository;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.app.api.models.Analytics;
+import com.app.api.models.Chat;
+import com.app.api.models.Dependent;
+import com.app.api.models.Task;
+import com.app.api.repositories.AnalyticsRepository;
+import com.app.api.repositories.ChatRepository;
+import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.MessageRepository;
+import com.app.api.repositories.TaskRepository;
 
 /**
  * Service layer for task-related business logic.
@@ -149,7 +150,7 @@ public class TaskService {
      * @return tasks linked to the user's dependent ID, or null if profile not found
      */
     public List<Task> getTasksByUserId(int userId) {
-        Dependent dependent = dependentRepo.findByUserid_Userid(userId);
+        Dependent dependent = dependentRepo.findByUserId_Userid(userId);
         if (dependent == null) {
             return null;
         }

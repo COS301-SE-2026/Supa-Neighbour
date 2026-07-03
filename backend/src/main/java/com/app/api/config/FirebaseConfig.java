@@ -2,6 +2,7 @@ package com.app.api.config;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.annotation.PostConstruct;
 
@@ -22,9 +23,17 @@ public class FirebaseConfig {
      */
     @PostConstruct
     public void initialize()  throws IOException{
-        if(FirebaseApp.getApps().isEmpty()){
-            FirebaseOptions options = FirebaseOptions.builder().setCredentials(GoogleCredentials.getApplicationDefault()).build();
-            FirebaseApp.initializeApp(options);
+        try{
+            InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("Firebase/serviceAccountKey.json");
+        
+            FirebaseOptions options = FirebaseOptions.builder().setCredentials(GoogleCredentials.fromStream(serviceAccount)).build();
+
+            if(FirebaseApp.getApps().isEmpty()){
+                FirebaseApp.initializeApp(options);
+            }
+        } catch(Exception e) {
+        // Handle the exception, e.g., log it or rethrow it
+        throw new RuntimeException("Failed to initialize Firebase", e);
         }
     }
 }
