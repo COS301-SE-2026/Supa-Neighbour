@@ -432,6 +432,18 @@ create table message_table (
         references user_table(user_id)
 );
 
+create table user_achievement_table (
+    user_achievement_id int generated always as identity primary key,
+    user_id             int not null,
+    badge_id            int not null,
+    awarded_on          date,
+    progress_current    int default 0,
+    progress_target     int,
+    foreign key (user_id)  references user_table(user_id),
+    foreign key (badge_id) references badge_table(badge_id),
+    constraint uq_user_badge unique (user_id, badge_id)
+);
+
 -- =============================================
 -- indexes
 -- =============================================
@@ -597,11 +609,15 @@ values
 insert into helper_table
 (user_id, task_type_id, badge_id)
 values
-(1, 1, 1),
-(2, 2, 4),
-(3, 3, 2),
-(4, 4, 3),
-(5, 5, 5);
+(2, 2, 4),   -- Sarah    → Pet Care
+(3, 3, 2),   -- Michael  → Tech Support
+(4, 4, 3),   -- Emily    → Transportation
+(5, 5, 5),   -- David    → Home Repair
+(7, 1, 1),   -- James    → Medical Assistance
+(10, 2, 4),  -- Emma     → Pet Care
+(11, 3, 2),  -- Matthew  → Tech Support
+(12, 4, 3),  -- Isabella → Transportation
+(13, 5, 5);  -- William  → Home Repair
 
 -- =============================================
 -- 8. dependent table
@@ -802,3 +818,15 @@ values
 (2, 4, 'No problem, I will pick you up at 7:45am.', 'text', true),
 (2, 7, 'That is perfect, thank you so much!', 'text', false),
 (2, 4, 'See you tomorrow morning.', 'text', false);
+
+-- =============================================
+-- 19. message table mock data
+-- =============================================
+insert into user_achievement_table 
+(user_id, badge_id, awarded_on, progress_current, progress_target)
+values
+(2, 2, '2026-05-03', 5,  5),   -- Sarah: earned Pet Care Helper
+(2, 1, null,         2, 10),   -- Sarah: working toward Medical Specialist
+(2, 3, null,         1,  5),   -- Sarah: working toward Tech Assistant
+(7, 1, '2026-05-01', 10, 10),  -- James: earned Medical Specialist
+(7, 2, null,         3,  5);   -- James: working toward Pet Care Helper
