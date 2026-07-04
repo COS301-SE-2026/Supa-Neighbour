@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'helper_profile_preview_screen.dart';
 import '../../constants/app_colors.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../models/leaderboard_model.dart';
 import '../../models/user_model.dart';
 
@@ -150,19 +149,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     }
   }
 
-  Color _getLevelTextColor(String level) {
-    switch (level) {
-      case 'Gold':
-        return AppColors.charcoal;
-      case 'Silver':
-        return AppColors.charcoal;
-      case 'Bronze':
-        return Colors.white;
-      default:
-        return AppColors.charcoal;
-    }
-  }
-
   Widget _buildMedalIcon(int rank) {
     if (rank == 1) {
       return const Icon(Icons.emoji_events, color: Color(0xFFE9C46A), size: 24);
@@ -214,7 +200,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       ),
       body: Column(
         children: [
-          //Period Selector
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
@@ -234,8 +219,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               ],
             ),
           ),
-
-          //Content
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -247,11 +230,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     ? _buildEmptyState()
                     : Column(
                         children: [
-                          //Top 3 Circles
                           _buildTop3Circles(),
                           const SizedBox(height: 8),
-
-                          //Leaderboard List
                           Expanded(
                             child: ListView.builder(
                               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -262,8 +242,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               },
                             ),
                           ),
-
-                          //Rank Card
                           if (_leaderboardData!.currentUserEntry != null)
                             _buildYourRankCard(_leaderboardData!.currentUserEntry!),
                         ],
@@ -317,9 +295,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildTopCircle(top3[1]), // Silver
-        _buildTopCircle(top3[0], isFirst: true), // Gold
-        _buildTopCircle(top3[2]), // Bronze
+        _buildTopCircle(top3[1]),
+        _buildTopCircle(top3[0], isFirst: true),
+        _buildTopCircle(top3[2]),
       ],
     ),
   );
@@ -383,14 +361,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 }
 
   Widget _buildLeaderboardItem(LeaderboardEntry entry) {
-    final isTop3 = entry.rank <= 3;
     final bgColor = entry.isCurrentUser
         ? AppColors.primaryTeal.withValues(alpha: 0.05)
         : Colors.transparent;
 
     return GestureDetector(
       onTap: () {
-        // Navigate to Helper Profile Preview
         // Get actual user data from API
         final mockHelper = User(
           id: entry.userId,
@@ -422,8 +398,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               width: 36,
               child: _buildMedalIcon(entry.rank),
             ),
-
-            //Avatar, might change later
             CircleAvatar(
               radius: 18,
               backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
@@ -438,8 +412,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             ),
 
             const SizedBox(width: 12),
-
-            //Name and Details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -565,8 +537,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   Widget _buildYourRankCard(LeaderboardEntry entry) {
   final nextRank = entry.rank - 1;
-  final xpNeeded = 100; // Mock value
-  final progress = 0.65; // Mock value
+  const xpNeeded = 100; // Mocks
+  const progress = 0.65;
 
   return Container(
     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -582,7 +554,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Rank and Name Row
         Row(
           children: [
             Container(
@@ -615,7 +586,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 ..._buildTrustStars(entry.trustScore),
                 const SizedBox(width: 4),
                 Text(
-                  '${entry.trustScore.toStringAsFixed(1)}',
+                  entry.trustScore.toStringAsFixed(1),
                   style: GoogleFonts.openSans(
                     color: AppColors.charcoal,
                     fontSize: 12,
@@ -636,7 +607,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           ],
         ),
         const SizedBox(height: 6),
-        // Progress section
         Row(
           children: [
             Expanded(
@@ -644,7 +614,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${xpNeeded} XP to reach Top $nextRank',
+                    '$xpNeeded XP to reach Top $nextRank',
                     style: GoogleFonts.openSans(
                       color: AppColors.textGrey,
                       fontSize: 11,

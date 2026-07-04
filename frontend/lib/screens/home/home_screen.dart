@@ -49,7 +49,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Home Content Widget
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -131,7 +130,6 @@ class _HomeContentState extends State<HomeContent> {
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Color(0xFF2A9D8F)),
             onPressed: () {
-              // next feature
             },
           ),
         ],
@@ -146,19 +144,12 @@ class _HomeContentState extends State<HomeContent> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome Section - Now using AuthSession
               _buildWelcomeSection(),
               const SizedBox(height: 24),
-
-              // Quick Stats Row
               _buildStatsRow(),
               const SizedBox(height: 24),
-
-              // Nearby Tasks Section
               _buildNearbyTasksSection(context),
               const SizedBox(height: 12),
-
-              // Task List
               _nearbyTasks.isEmpty
                   ? _buildEmptyState()
                   : _buildNearbyTaskList(context),

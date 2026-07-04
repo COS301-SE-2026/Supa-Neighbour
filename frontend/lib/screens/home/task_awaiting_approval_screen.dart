@@ -38,7 +38,6 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -66,8 +65,6 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Category Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -95,8 +92,6 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Task Title
             Text(
               task.title,
               style: GoogleFonts.poppins(
@@ -106,8 +101,6 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Requester Info
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -129,8 +122,6 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // XP Reward
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -165,8 +156,6 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Date and Time
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -216,8 +205,6 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Instructions
             const Text(
               'Instructions',
               style: TextStyle(
@@ -243,8 +230,6 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Status Message
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -276,8 +261,6 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Your Completion Note (read-only)
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -307,8 +290,6 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Your Photos (read-only)
             if (task.completionPhotos != null && task.completionPhotos!.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,7 +332,7 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavBar(
-        currentIndex: 1, // Tasks tab
+        currentIndex: 1,
        onTap: (_) {},
       ),
     );

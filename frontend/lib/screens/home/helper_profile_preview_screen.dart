@@ -37,7 +37,6 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
 
   void _loadHelperData() {
     //Replace with actual API call
-    // For now, use mock data
     _reviews = [
       Review(
         id: '1',
@@ -179,7 +178,6 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           IconButton(
             icon: const Icon(Icons.more_vert, color: AppColors.charcoal),
             onPressed: () {
-              // Optional menu
             },
           ),
         ],
@@ -189,32 +187,21 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Header
             _buildProfileHeader(level, levelColor),
 
             const SizedBox(height: 24),
-
-            // Stats Row
             _buildStatsRow(),
 
             const SizedBox(height: 24),
-
-            // Skills Section
             _buildSkillsSection(),
 
             const SizedBox(height: 24),
-
-            // About Section
             _buildAboutSection(),
 
             const SizedBox(height: 24),
-
-            // Reviews Section
             _buildReviewsSection(),
 
             const SizedBox(height: 24),
-
-            // Invite Button
             // Request Help Button only shows in Available helpers screen, not leaderboard
           if (widget.showRequestButton)
             SizedBox(
@@ -237,7 +224,6 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
   Widget _buildProfileHeader(String level, Color levelColor) {
     return Row(
       children: [
-        // Profile Photo
         CircleAvatar(
           radius: 50,
           backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
@@ -251,8 +237,6 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           ),
         ),
         const SizedBox(width: 16),
-
-        // Name and Details
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +293,6 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
                 ),
               ),
               const SizedBox(height: 6),
-              // Availability indicator
               Row(
                 children: [
                   Container(
@@ -467,7 +450,6 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
             ),
             GestureDetector(
               onTap: () {
-                //avigate to all reviews
               },
               child: Text(
                 'See All',

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../models/user_model.dart';
 import '../../models/auth_session.dart';
 
@@ -24,6 +23,7 @@ final List<Map<String, dynamic>> _achievements = [
   {'name': 'Super Streak', 'icon': Icons.local_fire_department, 'color': Colors.orange},
 ];
   // Mock skills data
+  // ignore: prefer_final_fields
   List<String> _skills = ['Plants', 'Pets', 'Home Check-in'];
 
   @override
@@ -94,7 +94,7 @@ final List<Map<String, dynamic>> _achievements = [
   }
 
   void _showEditSkillsDialog() {
-    final TextEditingController _skillController = TextEditingController();
+    final TextEditingController skillController = TextEditingController();
 
     showDialog(
       context: context,
@@ -152,7 +152,7 @@ final List<Map<String, dynamic>> _achievements = [
               children: [
                 Expanded(
                   child: TextField(
-                    controller: _skillController,
+                    controller: skillController,
                     decoration: InputDecoration(
                       hintText: 'Add a skill...',
                       hintStyle: GoogleFonts.openSans(
@@ -174,10 +174,10 @@ final List<Map<String, dynamic>> _achievements = [
                 const SizedBox(width: 8),
                 IconButton(
                   onPressed: () {
-                    if (_skillController.text.isNotEmpty) {
+                    if (skillController.text.isNotEmpty) {
                       setState(() {
-                        _skills.add(_skillController.text);
-                        _skillController.clear();
+                        _skills.add(skillController.text);
+                        skillController.clear();
                       });
                     }
                   },
@@ -222,8 +222,8 @@ final List<Map<String, dynamic>> _achievements = [
 
     final level = _getLevel(4.8); // Mock trust score
     final levelColor = _getLevelColor(level);
-    final xpProgress = 0.65; // Mock progress
-    final nextLevelXp = 250;
+    const xpProgress = 0.65; // Mock progress
+    const nextLevelXp = 250;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -243,7 +243,6 @@ final List<Map<String, dynamic>> _achievements = [
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: AppColors.charcoal),
             onPressed: () {
-              //Navigate to settings
             },
           ),
         ],
@@ -253,31 +252,18 @@ final List<Map<String, dynamic>> _achievements = [
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Header
             _buildProfileHeader(level, levelColor),
             const SizedBox(height: 20),
-
-            // XP Progress
             _buildXpProgress(level, xpProgress, nextLevelXp),
             const SizedBox(height: 20),
-
-            // Stats Row
             _buildStatsRow(),
             const SizedBox(height: 20),
-
-            // Skills Section
             _buildSkillsSection(),
             const SizedBox(height: 20),
-
-            // Achievements Section
             _buildAchievementsSection(),
             const SizedBox(height: 20),
-
-            // Task History
             _buildTaskHistory(),
             const SizedBox(height: 20),
-
-            // Action Buttons
             _buildActionButtons(),
             const SizedBox(height: 32),
           ],
@@ -302,7 +288,6 @@ final List<Map<String, dynamic>> _achievements = [
     ),
     child: Column(
       children: [
-        // Profile Photo
         CircleAvatar(
           radius: 40,
           backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
@@ -316,8 +301,6 @@ final List<Map<String, dynamic>> _achievements = [
           ),
         ),
         const SizedBox(height: 12),
-
-        // Name and Level Badge
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -351,8 +334,6 @@ final List<Map<String, dynamic>> _achievements = [
           ],
         ),
         const SizedBox(height: 6),
-
-        // Trust Score
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -369,8 +350,6 @@ final List<Map<String, dynamic>> _achievements = [
           ],
         ),
         const SizedBox(height: 4),
-
-        // Member Since
         Text(
           'Member since ${_user.createdAt.year}',
           style: GoogleFonts.openSans(
@@ -379,11 +358,8 @@ final List<Map<String, dynamic>> _achievements = [
           ),
         ),
         const SizedBox(height: 12),
-
-        // Edit Profile Button
         OutlinedButton(
           onPressed: () {
-            // Navigate to edit profile
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Edit Profile coming soon'),
@@ -617,7 +593,6 @@ final List<Map<String, dynamic>> _achievements = [
               ),
               GestureDetector(
                 onTap: () {
-                  //Navigate to Achievements Screen
                 },
                 child: Text(
                   'View All',
@@ -757,7 +732,6 @@ final List<Map<String, dynamic>> _achievements = [
         width: double.infinity,
         child: OutlinedButton(
           onPressed: () {
-            //Navigate to privacy settings
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Privacy Settings coming soon'),
@@ -845,7 +819,6 @@ final List<Map<String, dynamic>> _achievements = [
           ),
           ElevatedButton(
             onPressed: () {
-              //Implement logout
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

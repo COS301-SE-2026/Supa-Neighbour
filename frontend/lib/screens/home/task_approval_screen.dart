@@ -55,7 +55,6 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -83,8 +82,6 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Category Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -112,8 +109,6 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Task Title
             Text(
               widget.task.title,
               style: GoogleFonts.poppins(
@@ -123,8 +118,6 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Helper Info
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -146,8 +139,6 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // XP Reward
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -182,8 +173,6 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Date and Time
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -233,8 +222,6 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Instructions
             const Text(
               'Instructions',
               style: TextStyle(
@@ -260,12 +247,8 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Divider
             const Divider(color: AppColors.surfaceGrey),
             const SizedBox(height: 16),
-
-            // Completion Details
             Text(
               'Completion Details',
               style: GoogleFonts.poppins(
@@ -275,8 +258,6 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Helper's Completion Note
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -306,8 +287,6 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Helper's Photos
             if (widget.task.completionPhotos != null && widget.task.completionPhotos!.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,12 +325,8 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                 ],
               ),
             const SizedBox(height: 24),
-
-            // Divider
             const Divider(color: AppColors.surfaceGrey),
             const SizedBox(height: 16),
-
-            // Rate Helper Section
             Text(
               'Rate Helper',
               style: GoogleFonts.poppins(
@@ -386,8 +361,6 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Review Input
             CustomInputField(
               label: 'Review (optional)',
               hintText: 'Write a review for the helper...',
@@ -395,8 +368,6 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               maxLines: 4,
             ),
             const SizedBox(height: 24),
-
-            // Approve Button
             SizedBox(
               width: double.infinity,
               child: CustomButton(
@@ -410,69 +381,73 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
         ),
       ),
       bottomNavigationBar: BottomNavBar(
-        currentIndex: 1, // Tasks tab
+        currentIndex: 1,
         onTap: (_) {},
       ),
     );
   }
 
   void _approveCompletion(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Approve Task Completion?'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Confirming will award XP to the helper and mark this task as complete.'),
-            const SizedBox(height: 8),
-            Text(
-              'Rating: ${_rating.toStringAsFixed(1)} / 5.0',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFE9C46A),
-              ),
+  final scaffoldContext = context;
+
+  final confirmed = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Approve Task Completion?'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Confirming will award XP to the helper and mark this task as complete.'),
+          const SizedBox(height: 8),
+          Text(
+            'Rating: ${_rating.toStringAsFixed(1)} / 5.0',
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFE9C46A),
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
-            ),
-            child: const Text('Approve'),
           ),
         ],
       ),
-    );
-
-    if (confirmed == true) {
-      setState(() => _isSubmitting = true);
-
-      // TODO: Call API to approve task with rating and review
-      // await taskService.approveTask(widget.task.id, _rating, _reviewController.text);
-
-      Task.updateTaskStatus(widget.task.id, 'completed');
-
-      // TODO: Save rating and review to database
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Task approved! XP awarded to helper.'),
-          backgroundColor: Color(0xFF4CAF50),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: const Text('Cancel'),
         ),
-      );
-      Navigator.pop(context);
-    }
+        ElevatedButton(
+          onPressed: () => Navigator.pop(dialogContext, true),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF4CAF50),
+          ),
+          child: const Text('Approve'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmed == true) {
+    setState(() => _isSubmitting = true);
+
+    //Call API to approve task with rating and review
+    //await taskService.approveTask(widget.task.id, _rating, _reviewController.text);
+
+    Task.updateTaskStatus(widget.task.id, 'completed');
+
+    //Save rating and review to database
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+          const SnackBar(
+            content: Text('Task approved! XP awarded to helper.'),
+            backgroundColor: Color(0xFF4CAF50),
+          ),
+        );
+        Navigator.pop(scaffoldContext);
+      }
+    });
   }
+}
 
   IconData _getCategoryIcon(String category) {
     switch (category) {

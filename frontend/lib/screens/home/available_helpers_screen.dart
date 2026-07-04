@@ -85,26 +85,6 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
     });
   }
 
-  void _inviteHelper(String helperId) {
-    setState(() {
-      _selectedHelperId = helperId;
-    });
-
-    //Implement invite logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Invitation sent to ${_getHelperName(helperId)}!'),
-        backgroundColor: AppColors.success,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  String _getHelperName(String helperId) {
-    final helper = _helpers.firstWhere((h) => h.id == helperId);
-    return helper.fullName;
-  }
-
   String _getLevel(int index) {
     //mock level assignment based on index
     if (index == 0) return 'Gold';
@@ -180,17 +160,12 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //Context Card
             _buildTaskContextCard(),
 
             const SizedBox(height: 16),
-
-            //Filter/Sort Row
             _buildFilterSortRow(),
 
             const SizedBox(height: 12),
-
-            //Helpers List
             Expanded(
               child: _isLoading
                   ? const Center(
@@ -446,7 +421,6 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile Photo
           CircleAvatar(
             radius: 28,
             backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
@@ -460,8 +434,6 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
             ),
           ),
           const SizedBox(width: 12),
-
-          // Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -672,7 +644,6 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              //filter options
               const Text('Filter options coming soon...'),
               const SizedBox(height: 16),
               CustomButton(
@@ -707,7 +678,6 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              //sort options
               const Text('Sort options coming soon...'),
               const SizedBox(height: 16),
               CustomButton(
