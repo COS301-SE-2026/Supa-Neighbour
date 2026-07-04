@@ -472,21 +472,6 @@ create table user_achievement_table (
 );
 
 -- =============================================
--- 19. task invitation table
--- =============================================
-create table task_invitation_table (
-    invitation_id int generated always as identity primary key,
-    task_id       int not null,
-    helper_id     int not null,
-    status        varchar(20) default 'Invited',
-        check (status in ('Invited', 'Accepted', 'Declined', 'Rejected')),
-    invited_at    timestamp default current_timestamp,
-    foreign key (task_id)   references task_invoice_table(task_id),
-    foreign key (helper_id) references helper_table(helper_id),
-    constraint uq_invite_per_helper unique (task_id, helper_id)
-);
-
--- =============================================
 -- indexes
 -- =============================================
 
@@ -672,15 +657,15 @@ values
 insert into helper_table
 (user_id, task_type_id, badge_id, helper_xp)    
 values
-(2,  2, 4, 500), 
-(3,  3, 2, 250),  
-(4,  4, 3, 150),  
-(5,  5, 5, 500),  
-(7,  1, 1, 500),  
-(10, 2, 4, 500),  
-(11, 3, 2, 500), 
-(12, 4, 3, 500),  
-(13, 5, 5, 500); 
+(2, 2, 4),   -- Sarah    → Pet Care
+(3, 3, 2),   -- Michael  → Tech Support
+(4, 4, 3),   -- Emily    → Transportation
+(5, 5, 5),   -- David    → Home Repair
+(7, 1, 1),   -- James    → Medical Assistance
+(10, 2, 4),  -- Emma     → Pet Care
+(11, 3, 2),  -- Matthew  → Tech Support
+(12, 4, 3),  -- Isabella → Transportation
+(13, 5, 5);  -- William  → Home Repair
 
 -- =============================================
 -- 8. dependent table
@@ -895,34 +880,8 @@ values
 insert into user_achievement_table 
 (user_id, badge_id, awarded_on, progress_current, progress_target)
 values
-(2, 2, '2026-05-03', 5,  5),   
-(2, 1, null,         2, 10),   
-(2, 3, null,         1,  5),   
-(7, 1, '2026-05-01', 10, 10),
-(7, 2, null,         3,  5);  
-
--- =============================================
--- 19. task_invitation_table mock data
--- =============================================
-INSERT INTO task_invitation_table (task_id, helper_id, status)
-VALUES
-(1, 1, 'Invited'),   
-(1, 2, 'Rejected'), 
-(2, 4, 'Accepted'),  
-(2, 5, 'Declined'), 
-(3, 3, 'Invited');
-
--- =============================================
--- 19. helper skill mock data
--- =============================================
-insert into helper_skill_table (helper_id, task_type_id)
-values
-(1, 1), (1, 2),        
-(2, 3), (2, 4),        
-(3, 3), (3, 5),        
-(4, 4), (4, 2),        
-(5, 1), (5, 5),       
-(6, 2), (6, 3),        
-(7, 4), (7, 1),       
-(8, 5), (8, 2),        --
-(9, 3), (9, 4);  
+(2, 2, '2026-05-03', 5,  5),   -- Sarah: earned Pet Care Helper
+(2, 1, null,         2, 10),   -- Sarah: working toward Medical Specialist
+(2, 3, null,         1,  5),   -- Sarah: working toward Tech Assistant
+(7, 1, '2026-05-01', 10, 10),  -- James: earned Medical Specialist
+(7, 2, null,         3,  5);   -- James: working toward Pet Care Helper

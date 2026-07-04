@@ -6,15 +6,17 @@ import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseAuthException;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * REST controller that provides endpoints for retrieving the
- * authenticated user's achievements.
- */
+
 @RestController
 @RequestMapping("/api/users/me")
 public class AchievementsController {
@@ -22,29 +24,16 @@ public class AchievementsController {
     private final AchievementService achievementService;
     private final FirebaseAuthService firebaseAuthService;
 
-    /**
-     * Constructs an {@code AchievementsController} with the required services.
-     *
-     * @param achievementService service responsible for retrieving user achievements
-     * @param firebaseAuthService service used to authenticate Firebase tokens
-     *                            and retrieve the associated user ID
-     */
     public AchievementsController(AchievementService achievementService, FirebaseAuthService firebaseAuthService){
         this.achievementService = achievementService;
         this.firebaseAuthService = firebaseAuthService;
     }
 
     /**
-     * Retrieves the achievements of the authenticated user.
+     * GET /api/users/me/achievements
      *
-     * <p>The Firebase authentication token is extracted from the
-     * {@code Authorization} header, validated, and used to determine
-     * the user's ID before fetching their achievements.</p>
-     *
-     * @param authHeader the HTTP Authorization header containing a Bearer token
-     * @return a {@link ResponseEntity} containing the user's achievements if the
-     *         token is valid, or a 401 Unauthorized response if the token is
-     *         invalid or expired
+     * Returns all achievements for the authenticated user split into
+     * earned (awarded_on IS NOT NULL) and unearned (awarded_on IS NULL).
      */
     @GetMapping("/achievements")
     public ResponseEntity<?> getAchievements(
