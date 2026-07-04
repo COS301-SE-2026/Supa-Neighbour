@@ -287,103 +287,130 @@ final List<Map<String, dynamic>> _achievements = [
   }
 
   Widget _buildProfileHeader(String level, Color levelColor) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        // Profile Photo
+        CircleAvatar(
+          radius: 40,
+          backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+          child: Text(
+            _user.firstName[0],
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primaryTeal,
+            ),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Profile Photo
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
-            child: Text(
-              _user.firstName[0],
-              style: TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primaryTeal,
+        ),
+        const SizedBox(height: 12),
+
+        // Name and Level Badge
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Text(
+                _user.fullName,
+                style: GoogleFonts.poppins(
+                  color: AppColors.charcoal,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-          const SizedBox(width: 16),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+              decoration: BoxDecoration(
+                color: levelColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                level,
+                style: GoogleFonts.openSans(
+                  color: levelColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
 
-          // Name and Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _user.fullName,
-                        style: GoogleFonts.poppins(
-                          color: AppColors.charcoal,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: levelColor.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        level,
-                        style: GoogleFonts.openSans(
-                          color: levelColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    ..._buildTrustStars(4.8),
-                    const SizedBox(width: 8),
-                    Text(
-                      '4.8 ★',
-                      style: GoogleFonts.openSans(
-                        color: AppColors.charcoal,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Member since ${_user.createdAt.year}',
-                  style: GoogleFonts.openSans(
-                    color: AppColors.textGrey,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+        // Trust Score
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ..._buildTrustStars(4.8),
+            const SizedBox(width: 8),
+            Text(
+              '4.8 ★',
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+
+        // Member Since
+        Text(
+          'Member since ${_user.createdAt.year}',
+          style: GoogleFonts.openSans(
+            color: AppColors.textGrey,
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Edit Profile Button
+        OutlinedButton(
+          onPressed: () {
+            // Navigate to edit profile
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Edit Profile coming soon'),
+                duration: Duration(seconds: 1),
+              ),
+            );
+          },
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: AppColors.primaryTeal),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+          ),
+          child: Text(
+            'Edit Profile',
+            style: GoogleFonts.openSans(
+              color: AppColors.primaryTeal,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
+        ),
+      ],
+    ),
+  );
+}
   Widget _buildXpProgress(String level, double progress, int nextLevelXp) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -446,20 +473,20 @@ final List<Map<String, dynamic>> _achievements = [
   }
 
   Widget _buildStatsRow() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatItem('47', 'Tasks Completed'),
-        ),
-        Expanded(
-          child: _buildStatItem('32', 'Neighbours Helped'),
-        ),
-        Expanded(
-          child: _buildStatItem('12', 'Week Streak'),
-        ),
-      ],
-    );
-  }
+  return Row(
+    children: [
+      Expanded(
+        child: _buildStatItem('12', 'Tasks Created'),
+      ),
+      Expanded(
+        child: _buildStatItem('47', 'Tasks Completed'),
+      ),
+      Expanded(
+        child: _buildStatItem('3', 'Active Tasks'),
+      ),
+    ],
+  );
+}
 
   Widget _buildStatItem(String value, String label) {
     return Container(
@@ -723,95 +750,65 @@ final List<Map<String, dynamic>> _achievements = [
     );
   }
 
-  Widget _buildActionButtons() {
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () {
-              //Navigate to edit profile
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Edit Profile coming soon'),
-                  duration: Duration(seconds: 1),
-                ),
-              );
-            },
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: AppColors.primaryTeal),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+ Widget _buildActionButtons() {
+  return Column(
+    children: [
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(
+          onPressed: () {
+            //Navigate to privacy settings
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Privacy Settings coming soon'),
+                duration: Duration(seconds: 1),
               ),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+            );
+          },
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: AppColors.textGrey),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Text(
-              'Edit Profile',
-              style: GoogleFonts.openSans(
-                color: AppColors.primaryTeal,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          child: Text(
+            'Privacy Settings',
+            style: GoogleFonts.openSans(
+              color: AppColors.textGrey,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () {
-              //Navigate to privacy settings
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Privacy Settings coming soon'),
-                  duration: Duration(seconds: 1),
-                ),
-              );
-            },
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: AppColors.textGrey),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+      ),
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(
+          onPressed: () {
+            _showLogoutDialog();
+          },
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: AppColors.error),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Text(
-              'Privacy Settings',
-              style: GoogleFonts.openSans(
-                color: AppColors.textGrey,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          child: Text(
+            'Logout',
+            style: GoogleFonts.openSans(
+              color: AppColors.error,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () {
-              _showLogoutDialog();
-            },
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: AppColors.error),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
-            child: Text(
-              'Logout',
-              style: GoogleFonts.openSans(
-                color: AppColors.error,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
   void _showLogoutDialog() {
     showDialog(
