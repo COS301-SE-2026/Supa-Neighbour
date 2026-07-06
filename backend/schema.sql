@@ -463,6 +463,18 @@ create table task_invitation_table (
 );
 
 -- =============================================
+-- 19. helper skills table
+-- =============================================
+create table helper_skill_table (
+    helper_skill_id int generated always as identity primary key,
+    helper_id       int not null,
+    task_type_id    int not null,
+    foreign key (helper_id)    references helper_table(helper_id),
+    foreign key (task_type_id) references task_type_table(task_type_id),
+    constraint uq_helper_skill unique (helper_id, task_type_id)
+);
+
+-- =============================================
 -- indexes
 -- =============================================
 
@@ -863,3 +875,18 @@ values
 (3, 3, 'Accepted'),  -- Emily accepted task 3
 (1, 2, 'Declined'),  -- Michael declined task 1
 (2, 5, 'Invited');   -- James still pending on task 2
+
+-- =============================================
+-- 19. helper skill mock data
+-- =============================================
+insert into helper_skill_table (helper_id, task_type_id)
+values
+(1, 1), (1, 2),        -- Sarah: Medical + Pet Care
+(2, 3), (2, 4),        -- Michael: Tech + Transportation
+(3, 3), (3, 5),        -- Emily: Tech + Home Repair
+(4, 4), (4, 2),        -- David: Transportation + Pet Care
+(5, 1), (5, 5),        -- James: Medical + Home Repair
+(6, 2), (6, 3),        -- Emma: Pet Care + Tech
+(7, 4), (7, 1),        -- Matthew: Transportation + Medical
+(8, 5), (8, 2),        -- Isabella: Home Repair + Pet Care
+(9, 3), (9, 4);  
