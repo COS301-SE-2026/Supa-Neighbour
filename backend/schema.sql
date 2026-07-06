@@ -196,10 +196,13 @@ create table task_invoice_table (
 
     dependent_rating_review varchar(50),
     helper_rating_review varchar(50),
-
-    admin_review text,
+    admin_review varchar(300),
 
     compatibility_id int,
+
+    review_snippet varchar(300),
+    status varchar(20) default 'open'  
+        check (status in ('open', 'assigned', 'in_progress','pending_approval', 'completed', 'cancelled')),
 
     foreign key (helper_id)
         references helper_table(helper_id),
@@ -445,6 +448,21 @@ create table user_achievement_table (
 );
 
 -- =============================================
+-- 19. task invitation table
+-- =============================================
+create table task_invitation_table (
+    invitation_id int generated always as identity primary key,
+    task_id       int not null,
+    helper_id     int not null,
+    status        varchar(20) default 'Invited',
+        check (status in ('Invited', 'Accepted', 'Declined')),
+    invited_at    timestamp default current_timestamp,
+    foreign key (task_id)   references task_invoice_table(task_id),
+    foreign key (helper_id) references helper_table(helper_id),
+    constraint uq_invite_per_helper unique (task_id, helper_id)
+);
+
+-- =============================================
 -- indexes
 -- =============================================
 
@@ -625,11 +643,15 @@ values
 insert into dependent_table
 (user_id, task_type_id)
 values
-(6, 1),
-(7, 4),
-(8, 3),
-(9, 2),
-(10, 5);
+(2,  1),   -- Sarah    → Medical Assistance
+(3,  4),   -- Michael  → Transportation
+(4,  3),   -- Emily    → Tech Support
+(5,  2),   -- David    → Pet Care
+(7,  5),   -- James    → Home Repair
+(10, 1),   -- Emma     → Medical Assistance
+(11, 4),   -- Matthew  → Transportation
+(12, 3),   -- Isabella → Tech Support
+(13, 2);   -- William  → Pet Care
 
 -- =============================================
 -- 9. compatibility table
@@ -660,7 +682,6 @@ admin_address_id
 )
 values
 ('admin123', 'Alice', 'Miller', 'alice.admin@example.com', '5550201', '2024-01-01', 5, 1, 1),
-
 ('admin123', 'Robert', 'Moore', 'robert.admin@example.com', '5550202', '2024-02-15', 4, 2, 2);
 
 -- =============================================
@@ -668,25 +689,26 @@ values
 -- =============================================
 insert into task_invoice_table
 (
-helper_id,
-dependent_id,
-is_immediate,
-location_id,
-task_type_id,
-needs_specialist,
-signed_admin_id,
-start_date,
-end_date,
-helper_badge_id,
-dependent_rating_review,
-helper_rating_review,
-admin_review,
-compatibility_id
+    helper_id, 
+    dependent_id, 
+    is_immediate, 
+    location_id, 
+    task_type_id,
+    needs_specialist,
+    signed_admin_id,
+    start_date, 
+    end_date,
+    helper_badge_id, 
+    dependent_rating_review, 
+    helper_rating_review,
+    admin_review, 
+    compatibility_id, 
+    status
 )
 values
-(1, 1, true, 1, 1, true, 1,'2026-05-01', '2026-05-01',3,'Excellent','Outstanding','Excellent medical assistance provided.',1),
-(4, 2, false, 2, 4, false, 2,'2026-05-02', '2026-05-03',2,'Very Good','Very Good','Reliable transport support.',2),
-(3, 3, false, 3, 3, false, 1,'2026-05-04', '2026-05-04',4,'Good','Very Good','Resolved device setup issues quickly.',3);
+(1, 1, true,  1, 1, true,  1, '2026-05-01', '2026-05-01', 3, null, 'Outstanding', 'Excellent medical assistance provided.', 1, 'completed'),
+(2, 2, false, 2, 4, false, 2, '2026-05-02', '2026-05-03', 2, null, 'Very Good',   'Reliable transport support.',            2, 'completed'),
+(3, 3, false, 3, 3, false, 1, '2026-05-04', '2026-05-04', 4, null, 'Very Good',   'Resolved device setup issues quickly.',   3, 'completed');
 
 -- =============================================
 -- 12. helper analytics table
@@ -830,3 +852,14 @@ values
 (2, 3, null,         1,  5),   -- Sarah: working toward Tech Assistant
 (7, 1, '2026-05-01', 10, 10),  -- James: earned Medical Specialist
 (7, 2, null,         3,  5);   -- James: working toward Pet Care Helper
+
+-- =============================================
+-- 19. task_invitation_table mock data
+-- =============================================
+insert into task_invitation_table (task_id, helper_id, status)
+values
+(1, 1, 'Accepted'),  -- Sarah accepted task 1
+(2, 4, 'Accepted'),  -- David accepted task 2
+(3, 3, 'Accepted'),  -- Emily accepted task 3
+(1, 2, 'Declined'),  -- Michael declined task 1
+(2, 5, 'Invited');   -- James still pending on task 2
