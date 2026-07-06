@@ -1,18 +1,12 @@
 package com.app.api.repositories;
  
-import java.util.List;
-
-import org.springframework.stereotype.Repository;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.stereotype.Repository;
  
-
-/**
- * Repository responsible for performing custom database operations
- * related to helper task history and task statistics.
- */
+import java.util.List;
+ 
 @Repository
 public class HelperTasksRepository {
 
@@ -20,11 +14,8 @@ public class HelperTasksRepository {
     private EntityManager em;
 
     /**
-     * Retrieves the helper identifier associated with the specified user.
-     *
-     * @param userId the identifier of the user
-     * @return the helper identifier, or {@code null} if the user is not
-     *         registered as a helper
+     * Looks up the helper_id for the authenticated user.
+     * Returns null if the user is not registered as a helper.
      */
     public Integer findHelperByUserId(int userId){
         String sql = """
@@ -37,22 +28,17 @@ public class HelperTasksRepository {
         }
     }
 
-     /**
-     * Retrieves tasks from the invitation table for the specified helper.
+    /**
+     * Returns tasks from task_invitation_table (Invited / Declined status).
+     * These are tasks the helper was invited to but haven't been assigned yet.
      *
-     * <p>Only invitations for tasks that are still open are returned to
-     * avoid duplication with assigned tasks. Results may optionally be
-     * filtered by invitation status and paginated.</p>
-     *
-     * @param helperId the identifier of the helper
-     * @param statusFilter an optional invitation status filter
-     * @param limit the maximum number of task records to return
-     * @param offset the number of task records to skip for pagination
-     * @return a list of task records matching the supplied criteria
+     * Columns returned:
+     *   task_id, task_type, status, start_date, end_date, neighbourhood_name, xp_worth
      */
+
     @SuppressWarnings("unchecked")
     public List<Object[]> findInvitedTasks(int helperId, String statusFilter, int limit, int offset){
-        String statusClause = statusFilter != null ? "AND ti.status = :status" : "AND ti.status IN ('Invited', 'Declined', 'Accepted', 'Rejected')";
+        String statusClause = statusFilter != null ? "AND ti.status = :status" : "AND ti.status IN ('Invited', 'Declined', 'Accepted')";
         String sql  = """
                 SELECT
                     tit.task_id,
@@ -63,11 +49,10 @@ public class HelperTasksRepository {
                     l.neighbourhood_name,
                     tt.xp_worth
                 FROM task_invitation_table  ti
-                JOIN task_invoice_table     tit ON tit.task_id     = ti.task_id
-                JOIN task_type_table        tt  ON tt.task_type_id = tit.task_type_id
-                JOIN location_table         l   ON l.location_id   = tit.location_id
-                WHERE ti.helper_id  = :helperId
-                  AND tit.status    = 'open'
+                JOIN task_invoice_table     tit ON tit.task_id      = ti.task_id
+                JOIN task_type_table        tt  ON tt.task_type_id  = tit.task_type_id
+                JOIN location_table         l   ON l.location_id    = tit.location_id
+                WHERE ti.helper_id = :helperId
                 """ + statusClause + """
                 ORDER BY tit.start_date DESC
                 LIMIT :limit OFFSET :offset
@@ -80,20 +65,6 @@ public class HelperTasksRepository {
         return query.getResultList();
     }
 
-
-    /**
-     * Retrieves assigned and completed tasks for the specified helper.
-     *
-     * <p>Only tasks that have progressed beyond the {@code open} state are
-     * returned. Results may optionally be filtered by task status and
-     * paginated.</p>
-     *
-     * @param helperId the identifier of the helper
-     * @param statusFilter an optional task status filter
-     * @param limit the maximum number of task records to return
-     * @param offset the number of task records to skip for pagination
-     * @return a list of assigned task records matching the supplied criteria
-     */
     @SuppressWarnings("unchecked")
     public List<Object[]> findAssignedTasks(int helperId, String statusFilter,
                                             int limit, int offset) {
@@ -132,31 +103,24 @@ public class HelperTasksRepository {
     }
 
 
-    /**
-     * Counts the total number of tasks associated with a helper.
-     *
-     * <p>The count includes both outstanding task invitations and
-     * assigned tasks.</p>
-     *
-     * @param helperId the identifier of the helper
-     * @return the total number of tasks associated with the helper
+     /**
+     * Total count across both tables for the given helper — used to populate
+     * the "total" field in the response without loading all rows.
      */
+
      public int countAllTasks(int helperId){
         String sql = """
                 SELECT COUNT(*) FROM (
-                    SELECT ti.task_id
-                    FROM task_invitation_table ti
-                    JOIN task_invoice_table tit ON tit.task_id = ti.task_id
-                    WHERE ti.helper_id = :helperId
-                      AND tit.status   = 'open'
+                    SELECT task_id FROM task_invitation_table WHERE helper_id = :helperId
                     UNION ALL
-                    SELECT task_id
-                    FROM task_invoice_table
-                    WHERE helper_id = :helperId
-                      AND status   != 'open'
+                    SELECT task_id FROM task_invoice_table    WHERE helper_id = :helperId
                 ) combined
                 """;
 
         return ((Number)  em.createNativeQuery(sql).setParameter("helperId", helperId).getSingleResult()).intValue();
      }
+
+    
+
+
 }
