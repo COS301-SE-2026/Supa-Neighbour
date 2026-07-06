@@ -4,23 +4,19 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
+ 
+import java.util.List;
 
-/**
- * Repository responsible for performing custom database operations
- * related to task ratings and helper rating analytics.
- */
 @Repository
 public class RatingRepository {
     @PersistenceContext
     private EntityManager em;
 
-    /**
-     * Retrieves information about the specified task.
-     *
-     * @param taskId the identifier of the task
-     * @return an array containing the task ID, helper ID, dependent rating,
-     *         and task status, or {@code null} if the task does not exist
+     /**
+     * Returns [task_id, helper_id, dependent_rating_review, end_date] for a task.
+     * Returns null if the task does not exist.
      */
+
      public Object[] findTaskById(int taskId){
         String sql = """
                 SELECT
@@ -39,11 +35,9 @@ public class RatingRepository {
         }
     }
 
-     /**
-     * Retrieves the type of the specified user.
-     *
-     * @param userId the identifier of the user
-     * @return the user's type, or {@code null} if the user does not exist
+    /**
+     * Returns the user_type of the authenticated user.
+     * Used to block admins from submitting ratings.
      */
     public String findUserType(int userId){
         String sql = "SELECT user_type FROM user_table WHERE user_id = :userId";
@@ -56,15 +50,10 @@ public class RatingRepository {
     }
 
     /**
-     * Retrieves the dependent user's identifier for the specified task.
-     *
-     * <p>This is used to verify that the authenticated user is the
-     * requester associated with the task.</p>
-     *
-     * @param taskId the identifier of the task
-     * @return the dependent user's identifier, or {@code null} if no
-     *         dependent is associated with the task
+     * Returns the dependent's user_id for a given task.
+     * Used to verify the caller is the requester for this task.
      */
+
     public Integer findDependentUserId(int taskId){
         String sql = """
                     SELECT u.user_id
@@ -83,11 +72,7 @@ public class RatingRepository {
     }
 
     /**
-     * Determines whether the supplied rating is valid.
-     *
-     * @param rating the rating value to validate
-     * @return {@code true} if the rating exists in the rating table;
-     *         otherwise {@code false}
+     * Checks that the rating value exists in rating_table.
      */
     public boolean isValidRating(String rating){
         String sql = "SELECT COUNT(*) FROM rating_table WHERE rating_review = :rating";
@@ -97,11 +82,7 @@ public class RatingRepository {
     }
 
     /**
-     * Stores a rating and optional review snippet for the specified task.
-     *
-     * @param taskId the identifier of the task
-     * @param rating the rating submitted by the dependent
-     * @param reviewSnippet the accompanying review snippet, if provided
+     * Writes the rating and review snippet to task_invoice_table.
      */
     public void submitRating(int taskId, String rating, String reviewSnippet){
         String sql = """
@@ -115,15 +96,13 @@ public class RatingRepository {
     }
 
     /**
-     * Recalculates the average rating for the specified helper.
+     * Recalculates helper_analytics_table.average_rating for the given helper
+     * based on all non-null dependent_rating_review values in task_invoice_table.
      *
-     * <p>The average is computed from all submitted dependent ratings
-     * associated with the helper's completed tasks and is stored in
-     * the helper analytics table.</p>
-     *
-     * @param helperId the identifier of the helper whose average rating
-     *                 is to be recalculated
+     * Rating categories are converted to numeric scores:
+     *   Outstanding = 5.0, Excellent = 4.0, Very Good = 3.0, Good = 2.0, Average = 1.0
      */
+
     public void recalculateAverageRating(int helperId){
         String getHelperUserIdSql ="""
                 SELECT user_id FROM helper_table WHERE helper_id = :helperId

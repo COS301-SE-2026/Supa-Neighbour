@@ -472,6 +472,21 @@ create table user_achievement_table (
 );
 
 -- =============================================
+-- 19. task invitation table
+-- =============================================
+create table task_invitation_table (
+    invitation_id int generated always as identity primary key,
+    task_id       int not null,
+    helper_id     int not null,
+    status        varchar(20) default 'Invited',
+        check (status in ('Invited', 'Accepted', 'Declined')),
+    invited_at    timestamp default current_timestamp,
+    foreign key (task_id)   references task_invoice_table(task_id),
+    foreign key (helper_id) references helper_table(helper_id),
+    constraint uq_invite_per_helper unique (task_id, helper_id)
+);
+
+-- =============================================
 -- indexes
 -- =============================================
 
@@ -885,3 +900,14 @@ values
 (2, 3, null,         1,  5),   -- Sarah: working toward Tech Assistant
 (7, 1, '2026-05-01', 10, 10),  -- James: earned Medical Specialist
 (7, 2, null,         3,  5);   -- James: working toward Pet Care Helper
+
+-- =============================================
+-- 19. task_invitation_table mock data
+-- =============================================
+insert into task_invitation_table (task_id, helper_id, status)
+values
+(1, 1, 'Accepted'),  -- Sarah accepted task 1
+(2, 4, 'Accepted'),  -- David accepted task 2
+(3, 3, 'Accepted'),  -- Emily accepted task 3
+(1, 2, 'Declined'),  -- Michael declined task 1
+(2, 5, 'Invited');   -- James still pending on task 2

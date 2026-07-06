@@ -15,11 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-
-/**
- * REST controller that provides endpoints for submitting ratings
- * for completed tasks.
- */
 @RestController
 @RequestMapping("/api/tasks")
 public class RatingController {
@@ -27,32 +22,17 @@ public class RatingController {
     private final RatingService ratingService;
     private final FirebaseAuthService firebaseAuthService;
 
-    /**
-     * Constructs a {@code RatingController} with the required services.
-     *
-     * @param ratingService service responsible for processing task ratings
-     * @param firebaseAuthService service used to authenticate Firebase tokens
-     *                            and retrieve the associated user ID
-     */
     public RatingController(RatingService ratingService, FirebaseAuthService firebaseAuthService){
         this.ratingService = ratingService;
         this.firebaseAuthService = firebaseAuthService;
     }
 
     /**
-     * Submits a rating for a completed task.
+     * POST /api/tasks/{taskId}/rate
      *
-     * <p>The Firebase authentication token is extracted from the
-     * {@code Authorization} header and validated before the rating
-     * is recorded. The submitted rating is stored, and the helper's
-     * average rating is recalculated.</p>
-     *
-     * @param authHeader the HTTP Authorization header containing a Bearer token
-     * @param taskId the identifier of the task being rated
-     * @param request the rating details submitted by the requester
-     * @return a {@link ResponseEntity} containing the rating result if the
-     *         request is successful, or a 401 Unauthorized response if
-     *         the Firebase token is invalid or expired
+     * Called by the requester (dependent) after a task is completed.
+     * Writes the rating to task_invoice_table and recalculates
+     * the helper's average_rating in helper_analytics_table.
      */
     @PostMapping("/{taskId}/rate")
     public ResponseEntity<?> rateTask(
