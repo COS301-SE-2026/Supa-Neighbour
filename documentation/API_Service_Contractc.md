@@ -827,13 +827,11 @@ GET /api/helpers/5/profile?taskId=12
   "displayName": "David W.",
   "level": "Gold",
   "trustScore": 4.8,
-  "starRating": 5,
   "completedTasks": 27,
   "skills": ["Home Repair", "Transportation Support"],
   "reviews": [
     { "rating": "Excellent", "snippet": "Reliable and on time", "date": "2026-05-01" }
   ],
-  "availableForTask": true
 }
 ```
  
