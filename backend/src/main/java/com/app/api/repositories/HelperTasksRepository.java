@@ -1,11 +1,12 @@
 package com.app.api.repositories;
  
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.stereotype.Repository;
- 
-import java.util.List;
  
 @Repository
 public class HelperTasksRepository {
@@ -29,16 +30,17 @@ public class HelperTasksRepository {
     }
 
     /**
-     * Returns tasks from task_invitation_table (Invited / Declined status).
-     * These are tasks the helper was invited to but haven't been assigned yet.
+     * Returns tasks from task_invitation_table only.
+     * These are tasks the helper has expressed interest in but have NOT yet
+     * moved to task_invoice_table (i.e. still Accepted, Rejected, or Declined).
+     * Only shown when the task is still 'open' to avoid duplicates with
+     * findAssignedTasks.
      *
-     * Columns returned:
-     *   task_id, task_type, status, start_date, end_date, neighbourhood_name, xp_worth
+     * Columns: task_id, task_type, status, start_date, end_date, neighbourhood_name, xp_worth
      */
-
     @SuppressWarnings("unchecked")
     public List<Object[]> findInvitedTasks(int helperId, String statusFilter, int limit, int offset){
-        String statusClause = statusFilter != null ? "AND ti.status = :status" : "AND ti.status IN ('Invited', 'Declined', 'Accepted')";
+        String statusClause = statusFilter != null ? "AND ti.status = :status" : "AND ti.status IN ('Invited', 'Declined', 'Accepted', 'Rejected')";
         String sql  = """
                 SELECT
                     tit.task_id,
@@ -49,10 +51,11 @@ public class HelperTasksRepository {
                     l.neighbourhood_name,
                     tt.xp_worth
                 FROM task_invitation_table  ti
-                JOIN task_invoice_table     tit ON tit.task_id      = ti.task_id
-                JOIN task_type_table        tt  ON tt.task_type_id  = tit.task_type_id
-                JOIN location_table         l   ON l.location_id    = tit.location_id
-                WHERE ti.helper_id = :helperId
+                JOIN task_invoice_table     tit ON tit.task_id     = ti.task_id
+                JOIN task_type_table        tt  ON tt.task_type_id = tit.task_type_id
+                JOIN location_table         l   ON l.location_id   = tit.location_id
+                WHERE ti.helper_id  = :helperId
+                  AND tit.status    = 'open'
                 """ + statusClause + """
                 ORDER BY tit.start_date DESC
                 LIMIT :limit OFFSET :offset
@@ -65,6 +68,14 @@ public class HelperTasksRepository {
         return query.getResultList();
     }
 
+
+    /**
+     * Returns tasks from task_invoice_table only.
+     * These are tasks past 'open' — helper has been assigned and work
+     * is in progress or done. Never overlaps with findInvitationTasks.
+     *
+     * Columns: task_id, task_type, status, start_date, end_date, neighbourhood_name, xp_worth
+     */
     @SuppressWarnings("unchecked")
     public List<Object[]> findAssignedTasks(int helperId, String statusFilter,
                                             int limit, int offset) {
@@ -111,9 +122,16 @@ public class HelperTasksRepository {
      public int countAllTasks(int helperId){
         String sql = """
                 SELECT COUNT(*) FROM (
-                    SELECT task_id FROM task_invitation_table WHERE helper_id = :helperId
+                    SELECT ti.task_id
+                    FROM task_invitation_table ti
+                    JOIN task_invoice_table tit ON tit.task_id = ti.task_id
+                    WHERE ti.helper_id = :helperId
+                      AND tit.status   = 'open'
                     UNION ALL
-                    SELECT task_id FROM task_invoice_table    WHERE helper_id = :helperId
+                    SELECT task_id
+                    FROM task_invoice_table
+                    WHERE helper_id = :helperId
+                      AND status   != 'open'
                 ) combined
                 """;
 
