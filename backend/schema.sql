@@ -455,7 +455,7 @@ create table task_invitation_table (
     task_id       int not null,
     helper_id     int not null,
     status        varchar(20) default 'Invited',
-        check (status in ('Invited', 'Accepted', 'Declined')),
+        check (status in ('Invited', 'Accepted', 'Declined', 'Rejected')),
     invited_at    timestamp default current_timestamp,
     foreign key (task_id)   references task_invoice_table(task_id),
     foreign key (helper_id) references helper_table(helper_id),
@@ -736,37 +736,41 @@ average_rating,
 average_giving_rating
 )
 values
-('HELPER_MED', 1, 1, 1, 1, 4.9, 4.8),
-('HELPER_TRANS', 4, 4, 2, 2, 4.5, 4.4),
-('HELPER_TECH', 3, 3, 3, 3, 4.7, 4.6);
+('HELPER_SARAH',    2,  2, 1, 2, 4.6, 4.5),   -- Sarah    → Pet Care
+('HELPER_MICHAEL',  3,  3, 3, 3, 4.7, 4.6),   -- Michael  → Tech Support
+('HELPER_EMILY',    4,  4, 2, 4, 4.5, 4.4),   -- Emily    → Transportation
+('HELPER_DAVID',    5,  5, 5, 5, 4.8, 4.7),   -- David    → Home Repair
+('HELPER_JAMES',    7,  1, 1, 2, 4.9, 4.8),   -- James    → Medical Assistance
+('HELPER_EMMA',     10, 2, 1, 5, 4.3, 4.2),   -- Emma     → Pet Care
+('HELPER_MATTHEW',  11, 3, 2, 1, 4.1, 4.0),   -- Matthew  → Tech Support
+('HELPER_ISABELLA', 12, 4, 3, 2, 4.4, 4.3),   -- Isabella → Transportation
+('HELPER_WILLIAM',  13, 5, 4, 3, 4.2, 4.1);   -- William  → Home Repair
 
 -- =============================================
 -- 13. dependent analytics table
 -- =============================================
 insert into dependent_analytics_table
-(
-dependent_analytics_id,
-user_id,
-task_type_id,
-total_tasks,
-location_id,
-average_rating,
-average_giving_rating
-)
+(dependent_analytics_id, 
+user_id, task_type_id, 
+total_tasks, 
+location_id, 
+average_rating, 
+average_giving_rating)
 values
-('DEPENDENT_MED', 6, 1, 12, 1, 4.6, 4.7),
-('DEPENDENT_TRANS', 7, 4, 5, 2, 4.2, 4.0),
-('DEPENDENT_TECH', 8, 3, 8, 3, 4.8, 4.9);
+('DEPENDENT_MED',   2,  1, 12, 1, 4.6, 4.7),  -- Sarah
+('DEPENDENT_TRANS', 4,  4,  5, 4, 4.2, 4.0),  -- Emily
+('DEPENDENT_TECH',  3,  3,  8, 3, 4.8, 4.9);  -- Michael
 
 -- =============================================
 -- 14. analytics table
 -- =============================================
+-- Replace the analytics_table insert with this
 insert into analytics_table
 (task_id, admin_id, helper_type_id, dependent_type_id)
 values
-(1, 1, 'HELPER_MED', 'DEPENDENT_MED'),
-(2, 2, 'HELPER_TRANS', 'DEPENDENT_TRANS'),
-(3, 1, 'HELPER_TECH', 'DEPENDENT_TECH');
+(1, 1, 'HELPER_SARAH',   'DEPENDENT_MED'),
+(2, 2, 'HELPER_EMILY',   'DEPENDENT_TRANS'),
+(3, 1, 'HELPER_MICHAEL', 'DEPENDENT_TECH');
 
 -- =============================================
 -- 15. posts table
@@ -868,13 +872,14 @@ values
 -- =============================================
 -- 19. task_invitation_table mock data
 -- =============================================
-insert into task_invitation_table (task_id, helper_id, status)
-values
-(1, 1, 'Accepted'),  -- Sarah accepted task 1
-(2, 4, 'Accepted'),  -- David accepted task 2
-(3, 3, 'Accepted'),  -- Emily accepted task 3
-(1, 2, 'Declined'),  -- Michael declined task 1
-(2, 5, 'Invited');   -- James still pending on task 2
+INSERT INTO task_invitation_table (task_id, helper_id, status)
+VALUES
+(1, 1, 'Invited'),   -- Sarah was chosen for task 1
+(1, 2, 'Rejected'),  -- Michael expressed interest but wasn't picked
+(2, 4, 'Accepted'),  -- David expressed interest, waiting to be picked
+(2, 5, 'Declined'),  -- James said he can't do task 2
+(3, 3, 'Invited');   -- Emily was chosen for task 3
+
 
 -- =============================================
 -- 19. helper skill mock data
