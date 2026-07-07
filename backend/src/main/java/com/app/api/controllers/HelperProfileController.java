@@ -10,44 +10,28 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
-/**
- * REST controller that provides endpoints for retrieving
- * public helper profile information.
- */
 @RestController
 @RequestMapping("/api/helpers")
 public class HelperProfileController {
     private final HelperProfileService helperProfileService;
     private final FirebaseAuthService firebaseAuthService;
 
-    /**
-     * Constructs a {@code HelperProfileController} with the required services.
-     *
-     * @param helperProfileService service responsible for retrieving helper profiles
-     * @param firebaseAuthService service used to authenticate Firebase tokens
-     */
     public HelperProfileController(HelperProfileService helperProfileService, FirebaseAuthService firebaseAuthService){
         this.helperProfileService = helperProfileService;
         this.firebaseAuthService = firebaseAuthService;
     }
 
-    
     /**
-     * Retrieves the public profile of a helper.
+     * GET /api/helpers/{helperId}/profile
      *
-     * <p>The Firebase authentication token is extracted from the
-     * {@code Authorization} header and validated before the helper's
-     * public profile is returned. Sensitive information such as
-     * addresses and contact details is excluded from the response.</p>
-     *
-     * @param authHeader the HTTP Authorization header containing a Bearer token
-     * @param helperId the identifier of the helper whose profile is requested
-     * @return a {@link ResponseEntity} containing the helper's public profile
-     *         if the request is successful, or a 401 Unauthorized response
-     *         if the Firebase token is invalid or expired
+     * Returns the public profile of a helper — safe to call by any
+     * authenticated user (requester or helper). Excludes exact address
+     * and contact details (R4.1.2).
      */
+
     @GetMapping("{helperId}/profile")
     public ResponseEntity<?> getHelperProfile(
         @RequestHeader("Authorization") String authHeader,
