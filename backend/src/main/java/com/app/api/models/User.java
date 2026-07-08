@@ -45,6 +45,17 @@ public class User {
     private String firebaseUid;
 
     /**
+     * Indicates whether the user's email has been verified.
+     */
+    @Column(name = "user_email_verified")
+    private boolean emailVerified;
+
+    /**
+     * Indicates whether the user's phone number has been verified.
+     */
+    @Column(name = "user_phone_verified")
+    private boolean phoneVerified;
+    /**
      * The username of the user
      */
     @Column(name = "user_username", unique = true)
@@ -112,12 +123,13 @@ public class User {
      * @param ratingid the rating associated with the user
      * @param userType the user's type or role
      */
-    public User(int userid,String firebaseUid, String firstName, String lastName, String password, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
+    public User(int userid,String firebaseUid,boolean emailVerified,boolean phoneVerified, String firstName, String lastName, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
         this.userid = userid;
         this.firebaseUid = firebaseUid;
+        this.emailVerified = emailVerified;
+        this.phoneVerified = phoneVerified;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.password = password;
         this.email = email;
         this.firebaseUid = firebaseUid;
         this.phoneNumber = phoneNumber;

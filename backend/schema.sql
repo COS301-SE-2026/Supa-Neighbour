@@ -103,8 +103,8 @@ create table user_table (
 create table availability_table (
     availability_id int generated always as identity primary key,
     user_id int not null,
-    day_of_week varchar(10), -- e.g. 'Monday' .. 'Sunday'
-    time_window varchar(20), -- e.g. 'Morning', 'Evening', 'All day'
+    day_of_week varchar(10), 
+    time_window varchar(20),
     is_active boolean default true,
     foreign key (user_id) 
         references user_table(user_id)
