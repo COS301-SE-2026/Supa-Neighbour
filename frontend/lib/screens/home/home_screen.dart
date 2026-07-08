@@ -9,6 +9,7 @@ import 'inbox_screen.dart';
 import 'my_tasks_screen.dart';
 import 'task_detail_screen.dart';
 import '../../services/task_service.dart';
+import '../profile/achievements_screen.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -37,9 +38,18 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          if (index == 4) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AchievementsScreen(),
+      ),
+    );
+  } else {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
         },
       ),
     );
