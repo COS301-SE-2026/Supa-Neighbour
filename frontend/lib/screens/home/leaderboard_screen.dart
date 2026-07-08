@@ -214,8 +214,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             child: Row(
               children: [
                 _buildPeriodTab('week', 'This Week'),
-                _buildPeriodTab('month', 'This Month'),
-                _buildPeriodTab('all', 'All Time'),
               ],
             ),
           ),
