@@ -140,4 +140,6 @@ public class UserProfileRepository {
 
         return em.createNativeQuery(sql).setParameter("helperId", helperId).getResultList();
     }
+
+    
 }
