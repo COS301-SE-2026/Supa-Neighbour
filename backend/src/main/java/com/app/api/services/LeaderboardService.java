@@ -7,17 +7,35 @@ import org.springframework.stereotype.Service;
  
 import java.util.List;
 
+/**
+ * Service responsible for retrieving leaderboard information
+ * for a user's neighbourhood.
+ */
 @Service
 public class LeaderboardService {
     private final LeaderboardRepository  LeaderboardRepository;
 
+     /**
+     * Constructs a {@code LeaderboardService} with the required repository.
+     *
+     * @param leaderboardRepository repository used to retrieve leaderboard
+     *                              and neighbourhood data
+     */
     public LeaderboardService(LeaderboardRepository leaderboardRepository){
         this.LeaderboardRepository = leaderboardRepository;
     }
 
     /**
-     * @param currentUserId  resolved from the JWT in the controller
-     * @param limit          how many top entries to return (default 10)
+     * Retrieves the leaderboard for the authenticated user's neighbourhood.
+     *
+     * <p>The leaderboard is ranked by average helper rating. The response
+     * includes the top-ranked helpers within the user's neighbourhood as
+     * well as the authenticated user's own leaderboard entry, if present.</p>
+     *
+     * @param currentUserId the identifier of the authenticated user
+     * @param limit the maximum number of leaderboard entries to return
+     * @return a {@link LeaderboardResponse} containing the neighbourhood
+     *         leaderboard and the authenticated user's ranking
      */
     public LeaderboardResponse getLeaderboard(int currentUserId, int limit){
         Object[] neighbourhood = LeaderboardRepository.findNeighbourhoodForUser(currentUserId);
