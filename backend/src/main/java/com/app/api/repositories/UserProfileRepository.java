@@ -1,31 +1,20 @@
 package com.app.api.repositories;
 
-import java.util.List;
-
-import org.springframework.stereotype.Repository;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.stereotype.Repository;
+ 
+import java.util.List;
 
-
-/**
- * Repository responsible for performing custom database operations
- * related to user profiles, helper information, achievements,
- * and recent task history.
- */
 @Repository
 public class UserProfileRepository {
     @PersistenceContext
     private EntityManager em;
 
-     /**
-     * Retrieves the core profile information for a user.
-     *
-     * @param userId the identifier of the user
-     * @return an array containing the user ID, display name,
-     *         neighbourhood name, and neighbourhood ID, or
-     *         {@code null} if the user does not exist
+    /**
+     * Returns core user info:
+     * [user_id, display_name, neighbourhood_name, neighbourhood_id]
      */
     public Object[] findUserCore(int userId){
         String sql = """
@@ -47,14 +36,6 @@ public class UserProfileRepository {
         }
     }
 
-     /**
-     * Retrieves helper-specific information for a user.
-     *
-     * @param userId the identifier of the user
-     * @return an array containing the helper ID, experience points,
-     *         and average rating, or {@code null} if the user is
-     *         not registered as a helper
-     */
     public Object[] findHelperData(int userId){
         String sql = """
                 SELECT
@@ -73,14 +54,6 @@ public class UserProfileRepository {
         }
     }
 
-
-    /**
-     * Retrieves the helper's ranking within a neighbourhood.
-     *
-     * @param helperId the identifier of the helper
-     * @param neighbourhoodId the identifier of the neighbourhood
-     * @return the helper's ranking, or {@code 0} if no ranking exists
-     */
     public int findHelperRank(int helperId, int neighbourhoodId){
         String sql = """
                 SELECT ranked.rank
@@ -107,13 +80,6 @@ public class UserProfileRepository {
         }
     }
 
-
-    /**
-     * Retrieves the skills associated with a helper.
-     *
-     * @param helperId the identifier of the helper
-     * @return a list of skill descriptions assigned to the helper
-     */
     @SuppressWarnings("unchecked")
     public List<String> findSkills(int helperId){
         String sql = """
@@ -127,12 +93,6 @@ public class UserProfileRepository {
         return em.createNativeQuery(sql).setParameter("helperId", helperId).getResultList();
     }
 
-    /**
-     * Retrieves the achievements earned by a user.
-     *
-     * @param userId the identifier of the user
-     * @return a list of earned achievement records
-     */
     @SuppressWarnings("unchecked")
     public List<Object[]> findEarnedAchievements(int userId){
         String sql = """
@@ -153,12 +113,6 @@ public class UserProfileRepository {
         return em.createNativeQuery(sql).setParameter("userId", userId).getResultList();
     }
 
-     /**
-     * Counts the number of completed tasks performed by a helper.
-     *
-     * @param helperId the identifier of the helper
-     * @return the number of completed tasks
-     */
     public int countCompletedTasks(int helperId){
         String sql = """
                 SELECT COUNT(*) FROM task_invoice_table
@@ -169,12 +123,6 @@ public class UserProfileRepository {
         return ((Number)em.createNativeQuery(sql).setParameter("helperId", helperId).getSingleResult()).intValue();
     }
 
-    /**
-     * Retrieves the helper's most recently completed tasks.
-     *
-     * @param helperId the identifier of the helper
-     * @return a list containing up to five recently completed task records
-     */
     @SuppressWarnings("unchecked")
     public List<Object[]> findRecentTasks(int helperId){
         String sql = """
@@ -192,6 +140,4 @@ public class UserProfileRepository {
 
         return em.createNativeQuery(sql).setParameter("helperId", helperId).getResultList();
     }
-
-    
 }

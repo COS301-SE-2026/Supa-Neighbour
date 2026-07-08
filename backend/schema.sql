@@ -682,17 +682,17 @@ values
 -- 7. helper table
 -- =============================================
 insert into helper_table
-(user_id, task_type_id, badge_id, helper_xp)    
+(user_id, task_type_id, badge_id, helper_xp)
 values
-(2, 2, 4),   -- Sarah    → Pet Care
-(3, 3, 2),   -- Michael  → Tech Support
-(4, 4, 3),   -- Emily    → Transportation
-(5, 5, 5),   -- David    → Home Repair
-(7, 1, 1),   -- James    → Medical Assistance
-(10, 2, 4),  -- Emma     → Pet Care
-(11, 3, 2),  -- Matthew  → Tech Support
-(12, 4, 3),  -- Isabella → Transportation
-(13, 5, 5);  -- William  → Home Repair
+(2,  2, 4, 500),  -- Sarah    → Pet Care        | completed Medical Assistance task (500 xp)
+(3,  3, 2, 250),  -- Michael  → Tech Support     | completed Transportation task (250 xp)
+(4,  4, 3, 150),  -- Emily    → Transportation   | completed Technology Support task (150 xp)
+(5,  5, 5, 500),  -- David    → Home Repair      | no completed tasks yet, default xp
+(7,  1, 1, 500),  -- James    → Medical Assistance | no completed tasks yet, default xp
+(10, 2, 4, 500),  -- Emma     → Pet Care         | no completed tasks yet, default xp
+(11, 3, 2, 500),  -- Matthew  → Tech Support      | no completed tasks yet, default xp
+(12, 4, 3, 500),  -- Isabella → Transportation    | no completed tasks yet, default xp
+(13, 5, 5, 500);  -- William  → Home Repair       | no completed tasks yet, default xp
 
 -- =============================================
 -- 8. dependent table
