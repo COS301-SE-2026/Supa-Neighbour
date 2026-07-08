@@ -74,7 +74,8 @@ create table address_table (
 create table user_table (
     user_id int generated always as identity primary key,
     user_firebase_uid VARCHAR(128) UNIQUE NOT NULL,
-    user_password varchar(255) not null,
+    user_email_verified boolean default false,
+    user_phone_verified boolean default false,
     user_name varchar(100) not null,
     user_surname varchar(100) not null,
     user_username varchar(100) unique not null,
@@ -99,6 +100,15 @@ create table user_table (
         references rating_table(rating_id)
 );
 
+create table availability_table (
+    availability_id int generated always as identity primary key,
+    user_id int not null,
+    day_of_week varchar(10), -- e.g. 'Monday' .. 'Sunday'
+    time_window varchar(20), -- e.g. 'Morning', 'Evening', 'All day'
+    is_active boolean default true,
+    foreign key (user_id) 
+        references user_table(user_id)
+);
 
 create table helper_table (
     helper_id int generated always as identity primary key,
@@ -232,6 +242,22 @@ create table task_invoice_table (
         references rating_table(rating_review)
 );
 
+create table task_invitation_table (
+    invitation_id int generated always as identity primary key,
+    task_id int not null,
+    helper_id int not null,
+    status varchar(20) default 'Invited', -- Invited | Accepted | Declined
+    invited_at timestamp default current_timestamp,
+    foreign key (task_id) 
+
+        references task_invoice_table(task_id),
+    foreign key (helper_id) 
+
+        references helper_table(helper_id),
+    constraint uq_invite_per_helper unique (task_id, helper_id)
+);
+
+
 -- =============================================
 -- 12. helper analytics table
 -- =============================================
@@ -308,6 +334,35 @@ create table analytics_table (
 
     foreign key (dependent_type_id)
         references dependent_analytics_table(dependent_analytics_id)
+);
+
+create table user_achievement_table (
+    user_achievement_id int generated always as identity primary key,
+    user_id int not null,
+    badge_id int not null,
+    awarded_on date,
+    progress_current int default 0, -- e.g. 3 of 5 tasks completed
+    progress_target int, -- e.g. 5
+
+    foreign key (user_id) 
+        references user_table(user_id),
+
+    foreign key (badge_id) 
+        references badge_table(badge_id),
+        constraint uq_user_badge unique (user_id, badge_id)
+);
+
+create table helper_skill_table (
+    helper_skill_id int generated always as identity primary key,
+    helper_id int not null,
+    task_type_id int not null,
+
+    foreign key (helper_id) 
+        references helper_table(helper_id),
+
+    foreign key (task_type_id) 
+        references task_type_table(task_type_id),
+        constraint uq_helper_skill unique (helper_id, task_type_id)
 );
 
 -- =============================================
