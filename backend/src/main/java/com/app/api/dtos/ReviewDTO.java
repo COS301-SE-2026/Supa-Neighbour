@@ -8,7 +8,7 @@ public class ReviewDTO {
     private String snippet;
     private String date;
 
-    public ReviewDTO(String rating, String snippet, String data){
+    public ReviewDTO(String rating, String snippet, String date){
         this.rating = rating;
         this.snippet = snippet;
         this.date = date;
