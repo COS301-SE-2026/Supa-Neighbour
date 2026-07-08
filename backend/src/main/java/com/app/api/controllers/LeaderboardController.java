@@ -9,25 +9,48 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+
+/**
+ * REST controller that provides endpoints for retrieving the
+ * application leaderboard.
+ */
 @RestController
 @RequestMapping("/api")
 public class LeaderboardController {
     private final LeaderboardService leaderboardService;
     private final FirebaseAuthService firebaseAuthService;
 
+
+    /**
+     * Constructs a {@code LeaderboardController} with the required services.
+     *
+     * @param leaderboardService service responsible for generating leaderboard data
+     * @param firebaseAuthService service used to authenticate Firebase tokens
+     *                            and retrieve the associated user ID
+     */
     public LeaderboardController(LeaderboardService leaderboardService, FirebaseAuthService firebaseAuthService){
         this.leaderboardService = leaderboardService;
         this.firebaseAuthService = firebaseAuthService;
     }
 
     /**
-     * GET /api/leaderboard?limit=10
+     * Retrieves the leaderboard for authenticated users.
      *
-     * rankBy is accepted as a parameter to match the API contract but is currently
-     * fixed to averageRating (helper_analytics_table.average_rating).
-     * When user-level XP is added to the schema, the service can branch on rankBy.
+     * <p>The Firebase authentication token is extracted from the
+     * {@code Authorization} header and validated before the leaderboard
+     * is generated. The {@code rankBy} parameter is accepted to match
+     * the API contract but currently only {@code averageRating} is
+     * supported by the service implementation.</p>
+     *
+     * @param authHeader the HTTP Authorization header containing a Bearer token
+     * @param rankBy the ranking criterion; currently accepts
+     *               {@code averageRating} or {@code xp}
+     * @param limit the maximum number of leaderboard entries to return
+     * @return a {@link ResponseEntity} containing the leaderboard if the
+     *         request is successful, a 400 Bad Request response if
+     *         {@code rankBy} is invalid, or a 401 Unauthorized response
+     *         if the Firebase token is invalid or expired
      */
-
     @GetMapping("/leaderboard")
     public ResponseEntity<?> getLeaderboard(
         @RequestHeader("Authorization") String authHeader,

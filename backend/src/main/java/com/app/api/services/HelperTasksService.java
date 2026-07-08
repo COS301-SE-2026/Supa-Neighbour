@@ -11,6 +11,10 @@ import com.app.api.dtos.HelperTaskDTO;
 import com.app.api.dtos.HelperTaskResponse;
 import com.app.api.repositories.HelperTasksRepository;
 
+/**
+ * Service responsible for retrieving and processing
+ * the task history of authenticated helpers.
+ */
 @Service
 public class HelperTasksService {
     private final HelperTasksRepository helperTasksRepository;
@@ -22,10 +26,32 @@ public class HelperTasksService {
     
     private static final List<String> INVOICE_STATUSES = List.of("assigned", "in_progress", "pending_approval", "completed", "cancelled");
 
+    /**
+     * Constructs a {@code HelperTasksService} with the required repository.
+     *
+     * @param helperTasksRepository repository used to retrieve helper task
+     *                              information
+     */
     public HelperTasksService(HelperTasksRepository helperTasksRepository){
         this.helperTasksRepository = helperTasksRepository;
     }
 
+    /**
+     * Retrieves the task history for a helper.
+     *
+     * <p>If a status filter is provided, only tasks matching the specified
+     * status are returned. Results may be paginated using the supplied
+     * {@code limit} and {@code offset}. A user who is not registered as
+     * a helper receives a {@code 403 Forbidden} response.</p>
+     *
+     * @param userId the identifier of the authenticated user
+     * @param statusFilter an optional task status used to filter results
+     * @param limit the maximum number of task records to return
+     * @param offset the number of task records to skip for pagination
+     * @return a {@link HelperTaskResponse} containing the helper's task history
+     * @throws ResponseStatusException if the supplied status is invalid or
+     *         the user is not registered as a helper
+     */
     public HelperTaskResponse getTasks(int userId, String statusFilter, int limit, int offset){
         if (statusFilter != null && statusFilter.isBlank()) {
             statusFilter = null;

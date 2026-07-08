@@ -24,7 +24,11 @@ import com.app.api.repositories.UserRepository;
 
 import jakarta.transaction.Transactional;
 
-
+/**
+ * Service responsible for retrieving and updating user profile
+ * information, including helper-specific details such as skills,
+ * achievements, and recent tasks.
+ */
 @Service
 public class UserProfileService {
     private final UserProfileRepository userProfileRepository;
@@ -33,6 +37,15 @@ public class UserProfileService {
     private final HelperSkillRepository helperSkillRepository;
     private final TaskTypeRepository taskTypeRepository;
 
+     /**
+     * Constructs a {@code UserProfileService} with the required repositories.
+     *
+     * @param userProfileRepository repository used to retrieve profile data
+     * @param userRepository repository used to access and update user information
+     * @param helperRepository repository used to retrieve helper records
+     * @param helperSkillRepository repository used to manage helper skills
+     * @param taskTypeRepository repository used to validate available task types
+     */
     public UserProfileService(UserProfileRepository userProfileRepository,
                               UserRepository userRepository,
                               HelperRepository helperRepository,
@@ -44,6 +57,20 @@ public class UserProfileService {
         this.helperSkillRepository = helperSkillRepository;
         this.taskTypeRepository = taskTypeRepository;
     }
+
+    /**
+     * Retrieves the profile of the specified user.
+     *
+     * <p>The returned profile includes general user information and,
+     * if the user is registered as a helper, helper-specific details
+     * such as level, experience points, skills, completed tasks,
+     * recent tasks, and earned achievements.</p>
+     *
+     * @param userId the identifier of the user whose profile is requested
+     * @return a {@link UserProfileResponse} containing the user's profile
+     *         information
+     * @throws ResponseStatusException if the user cannot be found
+     */
 
     public UserProfileResponse getProfile(int userId){
         Object[] core = userProfileRepository.findUserCore(userId);
@@ -103,6 +130,21 @@ public class UserProfileService {
         return new UserProfileResponse(resolvedUserId, displayName, neighbourhood, level, currentXp, skills, completedTasks, recentTasks, achievements);
     }
 
+    /**
+     * Updates the authenticated user's profile information.
+     *
+     * <p>The user's first name, last name, and helper skills may be
+     * updated. If skills are supplied, they are validated against the
+     * available task types before replacing the helper's existing
+     * skills.</p>
+     *
+     * @param userId the identifier of the user whose profile is being updated
+     * @param request the requested profile changes
+     * @return an {@link UpdateProfileResponse} describing the updated profile
+     * @throws ResponseStatusException if no update fields are supplied,
+     *         the user or helper cannot be found, or one or more
+     *         requested skills are invalid
+     */
     @Transactional
     public UpdateProfileResponse updateProfile(int userId, UpdateProfileRequest request){
         if(request.isEmpty()){
