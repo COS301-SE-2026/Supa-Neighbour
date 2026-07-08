@@ -21,8 +21,8 @@ void main() {
 
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Tasks'), findsOneWidget);
-    expect(find.text('Inbox'), findsOneWidget);  
-    expect(find.text('Stats'), findsOneWidget);  
+    expect(find.text('Chat'), findsOneWidget);  
+    expect(find.text('Leaderboard'), findsOneWidget);  
     expect(find.text('Profile'), findsOneWidget);
   });
 }

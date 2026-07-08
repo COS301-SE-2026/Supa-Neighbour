@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class LoadingBar extends StatefulWidget {
   final double width;
   final double height;
   final Duration duration;
+  final Color progressColor;
+  final Color backgroundColor;
 
   const LoadingBar({
     super.key,
     required this.width,
     this.height = 16,
     this.duration = const Duration(seconds: 3),
+    this.progressColor = AppColors.primaryTeal,
+    this.backgroundColor = AppColors.surfaceGrey,
   });
 
   @override
@@ -49,11 +54,22 @@ class _LoadingBarState extends State<LoadingBar>
       animation: _animation,
       builder: (context, child) {
         return Container(
-          width: widget.width * _animation.value,
+          width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(21),
-            color: const Color(0xFF1C9A89),
+            borderRadius: BorderRadius.circular(8),
+            color: widget.backgroundColor,
+          ),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              width: widget.width * _animation.value,
+              height: widget.height,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: widget.progressColor,
+              ),
+            ),
           ),
         );
       },
