@@ -1,22 +1,48 @@
 package com.app.api.services;
 
-import com.app.api.dtos.AchievementDTO;
-import com.app.api.dtos.RecentTaskDTO;
-import com.app.api.dtos.UserProfileResponse;
-import com.app.api.repositories.UserProfileRepository;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
- 
-import java.util.List;
+
+import com.app.api.dtos.AchievementDTO;
+import com.app.api.dtos.RecentTaskDTO;
+import com.app.api.dtos.UpdateProfileRequest;
+import com.app.api.dtos.UpdateProfileResponse;
+import com.app.api.dtos.UserProfileResponse;
+import com.app.api.models.Helper;
+import com.app.api.models.HelperSkill;
+import com.app.api.models.TaskType;
+import com.app.api.models.User;
+import com.app.api.repositories.HelperRepository;
+import com.app.api.repositories.HelperSkillRepository;
+import com.app.api.repositories.TaskTypeRepository;
+import com.app.api.repositories.UserProfileRepository;
+import com.app.api.repositories.UserRepository;
+
+import jakarta.transaction.Transactional;
 
 
 @Service
 public class UserProfileService {
     private final UserProfileRepository userProfileRepository;
+    private final UserRepository userRepository;
+    private final HelperRepository helperRepository;
+    private final HelperSkillRepository helperSkillRepository;
+    private final TaskTypeRepository taskTypeRepository;
 
-    public UserProfileService(UserProfileRepository userProfileRepository){
+    public UserProfileService(UserProfileRepository userProfileRepository,
+                              UserRepository userRepository,
+                              HelperRepository helperRepository,
+                              HelperSkillRepository helperSkillRepository,
+                              TaskTypeRepository taskTypeRepository) {
         this.userProfileRepository = userProfileRepository;
+        this.userRepository = userRepository;
+        this.helperRepository = helperRepository;
+        this.helperSkillRepository = helperSkillRepository;
+        this.taskTypeRepository = taskTypeRepository;
     }
 
     public UserProfileResponse getProfile(int userId){
@@ -75,6 +101,70 @@ public class UserProfileService {
         )).toList();
 
         return new UserProfileResponse(resolvedUserId, displayName, neighbourhood, level, currentXp, skills, completedTasks, recentTasks, achievements);
+    }
+
+    @Transactional
+    public UpdateProfileResponse updateProfile(int userId, UpdateProfileRequest request){
+        if(request.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Atleast one of firstname, lastName, or skills must be provided");
+
+        }
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usr not founr"));
+
+        boolean changedPersonName = false;
+
+        if(request.getFirstName() != null){
+            user.setFirstName(request.getFirstName());
+            changedPersonName = true;
+        }
+
+        if(request.getLastName() != null){
+            user.setLastName(request.getLastName());
+            changedPersonName = true;
+        }
+
+        if(changedPersonName){
+            userRepository.save(user);
+        }
+
+        List<String> updatedSkills = null;
+        if(request.getSkills() != null){
+           
+            Helper helper = helperRepository.findByUserid_Userid(userId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "User is not registered as helper"));
+            List<TaskType> matchedTypes = taskTypeRepository.findByDescriptionIn(request.getSkills());
+            System.out.println("DEBUG: entering updateProfile, userId=" + matchedTypes.toString());
+            if(matchedTypes.size() != request.getSkills().size()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more requested skills are invalid");
+            }
+             
+            
+            helperSkillRepository.deleteHelperId(helper.getHelperid());
+            System.out.println("DEBUG: delete done");
+            List<HelperSkill> newSkills = matchedTypes.stream()
+                    .map(taskType -> {
+                        HelperSkill hs = new HelperSkill();
+                        hs.setHelperid(helper);
+                        hs.setTaskTypeid(taskType);
+                        return hs;
+                    })
+                    .collect(Collectors.toList());
+
+            helperSkillRepository.saveAll(newSkills);
+            System.out.println("DEBUG: saveAll done");
+
+            updatedSkills = matchedTypes.stream().map(TaskType::getDescription).collect(Collectors.toList());
+            System.out.println("DEBUG: updatedSkills done");
+            
+        }
+
+        String displayName = user.getFirstName();
+        if(user.getLastName() != null && !user.getLastName().isBlank()){
+            displayName += " " + user.getLastName().charAt(0) + ".";
+        }
+
+        return new UpdateProfileResponse("Profile updated", displayName, updatedSkills);
     }
 
 }

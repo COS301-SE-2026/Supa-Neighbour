@@ -5,8 +5,11 @@ import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.UserProfileService;
 import com.google.firebase.auth.FirebaseAuthException;
 import org.springframework.http.ResponseEntity;
+import com.app.api.dtos.UpdateProfileRequest;
+import com.app.api.dtos.UpdateProfileResponse;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -41,6 +44,22 @@ public class UserProfileController {
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
             UserProfileResponse response = userProfileService.getProfile(userId);
+            return ResponseEntity.ok(response);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+        }
+    }
+
+    @PatchMapping("profile")
+    public ResponseEntity<?> updateProfile(
+        @RequestBody UpdateProfileRequest request,
+        @RequestHeader("Authorization") String authHeader
+    ){
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            UpdateProfileResponse response = userProfileService.updateProfile(userId, request);
+            System.out.println("Leaving controller successfully");
             return ResponseEntity.ok(response);
         }catch(FirebaseAuthException e){
             return ResponseEntity.status(401).body("Invalid or expired Firebase token");
