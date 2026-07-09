@@ -1,21 +1,29 @@
 package com.app.api.repositories;
 
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.stereotype.Repository;
  
-import java.util.List;
- 
+/**
+ * Repository responsible for performing custom database operations
+ * related to public helper profiles, rankings, skills, and reviews.
+ */
 @Repository
 public class HelperprofileRepository {
     @PersistenceContext
     private EntityManager em;
 
-    /**
-     * Returns core helper info:
-     * [helper_id, display_name, trust_score, neighbourhood_id]
-     * Returns null if helper does not exist.
+     /**
+     * Retrieves the core profile information for a helper.
+     *
+     * @param helperId the identifier of the helper
+     * @return an array containing the helper ID, display name,
+     *         trust score, and neighbourhood ID, or {@code null}
+     *         if the helper does not exist
      */
     public Object[] findHelperCore(int helperId){
         String sql = """
@@ -38,9 +46,15 @@ public class HelperprofileRepository {
         }
     }
 
-    /**
-     * Returns the helper's rank within their neighbourhood (by average_rating).
-     * Used to derive the podium level (Gold/Silver/Bronze).
+   /**
+     * Retrieves the helper's ranking within a neighbourhood.
+     *
+     * <p>The ranking is determined by the helper's average rating
+     * relative to other helpers in the same neighbourhood.</p>
+     *
+     * @param helperId the identifier of the helper
+     * @param neighbourhoodId the identifier of the neighbourhood
+     * @return the helper's ranking, or {@code 0} if no ranking exists
      */
     public int findHelperRank(int helperId, int neighbourhoodId){
         String sql = """
@@ -65,6 +79,12 @@ public class HelperprofileRepository {
         }
     }
 
+    /**
+     * Counts the number of completed tasks performed by a helper.
+     *
+     * @param helperId the identifier of the helper
+     * @return the number of completed tasks
+     */
     public int CompletedTasks(int helperId){
         String sql = """
                 SELECT COUNT(*) FROM task_invoice_table
@@ -75,6 +95,12 @@ public class HelperprofileRepository {
         return ((Number)  em.createNativeQuery(sql).setParameter("helperId", helperId).getSingleResult()).intValue();
     }
 
+    /**
+     * Counts the number of unique neighbours assisted by a helper.
+     *
+     * @param helperId the identifier of the helper
+     * @return the number of distinct neighbours helped
+     */
     public int countNeighboursHelped(int helperId){
         String sql = """
                 SELECT COUNT(DISTINCT dependent_id)
@@ -86,6 +112,12 @@ public class HelperprofileRepository {
         return ((Number) em.createNativeQuery(sql).setParameter("helperId", helperId).getSingleResult()).intValue();
     }
 
+     /**
+     * Retrieves the skills associated with a helper.
+     *
+     * @param helperId the identifier of the helper
+     * @return a list of skill descriptions assigned to the helper
+     */
     @SuppressWarnings("unchecked")
     public List<String> findSkills(int helperId){
         String sql = """
@@ -99,6 +131,13 @@ public class HelperprofileRepository {
         return em.createNativeQuery(sql).setParameter("helperId", helperId).getResultList();
     }   
 
+     /**
+     * Retrieves the reviews received by a helper.
+     *
+     * @param helperId the identifier of the helper
+     * @return a list of review records ordered by completion date,
+     *         with the most recent reviews first
+     */
     @SuppressWarnings("unchecked")
     public List<Object[]> findReviews(int helperId){
         String sql = """

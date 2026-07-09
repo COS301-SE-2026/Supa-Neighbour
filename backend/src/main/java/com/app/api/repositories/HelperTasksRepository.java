@@ -8,6 +8,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
  
+
+/**
+ * Repository responsible for performing custom database operations
+ * related to helper task history and task statistics.
+ */
 @Repository
 public class HelperTasksRepository {
 
@@ -15,8 +20,11 @@ public class HelperTasksRepository {
     private EntityManager em;
 
     /**
-     * Looks up the helper_id for the authenticated user.
-     * Returns null if the user is not registered as a helper.
+     * Retrieves the helper identifier associated with the specified user.
+     *
+     * @param userId the identifier of the user
+     * @return the helper identifier, or {@code null} if the user is not
+     *         registered as a helper
      */
     public Integer findHelperByUserId(int userId){
         String sql = """
@@ -29,14 +37,18 @@ public class HelperTasksRepository {
         }
     }
 
-    /**
-     * Returns tasks from task_invitation_table only.
-     * These are tasks the helper has expressed interest in but have NOT yet
-     * moved to task_invoice_table (i.e. still Accepted, Rejected, or Declined).
-     * Only shown when the task is still 'open' to avoid duplicates with
-     * findAssignedTasks.
+     /**
+     * Retrieves tasks from the invitation table for the specified helper.
      *
-     * Columns: task_id, task_type, status, start_date, end_date, neighbourhood_name, xp_worth
+     * <p>Only invitations for tasks that are still open are returned to
+     * avoid duplication with assigned tasks. Results may optionally be
+     * filtered by invitation status and paginated.</p>
+     *
+     * @param helperId the identifier of the helper
+     * @param statusFilter an optional invitation status filter
+     * @param limit the maximum number of task records to return
+     * @param offset the number of task records to skip for pagination
+     * @return a list of task records matching the supplied criteria
      */
     @SuppressWarnings("unchecked")
     public List<Object[]> findInvitedTasks(int helperId, String statusFilter, int limit, int offset){
@@ -70,11 +82,17 @@ public class HelperTasksRepository {
 
 
     /**
-     * Returns tasks from task_invoice_table only.
-     * These are tasks past 'open' — helper has been assigned and work
-     * is in progress or done. Never overlaps with findInvitationTasks.
+     * Retrieves assigned and completed tasks for the specified helper.
      *
-     * Columns: task_id, task_type, status, start_date, end_date, neighbourhood_name, xp_worth
+     * <p>Only tasks that have progressed beyond the {@code open} state are
+     * returned. Results may optionally be filtered by task status and
+     * paginated.</p>
+     *
+     * @param helperId the identifier of the helper
+     * @param statusFilter an optional task status filter
+     * @param limit the maximum number of task records to return
+     * @param offset the number of task records to skip for pagination
+     * @return a list of assigned task records matching the supplied criteria
      */
     @SuppressWarnings("unchecked")
     public List<Object[]> findAssignedTasks(int helperId, String statusFilter,
@@ -114,11 +132,15 @@ public class HelperTasksRepository {
     }
 
 
-     /**
-     * Total count across both tables for the given helper — used to populate
-     * the "total" field in the response without loading all rows.
+    /**
+     * Counts the total number of tasks associated with a helper.
+     *
+     * <p>The count includes both outstanding task invitations and
+     * assigned tasks.</p>
+     *
+     * @param helperId the identifier of the helper
+     * @return the total number of tasks associated with the helper
      */
-
      public int countAllTasks(int helperId){
         String sql = """
                 SELECT COUNT(*) FROM (
@@ -137,8 +159,4 @@ public class HelperTasksRepository {
 
         return ((Number)  em.createNativeQuery(sql).setParameter("helperId", helperId).getSingleResult()).intValue();
      }
-
-    
-
-
 }
