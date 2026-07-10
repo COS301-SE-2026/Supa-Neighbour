@@ -17,28 +17,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/userAchievement")
-public class UserAchievementsController {
+public class UserAchievementController {
 
     @Autowired
     private UserAchievementService userAchievementService;
 
-    // GET /api/analytics
+    // GET /api/userAchievement
     /**
-     * Retrieves all analytics records.
+     * Retrieves all user achievement records.
      *
-     * @return a response containing the list of analytics records
+     * @return a response containing the list of user achievement records
      */
     @GetMapping
     public ResponseEntity<List<UserAchievement>> getAllUserAchievement() {
         return ResponseEntity.ok(userAchievementService.getAllUserAchievement());
     }
 
-    // GET /api/analytics/1
+    // GET /api/userAchievement/1
     /**
-     * Retrieves an analytics record by its ID.
+     * Retrieves a user achievement record by its ID.
      *
-     * @param id the analytics ID
-     * @return a response containing the analytics record, or 404 if not found
+     * @param id the user achievement ID
+     * @return a response containing the user achievement record, or 404 if not found
      */
     @GetMapping("/{id}")
     public ResponseEntity<UserAchievement> getUserAchievementById(@PathVariable int id) {

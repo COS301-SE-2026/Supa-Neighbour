@@ -8,8 +8,8 @@ import com.app.api.models.TaskInvitation;
 import com.app.api.repositories.TaskInvitationRepository;
 
 /**
- * Service layer for managing analytics operations.
- * Provides CRUD functionality for Analytics entities.
+ * Service layer for managing task invitation operations.
+ * Provides CRUD functionality for TaskInvitation entities.
  */
 @Service
 public class TaskInvitationService {
@@ -23,20 +23,20 @@ public class TaskInvitationService {
 
     // Get all
     /**
-     * Retrieves all analytics records from the repository.
+     * Retrieves all task invitation records from the repository.
      *
-     * @return a list of all analytics records
+     * @return a list of all task invitation records
      */
-    public List<TaskInvitation> getrInvitations() {
+    public List<TaskInvitation> getTaskInvitations() {
         return taskInvitationRepository.findAll();
     }
 
     // Get by id
     /**
-     * Retrieves an analytics record by its identifier.
+     * Retrieves a task invitation record by its identifier.
      *
-     * @param id the analytics identifier
-     * @return the analytics record if found, or null if no record exists with the given id
+     * @param id the task invitation identifier
+     * @return the task invitation record if found, or null if no record exists with the given id
      */
     public TaskInvitation getInvitationById(int id) {
         return taskInvitationRepository.findById(id).orElse(null);
@@ -44,12 +44,12 @@ public class TaskInvitationService {
 
     // Create
     /**
-     * Saves a new analytics record to the repository.
+     * Saves a new task invitation record to the repository.
      *
-     * @param invitation the analytics record to save
-     * @return the saved analytics record, or null if the provided analytics is null
+     * @param invitation the task invitation record to save
+     * @return the saved task invitation record, or null if the provided task invitation is null
      */
-    public TaskInvitation saveAnalytics(TaskInvitation invitation) {
+    public TaskInvitation saveTaskInvitation(TaskInvitation invitation) {
         if(invitation == null) {
             return null;
         }
@@ -58,11 +58,11 @@ public class TaskInvitationService {
 
     // Update
     /**
-     * Updates an existing analytics record with the provided details.
+     * Updates an existing task invitation record with the provided details.
      *
-     * @param id      the identifier of the analytics record to update
-     * @param updated the analytics object containing the updated fields
-     * @return the updated analytics record, or null if no record exists with the given id
+     * @param id      the identifier of the task invitation record to update
+     * @param updated the task invitation object containing the updated fields
+     * @return the updated task invitation record, or null if no record exists with the given id
      */
     public TaskInvitation updateTaskInvitation(int id, TaskInvitation updated) {
         TaskInvitation existing = taskInvitationRepository.findById(id).orElse(null);
@@ -79,11 +79,11 @@ public class TaskInvitationService {
 
     // Delete
     /**
-     * Deletes an analytics record by its identifier.
+     * Deletes a task invitation record by its identifier.
      *
-     * @param id the identifier of the analytics record to delete
+     * @param id the identifier of the task invitation record to delete
      */
-    public void deleteAnalytics(int id) {
+    public void deleteTaskInvitation(int id) {
         taskInvitationRepository.deleteById(id);
     }
 }

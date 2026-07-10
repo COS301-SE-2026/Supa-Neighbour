@@ -12,8 +12,8 @@ import com.app.api.models.UserAchievement;
 import com.app.api.repositories.UserAchievementRepository;
 
 /**
- * Service layer for managing analytics operations.
- * Provides CRUD functionality for Analytics entities.
+ * Service layer for managing user achievement operations.
+ * Provides CRUD functionality for UserAchievement entities.
  */
 @Service
 public class UserAchievementService {
@@ -29,9 +29,9 @@ public class UserAchievementService {
 
     // Get all
     /**
-     * Retrieves all analytics records from the repository.
+     * Retrieves all user achievement records from the repository.
      *
-     * @return a list of all analytics records
+     * @return a list of all user achievement records
      */
     public List<UserAchievement> getAllUserAchievement() {
         return userAchievementRepository.findAll();
@@ -39,10 +39,10 @@ public class UserAchievementService {
 
     // Get by id
     /**
-     * Retrieves an analytics record by its identifier.
+     * Retrieves a user achievement record by its identifier.
      *
-     * @param id the analytics identifier
-     * @return the analytics record if found, or null if no record exists with the given id
+     * @param id the user achievement identifier
+     * @return the user achievement record if found, or null if no record exists with the given id
      */
     public UserAchievement getUserAchievementById(int id) {
         return userAchievementRepository.findById(id).orElse(null);
@@ -50,10 +50,10 @@ public class UserAchievementService {
 
     // Create
     /**
-     * Saves a new analytics record to the repository.
+     * Saves a new user achievement record to the repository.
      *
-     * @param invitation the analytics record to save
-     * @return the saved analytics record, or null if the provided analytics is null
+     * @param invitation the user achievement record to save
+     * @return the saved user achievement record, or null if the provided user achievement is null
      */
     public UserAchievement saveAchievement(UserAchievement invitation) {
         if(invitation == null) {
@@ -64,11 +64,11 @@ public class UserAchievementService {
 
     // Update
     /**
-     * Updates an existing analytics record with the provided details.
+     * Updates an existing user achievement record with the provided details.
      *
-     * @param id      the identifier of the analytics record to update
-     * @param updated the analytics object containing the updated fields
-     * @return the updated analytics record, or null if no record exists with the given id
+     * @param id      the identifier of the user achievement record to update
+     * @param updated the user achievement object containing the updated fields
+     * @return the updated user achievement record, or null if no record exists with the given id
      */
     public UserAchievement updateUserAchievement(int id, UserAchievement updated) {
         UserAchievement existing = userAchievementRepository.findById(id).orElse(null);
@@ -86,9 +86,9 @@ public class UserAchievementService {
 
     // Delete
     /**
-     * Deletes an analytics record by its identifier.
+     * Deletes a user achievement record by its identifier.
      *
-     * @param id the identifier of the analytics record to delete
+     * @param id the identifier of the user achievement record to delete
      */
     public void deleteUserAchievement(int id) {
         userAchievementRepository.deleteById(id);

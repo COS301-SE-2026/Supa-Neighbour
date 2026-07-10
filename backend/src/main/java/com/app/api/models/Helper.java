@@ -37,6 +37,9 @@ public class Helper {
     @JoinColumn(name = "badge_id")
     private Badges badgeid;
 
+    @Column(name = "helper_xp")
+    private int helperXp;
+
     /**
      * Constructs a Helper with all fields specified.
      *
@@ -44,12 +47,14 @@ public class Helper {
      * @param userid      the user associated with this helper
      * @param taskTypeid  the task type the helper specializes in
      * @param badgeid     the badge earned by the helper
+     * @param helperXp    the experience points of the helper
      */
-    public Helper(int helperid, User userid, TaskType taskTypeid, Badges badgeid) {
+    public Helper(int helperid, User userid, TaskType taskTypeid, Badges badgeid, int helperXp) {
         this.helperid = helperid;
         this.userid = userid;
         this.taskTypeid = taskTypeid;
         this.badgeid = badgeid;
+        this.helperXp = helperXp;
     }
 
     /**
@@ -131,4 +136,21 @@ public class Helper {
         this.badgeid = badgeid;
     }
 
+    /**
+     * Gets the experience points of the helper.
+     *
+     * @return the experience points
+     */
+    public int getHelperXp() {
+        return helperXp;
+    }
+
+    /**
+     * Sets the experience points of the helper.
+     *
+     * @param helperXp the experience points
+     */
+    public void setHelperXp(int helperXp) {
+        this.helperXp = helperXp;
+    }
 }

@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Helper;
@@ -15,9 +13,11 @@ import com.app.api.repositories.HelperRepository;
 @Service
 public class HelperService {
 
-    @Autowired
-    private HelperRepository helperRepository;
+    private final HelperRepository helperRepository;
 
+    public HelperService(HelperRepository helperRepository) {
+        this.helperRepository = helperRepository;
+    }
     // Get all
     /**
      * Retrieves all helpers from the repository.
@@ -71,6 +71,7 @@ public class HelperService {
         existing.setUserid(updated.getUserid());
         existing.setTaskTypeid(updated.getTaskTypeid());
         existing.setBadgeid(updated.getBadgeid());
+        existing.setHelperXp(updated.getHelperXp());
 
         return helperRepository.save(existing);
     }
