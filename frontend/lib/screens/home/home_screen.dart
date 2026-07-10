@@ -7,7 +7,7 @@ import '../../widgets/bottom_nav_bar.dart';
 import 'create_task_screen.dart';
 import 'leaderboard_screen.dart';
 import 'inbox_screen.dart';
-import 'my_tasks_screen.dart';
+import '../tasks/my_tasks_screen.dart';
 import 'profile_screen.dart';
 import 'task_detail_screen.dart';
 import '../../services/task_service.dart';
