@@ -5,7 +5,7 @@ import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
-import 'helper_profile_preview_screen.dart';
+import '../leaderboard/helper_profile_preview_screen.dart';
 
 class AvailableHelpersScreen extends StatefulWidget {
   final Task task;
