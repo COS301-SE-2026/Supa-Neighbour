@@ -2,7 +2,6 @@ package com.app.api.services;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Dependent;
@@ -15,8 +14,11 @@ import com.app.api.repositories.DependentRepository;
 @Service
 public class DependentService {
 
-    @Autowired
-    private DependentRepository dependentRepository;
+    private final DependentRepository dependentRepository;
+
+    public DependentService(DependentRepository dependentRepository) {
+        this.dependentRepository = dependentRepository;
+    }
 
     // Get all
     /**

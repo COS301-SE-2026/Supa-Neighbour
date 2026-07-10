@@ -1,8 +1,6 @@
 
 
 package com.app.api.services;
-
-import com.app.api.config.SecurityConfig;
 import java.util.List;
 
 
@@ -18,13 +16,11 @@ import com.app.api.repositories.UserAchievementRepository;
 @Service
 public class UserAchievementService {
 
-    
-    private final SecurityConfig securityConfig;
     private final UserAchievementRepository userAchievementRepository;
 
-    UserAchievementService(UserAchievementRepository userAchievementRepository, SecurityConfig securityConfig) {
+    UserAchievementService(UserAchievementRepository userAchievementRepository) {
         this.userAchievementRepository = userAchievementRepository;
-        this.securityConfig = securityConfig;
+
     }
 
     // Get all

@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Likes;
@@ -15,8 +13,12 @@ import com.app.api.repositories.LikesRepository;
 @Service
 public class LikesService {
 
-    @Autowired
-    private LikesRepository likesRepository;
+
+    private final LikesRepository likesRepository;
+
+    public LikesService(LikesRepository likesRepository) {
+        this.likesRepository = likesRepository;
+    }
 
     // Get all
     /**

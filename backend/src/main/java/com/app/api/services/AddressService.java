@@ -2,7 +2,6 @@ package com.app.api.services;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Address;
@@ -15,9 +14,12 @@ import com.app.api.repositories.AddressRepository;
 @Service
 public class AddressService {
 
-    @Autowired
-    private AddressRepository addressRepository;
 
+    private final AddressRepository addressRepository;
+
+    public AddressService(AddressRepository addressRepository) {
+        this.addressRepository = addressRepository;
+    }
     // Get all
     
     /**
