@@ -90,7 +90,7 @@ public class UserAchievementService {
      *
      * @param id the identifier of the analytics record to delete
      */
-    public void deleteAnalytics(int id) {
+    public void deleteUserAchievement(int id) {
         userAchievementRepository.deleteById(id);
     }
 }

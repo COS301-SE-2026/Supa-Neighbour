@@ -41,7 +41,7 @@ public class UserAchievementsController {
      * @return a response containing the analytics record, or 404 if not found
      */
     @GetMapping("/{id}")
-    public ResponseEntity<UserAchievement> getAnalyticsById(@PathVariable int id) {
+    public ResponseEntity<UserAchievement> getUserAchievementById(@PathVariable int id) {
         UserAchievement achievement = userAchievementService.getUserAchievementById(id);
         if (achievement == null) {
             return ResponseEntity.notFound().build();
@@ -49,12 +49,12 @@ public class UserAchievementsController {
         return ResponseEntity.ok(achievement);
     }
 
-    // POST /api/analytics
+    // POST /api/userAchievement
     /**
-     * Creates a new analytics record.
+     * Creates a new user achievement record.
      *
-     * @param analytics the analytics data to create
-     * @return a response containing the created analytics record
+     * @param userAchievement the user achievement data to create
+     * @return a response containing the created user achievement record
      */
     @PostMapping
     public ResponseEntity<UserAchievement> createAnalytics(@RequestBody UserAchievement achievement) {
@@ -62,13 +62,13 @@ public class UserAchievementsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // PUT /api/analytics/1
+    // PUT /api/userAchievement/1
     /**
-     * Updates an existing analytics record.
+     * Updates an existing user achievement record.
      *
-     * @param id the analytics ID
-     * @param analytics the updated analytics data
-     * @return a response containing the updated analytics record, or 404 if not found
+     * @param id the user achievement ID
+     * @param userAchievement the updated user achievement data
+     * @return a response containing the updated user achievement record, or 404 if not found
      */
     @PutMapping("/{id}")
     public ResponseEntity<UserAchievement> updateAchievements(@PathVariable int id, @RequestBody UserAchievement achievement) {
@@ -80,11 +80,11 @@ public class UserAchievementsController {
         return ResponseEntity.ok(updated);
     }
 
-    // DELETE /api/analytics/1
+    // DELETE /api/userAchievement/1
     /**
-     * Deletes an analytics record by its ID.
+     * Deletes a user achievement record by its ID.
      *
-     * @param id the analytics ID
+     * @param id the user achievement ID
      * @return a response with no content, or 404 if not found
      */
     @DeleteMapping("/{id}")
@@ -93,7 +93,7 @@ public class UserAchievementsController {
         if (existing == null) {
             return ResponseEntity.notFound().build();
         }
-        userAchievementService.deleteAnalytics(id);
+        userAchievementService.deleteUserAchievement(id);
         return ResponseEntity.noContent().build();
     }
 }
