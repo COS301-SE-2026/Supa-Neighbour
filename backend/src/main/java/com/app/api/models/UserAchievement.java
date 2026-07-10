@@ -6,14 +6,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
-import com.app.api.models.User;
-import com.app.api.models.Badges;
-import java.util.Date;
+import java.time.LocalDate;
 /**
  * Represents a user achievement within the application.
  * <p>
@@ -44,9 +41,8 @@ public class UserAchievement {
     private Badges badgeId;
 
     /** the date when the achievement was awarded */
-    @ManyToOne
-    @JoinColumn(name = "awarded_on")
-    private Date awardedOn;
+    @Column(name = "awarded_on")
+    private LocalDate awardedOn;
 
     /** the current progress towards the achievement */
     @Column(name = "progress_current")
@@ -70,7 +66,7 @@ public class UserAchievement {
      * @param progressCurrent the current progress towards the achievement
      * @param progressTarget the target progress required for the achievement
      */
-    public UserAchievement(int userAchievementId, User userId, Badges badgeId, Date awardedOn, int progressCurrent, int progressTarget) {
+    public UserAchievement(int userAchievementId, User userId, Badges badgeId, LocalDate awardedOn, int progressCurrent, int progressTarget) {
         this.userAchievementId = userAchievementId;
         this.userId = userId;
         this.badgeId = badgeId;

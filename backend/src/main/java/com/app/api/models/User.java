@@ -123,8 +123,9 @@ public class User {
      * @param ratingid the rating associated with the user
      * @param userType the user's type or role
      */
-    public User(int userid,String firebaseUid,boolean emailVerified,boolean phoneVerified, String firstName, String lastName, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
+    public User(int userid,String password,String firebaseUid,boolean emailVerified,boolean phoneVerified, String firstName, String lastName, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
         this.userid = userid;
+        this.password = password;
         this.firebaseUid = firebaseUid;
         this.emailVerified = emailVerified;
         this.phoneVerified = phoneVerified;

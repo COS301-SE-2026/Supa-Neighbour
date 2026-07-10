@@ -75,6 +75,7 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,@NonNull FilterChain filterChain) 
             throws ServletException, IOException {
+        System.out.println("FILTER CALLED");
         String authorizationHeader = request.getHeader("Authorization");
         System.out.println("Authorization header = " + authorizationHeader);
         if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")){
@@ -103,7 +104,10 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
 
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     return;
-}
+}   System.out.println(
+    "Authentication = " +
+    SecurityContextHolder.getContext().getAuthentication()
+);
         filterChain.doFilter(request, response);
     }
     

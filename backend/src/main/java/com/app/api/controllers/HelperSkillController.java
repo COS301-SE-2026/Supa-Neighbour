@@ -36,6 +36,7 @@ public class HelperSkillController {
      */
     @GetMapping
     public ResponseEntity<List<HelperSkill>> getAllHelperSkills() {
+        System.out.println("HelperSkill endpoint hit");
         return ResponseEntity.ok(helperSkillService.getAllHelpersSkills());
     }
 

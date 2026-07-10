@@ -92,6 +92,18 @@ public class UserController {
         if (existing == null) {
             return ResponseEntity.notFound().build();
         }
+
+        existing.setFirebaseUid(user.getFirebaseUid());
+        existing.setEmailVerified(user.isEmailVerified());
+        existing.setPhoneVerified(user.isPhoneVerified());
+        existing.setUsername(user.getUsername());
+        existing.setFirstName(user.getFirstName());
+        existing.setLastName(user.getLastName());
+        existing.setPassword(user.getPassword());
+        existing.setEmail(user.getEmail());
+        existing.setPhoneNumber(user.getPhoneNumber());
+        existing.setDateOfBirth(user.getDateOfBirth());
+        existing.setGender(user.getGender());
         User updated = userService.updateUser(id, user);
         return ResponseEntity.ok(updated);
     }
