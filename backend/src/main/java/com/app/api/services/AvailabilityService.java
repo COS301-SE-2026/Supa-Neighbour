@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import com.app.api.models.Availability;
 import com.app.api.repositories.AvailabilityRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Service layer for managing availability operations.
@@ -16,9 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AvailabilityService {
 
     
-    @Autowired
-    private AvailabilityRepository availabilityRepository;
+    private final AvailabilityRepository availabilityRepository;
 
+    public AvailabilityService(AvailabilityRepository availabilityRepository) {
+        this.availabilityRepository = availabilityRepository;
+    }
     // Get all
     /**
      * Retrieves all availability records from the repository.
@@ -80,8 +81,13 @@ public class AvailabilityService {
      * Deletes an availability record by its identifier.
      *
      * @param id the identifier of the availability record to delete
+     * @return true if the record was deleted, false otherwise
      */
-    public void deleteAvailability(int id) {
-        availabilityRepository.deleteById(id);
+    public boolean deleteAvailability(int id) {
+        if (availabilityRepository.existsById(id)) {
+            availabilityRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

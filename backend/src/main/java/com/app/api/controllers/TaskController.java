@@ -4,7 +4,6 @@ import com.app.api.models.Task;
 import com.app.api.services.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +27,7 @@ public class TaskController {
      * Constructs a TaskController with the given TaskService.
      * @param taskService the task service
      */
-    @Autowired
+
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }

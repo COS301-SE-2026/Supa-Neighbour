@@ -112,7 +112,6 @@ public AuthController(
         user.setUsername(request.getUsername());
 
         // Optional because Firebase already authenticates users
-        user.setPassword(request.getPassword());
 
         user.setPhoneNumber(request.getPhoneNumber());
         user.setDateOfBirth(request.getDateOfBirth());

@@ -2,7 +2,7 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,8 +24,12 @@ import com.app.api.services.AddressService;
 @RequestMapping("/api/addresses")
 public class AddressController {
 
-    @Autowired
-    private AddressService addressService;
+
+    private final AddressService addressService;
+
+    public AddressController(AddressService addressService) {
+        this.addressService = addressService;
+    }
 
     // GET /api/addresses
     /**
