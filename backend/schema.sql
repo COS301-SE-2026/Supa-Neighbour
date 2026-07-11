@@ -74,7 +74,8 @@ create table address_table (
 create table user_table (
     user_id int generated always as identity primary key,
     user_firebase_uid VARCHAR(128) UNIQUE NOT NULL,
-    user_password varchar(255) not null,
+    user_email_verified boolean default false,
+    user_phone_verified boolean default false,
     user_name varchar(100) not null,
     user_surname varchar(100) not null,
     user_username varchar(100) unique not null,
@@ -99,6 +100,15 @@ create table user_table (
         references rating_table(rating_id)
 );
 
+create table availability_table (
+    availability_id int generated always as identity primary key,
+    user_id int not null,
+    day_of_week varchar(10), 
+    time_window varchar(20),
+    is_active boolean default true,
+    foreign key (user_id) 
+        references user_table(user_id)
+);
 
 create table helper_table (
     helper_id int generated always as identity primary key,
@@ -311,6 +321,19 @@ create table analytics_table (
         references dependent_analytics_table(dependent_analytics_id)
 );
 
+create table helper_skill_table (
+    helper_skill_id int generated always as identity primary key,
+    helper_id int not null,
+    task_type_id int not null,
+
+    foreign key (helper_id) 
+        references helper_table(helper_id),
+
+    foreign key (task_type_id) 
+        references task_type_table(task_type_id),
+        constraint uq_helper_skill unique (helper_id, task_type_id)
+);
+
 -- =============================================
 -- 15. posts table
 -- =============================================
@@ -464,18 +487,6 @@ create table task_invitation_table (
 );
 
 -- =============================================
--- 19. helper skills table
--- =============================================
-create table helper_skill_table (
-    helper_skill_id int generated always as identity primary key,
-    helper_id       int not null,
-    task_type_id    int not null,
-    foreign key (helper_id)    references helper_table(helper_id),
-    foreign key (task_type_id) references task_type_table(task_type_id),
-    constraint uq_helper_skill unique (helper_id, task_type_id)
-);
-
--- =============================================
 -- indexes
 -- =============================================
 
@@ -593,8 +604,9 @@ values
 -- =============================================
 insert into user_table
 (
-user_password,
 user_firebase_uid,
+user_email_verified,
+user_phone_verified,
 user_name,
 user_surname,
 user_username,
@@ -608,47 +620,67 @@ user_rating_id,
 user_type
 )
 values
-('pass123','PDFxzgQ9KwNrAvMgWzfEvhkhJoj1', 'John', 'Smith', 'johnsmith', 'john.example.298@gmail.com', '5550101', 'Male', '1990-01-10', 1,2,1,'Admin' ),
+('PDFxzgQ9KwNrAvMgWzfEvhkhJoj1', true, true, 'John', 'Smith', 'johnsmith', 'john.example.298@gmail.com', '5550101', 'Male', '1990-01-10', 1,2,1,'Admin' ),
 
-('pass123','1ZkC0pAHZ9UBVKRtbQtrUXuYjKp1', 'Sarah', 'Johnson', 'sarahj', 'sarah.example.298@gmail.com', '5550102', 'Female', '1988-03-15', 2,1,1, 'User' ),
+('1ZkC0pAHZ9UBVKRtbQtrUXuYjKp1', true, true, 'Sarah', 'Johnson', 'sarahj', 'sarah.example.298@gmail.com', '5550102', 'Female', '1988-03-15', 2,1,1, 'User' ),
 
-('pass123','WlMsgj9xKRNnLKhBCACGdZsMXVJ3','Michael', 'Brown', 'michaelb', 'michael.example.298@gmail.com', '5550103', 'Male', '1995-07-21', 3,1,1, 'User' ),
+('WlMsgj9xKRNnLKhBCACGdZsMXVJ3', true, true, 'Michael', 'Brown', 'michaelb', 'michael.example.298@gmail.com', '5550103', 'Male', '1995-07-21', 3,1,1, 'User' ),
 
-('pass123','mdW5NZdYeyernK7Dh5J49EQqdaN2', 'Emily', 'Davis', 'emilyd', 'emily.example.298@gmail.com', '5550104', 'Female', '1992-11-30', 4, 1, 1, 'User'),
+('mdW5NZdYeyernK7Dh5J49EQqdaN2', true, true, 'Emily', 'Davis', 'emilyd', 'emily.example.298@gmail.com', '5550104', 'Female', '1992-11-30', 4, 1, 1, 'User'),
 
-('pass123', 'o1Efo9cDkOVqeTBnrlkzD2TUMs43', 'David', 'Wilson', 'davidw', 'david.example.298@gmail.com', '5550105', 'Male', '1985-05-18', 5, 1, 1, 'User'),
+('o1Efo9cDkOVqeTBnrlkzD2TUMs43', true, true, 'David', 'Wilson', 'davidw', 'david.example.298@gmail.com', '5550105', 'Male', '1985-05-18', 5, 1, 1, 'User'),
 
-('pass123', 'bUv58sF4iagkhjUWj93GHRN3tvH3', 'Olivia', 'Taylor', 'oliviat', 'olivia.example.298@gmail.com', '5550106', 'Female', '2000-04-02', 6, 2, 2, 'Admin'),
+('bUv58sF4iagkhjUWj93GHRN3tvH3', true, true, 'Olivia', 'Taylor', 'oliviat', 'olivia.example.298@gmail.com', '5550106', 'Female', '2000-04-02', 6, 2, 2, 'Admin'),
 
-('pass123', 'yA9Jcgl0P0cMgYrpDp6JonWIRgF2', 'James', 'Anderson', 'jamesa', 'james.example.298@gmail.com', '5550107', 'Male', '1975-08-14', 7, 1, 1, 'User'),
+('yA9Jcgl0P0cMgYrpDp6JonWIRgF2', true, true, 'James', 'Anderson', 'jamesa', 'james.example.298@gmail.com', '5550107', 'Male', '1975-08-14', 7, 1, 1, 'User'),
 
-('pass123', '0gRA3wfNjNOGHaJZ84j6sybUvPs2', 'Sophia', 'Thomas', 'sophiat', 'sophia.example.298@gmail.com', '5550108', 'Female', '1998-09-22', 8, 3, 1, 'Admin'),
+( '0gRA3wfNjNOGHaJZ84j6sybUvPs2', true, true, 'Sophia', 'Thomas', 'sophiat', 'sophia.example.298@gmail.com', '5550108', 'Female','1998-09-22', 8, 3, 1, 'Admin'),
 
-('pass123', 'hJUI8ixYgvY0YqYVFnjPlm0CxIa2', 'Daniel', 'Jackson', 'danielj', 'daniel.example.298@gmail.com', '5550109', 'Male', '1982-12-11', 9, 5, 2, 'Admin'),
+( 'hJUI8ixYgvY0YqYVFnjPlm0CxIa2', true, true, 'Daniel', 'Jackson', 'danielj', 'daniel.example.298@gmail.com', '5550109', 'Male', '1982-12-11', 9, 5, 2, 'Admin'),
 
-('pass123', 'wwEa5s6GFUWzXGujlt67xHNDti73', 'Emma', 'White', 'emmaw', 'emma.example.298@gmail.com', '5550110', 'Female', '1996-06-25', 10, 1, 1, 'User'),
+( 'wwEa5s6GFUWzXGujlt67xHNDti73', true, true, 'Emma', 'White', 'emmaw', 'emma.example.298@gmail.com', '5550110', 'Female', '1996-06-25', 10, 1, 1, 'User'),
 
-('pass123', 'tV2skp5AgyQQCxkKNrA5FP4P5Pf2', 'Matthew', 'Harris', 'matthewh', 'matthew.example.298@gmail.com', '5550111', 'Male', '1991-03-12', 1, 4, 3, 'User'),
+( 'tV2skp5AgyQQCxkKNrA5FP4P5Pf2', true,true,'Matthew', 'Harris', 'matthewh', 'matthew.example.298@gmail.com', '5550111', 'Male', '1991-03-12', 1, 4, 3, 'User'),
 
-('pass123', 'b797OnSbqFe9V2KTiJbKhjEs6ji1', 'Isabella', 'Martin', 'isabellam', 'isabella.example.298@gmail.com', '5550112', 'Female', '1987-07-19', 2, 2, 2, 'User'),
+( 'b797OnSbqFe9V2KTiJbKhjEs6ji1',true, true, 'Isabella', 'Martin', 'isabellam', 'isabella.example.298@gmail.com', '5550112', 'Female', '1987-07-19', 2, 2, 2, 'User'),
 
-('pass123', 'vRe60bMKSvVRXvCy1EJpRhh0kOy2', 'William', 'Thompson', 'williamt', 'william.example.298@gmail.com', '5550113', 'Male', '1993-09-28', 3, 3, 1, 'User');
+( 'vRe60bMKSvVRXvCy1EJpRhh0kOy2',true,true, 'William', 'Thompson', 'williamt', 'william.example.298@gmail.com', '5550113', 'Male', '1993-09-28', 3, 3, 1, 'User');
+
+
+-- =============================================
+-- 6. availability table
+
+-- =============================================
+insert into availability_table
+(user_id, day_of_week, time_window, is_active)
+values
+(1, 'Monday',    'Morning',  true),
+(2, 'Tuesday',   'Evening',  true),
+(3, 'Wednesday', 'All day',  true),
+(4, 'Thursday',  'Morning',  true),
+(5, 'Friday',    'Evening',  true),
+(6, 'Saturday',  'All day',  false),
+(7, 'Sunday',    'Morning',  true),
+(10, 'Monday',   'Evening',  true),
+(11, 'Wednesday','Morning',  true),
+(12, 'Friday',   'All day',  true),
+(13, 'Saturday', 'Morning',  true);
 
 -- =============================================
 -- 7. helper table
 -- =============================================
 insert into helper_table
-(user_id, task_type_id, badge_id, helper_xp)
+(user_id, task_type_id, badge_id, helper_xp)    
 values
-(2,  2, 4, 500),  -- Sarah    → Pet Care        | completed Medical Assistance task (500 xp)
-(3,  3, 2, 250),  -- Michael  → Tech Support     | completed Transportation task (250 xp)
-(4,  4, 3, 150),  -- Emily    → Transportation   | completed Technology Support task (150 xp)
-(5,  5, 5, 500),  -- David    → Home Repair      | no completed tasks yet, default xp
-(7,  1, 1, 500),  -- James    → Medical Assistance | no completed tasks yet, default xp
-(10, 2, 4, 500),  -- Emma     → Pet Care         | no completed tasks yet, default xp
-(11, 3, 2, 500),  -- Matthew  → Tech Support      | no completed tasks yet, default xp
-(12, 4, 3, 500),  -- Isabella → Transportation    | no completed tasks yet, default xp
-(13, 5, 5, 500);  -- William  → Home Repair       | no completed tasks yet, default xp
+(2,  2, 4, 500), 
+(3,  3, 2, 250),  
+(4,  4, 3, 150),  
+(5,  5, 5, 500),  
+(7,  1, 1, 500),  
+(10, 2, 4, 500),  
+(11, 3, 2, 500), 
+(12, 4, 3, 500),  
+(13, 5, 5, 500); 
 
 -- =============================================
 -- 8. dependent table
@@ -737,15 +769,15 @@ average_rating,
 average_giving_rating
 )
 values
-('HELPER_SARAH',    2,  2, 1, 2, 4.6, 4.5),   -- Sarah    → Pet Care
-('HELPER_MICHAEL',  3,  3, 3, 3, 4.7, 4.6),   -- Michael  → Tech Support
-('HELPER_EMILY',    4,  4, 2, 4, 4.5, 4.4),   -- Emily    → Transportation
-('HELPER_DAVID',    5,  5, 5, 5, 4.8, 4.7),   -- David    → Home Repair
-('HELPER_JAMES',    7,  1, 1, 2, 4.9, 4.8),   -- James    → Medical Assistance
-('HELPER_EMMA',     10, 2, 1, 5, 4.3, 4.2),   -- Emma     → Pet Care
-('HELPER_MATTHEW',  11, 3, 2, 1, 4.1, 4.0),   -- Matthew  → Tech Support
-('HELPER_ISABELLA', 12, 4, 3, 2, 4.4, 4.3),   -- Isabella → Transportation
-('HELPER_WILLIAM',  13, 5, 4, 3, 4.2, 4.1);   -- William  → Home Repair
+('HELPER_SARAH',    2,  2, 1, 2, 4.6, 4.5),   
+('HELPER_MICHAEL',  3,  3, 3, 3, 4.7, 4.6),   
+('HELPER_EMILY',    4,  4, 2, 4, 4.5, 4.4),   
+('HELPER_DAVID',    5,  5, 5, 5, 4.8, 4.7),   
+('HELPER_JAMES',    7,  1, 1, 2, 4.9, 4.8),   
+('HELPER_EMMA',     10, 2, 1, 5, 4.3, 4.2),  
+('HELPER_MATTHEW',  11, 3, 2, 1, 4.1, 4.0),   
+('HELPER_ISABELLA', 12, 4, 3, 2, 4.4, 4.3),   
+('HELPER_WILLIAM',  13, 5, 4, 3, 4.2, 4.1);  
 
 -- =============================================
 -- 13. dependent analytics table
@@ -758,14 +790,13 @@ location_id,
 average_rating, 
 average_giving_rating)
 values
-('DEPENDENT_MED',   2,  1, 12, 1, 4.6, 4.7),  -- Sarah
-('DEPENDENT_TRANS', 4,  4,  5, 4, 4.2, 4.0),  -- Emily
-('DEPENDENT_TECH',  3,  3,  8, 3, 4.8, 4.9);  -- Michael
+('DEPENDENT_MED',   2,  1, 12, 1, 4.6, 4.7),  
+('DEPENDENT_TRANS', 4,  4,  5, 4, 4.2, 4.0), 
+('DEPENDENT_TECH',  3,  3,  8, 3, 4.8, 4.9); 
 
 -- =============================================
 -- 14. analytics table
 -- =============================================
--- Replace the analytics_table insert with this
 insert into analytics_table
 (task_id, admin_id, helper_type_id, dependent_type_id)
 values
@@ -864,35 +895,34 @@ values
 insert into user_achievement_table 
 (user_id, badge_id, awarded_on, progress_current, progress_target)
 values
-(2, 2, '2026-05-03', 5,  5),   -- Sarah: earned Pet Care Helper
-(2, 1, null,         2, 10),   -- Sarah: working toward Medical Specialist
-(2, 3, null,         1,  5),   -- Sarah: working toward Tech Assistant
-(7, 1, '2026-05-01', 10, 10),  -- James: earned Medical Specialist
-(7, 2, null,         3,  5);   -- James: working toward Pet Care Helper
+(2, 2, '2026-05-03', 5,  5),   
+(2, 1, null,         2, 10),   
+(2, 3, null,         1,  5),   
+(7, 1, '2026-05-01', 10, 10),
+(7, 2, null,         3,  5);  
 
 -- =============================================
 -- 19. task_invitation_table mock data
 -- =============================================
 INSERT INTO task_invitation_table (task_id, helper_id, status)
 VALUES
-(1, 1, 'Invited'),   -- Sarah was chosen for task 1
-(1, 2, 'Rejected'),  -- Michael expressed interest but wasn't picked
-(2, 4, 'Accepted'),  -- David expressed interest, waiting to be picked
-(2, 5, 'Declined'),  -- James said he can't do task 2
-(3, 3, 'Invited');   -- Emily was chosen for task 3
-
+(1, 1, 'Invited'),   
+(1, 2, 'Rejected'), 
+(2, 4, 'Accepted'),  
+(2, 5, 'Declined'), 
+(3, 3, 'Invited');
 
 -- =============================================
 -- 19. helper skill mock data
 -- =============================================
 insert into helper_skill_table (helper_id, task_type_id)
 values
-(1, 1), (1, 2),        -- Sarah: Medical + Pet Care
-(2, 3), (2, 4),        -- Michael: Tech + Transportation
-(3, 3), (3, 5),        -- Emily: Tech + Home Repair
-(4, 4), (4, 2),        -- David: Transportation + Pet Care
-(5, 1), (5, 5),        -- James: Medical + Home Repair
-(6, 2), (6, 3),        -- Emma: Pet Care + Tech
-(7, 4), (7, 1),        -- Matthew: Transportation + Medical
-(8, 5), (8, 2),        -- Isabella: Home Repair + Pet Care
+(1, 1), (1, 2),        
+(2, 3), (2, 4),        
+(3, 3), (3, 5),        
+(4, 4), (4, 2),        
+(5, 1), (5, 5),       
+(6, 2), (6, 3),        
+(7, 4), (7, 1),       
+(8, 5), (8, 2),        --
 (9, 3), (9, 4);  
