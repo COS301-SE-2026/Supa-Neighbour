@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supa_neighbour/models/task_model.dart';
-import 'package:supa_neighbour/screens/home/task_detail_screen.dart';
+import 'package:supa_neighbour/screens/tasks/task_detail_screen.dart';
 
 void main() {
   final mockTask = Task(
