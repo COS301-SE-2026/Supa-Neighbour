@@ -92,23 +92,27 @@ class User {
     };
   }
 
-  // Create from JSON (for future API integration) - integrated now lol
-  factory User.fromJson(Map<String, dynamic> json) {
+  
+factory User.fromJson(Map<String, dynamic> json) {
   return User(
-    id: json['user_id'].toString(),
-    email: json['user_email'] as String? ?? '',
-    firstName: json['user_name'] as String? ?? '',
-    lastName: json['user_surname'] as String? ?? '',
-    phone: json['user_phone_number'] as String?,
+    id: json['userid'].toString(),
+    email: json['email'] as String? ?? '',
+    firstName: json['firstName'] as String? ?? '',
+    lastName: json['lastName'] as String? ?? '',
+    phone: json['phoneNumber'] as String?,
     username: json['username'] as String?,
-    birthday: json['birthday'] != null ? DateTime.parse(json['birthday'].toString()) : null,
-    gender: json['user_gender'] as String?,
-    street: json['user_street'] as String?,      
-    town: json['user_town'] as String?,          
-    zipCode: json['user_zipcode'] as String?,
-    createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
+    birthday: json['dateOfBirth'] != null
+        ? DateTime.parse(json['dateOfBirth'].toString())
+        : null,
+    gender: json['gender'] as String?,
+    // address is nested — extract from the addressid object
+    street: json['addressid']?['street'] as String?,
+    town: json['addressid']?['neighbourhoodid']?['neighbourhoodName'] as String?,
+    zipCode: json['addressid']?['zipcode']?.toString(),
+    createdAt: DateTime.now(), // backend doesn't return this field
   );
 }
+
 
 
   // Creates an empty user
