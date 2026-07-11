@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import 'available_helpers_screen.dart';
+import 'task_start_screen.dart';
 import 'task_detail_screen.dart';
 import 'task_completion_page.dart';
+import 'task_awaiting_approval_screen.dart';
+import 'task_approval_screen.dart';
 
 class MyTasksScreen extends StatefulWidget {
   const MyTasksScreen({super.key});
@@ -14,7 +18,7 @@ class MyTasksScreen extends StatefulWidget {
 class _MyTasksScreenState extends State<MyTasksScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+
   List<Task> _postedTasks = [];
   List<Task> _acceptedTasks = [];
 
@@ -33,12 +37,9 @@ class _MyTasksScreenState extends State<MyTasksScreen>
 
   Future<void> _loadAllTasks() async {
     final allTasks = Task.getMockTasks();
-    
+
     setState(() {
-      // Posted: Tasks created by THIS user (requester view)
       _postedTasks = allTasks.where((task) => task.createdBy == 'currentUser').toList();
-      
-      // Accepted: Tasks where THIS user is the helper
       _acceptedTasks = allTasks.where((task) => task.helperId == 'currentUser').toList();
     });
   }
@@ -69,19 +70,19 @@ class _MyTasksScreenState extends State<MyTasksScreen>
   Color _getStatusColor(String status) {
     switch (status) {
       case 'open':
-        return const Color(0xFFE9C46A); // Yellow
+        return const Color(0xFFE9C46A);
       case 'assigned':
-        return const Color(0xFF2A9D8F); // Teal
+        return const Color(0xFF2A9D8F);
       case 'in_progress':
-        return const Color(0xFF2196F3); // Blue
+        return const Color(0xFF2196F3);
       case 'pending_approval':
-        return const Color(0xFFFF9800); // Orange
+        return const Color(0xFFFF9800);
       case 'completed':
-        return const Color(0xFF4CAF50); // Green
+        return const Color(0xFF4CAF50);
       case 'cancelled':
-        return const Color(0xFFF44336); // Red
+        return const Color(0xFFF44336);
       default:
-        return const Color(0xFF9CA3AF); // Grey
+        return const Color(0xFF9CA3AF);
     }
   }
 
@@ -123,12 +124,10 @@ class _MyTasksScreenState extends State<MyTasksScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Posted Tasks Tab (Requester view)
           RefreshIndicator(
             onRefresh: () async => _refreshTasks(),
             child: _buildTaskList(_postedTasks, isRequesterView: true),
           ),
-          // Accepted Tasks Tab (Helper view)
           RefreshIndicator(
             onRefresh: () async => _refreshTasks(),
             child: _buildTaskList(_acceptedTasks, isRequesterView: false),
@@ -159,7 +158,7 @@ class _MyTasksScreenState extends State<MyTasksScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              isRequesterView 
+              isRequesterView
                   ? 'Create your first task by tapping the + button'
                   : 'Browse Available Helpers and accept tasks',
               style: GoogleFonts.openSans(
@@ -185,39 +184,88 @@ class _MyTasksScreenState extends State<MyTasksScreen>
     );
   }
 
-
-
   Widget _buildTaskCard(Task task, {required bool isRequesterView}) {
     return GestureDetector(
       onTap: () async {
-        if (!isRequesterView && task.status == 'assigned' || task.status == 'in_progress') {
-          // Helper: Navigate to Task Completion Page for active tasks
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TaskCompletionPage(
-                taskId: task.id,
-                taskTitle: task.title,
-                residentName: task.requesterName ?? 'Requester',
-                dueDate: '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
-                xpReward: task.xpReward,
+        // CASE 1: HELPER VIEW (Accepted Tab)
+        if (!isRequesterView) {
+          if (task.status == 'assigned') {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskStartScreen(
+                  task: task,
+                ),
               ),
-            ),
-          );
+            );
+          } else if (task.status == 'in_progress') {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskCompletionPage(
+                  taskId: task.id,
+                  taskTitle: task.title,
+                  residentName: task.requesterName ?? 'Requester',
+                  dueDate: '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
+                  xpReward: task.xpReward,
+                ),
+              ),
+            );
+          } else if (task.status == 'pending_approval') {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskAwaitingApprovalScreen(
+                  task: task,
+                ),
+              ),
+            );
+          } else {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskDetailScreen(
+                  task: task,
+                  onTaskUpdated: () => _refreshTasks(),
+                ),
+              ),
+            );
+          }
           _refreshTasks();
-        } else {
-          // Requester view or completed tasks: Go to detail screen
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TaskDetailScreen(
-                task: task,
-                onTaskUpdated: () {
-                  _refreshTasks();
-                },
+          return;
+        }
+
+        // CASE 2: REQUESTER VIEW (Posted Tab)
+        if (isRequesterView) {
+          if (task.status == 'open' || task.status == 'assigned') {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AvailableHelpersScreen(
+                  task: task,
+                ),
               ),
-            ),
-          );
+            );
+          } else if (task.status == 'pending_approval') {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskApprovalScreen(
+                  task: task,
+                ),
+              ),
+            );
+          } else {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskDetailScreen(
+                  task: task,
+                  onTaskUpdated: () => _refreshTasks(),
+                ),
+              ),
+            );
+          }
           _refreshTasks();
         }
       },
@@ -288,7 +336,6 @@ class _MyTasksScreenState extends State<MyTasksScreen>
                     ],
                   ),
                   const SizedBox(height: 6),
-                  // Status Badge
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
