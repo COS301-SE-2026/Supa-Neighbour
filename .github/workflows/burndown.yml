@@ -20,7 +20,7 @@ jobs:
       - name: Calculate remaining points
         id: calc
         env:
-          GH_TOKEN: $ {{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: | 
           MILESTONE="Sprint 1"   # update this each sprint
           ISSUES=$(gh issue list --repo ${{ github.repository }} --milestone "$MILESTONE" --state open --json labels)

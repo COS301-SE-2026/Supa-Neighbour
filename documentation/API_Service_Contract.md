@@ -29,12 +29,15 @@
    - [GET /api/helpers/available](#51-get-apihelpersavailable)
    - [GET /api/helpers/{helperId}/profile](#52-get-apihelpershelperidprofile)
    - [POST /api/task/{taskId}/invite](#53-post-apitasktaskidinvite)
+   - [POST /api/task/{taskId}/accept](#54-post-apitasktaskidaccept)
+   - [POST /api/task/{taskId}/decline](#55-post-apitasktaskiddecline)
+   - [GET /api/helpers/me/tasks](#56-get-apihelpersmetasks)
 6. [Profile & Gamification](#6-profile--gamification)
    - [GET /api/users/me/profile](#61-get-apiusersmeprofile)
    - [PATCH /api/users/me/profile](#62-patch-apiusersmeprofile)
    - [GET /api/leaderboard](#63-get-apileaderboard)
    - [GET /api/users/me/achievements](#64-get-apiusersmeachievements)
-
+   - [POST /api/tasks/{taskId}/rate](#65-post-apitaskstaskidrate)
 ---
 
 ## 1. Authentication
@@ -827,13 +830,11 @@ GET /api/helpers/5/profile?taskId=12
   "displayName": "David W.",
   "level": "Gold",
   "trustScore": 4.8,
-  "starRating": 5,
   "completedTasks": 27,
   "skills": ["Home Repair", "Transportation Support"],
   "reviews": [
     { "rating": "Excellent", "snippet": "Reliable and on time", "date": "2026-05-01" }
   ],
-  "availableForTask": true
 }
 ```
  
