@@ -487,18 +487,6 @@ create table task_invitation_table (
 );
 
 -- =============================================
--- 19. helper skills table
--- =============================================
-create table helper_skill_table (
-    helper_skill_id int generated always as identity primary key,
-    helper_id       int not null,
-    task_type_id    int not null,
-    foreign key (helper_id)    references helper_table(helper_id),
-    foreign key (task_type_id) references task_type_table(task_type_id),
-    constraint uq_helper_skill unique (helper_id, task_type_id)
-);
-
--- =============================================
 -- indexes
 -- =============================================
 
@@ -682,17 +670,17 @@ values
 -- 7. helper table
 -- =============================================
 insert into helper_table
-(user_id, task_type_id, badge_id, helper_xp)
+(user_id, task_type_id, badge_id, helper_xp)    
 values
-(2,  2, 4, 500),  -- Sarah    → Pet Care        | completed Medical Assistance task (500 xp)
-(3,  3, 2, 250),  -- Michael  → Tech Support     | completed Transportation task (250 xp)
-(4,  4, 3, 150),  -- Emily    → Transportation   | completed Technology Support task (150 xp)
-(5,  5, 5, 500),  -- David    → Home Repair      | no completed tasks yet, default xp
-(7,  1, 1, 500),  -- James    → Medical Assistance | no completed tasks yet, default xp
-(10, 2, 4, 500),  -- Emma     → Pet Care         | no completed tasks yet, default xp
-(11, 3, 2, 500),  -- Matthew  → Tech Support      | no completed tasks yet, default xp
-(12, 4, 3, 500),  -- Isabella → Transportation    | no completed tasks yet, default xp
-(13, 5, 5, 500);  -- William  → Home Repair       | no completed tasks yet, default xp
+(2,  2, 4, 500), 
+(3,  3, 2, 250),  
+(4,  4, 3, 150),  
+(5,  5, 5, 500),  
+(7,  1, 1, 500),  
+(10, 2, 4, 500),  
+(11, 3, 2, 500), 
+(12, 4, 3, 500),  
+(13, 5, 5, 500); 
 
 -- =============================================
 -- 8. dependent table
@@ -781,15 +769,15 @@ average_rating,
 average_giving_rating
 )
 values
-('HELPER_SARAH',    2,  2, 1, 2, 4.6, 4.5),   -- Sarah    → Pet Care
-('HELPER_MICHAEL',  3,  3, 3, 3, 4.7, 4.6),   -- Michael  → Tech Support
-('HELPER_EMILY',    4,  4, 2, 4, 4.5, 4.4),   -- Emily    → Transportation
-('HELPER_DAVID',    5,  5, 5, 5, 4.8, 4.7),   -- David    → Home Repair
-('HELPER_JAMES',    7,  1, 1, 2, 4.9, 4.8),   -- James    → Medical Assistance
-('HELPER_EMMA',     10, 2, 1, 5, 4.3, 4.2),   -- Emma     → Pet Care
-('HELPER_MATTHEW',  11, 3, 2, 1, 4.1, 4.0),   -- Matthew  → Tech Support
-('HELPER_ISABELLA', 12, 4, 3, 2, 4.4, 4.3),   -- Isabella → Transportation
-('HELPER_WILLIAM',  13, 5, 4, 3, 4.2, 4.1);   -- William  → Home Repair
+('HELPER_SARAH',    2,  2, 1, 2, 4.6, 4.5),   
+('HELPER_MICHAEL',  3,  3, 3, 3, 4.7, 4.6),   
+('HELPER_EMILY',    4,  4, 2, 4, 4.5, 4.4),   
+('HELPER_DAVID',    5,  5, 5, 5, 4.8, 4.7),   
+('HELPER_JAMES',    7,  1, 1, 2, 4.9, 4.8),   
+('HELPER_EMMA',     10, 2, 1, 5, 4.3, 4.2),  
+('HELPER_MATTHEW',  11, 3, 2, 1, 4.1, 4.0),   
+('HELPER_ISABELLA', 12, 4, 3, 2, 4.4, 4.3),   
+('HELPER_WILLIAM',  13, 5, 4, 3, 4.2, 4.1);  
 
 -- =============================================
 -- 13. dependent analytics table
@@ -802,14 +790,13 @@ location_id,
 average_rating, 
 average_giving_rating)
 values
-('DEPENDENT_MED', 6, 1, 12, 1, 4.6, 4.7),
-('DEPENDENT_TRANS', 7, 4, 5, 2, 4.2, 4.0),
-('DEPENDENT_TECH', 8, 3, 8, 3, 4.8, 4.9);
+('DEPENDENT_MED',   2,  1, 12, 1, 4.6, 4.7),  
+('DEPENDENT_TRANS', 4,  4,  5, 4, 4.2, 4.0), 
+('DEPENDENT_TECH',  3,  3,  8, 3, 4.8, 4.9); 
 
 -- =============================================
 -- 14. analytics table
 -- =============================================
--- Replace the analytics_table insert with this
 insert into analytics_table
 (task_id, admin_id, helper_type_id, dependent_type_id)
 values
@@ -908,35 +895,34 @@ values
 insert into user_achievement_table 
 (user_id, badge_id, awarded_on, progress_current, progress_target)
 values
-(2, 2, '2026-05-03', 5,  5),   -- Sarah: earned Pet Care Helper
-(2, 1, null,         2, 10),   -- Sarah: working toward Medical Specialist
-(2, 3, null,         1,  5),   -- Sarah: working toward Tech Assistant
-(7, 1, '2026-05-01', 10, 10),  -- James: earned Medical Specialist
-(7, 2, null,         3,  5);   -- James: working toward Pet Care Helper
+(2, 2, '2026-05-03', 5,  5),   
+(2, 1, null,         2, 10),   
+(2, 3, null,         1,  5),   
+(7, 1, '2026-05-01', 10, 10),
+(7, 2, null,         3,  5);  
 
 -- =============================================
 -- 19. task_invitation_table mock data
 -- =============================================
 INSERT INTO task_invitation_table (task_id, helper_id, status)
 VALUES
-(1, 1, 'Invited'),   -- Sarah was chosen for task 1
-(1, 2, 'Rejected'),  -- Michael expressed interest but wasn't picked
-(2, 4, 'Accepted'),  -- David expressed interest, waiting to be picked
-(2, 5, 'Declined'),  -- James said he can't do task 2
-(3, 3, 'Invited');   -- Emily was chosen for task 3
-
+(1, 1, 'Invited'),   
+(1, 2, 'Rejected'), 
+(2, 4, 'Accepted'),  
+(2, 5, 'Declined'), 
+(3, 3, 'Invited');
 
 -- =============================================
 -- 19. helper skill mock data
 -- =============================================
 insert into helper_skill_table (helper_id, task_type_id)
 values
-(1, 1), (1, 2),        -- Sarah: Medical + Pet Care
-(2, 3), (2, 4),        -- Michael: Tech + Transportation
-(3, 3), (3, 5),        -- Emily: Tech + Home Repair
-(4, 4), (4, 2),        -- David: Transportation + Pet Care
-(5, 1), (5, 5),        -- James: Medical + Home Repair
-(6, 2), (6, 3),        -- Emma: Pet Care + Tech
-(7, 4), (7, 1),        -- Matthew: Transportation + Medical
-(8, 5), (8, 2),        -- Isabella: Home Repair + Pet Care
+(1, 1), (1, 2),        
+(2, 3), (2, 4),        
+(3, 3), (3, 5),        
+(4, 4), (4, 2),        
+(5, 1), (5, 5),       
+(6, 2), (6, 3),        
+(7, 4), (7, 1),       
+(8, 5), (8, 2),        --
 (9, 3), (9, 4);  
