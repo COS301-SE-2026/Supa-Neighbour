@@ -29,7 +29,7 @@ public class TaskInvitation {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "task_invitation_id")
+    @Column(name = "invitation_id")
     private int taskInvitationId;
 
     @ManyToOne
