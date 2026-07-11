@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../models/bulletin_post_model.dart';
 import '../../models/bulletin_comment_model.dart';
@@ -63,12 +62,14 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
 
     try {
       final newComment = await _bulletinService.addComment(widget.postId, content);
+      if (!mounted) return;
       setState(() {
         _comments.insert(0, newComment);
         _commentController.clear();
         _isSubmittingComment = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isSubmittingComment = false;
       });
@@ -85,12 +86,14 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
     try {
       if (_isHelpful) {
         await _bulletinService.removeHelpful(widget.postId);
+        if (!mounted) return;
         setState(() {
           _isHelpful = false;
           _helpfulCount--;
         });
       } else {
         await _bulletinService.addHelpful(widget.postId);
+        if (!mounted) return;
         setState(() {
           _isHelpful = true;
           _helpfulCount++;
@@ -133,6 +136,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
           Navigator.pop(context, true);
         }
       } catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to delete post'),

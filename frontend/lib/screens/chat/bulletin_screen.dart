@@ -4,7 +4,6 @@ import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../models/bulletin_post_model.dart';
 import '../../services/bulletin_service.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import 'bulletin_post_detail_screen.dart';
 import 'create_bulletin_post_screen.dart';
 
@@ -57,7 +56,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
         page: _currentPage,
         limit: 10,
       );
-
+      if (!mounted) return;
       setState(() {
         if (refresh || _currentPage == 1) {
           _posts = newPosts;
@@ -69,6 +68,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
         _isLoadingMore = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _isLoadingMore = false;
@@ -124,10 +124,12 @@ class _BulletinScreenState extends State<BulletinScreen> {
                     : null,
                 onTap: () {
                   _changeCategory(category);
-                  Navigator.pop(context);
+                  if (mounted){ 
+                    Navigator.pop(context);
+                  }
                 },
               );
-            }).toList(),
+            }),
           ],
         ),
       );
@@ -272,7 +274,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                // Filter Button
+               
                 GestureDetector(
                   onTap: () => _showFilterDialog(),
                   child: Container(
@@ -606,6 +608,7 @@ Future<void> _toggleHelpful(BulletinPost post) async {
 
     if (post.isHelpfulByUser) {
       await _bulletinService.removeHelpful(post.id);
+      if (!mounted) return;
       
       // Create updated post with helpful count decreased
       final updatedPost = BulletinPost(
@@ -631,6 +634,7 @@ Future<void> _toggleHelpful(BulletinPost post) async {
       });
     } else {
       await _bulletinService.addHelpful(post.id);
+      if (!mounted) return;
       
       // Create updated post with helpful count increased
       final updatedPost = BulletinPost(
@@ -656,6 +660,7 @@ Future<void> _toggleHelpful(BulletinPost post) async {
       });
     }
   } catch (e) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Failed to update helpful status'),
@@ -666,132 +671,145 @@ Future<void> _toggleHelpful(BulletinPost post) async {
   }
 }
 
-  void _showReportDialog(BulletinPost post) {
-    final TextEditingController reasonController = TextEditingController();
+ void _showReportDialog(BulletinPost post) {
+  final TextEditingController reasonController = TextEditingController();
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      title: Text(
+        'Report Post',
+        style: GoogleFonts.poppins(
+          color: AppColors.charcoal,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
         ),
-        title: Text(
-          'Report Post',
-          style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Why are you reporting this post?',
+            style: GoogleFonts.openSans(
+              color: AppColors.textGrey,
+              fontSize: 14,
+            ),
           ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Why are you reporting this post?',
-              style: GoogleFonts.openSans(
+          const SizedBox(height: 12),
+          TextField(
+            controller: reasonController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: 'Enter reason...',
+              hintStyle: GoogleFonts.openSans(
                 color: AppColors.textGrey,
                 fontSize: 14,
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Enter reason...',
-                hintStyle: GoogleFonts.openSans(
-                  color: AppColors.textGrey,
-                  fontSize: 14,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.primaryTeal, width: 2),
-                ),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.openSans(
-                color: AppColors.textGrey,
-                fontSize: 14,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (reasonController.text.isNotEmpty) {
-                try {
-                  await _bulletinService.reportPost(post.id, reasonController.text);
-                  setState(() {
-                    final index = _posts.indexWhere((p) => p.id == post.id);
-                    if (index != -1) {
-                      _posts[index] = BulletinPost(
-                        id: post.id,
-                        title: post.title,
-                        body: post.body,
-                        category: post.category,
-                        authorId: post.authorId,
-                        authorName: post.authorName,
-                        authorAvatar: post.authorAvatar,
-                        imageUrls: post.imageUrls,
-                        helpfulCount: post.helpfulCount,
-                        commentCount: post.commentCount,
-                        createdAt: post.createdAt,
-                        isOwner: post.isOwner,
-                        isReported: true,
-                        isHelpfulByUser: post.isHelpfulByUser,
-                        isExpired: post.isExpired,
-                      );
-                    }
-                  });
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Post reported successfully'),
-                      backgroundColor: AppColors.success,
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                } catch (e) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to report post'),
-                      backgroundColor: AppColors.error,
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
+              border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-            ),
-            child: Text(
-              'Report',
-              style: GoogleFonts.openSans(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primaryTeal, width: 2),
               ),
+              contentPadding: const EdgeInsets.all(12),
             ),
           ),
         ],
       ),
-    );
-  }
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'Cancel',
+            style: GoogleFonts.openSans(
+              color: AppColors.textGrey,
+              fontSize: 14,
+            ),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            if (reasonController.text.isNotEmpty) {
+              try {
+                await _bulletinService.reportPost(post.id, reasonController.text);
+                
+                
+                if (!mounted) {
+                  if (context.mounted) Navigator.pop(context);
+                  return;
+                }
+                
+                setState(() {
+                  final index = _posts.indexWhere((p) => p.id == post.id);
+                  if (index != -1) {
+                    _posts[index] = BulletinPost(
+                      id: post.id,
+                      title: post.title,
+                      body: post.body,
+                      category: post.category,
+                      authorId: post.authorId,
+                      authorName: post.authorName,
+                      authorAvatar: post.authorAvatar,
+                      imageUrls: post.imageUrls,
+                      helpfulCount: post.helpfulCount,
+                      commentCount: post.commentCount,
+                      createdAt: post.createdAt,
+                      isOwner: post.isOwner,
+                      isReported: true,
+                      isHelpfulByUser: post.isHelpfulByUser,
+                      isExpired: post.isExpired,
+                    );
+                  }
+                });
+                
+                if (context.mounted) Navigator.pop(context);
+                
+                
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Post reported successfully'),
+                    backgroundColor: AppColors.success,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              } catch (e) {
+                if (context.mounted) Navigator.pop(context);
+                
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to report post'),
+                    backgroundColor: AppColors.error,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: Text(
+            'Report',
+            style: GoogleFonts.openSans(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   String _getTimeAgo(DateTime date) {
     final now = DateTime.now();

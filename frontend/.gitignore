@@ -75,3 +75,7 @@ windows/flutter/generated_plugins.cmake
 
 # Pub lock file (auto-generated)
 pubspec.lock
+# Personal tree output files
+*.txt
+build_log.txt
+tree_frontend.txt

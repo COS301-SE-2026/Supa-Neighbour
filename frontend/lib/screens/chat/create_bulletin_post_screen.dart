@@ -18,7 +18,7 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _bodyController = TextEditingController();
   String _selectedCategory = 'general';
-  List<File> _selectedImages = [];
+  final List<File> _selectedImages = [];
   bool _isSubmitting = false;
 
   final List<Map<String, String>> _categories = [
