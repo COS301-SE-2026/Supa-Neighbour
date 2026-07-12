@@ -8,6 +8,7 @@ import com.app.api.models.TaskInvitation;
 import com.app.api.models.TaskInvoice;
 import com.app.api.models.User;
 import com.app.api.repositories.TaskInvitationRepository;
+import com.app.api.repositories.TaskInvoiceRepository;
 import java.util.Optional;
 import java.util.Date;
 import com.app.api.models.Helper;
@@ -24,9 +25,11 @@ public class TaskInvitationService {
 
     
     private final TaskInvitationRepository taskInvitationRepository;
+    private final TaskInvoiceRepository taskInvoiceRepository;
 
-    TaskInvitationService(TaskInvitationRepository taskInvitationRepository) {
+    TaskInvitationService(TaskInvitationRepository taskInvitationRepository, TaskInvoiceRepository taskInvoiceRepository) {
         this.taskInvitationRepository = taskInvitationRepository;
+        this.taskInvoiceRepository = taskInvoiceRepository;
     }
 
     // Get all
@@ -123,7 +126,27 @@ public class TaskInvitationService {
             invitation = TaskInvitation.builder().taskId(taskInvoice).helperId(helper).status("Invited").invitedAt(new Date()).build();
         }
 
-        return taskInvitationRepository.save(invitation);
+        taskInvitationRepository.save(invitation);
+        taskInvoice.setStatus("assigned");
+        taskInvoice.setHelperid(helper);
+        taskInvoiceRepository.save(taskInvoice);
+        return invitation;
+    }
 
+    @Transactional
+    public TaskInvitation declineInvitation(int taskId, int helperId, TaskInvoice taskInvoice, Helper helper){
+        Optional<TaskInvitation> existing = taskInvitationRepository.findByTaskId_TaskidAndHelperId_Helperid(taskId, helperId);
+
+        if (existing.isPresent()) {
+            String status = existing.get().getStatus();
+            if ("Invited".equals(status)) {
+                throw new IllegalStateException("UNPROCESSABLE"); // requester already selected them — too late to casually decline
+            }
+            throw new IllegalStateException("CONFLICT"); // already Accepted/Declined/Rejected
+        }
+
+        TaskInvitation invitation = TaskInvitation.builder().taskId(taskInvoice).helperId(helper).status("Declined").invitedAt(null).build();
+
+        return taskInvitationRepository.save(invitation);
     }
 }

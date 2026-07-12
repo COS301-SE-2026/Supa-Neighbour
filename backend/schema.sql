@@ -754,7 +754,8 @@ values
 (1, 1, true,  1, 1, true,  1, '2026-05-01', '2026-05-01', 3, null, 'Outstanding', 'Excellent medical assistance provided.', 1, 'completed'),
 (2, 2, false, 2, 4, false, 2, '2026-05-02', '2026-05-03', 2, null, 'Very Good',   'Reliable transport support.',            2, 'completed'),
 (3, 3, false, 3, 3, false, 1, '2026-05-04', '2026-05-04', 4, null, 'Very Good',   'Resolved device setup issues quickly.',   3, 'completed'),
-(NULL, 5, false, 4, 5, false, NULL, '2026-07-15', NULL, NULL, NULL, NULL, NULL, NULL, 'open');
+(NULL, 5, false, 4, 5, false, NULL, '2026-07-15', NULL, NULL, NULL, NULL, NULL, NULL, 'open'),
+(NULL, 1, false, 1, 1, false, NULL, '2026-07-20', NULL, NULL, NULL, NULL, NULL, NULL, 'open');
 -- =============================================
 -- 12. helper analytics table
 -- =============================================

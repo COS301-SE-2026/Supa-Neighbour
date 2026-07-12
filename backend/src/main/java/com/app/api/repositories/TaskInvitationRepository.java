@@ -15,4 +15,5 @@ public interface TaskInvitationRepository extends JpaRepository<TaskInvitation, 
     Optional<TaskInvitation>findByTaskId_TaskidAndHelperId_Helperid(int taskId, int helperId);
 
     List<TaskInvitation>findByTaskId_Taskid(int taskId);
+    
 }

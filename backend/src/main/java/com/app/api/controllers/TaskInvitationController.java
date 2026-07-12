@@ -141,6 +141,11 @@ public class TaskInvitationController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Task not found"));
         }
 
+        if (!"open".equals(taskInvoice.getStatus())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Task is not open for invitations"));
+        }
+
         if (taskInvoice.getDependentid().getUserId().getUserid() != callerId) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "You are not authorised to invite helpers to this task"));
@@ -165,4 +170,53 @@ public class TaskInvitationController {
     ));
     }
 
+
+    @PostMapping("/{taskId}/decline")
+    public ResponseEntity<?> declineTask(
+        @PathVariable int taskId,
+    @RequestHeader("Authorization") String authHeader
+    ){
+        int callerId;
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            callerId = firebaseAuthService.getUserIdFromToken(token);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        Helper helper = helperRepository.findByUserid_Userid(callerId).orElse(null);
+        if(helper == null){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "User is not a helper"));
+        }
+
+        TaskInvoice taskInvoice = taskInvoiceRepository.findById(taskId).orElse(null);
+        if(taskInvoice == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Task not found"));
+        }
+
+        if (!"open".equals(taskInvoice.getStatus())) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .body(Map.of("error", "Task is not available for declining"));
+        }
+
+
+        try{
+            TaskInvitation updated = taskInvitationService.declineInvitation(taskId, helper.getHelperid(), taskInvoice, helper);
+            return ResponseEntity.ok(
+                Map.of(
+                "message", "Task declined.",
+                "taskId", taskId,
+                "status", "Declined"
+            ));
+
+        }catch(IllegalStateException e){
+            if("CONFLICT".equals(e.getMessage())){
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Task cannot be declined in its current state"));
+            }
+
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error", "Task is not available for declining"));
+        }
+
+    }
 }
