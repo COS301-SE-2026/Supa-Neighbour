@@ -164,4 +164,24 @@ public class TaskService {
     public Task createTask(Task task) {
         return taskRepo.save(task);
     }
+
+    /**
+     * Accept a task by assigning a helper to it.
+     * @param taskId the ID of the task to accept
+     * @param helperId the ID of the helper accepting the task
+     * @return the updated task, or null if not found
+     */
+    public Task acceptTask(int taskId, int helperId){
+        Task task = taskRepo.findById(taskId).orElse(null);
+        if (task == null) {
+            return null;
+        }
+
+        if(task.getHelperId() != null) {
+            return null; // Task already accepted by another helper
+        }
+        
+        task.setHelperId(helperId);
+        return taskRepo.save(task);
+    }
 }

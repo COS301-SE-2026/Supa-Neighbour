@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
-
+import com.app.api.services.HelperService;
+import org.springframework.web.bind.annotation.RequestParam;
 /**
  * REST controller for task-related endpoints.
  */
@@ -23,6 +24,7 @@ public class TaskController {
     /** The task service. */
     private final TaskService taskService;
 
+
     /**
      * Constructs a TaskController with the given TaskService.
      * @param taskService the task service
@@ -30,6 +32,7 @@ public class TaskController {
 
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
+   
     }
 
     /**
@@ -111,13 +114,14 @@ public class TaskController {
     @ApiResponse(responseCode = "200", description = "Tasks retrieved")
     @ApiResponse(responseCode = "404", description = "No dependent profile found for user")
     @GetMapping("/users/{userId}/tasks")
-    public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable int userId) {
+    public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable int userId, Integer helperId) {
         List<Task> tasks = taskService.getTasksByUserId(userId);
 
         if (tasks == null) {
             return ResponseEntity.notFound().build();
         }
 
+        //tasks.setHelperId(tasks.getHelperId());
         return ResponseEntity.ok(tasks);
     }
 
@@ -135,4 +139,17 @@ public class TaskController {
         return ResponseEntity.status(201).body(newTask);
     }
     
+
+    @Operation(summary = "accept a task")
+    @ApiResponse(responseCode = "200", description = "Task accepted successfully")
+    @ApiResponse(responseCode = "404", description = "Task not found")
+    @PostMapping("/tasks/{taskId}/accept")
+    public ResponseEntity<Task> acceptTask(@PathVariable int taskId, @RequestParam int helperId)
+    {
+        Task acceptTask = taskService.acceptTask(taskId, helperId);
+        if(acceptTask == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(acceptTask);
+    }
 }
