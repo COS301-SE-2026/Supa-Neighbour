@@ -73,7 +73,6 @@ public class UserService {
         existing.setFirstName(updated.getFirstName());
         existing.setGender(updated.getGender());
         existing.setLastName(updated.getLastName());
-        existing.setPassword(updated.getPassword());
         existing.setPhoneNumber(updated.getPhoneNumber());
         existing.setRatingid(updated.getRatingid());
         existing.setUserType(updated.getUserType());
@@ -90,4 +89,3 @@ public class UserService {
         userRepository.deleteById(id);
     }
 }
-

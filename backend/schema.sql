@@ -753,8 +753,8 @@ insert into task_invoice_table
 values
 (1, 1, true,  1, 1, true,  1, '2026-05-01', '2026-05-01', 3, null, 'Outstanding', 'Excellent medical assistance provided.', 1, 'completed'),
 (2, 2, false, 2, 4, false, 2, '2026-05-02', '2026-05-03', 2, null, 'Very Good',   'Reliable transport support.',            2, 'completed'),
-(3, 3, false, 3, 3, false, 1, '2026-05-04', '2026-05-04', 4, null, 'Very Good',   'Resolved device setup issues quickly.',   3, 'completed');
-
+(3, 3, false, 3, 3, false, 1, '2026-05-04', '2026-05-04', 4, null, 'Very Good',   'Resolved device setup issues quickly.',   3, 'completed'),
+(NULL, 5, false, 4, 5, false, NULL, '2026-07-15', NULL, NULL, NULL, NULL, NULL, NULL, 'open');
 -- =============================================
 -- 12. helper analytics table
 -- =============================================
@@ -904,13 +904,16 @@ values
 -- =============================================
 -- 19. task_invitation_table mock data
 -- =============================================
-INSERT INTO task_invitation_table (task_id, helper_id, status)
+INSERT INTO task_invitation_table (task_id, helper_id, status, invited_at)
 VALUES
-(1, 1, 'Invited'),   
-(1, 2, 'Rejected'), 
-(2, 4, 'Accepted'),  
-(2, 5, 'Declined'), 
-(3, 3, 'Invited');
+(1, 1, 'Invited', NOW()),   
+(1, 2, 'Rejected', NULL), 
+(2, 4, 'Accepted', NULL),  
+(2, 5, 'Declined', NULL), 
+(3, 3, 'Invited', NOW()),
+(4, 2, 'Accepted', NULL),   -- Michael (user 3) expressed interest
+(4, 4, 'Accepted', NULL),   -- David (user 5) expressed interest
+(4, 6, 'Declined', NULL);  -- Emma (user 10) declined
 
 -- =============================================
 -- 19. helper skill mock data

@@ -57,9 +57,6 @@ public class User {
     /** user's surname */
     @Column(name = "user_surname")
     private String lastName;
-    /** user's password */
-    @Column(name = "user_password")
-    private String password;
 
     /** user's email */
     @Column(name = "user_email")
@@ -112,14 +109,12 @@ public class User {
      * @param ratingid the rating associated with the user
      * @param userType the user's type or role
      */
-    public User(int userid,String firebaseUid, String firstName, String lastName, String password, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
+    public User(int userid,String firebaseUid, String firstName, String lastName, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
         this.userid = userid;
         this.firebaseUid = firebaseUid;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.password = password;
         this.email = email;
-        this.firebaseUid = firebaseUid;
         this.phoneNumber = phoneNumber;
         this.dateOfBirth = dateOfBirth;
         this.gender = gender;
@@ -130,4 +125,3 @@ public class User {
     }
 
 }
-
