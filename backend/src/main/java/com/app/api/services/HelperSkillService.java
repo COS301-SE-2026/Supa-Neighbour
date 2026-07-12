@@ -14,22 +14,49 @@ import com.app.api.repositories.HelperSkillRepository;
 @Service
 public class HelperSkillService {
     
+    /**
+     * Repository for HelperSkill entities.
+     */
     private final HelperSkillRepository helperSkillRepository;
 
+
+    /**
+     * Constructs a HelperSkillService with the specified repository.
+     *
+     * @param helperSkillRepository the repository for HelperSkill entities
+     */
     public HelperSkillService(HelperSkillRepository helperSkillRepository) {
         this.helperSkillRepository = helperSkillRepository;
     }
 
+
+    /**
+     * Retrieves all helper skill records from the repository.
+     *
+     * @return a list of all helper skill records
+     */
     public List<HelperSkill> getAllHelpersSkills()
     {
         return helperSkillRepository.findAll();
     }
 
+    /**
+     * Retrieves a helper skill record by its identifier.
+     *
+     * @param id the helper skill identifier
+     * @return the helper skill record if found, or null if no record exists with the given id
+     */
     public HelperSkill getHelperSkillById(int id)
     {
         return helperSkillRepository.findById(id).orElse(null);
     }
 
+    /**
+     * Saves a new helper skill record to the repository.
+     *
+     * @param helperSkill the helper skill record to save
+     * @return the saved helper skill record, or null if the provided record is null
+     */
     public HelperSkill saveHelperSkill(HelperSkill helperSkill)
     {
         if(helperSkill == null)
@@ -39,6 +66,13 @@ public class HelperSkillService {
         return helperSkillRepository.save(helperSkill);
     }
 
+    /**
+     * Updates an existing helper skill record with the provided details.
+     *
+     * @param id      the identifier of the helper skill record to update
+     * @param updated the helper skill object containing the updated fields
+     * @return the updated helper skill record, or null if no record exists with the given id
+     */
     public HelperSkill updateHelperSkill(int id, HelperSkill updated)
     {
         HelperSkill existing = helperSkillRepository.findById(id).orElse(null);

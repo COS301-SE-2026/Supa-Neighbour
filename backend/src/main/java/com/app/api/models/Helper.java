@@ -40,6 +40,9 @@ public class Helper {
     @Column(name = "helper_xp")
     private int helperXp;
 
+    @Column(name = "isAvailable")
+    private boolean isAvailable;
+
     /**
      * Constructs a Helper with all fields specified.
      *
@@ -48,12 +51,15 @@ public class Helper {
      * @param taskTypeid  the task type the helper specializes in
      * @param badgeid     the badge earned by the helper
      * @param helperXp    the experience points of the helper
+     * @param isAvailable whether the helper is available
      */
-    public Helper(int helperid, User userid, TaskType taskTypeid, Badges badgeid, int helperXp) {
+    public Helper(int helperid, User userid, TaskType taskTypeid, Badges badgeid, int helperXp, boolean isAvailable) {
         this.helperid = helperid;
         this.userid = userid;
         this.taskTypeid = taskTypeid;
         this.badgeid = badgeid;
+        this.helperXp = helperXp;
+        this.isAvailable = isAvailable;
         this.helperXp = helperXp;
     }
 
@@ -152,5 +158,23 @@ public class Helper {
      */
     public void setHelperXp(int helperXp) {
         this.helperXp = helperXp;
+    }
+
+    /**
+     * Checks if the helper is available.
+     *
+     * @return true if the helper is available, false otherwise
+     */
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
+    /**
+     * Sets the availability status of the helper.
+     *
+     * @param available true if the helper is available, false otherwise
+     */
+    public void setAvailable(boolean available) {
+        isAvailable = available;
     }
 }
