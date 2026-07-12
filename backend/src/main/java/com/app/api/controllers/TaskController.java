@@ -138,18 +138,4 @@ public class TaskController {
         Task newTask = taskService.createTask(task);
         return ResponseEntity.status(201).body(newTask);
     }
-    
-
-    @Operation(summary = "accept a task")
-    @ApiResponse(responseCode = "200", description = "Task accepted successfully")
-    @ApiResponse(responseCode = "404", description = "Task not found")
-    @PostMapping("/tasks/{taskId}/accept")
-    public ResponseEntity<Task> acceptTask(@PathVariable int taskId, @RequestParam int helperId)
-    {
-        Task acceptTask = taskService.acceptTask(taskId, helperId);
-        if(acceptTask == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(acceptTask);
-    }
 }
