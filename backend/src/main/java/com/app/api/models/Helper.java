@@ -46,6 +46,6 @@ public class Helper {
     private int helperXp;
 
     @Column(name = "isAvailable")
-    private boolean isAvailable;
+    private boolean available;
 
 }
