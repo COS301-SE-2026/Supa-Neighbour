@@ -30,15 +30,15 @@ class AuthService {
       throw Exception('Failed to retrieve Firebase ID token.');
     }
 
-    final Response<Map<String, dynamic>> response = await _dio.post(
+    final Response<Map<String, dynamic>> res = await _dio.post(
       '/api/auth/login',
       options: Options(
         headers: {'Authorization': 'Bearer $idToken'},
       ),
     );
 
-    if (response.statusCode == 200 && response.data != null) {
-      return User.fromJson(response.data!);
+    if (res.statusCode == 200 && res.data != null) {
+      return User.fromJson(res.data!);
     }
 
     throw Exception('Login failed: unexpected response from server.');
@@ -47,4 +47,47 @@ class AuthService {
   Future<void> logout() async {
     await _firebaseAuth.signOut();
   }
+
+  
+  Future<User> register({
+    required String idToken,
+    required String firstName,
+    required String lastName,
+    required String password,
+    required String phoneNumber,
+    required String dateOfBirth, 
+    required String gender,
+    required String username,
+    String userType = 'user',
+    int addressId = 1,
+    int badgeId = 1,
+    int ratingId = 1,
+  }) async {
+    final Response<Map<String, dynamic>> response = await _dio.post(
+      '/api/auth/register',
+      options: Options(
+        headers: {'Authorization': 'Bearer $idToken'},
+      ),
+      data: {
+        'firstName': firstName,
+        'lastName': lastName,
+        'password': password,
+        'phoneNumber': phoneNumber,
+        'dateOfBirth': dateOfBirth,
+        'gender': gender,
+        'username': username,
+        'userType': userType,
+        'addressId': addressId,
+        'badgeId': badgeId,
+        'ratingId': ratingId,
+      },
+    );
+
+    if (response.statusCode == 200 && response.data != null) {
+      return User.fromJson(response.data!);
+    }
+
+    throw Exception('Registration failed: unexpected response from server.');
+  }
+
 }

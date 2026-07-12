@@ -105,11 +105,10 @@ factory User.fromJson(Map<String, dynamic> json) {
         ? DateTime.parse(json['dateOfBirth'].toString())
         : null,
     gender: json['gender'] as String?,
-    // address is nested — extract from the addressid object
     street: json['addressid']?['street'] as String?,
     town: json['addressid']?['neighbourhoodid']?['neighbourhoodName'] as String?,
     zipCode: json['addressid']?['zipcode']?.toString(),
-    createdAt: DateTime.now(), // backend doesn't return this field
+    createdAt: DateTime.now(), 
   );
 }
 
