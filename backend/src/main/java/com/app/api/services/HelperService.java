@@ -86,4 +86,14 @@ public class HelperService {
     public void deleteHelper(int id) {
         helperRepository.deleteById(id);
     }
+
+    //findAllByStatus
+    /**
+     * Retrieves all helpers with the specified status.
+     *     * @param status the status to filter helpers by
+     * @return a list of helpers with the specified status
+     */
+    public List<Helper> findAllByStatus(boolean available) {
+        return helperRepository.findByAvailable(available);
+    }
 }

@@ -102,4 +102,17 @@ public class HelperController {
         helperService.deleteHelper(id);
         return ResponseEntity.noContent().build();
     }
+
+    // GET /api/helpers/status/available
+    /**
+     * Retrieves all helpers with the specified status.
+     *
+     * @param status the status to filter helpers by
+     * @return a list of helpers with the specified status
+     */
+    @GetMapping("/available")
+    public ResponseEntity<List<Helper>> getAllAvailableHelpers() {
+        List<Helper> helpers = helperService.findAllByStatus(true);
+        return ResponseEntity.ok(helpers);
+    }
 }
