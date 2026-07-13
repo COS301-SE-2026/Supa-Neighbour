@@ -4,11 +4,20 @@ import 'signup_details_screen.dart';
 
 class SignupOtpScreen extends StatefulWidget {
   final String email;
-  const SignupOtpScreen({super.key, required this.email});
+  final String idToken;   
+  final String password;  
+
+  const SignupOtpScreen({
+    super.key,
+    required this.email,
+    required this.idToken,
+    required this.password,
+  });
 
   @override
   State<SignupOtpScreen> createState() => _SignupOtpScreenState();
 }
+
 
 class _SignupOtpScreenState extends State<SignupOtpScreen> {
   final List<TextEditingController> _otpControllers = List.generate(6, (index) => TextEditingController());
@@ -17,36 +26,26 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
   String _errorMessage = '';
 
   void _handleVerify() {
-    String otp = _otpControllers.map((c) => c.text).join();
+  String otp = _otpControllers.map((c) => c.text).join();
 
-    if (otp.length != 6) {
-      setState(() {
-        _errorMessage = 'Please enter the 6-digit OTP';
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SignupDetailsScreen(email: widget.email),
-          ),
-        );
-      }
-    });
+  if (otp.length != 6) {
+    setState(() => _errorMessage = 'Please enter the 6-digit OTP');//any will just pass
+    return;
   }
+
+  // will add real verification later (check if page is complete)
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => SignupDetailsScreen(
+        email: widget.email,
+        idToken: widget.idToken,   
+        password: widget.password, 
+      ),
+    ),
+  );
+}
+
 
   void _handleResendOTP() {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -56,6 +55,35 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
       ),
     );
   }
+
+void _handleNext() {
+  if (_firstNameController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter your first name'), backgroundColor: Color(0xFF1C9A89)),
+    );
+    return;
+  }
+  if (_lastNameController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter your last name'), backgroundColor: Color(0xFF1C9A89)),
+    );
+    return;
+  }
+
+  final user = _buildUser();
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => SignupResidentialScreen(
+        user: user,
+        idToken: widget.idToken,  
+        password: widget.password,
+      ),
+    ),
+  );
+}
+
 
   @override
   void dispose() {

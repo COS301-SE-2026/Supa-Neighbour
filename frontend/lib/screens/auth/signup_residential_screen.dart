@@ -5,15 +5,20 @@ import 'signup_other_details_screen.dart';
 
 class SignupResidentialScreen extends StatefulWidget {
   final User user;
-  
+  final String idToken;  
+  final String password;  
+
   const SignupResidentialScreen({
     super.key,
     required this.user,
+    required this.idToken,
+    required this.password,
   });
 
   @override
   State<SignupResidentialScreen> createState() => _SignupResidentialScreenState();
 }
+
 
 class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
   final TextEditingController _streetController = TextEditingController();
@@ -29,60 +34,40 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
     );
   }
 
-  void _handleNext() {
-    if (_streetController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your street address'),
-          backgroundColor: Color(0xFF1C9A89),
-        ),
-      );
-      return;
-    }
-
-    if (_townController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your town/city'),
-          backgroundColor: Color(0xFF1C9A89),
-        ),
-      );
-      return;
-    }
-
-    if (_zipCodeController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your zip code'),
-          backgroundColor: Color(0xFF1C9A89),
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-
-        final updatedUser = _buildUpdatedUser();
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SignupOtherDetailsScreen(
-              user: updatedUser,
-            ),
-          ),
-        );
-      }
-    });
+ void _handleNext() {
+  if (_streetController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter your street address'), backgroundColor: Color(0xFF1C9A89)),
+    );
+    return;
   }
+  if (_townController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter your town/city'), backgroundColor: Color(0xFF1C9A89)),
+    );
+    return;
+  }
+  if (_zipCodeController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter your zip code'), backgroundColor: Color(0xFF1C9A89)),
+    );
+    return;
+  }
+
+  final updatedUser = _buildUpdatedUser();
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => SignupOtherDetailsScreen(
+        user: updatedUser,
+        idToken: widget.idToken,  
+        password: widget.password, 
+      ),
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
