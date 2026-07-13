@@ -7,8 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../home/home_screen.dart';
 import '../../services/auth_service.dart';
 import '../../models/auth_session.dart';
-import '../../models/user_model.dart';
-
 import '../../components/logo_placeholder.dart';
 
 class SplashScreen extends StatefulWidget {

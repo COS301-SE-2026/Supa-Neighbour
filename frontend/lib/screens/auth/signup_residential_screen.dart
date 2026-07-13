@@ -24,7 +24,7 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
   final TextEditingController _streetController = TextEditingController();
   final TextEditingController _townController = TextEditingController();
   final TextEditingController _zipCodeController = TextEditingController();
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   User _buildUpdatedUser() {
     return widget.user.copyWith(

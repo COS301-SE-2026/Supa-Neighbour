@@ -29,14 +29,6 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
   bool _isLoading = false;
   final AuthService _authService = AuthService();
 
-
-  User _buildCompleteUser() {
-    return widget.user.copyWith(
-      phone: _phoneController.text,
-      username: _usernameController.text,
-    );
-  }
-
  Future<void> _handleFinish() async {
   if (_phoneController.text.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(

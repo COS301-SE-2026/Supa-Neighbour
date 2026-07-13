@@ -26,7 +26,7 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   String _selectedGender = 'Male';
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   User _buildUser() {
     return User(
