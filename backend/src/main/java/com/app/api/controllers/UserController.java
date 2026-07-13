@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,8 +30,12 @@ public class UserController {
      /**
      * Service used to perform user-related business logic.
      */
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     /**
      * Retrieves all users.
@@ -89,6 +92,18 @@ public class UserController {
         if (existing == null) {
             return ResponseEntity.notFound().build();
         }
+
+        existing.setFirebaseUid(user.getFirebaseUid());
+        existing.setEmailVerified(user.isEmailVerified());
+        existing.setPhoneVerified(user.isPhoneVerified());
+        existing.setUsername(user.getUsername());
+        existing.setFirstName(user.getFirstName());
+        existing.setLastName(user.getLastName());
+        existing.setPassword(user.getPassword());
+        existing.setEmail(user.getEmail());
+        existing.setPhoneNumber(user.getPhoneNumber());
+        existing.setDateOfBirth(user.getDateOfBirth());
+        existing.setGender(user.getGender());
         User updated = userService.updateUser(id, user);
         return ResponseEntity.ok(updated);
     }

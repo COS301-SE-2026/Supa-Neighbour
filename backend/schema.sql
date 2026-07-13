@@ -116,7 +116,7 @@ create table helper_table (
     task_type_id int,
     badge_id int,
     helper_xp int NOT NULL DEFAULT 0,
-
+    isAvailable boolean default true,
     foreign key (user_id) 
         references user_table(user_id),
 
@@ -670,17 +670,17 @@ values
 -- 7. helper table
 -- =============================================
 insert into helper_table
-(user_id, task_type_id, badge_id, helper_xp)    
+(user_id, task_type_id, badge_id, helper_xp, isAvailable)
 values
-(2,  2, 4, 500), 
-(3,  3, 2, 250),  
-(4,  4, 3, 150),  
-(5,  5, 5, 500),  
-(7,  1, 1, 500),  
-(10, 2, 4, 500),  
-(11, 3, 2, 500), 
-(12, 4, 3, 500),  
-(13, 5, 5, 500); 
+(2,  2, 4, 500, true), 
+(3,  3, 2, 250, false),  
+(4,  4, 3, 150, false),  
+(5,  5, 5, 500, false),  
+(7,  1, 1, 500, true),  
+(10, 2, 4, 500, true),  
+(11, 3, 2, 500, true), 
+(12, 4, 3, 500, true),  
+(13, 5, 5, 500, true);  
 
 -- =============================================
 -- 8. dependent table

@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Comments;
@@ -15,9 +13,12 @@ import com.app.api.repositories.CommentsRepository;
 @Service
 public class CommentsService {
 
-    @Autowired
-    private CommentsRepository commentsRepository;
 
+    private final CommentsRepository commentsRepository;
+
+    public CommentsService(CommentsRepository commentsRepository) {
+        this.commentsRepository = commentsRepository;
+    }
     // Get all
     /**
      * Retrieves all comments from the repository.

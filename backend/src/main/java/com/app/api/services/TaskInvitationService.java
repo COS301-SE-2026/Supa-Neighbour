@@ -150,3 +150,20 @@ public class TaskInvitationService {
         return taskInvitationRepository.save(invitation);
     }
 }
+    @Transactional
+    public TaskInvitation acceptInvitation(int taskId, int helperId, TaskInvoice taskInvoice, Helper helper){
+        Optional<TaskInvitation> existing = taskInvitationRepository.findByTaskId_TaskidAndHelperId_Helperid(taskId, helperId);
+
+        if(existing.isPresent()){
+            String status = existing.get().getStatus();
+            if("Invited".equals(status)){
+                throw new IllegalStateException("UNPROCESSABLE");
+            }
+            throw new IllegalStateException("CONFLICT");
+        }
+
+        TaskInvitation invitation = TaskInvitation.builder().taskId(taskInvoice).helperId(helper).status("Accepted").invitedAt(null).build();
+
+        return taskInvitationRepository.save(invitation);
+    }
+}

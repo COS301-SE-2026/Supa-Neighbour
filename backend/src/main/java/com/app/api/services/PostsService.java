@@ -2,7 +2,6 @@ package com.app.api.services;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Posts;
@@ -15,8 +14,11 @@ import com.app.api.repositories.PostsRepository;
 @Service
 public class PostsService {
 
-    @Autowired
-    private PostsRepository postsRepository;
+    private final PostsRepository postsRepository;
+
+    public PostsService(PostsRepository postsRepository) {
+        this.postsRepository = postsRepository;
+    }
 
     // Get all
     /**

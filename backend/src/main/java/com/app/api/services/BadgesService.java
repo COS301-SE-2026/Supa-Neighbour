@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Badges;
@@ -15,8 +13,12 @@ import com.app.api.repositories.BadgesRepository;
 @Service
 public class BadgesService {
 
-    @Autowired
-    private BadgesRepository badgesRepository;
+
+    private final BadgesRepository badgesRepository;
+
+    public BadgesService(BadgesRepository badgesRepository) {
+        this.badgesRepository = badgesRepository;
+    }
 
     // Get all
     /**

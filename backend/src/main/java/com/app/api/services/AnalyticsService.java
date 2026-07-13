@@ -2,7 +2,6 @@ package com.app.api.services;
 
 import java.util.List;
 
-
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Analytics;
@@ -17,6 +16,10 @@ public class AnalyticsService {
 
     
     private AnalyticsRepository analyticsRepository;
+
+    public AnalyticsService(AnalyticsRepository analyticsRepository) {
+        this.analyticsRepository = analyticsRepository;
+    }
 
     // Get all
     /**

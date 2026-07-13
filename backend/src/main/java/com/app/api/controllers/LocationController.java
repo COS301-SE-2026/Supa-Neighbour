@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,8 +23,12 @@ import com.app.api.services.LocationService;
 @RequestMapping("/api/locations")
 public class LocationController {
 
-    @Autowired
-    private LocationService locationService;
+
+    private final LocationService locationService;
+
+    public LocationController(LocationService locationService) {
+        this.locationService = locationService;
+    }
 
     // GET /api/locations
     /**

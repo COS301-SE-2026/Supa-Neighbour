@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,8 +20,11 @@ import com.app.api.services.HelperAnalyticsService;
 @RequestMapping("/api/helper-analytics")
 public class HelperAnalyticsController {
 
-    @Autowired
-    private HelperAnalyticsService helperAnalyticsService;
+    private final HelperAnalyticsService helperAnalyticsService;
+
+    public HelperAnalyticsController(HelperAnalyticsService helperAnalyticsService) {
+        this.helperAnalyticsService = helperAnalyticsService;
+    }
 
     // GET /api/helper-analytics
     /**

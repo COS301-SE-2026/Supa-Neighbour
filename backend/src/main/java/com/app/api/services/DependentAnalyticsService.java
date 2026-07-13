@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.DependentAnalytics;
@@ -15,8 +13,11 @@ import com.app.api.repositories.DependentAnalyticsRepository;
 @Service
 public class DependentAnalyticsService {
 
-    @Autowired
-    private DependentAnalyticsRepository dependentAnalyticsRepository;
+    private final DependentAnalyticsRepository dependentAnalyticsRepository;
+
+    public DependentAnalyticsService(DependentAnalyticsRepository dependentAnalyticsRepository) {
+        this.dependentAnalyticsRepository = dependentAnalyticsRepository;
+    }
 
     // Get all
     /**
