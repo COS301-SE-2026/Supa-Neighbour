@@ -1,11 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../components/logo_placeholder.dart';  // Add this import
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+import '../../components/logo_placeholder.dart';
 import 'signup_details_screen.dart';
 
 class SignupOtpScreen extends StatefulWidget {
   final String email;
-  final String idToken;   
-  final String password;  
+  final String idToken;
+  final String password;
 
   const SignupOtpScreen({
     super.key,
@@ -18,56 +20,63 @@ class SignupOtpScreen extends StatefulWidget {
   State<SignupOtpScreen> createState() => _SignupOtpScreenState();
 }
 
-
 class _SignupOtpScreenState extends State<SignupOtpScreen> {
-  final List<TextEditingController> _otpControllers = List.generate(6, (index) => TextEditingController());
-  final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
-  bool _isLoading = false;
-  String _errorMessage = '';
+  Timer? _pollingTimer;
+  bool _isResending = false;
 
-  void _handleVerify() {
-  String otp = _otpControllers.map((c) => c.text).join();
+  @override
+  void initState() {
+    super.initState();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
+      await fb.FirebaseAuth.instance.currentUser?.reload();
+      final user = fb.FirebaseAuth.instance.currentUser;
 
-  if (otp.length != 6) {
-    setState(() => _errorMessage = 'Please enter the 6-digit OTP');//any will just pass
-    return;
+      if (user?.emailVerified == true) {
+        _pollingTimer?.cancel();
+        if (!mounted) return;
+        
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SignupDetailsScreen(
+              email: widget.email,
+              idToken: widget.idToken,
+              password: widget.password,
+            ),
+          ),
+        );
+      }
+    });
   }
-
-  // will add real verification later (**check if page update is complete)
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => SignupDetailsScreen(
-        email: widget.email,
-        idToken: widget.idToken,   
-        password: widget.password, 
-      ),
-    ),
-  );
-}
-
-
-  void _handleResendOTP() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('OTP resent to ${widget.email}'),
-        backgroundColor: const Color(0xFF1C9A89),
-      ),
-    );
-  }
-
-
-
 
   @override
   void dispose() {
-    for (var controller in _otpControllers) {
-      controller.dispose();
-    }
-    for (var focusNode in _focusNodes) {
-      focusNode.dispose();
-    }
+    _pollingTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _handleResendEmail() async {
+    setState(() => _isResending = true);
+    try {
+      await fb.FirebaseAuth.instance.currentUser?.sendEmailVerification();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Verification email resent to ${widget.email}'),
+          backgroundColor: const Color(0xFF1C9A89),
+        ),
+      );
+    } on Exception catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isResending = false);
+    }
   }
 
   @override
@@ -75,14 +84,11 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Responsive sizing
     final logoSize = screenWidth * 0.3;
     final titleSize = screenWidth * 0.08;
     final subtitleSize = screenWidth * 0.045;
-    final buttonHeight = screenHeight * 0.07;
     final fontSize = screenWidth * 0.04;
     final smallFontSize = screenWidth * 0.035;
-    final otpBoxSize = screenWidth * 0.12;
 
     return Scaffold(
       body: SafeArea(
@@ -97,13 +103,11 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
                 children: [
                   SizedBox(height: screenHeight * 0.03),
 
-                  // Back Button
+                  // Back button - returns to signup screen
                   Align(
                     alignment: Alignment.centerLeft,
                     child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
+                      onTap: () => Navigator.pop(context),
                       child: Container(
                         width: 50,
                         height: 50,
@@ -122,12 +126,10 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
 
                   SizedBox(height: screenHeight * 0.02),
 
-                  // Logo - Using LogoPlaceholder (replaced placeholder container)
                   LogoPlaceholder(size: logoSize),
 
                   SizedBox(height: screenHeight * 0.03),
 
-                  // Title
                   Text(
                     'super Neighbour',
                     style: TextStyle(
@@ -140,7 +142,6 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
 
                   SizedBox(height: screenHeight * 0.01),
 
-                  // Subtitle
                   Text(
                     'Your neighbourly helper',
                     style: TextStyle(
@@ -153,7 +154,7 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
 
                   SizedBox(height: screenHeight * 0.04),
 
-                  // White Card Container
+                  // Card
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -171,7 +172,6 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
                       padding: EdgeInsets.all(screenWidth * 0.07),
                       child: Column(
                         children: [
-                          // OTP Title
                           Text(
                             'Verify Email',
                             style: TextStyle(
@@ -181,11 +181,19 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
                             ),
                           ),
 
-                          SizedBox(height: screenHeight * 0.02),
+                          SizedBox(height: screenHeight * 0.03),
 
-                          // Instruction Text
+                          // Email envelope icon
+                          Icon(
+                            Icons.mark_email_unread_outlined,
+                            size: screenWidth * 0.15,
+                            color: const Color(0xFF1C9A89),
+                          ),
+
+                          SizedBox(height: screenHeight * 0.03),
+
                           Text(
-                            'Enter the OTP sent to',
+                            'We sent a verification link to',
                             style: TextStyle(
                               fontSize: fontSize,
                               fontWeight: FontWeight.w400,
@@ -193,6 +201,10 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
                             ),
                             textAlign: TextAlign.center,
                           ),
+
+                          SizedBox(height: screenHeight * 0.01),
+
+                          // User's email address in bold
                           Text(
                             widget.email,
                             style: TextStyle(
@@ -203,125 +215,59 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
                             textAlign: TextAlign.center,
                           ),
 
-                          SizedBox(height: screenHeight * 0.04),
+                          SizedBox(height: screenHeight * 0.02),
 
-                          // OTP Input Fields (6 boxes)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: List.generate(6, (index) {
-                              return SizedBox(
-                                width: otpBoxSize,
-                                height: otpBoxSize,
-                                child: TextField(
-                                  controller: _otpControllers[index],
-                                  focusNode: _focusNodes[index],
-                                  textAlign: TextAlign.center,
-                                  keyboardType: TextInputType.number,
-                                  maxLength: 1,
-                                  style: TextStyle(
-                                    fontSize: fontSize * 1.2,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF1C9A89),
-                                  ),
-                                  decoration: InputDecoration(
-                                    counterText: '',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: const BorderSide(color: Color(0xFF1C9A89), width: 2),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: const BorderSide(color: Color(0xFF1C9A89), width: 2),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: const BorderSide(color: Color(0xFF1C9A89), width: 2),
-                                    ),
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                  onChanged: (value) {
-                                    if (value.length == 1 && index < 5) {
-                                      FocusScope.of(context).nextFocus();
-                                    } else if (value.isEmpty && index > 0) {
-                                      FocusScope.of(context).previousFocus();
-                                    }
-                                  },
-                                ),
-                              );
-                            }),
+                          Text(
+                            'Click the link in the email to continue.\nThis page will update automatically.',
+                            style: TextStyle(
+                              fontSize: smallFontSize,
+                              color: Colors.grey[600],
+                            ),
+                            textAlign: TextAlign.center,
                           ),
 
-                          if (_errorMessage.isNotEmpty)
-                            Padding(
-                              padding: EdgeInsets.only(top: screenHeight * 0.02),
-                              child: Text(
-                                _errorMessage,
-                                style: TextStyle(
-                                  fontSize: smallFontSize,
-                                  color: Colors.red,
-                                ),
-                              ),
-                            ),
+                          SizedBox(height: screenHeight * 0.04),
 
-                          SizedBox(height: screenHeight * 0.03),
+                          // Spinner - polling
+                          const CircularProgressIndicator(
+                            color: Color(0xFF1C9A89),
+                            strokeWidth: 2,
+                          ),
 
-                          // Resend OTP Row
+                          SizedBox(height: screenHeight * 0.04),
+
+                          // Resend row
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Didn\'t receive the code? ',
+                                "Didn't receive it? ",
                                 style: TextStyle(
                                   fontSize: smallFontSize,
                                   color: const Color(0xFF1C9A89),
                                 ),
                               ),
                               GestureDetector(
-                                onTap: _handleResendOTP,
-                                child: Text(
-                                  'Resend OTP',
-                                  style: TextStyle(
-                                    fontSize: smallFontSize,
-                                    color: const Color(0xFF1C9A89),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          SizedBox(height: screenHeight * 0.04),
-
-                          // Verify Button
-                          GestureDetector(
-                            onTap: _isLoading ? null : _handleVerify,
-                            child: Container(
-                              width: double.infinity,
-                              height: buttonHeight,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(29),
-                                color: const Color(0xFF1C9A89),
-                              ),
-                              child: Center(
-                                child: _isLoading
+                                onTap: _isResending ? null : _handleResendEmail,
+                                child: _isResending
                                     ? SizedBox(
-                                        width: buttonHeight * 0.4,
-                                        height: buttonHeight * 0.4,
+                                        width: smallFontSize,
+                                        height: smallFontSize,
                                         child: const CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
+                                          color: Color(0xFF1C9A89),
+                                          strokeWidth: 1.5,
                                         ),
                                       )
                                     : Text(
-                                        'Verify',
+                                        'Resend email',
                                         style: TextStyle(
-                                          fontSize: fontSize,
+                                          fontSize: smallFontSize,
+                                          color: const Color(0xFF1C9A89),
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.white,
                                         ),
                                       ),
                               ),
-                            ),
+                            ],
                           ),
                         ],
                       ),

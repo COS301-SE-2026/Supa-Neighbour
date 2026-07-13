@@ -58,6 +58,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (!mounted) return;
 
+
+      await credential.user?.sendEmailVerification();
+      
       Navigator.push(
         context,
         MaterialPageRoute(
