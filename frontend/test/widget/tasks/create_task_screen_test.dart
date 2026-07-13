@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supa_neighbour/screens/home/create_task_screen.dart';
+import 'package:supa_neighbour/screens/tasks/create_task_screen.dart';
 
 void main() {
   Widget buildTestableWidget() {
