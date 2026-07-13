@@ -4,14 +4,13 @@ import '../../models/auth_session.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
 import '../../widgets/bottom_nav_bar.dart';
-import 'create_task_screen.dart';
-import 'leaderboard_screen.dart';
-import 'inbox_screen.dart';
-import 'my_tasks_screen.dart';
-import 'profile_screen.dart';
-import 'task_detail_screen.dart';
+import '../tasks/create_task_screen.dart';
+import '../leaderboard/leaderboard_screen.dart';
+import '../chat/inbox_screen.dart';
+import '../tasks/my_tasks_screen.dart';
+import '../profile/profile_screen.dart';
+import '../tasks/task_detail_screen.dart';
 import '../../services/task_service.dart';
-
 
 
 class HomeScreen extends StatefulWidget {
