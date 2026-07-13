@@ -5,11 +5,15 @@ import 'signup_residential_screen.dart';
 
 class SignupDetailsScreen extends StatefulWidget {
   final String email;
+  final String idToken;
+  final String password;
   final User? partialUser;
   
   const SignupDetailsScreen({
     super.key, 
     required this.email,
+    required this.idToken,
+    required this.password,
     this.partialUser,
   });
 
@@ -63,44 +67,29 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
   void _handleNext() {
     if (_firstNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your first name'),
-          backgroundColor: Color(0xFF1C9A89),
-        ),
+        const SnackBar(content: Text('Please enter your first name'), backgroundColor: Color(0xFF1C9A89)),
       );
       return;
     }
-
     if (_lastNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your last name'),
-          backgroundColor: Color(0xFF1C9A89),
-        ),
+        const SnackBar(content: Text('Please enter your last name'), backgroundColor: Color(0xFF1C9A89)),
       );
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    final user = _buildUser();
 
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-
-        final user = _buildUser();
-        
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SignupResidentialScreen(user: user),
-          ),
-        );
-      }
-    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SignupResidentialScreen(
+          user: user,
+          idToken: widget.idToken,
+          password: widget.password,
+        ),
+      ),
+    );
   }
 
   @override

@@ -56,33 +56,7 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
     );
   }
 
-void _handleNext() {
-  if (_firstNameController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please enter your first name'), backgroundColor: Color(0xFF1C9A89)),
-    );
-    return;
-  }
-  if (_lastNameController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please enter your last name'), backgroundColor: Color(0xFF1C9A89)),
-    );
-    return;
-  }
 
-  final user = _buildUser();
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => SignupResidentialScreen(
-        user: user,
-        idToken: widget.idToken,  
-        password: widget.password,
-      ),
-    ),
-  );
-}
 
 
   @override
