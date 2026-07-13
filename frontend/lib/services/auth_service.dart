@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb; //to avoid clash with usr model
 import '../models/user_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class AuthService {
   final Dio _dio;
@@ -44,9 +46,29 @@ class AuthService {
     throw Exception('Login failed: unexpected response from server.');
   }
 
-  Future<void> logout() async {
-    await _firebaseAuth.signOut();
+
+Future<User> loginWithToken(String idToken) async {
+  final Response<Map<String, dynamic>> response = await _dio.post(
+    '/api/auth/login',
+    options: Options(
+      headers: {'Authorization': 'Bearer $idToken'},
+    ),
+  );
+
+  if (response.statusCode == 200 && response.data != null) {
+    return User.fromJson(response.data!);
   }
+
+  throw Exception('Auto-login failed: unexpected response from server.');
+}
+
+
+Future<void> logout() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('remember_me', false);
+  await _firebaseAuth.signOut();
+}
+
 
   
   Future<User> register({

@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import '../../components/loading_bar.dart';
 import '../../components/splash_title.dart';
 import 'auth_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../home/home_screen.dart';
+import '../../services/auth_service.dart';
+import '../../models/auth_session.dart';
+import '../../models/user_model.dart';
+
 import '../../components/logo_placeholder.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -12,19 +19,43 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Navigate to auth screen after 3 seconds (matches loading bar duration)
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
+@override
+void initState() {
+  super.initState();
+  Future.delayed(const Duration(seconds: 3), () async {
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final rememberMe = prefs.getBool('remember_me') ?? false;
+
+    final fbUser = fb.FirebaseAuth.instance.currentUser;
+
+    if (rememberMe && fbUser != null && fbUser.emailVerified) {
+      try {
+        final idToken = await fbUser.getIdToken();
+        final authService = AuthService();
+
+        final user = await authService.loginWithToken(idToken!);
+        AuthSession.instance.login(user);
+
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const AuthScreen()),
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
+        return; 
+      } catch (_) {
       }
-    });
-  }
+    }
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const AuthScreen()),
+    );
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {

@@ -6,6 +6,9 @@ import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../home/home_screen.dart';
 import 'forgot_password_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+
 
 
 
@@ -28,20 +31,13 @@ class _LoginScreenState extends State<LoginScreen> {
 Future<void> _handleLogin() async {
   if (_emailController.text.trim().isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Please enter your email'),
-        backgroundColor: Color(0xFF1C9A89),
-      ),
+      const SnackBar(content: Text('Please enter your email'), backgroundColor: Color(0xFF1C9A89)),
     );
     return;
   }
-
   if (_passwordController.text.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Please enter your password'),
-        backgroundColor: Color(0xFF1C9A89),
-      ),
+      const SnackBar(content: Text('Please enter your password'), backgroundColor: Color(0xFF1C9A89)),
     );
     return;
   }
@@ -50,25 +46,20 @@ Future<void> _handleLogin() async {
 
   try {
     final User user = await _authService.login(
-      _emailController.text.trim(),   
+      _emailController.text.trim(),
       _passwordController.text,
     );
-
     AuthSession.instance.login(user);
 
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('remember_me', _rememberMe);
+
     if (!mounted) return;
-
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Login successful!'),
-        backgroundColor: Color(0xFF1C9A89),
-      ),
+      const SnackBar(content: Text('Login successful!'), backgroundColor: Color(0xFF1C9A89)),
     );
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
+    Navigator.pushReplacement(context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()));
   } on FirebaseAuthException catch (e) {
     String message;
     switch (e.code) {
@@ -79,27 +70,21 @@ Future<void> _handleLogin() async {
       case 'invalid-credential':
         message = 'Incorrect email or password.';
         break;
-      case 'user-disabled':
-        message = 'This account has been disabled.';
-        break;
       case 'too-many-requests':
-        message = 'Too many attempts. Please try again later.';
+        message = 'Too many attempts. Try again later.';
         break;
       default:
         message = 'Login failed. Please try again.';
     }
-
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red));
   } on Exception catch (e) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
-        backgroundColor: Colors.red,
-      ),
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red),
     );
   } finally {
     if (mounted) setState(() => _isLoading = false);
