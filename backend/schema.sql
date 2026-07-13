@@ -73,7 +73,6 @@ create table address_table (
 -- =============================================
 create table user_table (
     user_id int generated always as identity primary key,
-    user_password varchar(255) not null,
     user_firebase_uid VARCHAR(128) UNIQUE NOT NULL,
     user_email_verified boolean default false,
     user_phone_verified boolean default false,
@@ -605,7 +604,6 @@ values
 -- =============================================
 insert into user_table
 (
-user_password,
 user_firebase_uid,
 user_email_verified,
 user_phone_verified,
@@ -622,31 +620,31 @@ user_rating_id,
 user_type
 )
 values
-('pass123','PDFxzgQ9KwNrAvMgWzfEvhkhJoj1', true, true, 'John', 'Smith', 'johnsmith', 'john.example.298@gmail.com', '5550101', 'Male', '1990-01-10', 1,2,1,'Admin' ),
+('PDFxzgQ9KwNrAvMgWzfEvhkhJoj1', true, true, 'John', 'Smith', 'johnsmith', 'john.example.298@gmail.com', '5550101', 'Male', '1990-01-10', 1,2,1,'Admin' ),
 
-('pass123','1ZkC0pAHZ9UBVKRtbQtrUXuYjKp1', true, true, 'Sarah', 'Johnson', 'sarahj', 'sarah.example.298@gmail.com', '5550102', 'Female', '1988-03-15', 2,1,1, 'User' ),
+('1ZkC0pAHZ9UBVKRtbQtrUXuYjKp1', true, true, 'Sarah', 'Johnson', 'sarahj', 'sarah.example.298@gmail.com', '5550102', 'Female', '1988-03-15', 2,1,1, 'User' ),
 
-('pass123','WlMsgj9xKRNnLKhBCACGdZsMXVJ3', true, true, 'Michael', 'Brown', 'michaelb', 'michael.example.298@gmail.com', '5550103', 'Male', '1995-07-21', 3,1,1, 'User' ),
+('WlMsgj9xKRNnLKhBCACGdZsMXVJ3', true, true, 'Michael', 'Brown', 'michaelb', 'michael.example.298@gmail.com', '5550103', 'Male', '1995-07-21', 3,1,1, 'User' ),
 
-('pass123','mdW5NZdYeyernK7Dh5J49EQqdaN2', true, true, 'Emily', 'Davis', 'emilyd', 'emily.example.298@gmail.com', '5550104', 'Female', '1992-11-30', 4, 1, 1, 'User'),
+('mdW5NZdYeyernK7Dh5J49EQqdaN2', true, true, 'Emily', 'Davis', 'emilyd', 'emily.example.298@gmail.com', '5550104', 'Female', '1992-11-30', 4, 1, 1, 'User'),
 
-('pass123','o1Efo9cDkOVqeTBnrlkzD2TUMs43', true, true, 'David', 'Wilson', 'davidw', 'david.example.298@gmail.com', '5550105', 'Male', '1985-05-18', 5, 1, 1, 'User'),
+('o1Efo9cDkOVqeTBnrlkzD2TUMs43', true, true, 'David', 'Wilson', 'davidw', 'david.example.298@gmail.com', '5550105', 'Male', '1985-05-18', 5, 1, 1, 'User'),
 
-('pass123','bUv58sF4iagkhjUWj93GHRN3tvH3', true, true, 'Olivia', 'Taylor', 'oliviat', 'olivia.example.298@gmail.com', '5550106', 'Female', '2000-04-02', 6, 2, 2, 'Admin'),
+('bUv58sF4iagkhjUWj93GHRN3tvH3', true, true, 'Olivia', 'Taylor', 'oliviat', 'olivia.example.298@gmail.com', '5550106', 'Female', '2000-04-02', 6, 2, 2, 'Admin'),
 
-('pass123','yA9Jcgl0P0cMgYrpDp6JonWIRgF2', true, true, 'James', 'Anderson', 'jamesa', 'james.example.298@gmail.com', '5550107', 'Male', '1975-08-14', 7, 1, 1, 'User'),
+('yA9Jcgl0P0cMgYrpDp6JonWIRgF2', true, true, 'James', 'Anderson', 'jamesa', 'james.example.298@gmail.com', '5550107', 'Male', '1975-08-14', 7, 1, 1, 'User'),
 
-('pass123','0gRA3wfNjNOGHaJZ84j6sybUvPs2', true, true, 'Sophia', 'Thomas', 'sophiat', 'sophia.example.298@gmail.com', '5550108', 'Female','1998-09-22', 8, 3, 1, 'Admin'),
+( '0gRA3wfNjNOGHaJZ84j6sybUvPs2', true, true, 'Sophia', 'Thomas', 'sophiat', 'sophia.example.298@gmail.com', '5550108', 'Female','1998-09-22', 8, 3, 1, 'Admin'),
 
-('pass123','hJUI8ixYgvY0YqYVFnjPlm0CxIa2', true, true, 'Daniel', 'Jackson', 'danielj', 'daniel.example.298@gmail.com', '5550109', 'Male', '1982-12-11', 9, 5, 2, 'Admin'),
+( 'hJUI8ixYgvY0YqYVFnjPlm0CxIa2', true, true, 'Daniel', 'Jackson', 'danielj', 'daniel.example.298@gmail.com', '5550109', 'Male', '1982-12-11', 9, 5, 2, 'Admin'),
 
-( 'pass123','wwEa5s6GFUWzXGujlt67xHNDti73', true, true, 'Emma', 'White', 'emmaw', 'emma.example.298@gmail.com', '5550110', 'Female', '1996-06-25', 10, 1, 1, 'User'),
+( 'wwEa5s6GFUWzXGujlt67xHNDti73', true, true, 'Emma', 'White', 'emmaw', 'emma.example.298@gmail.com', '5550110', 'Female', '1996-06-25', 10, 1, 1, 'User'),
 
-( 'pass123','tV2skp5AgyQQCxkKNrA5FP4P5Pf2', true,true,'Matthew', 'Harris', 'matthewh', 'matthew.example.298@gmail.com', '5550111', 'Male', '1991-03-12', 1, 4, 3, 'User'),
+( 'tV2skp5AgyQQCxkKNrA5FP4P5Pf2', true,true,'Matthew', 'Harris', 'matthewh', 'matthew.example.298@gmail.com', '5550111', 'Male', '1991-03-12', 1, 4, 3, 'User'),
 
-( 'pass123','b797OnSbqFe9V2KTiJbKhjEs6ji1',true, true, 'Isabella', 'Martin', 'isabellam', 'isabella.example.298@gmail.com', '5550112', 'Female', '1987-07-19', 2, 2, 2, 'User'),
+( 'b797OnSbqFe9V2KTiJbKhjEs6ji1',true, true, 'Isabella', 'Martin', 'isabellam', 'isabella.example.298@gmail.com', '5550112', 'Female', '1987-07-19', 2, 2, 2, 'User'),
 
-( 'pass123','vRe60bMKSvVRXvCy1EJpRhh0kOy2',true,true, 'William', 'Thompson', 'williamt', 'william.example.298@gmail.com', '5550113', 'Male', '1993-09-28', 3, 3, 1, 'User');
+( 'vRe60bMKSvVRXvCy1EJpRhh0kOy2',true,true, 'William', 'Thompson', 'williamt', 'william.example.298@gmail.com', '5550113', 'Male', '1993-09-28', 3, 3, 1, 'User');
 
 
 -- =============================================
@@ -756,7 +754,8 @@ values
 (1, 1, true,  1, 1, true,  1, '2026-05-01', '2026-05-01', 3, null, 'Outstanding', 'Excellent medical assistance provided.', 1, 'completed'),
 (2, 2, false, 2, 4, false, 2, '2026-05-02', '2026-05-03', 2, null, 'Very Good',   'Reliable transport support.',            2, 'completed'),
 (3, 3, false, 3, 3, false, 1, '2026-05-04', '2026-05-04', 4, null, 'Very Good',   'Resolved device setup issues quickly.',   3, 'completed'),
-(NULL, 5, false, 4, 5, false, NULL, '2026-07-15', NULL, NULL, NULL, NULL, NULL, NULL, 'open');
+(NULL, 5, false, 4, 5, false, NULL, '2026-07-15', NULL, NULL, NULL, NULL, NULL, NULL, 'open'),
+(NULL, 1, false, 1, 1, false, NULL, '2026-07-20', NULL, NULL, NULL, NULL, NULL, NULL, 'open');
 -- =============================================
 -- 12. helper analytics table
 -- =============================================
@@ -906,13 +905,16 @@ values
 -- =============================================
 -- 19. task_invitation_table mock data
 -- =============================================
-INSERT INTO task_invitation_table (task_id, helper_id, status)
+INSERT INTO task_invitation_table (task_id, helper_id, status, invited_at)
 VALUES
-(1, 1, 'Invited'),   
-(1, 2, 'Rejected'), 
-(2, 4, 'Accepted'),  
-(2, 5, 'Declined'), 
-(3, 3, 'Invited');
+(1, 1, 'Invited', NOW()),   
+(1, 2, 'Rejected', NULL), 
+(2, 4, 'Accepted', NULL),  
+(2, 5, 'Declined', NULL), 
+(3, 3, 'Invited', NOW()),
+(4, 2, 'Accepted', NULL),   -- Michael (user 3) expressed interest
+(4, 4, 'Accepted', NULL),   -- David (user 5) expressed interest
+(4, 6, 'Declined', NULL);  -- Emma (user 10) declined
 
 -- =============================================
 -- 19. helper skill mock data

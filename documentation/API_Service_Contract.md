@@ -25,7 +25,19 @@
 4. [Chat](#4-chat)
    - [GET /api/chats/{userID}](#41-get-apichatsuserid)
    - [GET /api/chats/{chatID}/messages](#42-get-apichatschatidmessages)
-
+5. [Matching & Helpers](#5-matching--helpers)
+   - [GET /api/helpers/available](#51-get-apihelpersavailable)
+   - [GET /api/helpers/{helperId}/profile](#52-get-apihelpershelperidprofile)
+   - [POST /api/task/{taskId}/invite](#53-post-apitasktaskidinvite)
+   - [POST /api/task/{taskId}/accept](#54-post-apitasktaskidaccept)
+   - [POST /api/task/{taskId}/decline](#55-post-apitasktaskiddecline)
+   - [GET /api/helpers/me/tasks](#56-get-apihelpersmetasks)
+6. [Profile & Gamification](#6-profile--gamification)
+   - [GET /api/users/me/profile](#61-get-apiusersmeprofile)
+   - [PATCH /api/users/me/profile](#62-patch-apiusersmeprofile)
+   - [GET /api/leaderboard](#63-get-apileaderboard)
+   - [GET /api/users/me/achievements](#64-get-apiusersmeachievements)
+   - [POST /api/tasks/{taskId}/rate](#65-post-apitaskstaskidrate)
 ---
 
 ## 1. Authentication
@@ -706,6 +718,551 @@ Authorization: Bearer <token>
 }
 ```
 
+---
+ 
+## 5. Matching & Helpers
+ 
+---
+ 
+### 5.1 GET /api/helpers/available
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/helpers/available` |
+| **Method** | `GET` |
+| **Purpose** | Returns a ranked list of available helpers in the requester's neighbourhood zone for a given task. Backs the Available Helpers screen (UC3-US1) |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Query Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `taskId` | int | **Required.** The posted task to match helpers against |
+| `verifiedOnly` | boolean | Optional — when `true`, only verified helpers are returned. Default `false` |
+| `zoneScope` | String | Optional — how wide to search: `complex`, `street`, or `zone`. Defaults to widening outward from the requester |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Example Request
+ 
+```
+GET /api/helpers/available?taskId=12&verifiedOnly=true
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "taskId": 12,
+  "helpers": [
+    {
+      "helperId": 5,
+      "displayName": "David W.",
+      "trustScore": 4.8,
+      "level": "Gold",
+      "skills": ["Home Repair", "Transportation Support"],
+      "distanceTier": "Same complex",
+      "available": true,
+      "verified": true,
+      "compatibilityScore": 95
+    }
+  ]
+}
+```
+ 
+> When no helpers are available, the endpoint still returns `200 OK` with an empty array — `{ "taskId": 12, "helpers": [] }` — so the client can render the friendly "no helpers nearby" empty state (AC6).
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | `taskId` query parameter missing | `{ "error": "taskId is required" }` |
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `404 Not Found` | Task or neighbourhood zone does not exist | `{ "error": "Task not found" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 5.2 GET /api/helpers/{helperId}/profile
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/helpers/{helperId}/profile` |
+| **Method** | `GET` |
+| **Purpose** | Returns a helper's public profile so a requester can review them before inviting (UC3-US2). The helper's exact address and contact details are deliberately excluded (R4.1.2) |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `helperId` | int | The unique ID of the helper to preview |
+ 
+#### Query Parameters (optional)
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `taskId` | int | When provided, the response reflects the helper's availability for that task's date and time window |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Example Request
+ 
+```
+GET /api/helpers/5/profile?taskId=12
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "helperId": 5,
+  "displayName": "David W.",
+  "level": "Gold",
+  "trustScore": 4.8,
+  "completedTasks": 27,
+  "skills": ["Home Repair", "Transportation Support"],
+  "reviews": [
+    { "rating": "Excellent", "snippet": "Reliable and on time", "date": "2026-05-01" }
+  ],
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `404 Not Found` | Helper does not exist | `{ "error": "Helper not found" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 5.3 POST /api/task/{taskId}/invite
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/task/{taskId}/invite` |
+| **Method** | `POST` |
+| **Purpose** | Sends a task invitation to a chosen helper and marks them as "Invited" on the Available Helpers list (UC3-US2 AC4) |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `taskId` | int | The unique ID of the task the helper is being invited to |
+ 
+#### Required Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `helperId` | int | ID of the helper being invited |
+ 
+#### Request Body
+ 
+```json
+{
+  "helperId": 5
+}
+```
+ 
+#### Success Response — `201 Created`
+ 
+```json
+{
+  "message": "Invitation sent",
+  "taskId": 12,
+  "helperId": 5,
+  "status": "Invited"
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Caller is not the owner of the task | `{ "error": "You are not authorised to invite helpers to this task" }` |
+| `404 Not Found` | Task or helper does not exist | `{ "error": "Task not found" }` |
+| `409 Conflict` | Helper has already been invited to this task | `{ "error": "Helper already invited" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
+### 5.4 POST /api/task/{taskId}/accept
+
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/task/{taskId}/accept` |
+| **Method** | `POST` |
+| **Purpose** | Called by the **helper** when they see an open task listed on their side and choose to accept it. Creates a `task_invoice_table` row, locks the task to that helper, and triggers the address reveal flow (UC6-US1) — the requester's exact address becomes visible to the helper. |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+
+#### Path Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `taskId` | int | The unique ID of the task being accepted |
+
+> No request body is needed — the helper is resolved from the JWT.
+
+#### Request Headers
+
+```
+Authorization: Bearer <token>
+```
+
+#### Success Response — `201 Created`
+
+```json
+{
+  "message": "Task accepted successfully.",
+  "taskId": 12,
+  "status": "Accepted",
+  "addressRevealed": true
+}
+```
+
+> `addressRevealed: true` signals to the Flutter client to navigate to the Address Confirmation screen (UC6-US1).
+
+#### Error Responses
+
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Authenticated user is not registered as a helper | `{ "error": "User is not a helper" }` |
+| `404 Not Found` | Task does not exist | `{ "error": "Task not found" }` |
+| `409 Conflict` | Task has already been accepted by another helper | `{ "error": "This task has already been accepted" }` |
+| `422 Unprocessable Entity` | Task is not in an open/available state | `{ "error": "Task is not available for acceptance" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
+### 5.5 POST /api/task/{taskId}/decline
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/task/{taskId}/decline` |
+| **Method** | `POST` |
+| **Purpose** | Called by the **helper** when they see an open task listed on their side and choose to decline it. The task remains open and visible to other helpers. |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `taskId` | int | The unique ID of the task being declined |
+ 
+> No request body is needed — the helper is resolved from the JWT.
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "message": "Task declined.",
+  "taskId": 12,
+  "status": "Declined"
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Authenticated user is not registered as a helper | `{ "error": "User is not a helper" }` |
+| `404 Not Found` | Task does not exist | `{ "error": "Task not found" }` |
+| `409 Conflict` | Task has already been accepted or declined | `{ "error": "Task cannot be declined in its current state" }` |
+| `422 Unprocessable Entity` | Task is not in an open/available state | `{ "error": "Task is not available for declining" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
+### 5.6 GET /api/helpers/me/tasks
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/helpers/me/tasks` |
+| **Method** | `GET` |
+| **Purpose** | Returns the full task history for the authenticated helper — all tasks they've been invited to, are currently assigned to, or have previously completed. Backs the helper-side task list view. The helper is resolved from the JWT. |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Query Parameters (optional)
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `status` | String | Filter by task status: `Invited`, `Accepted`, `Completed`, `Declined`. Omit to return all. |
+| `limit` | int | Number of results to return. Default `20` |
+| `offset` | int | Pagination offset. Default `0` |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Example Request
+ 
+```
+GET /api/helpers/me/tasks?status=Completed&limit=10
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "helperId": 5,
+  "total": 27,
+  "tasks": [
+    {
+      "taskId": 1,
+      "taskType": "Home Repair",
+      "status": "Completed",
+      "startDate": "2026-05-01",
+      "endDate": "2026-05-01",
+      "neighbourhood": "Greenfield",
+      "xpAwarded": 600
+    },
+    {
+      "taskId": 8,
+      "taskType": "Pet Care",
+      "status": "Invited",
+      "startDate": "2026-07-10",
+      "endDate": "2026-07-10",
+      "neighbourhood": "Riverside",
+      "xpAwarded": null
+    }
+  ]
+}
+```
+ 
+> `xpAwarded` is `null` for tasks not yet completed.  
+> The requester's exact address is **not** included in this list view — it is only revealed on the individual task detail screen after acceptance (R4.1.1).
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | Invalid `status` value supplied | `{ "error": "status must be one of: Invited, Accepted, Completed, Declined" }` |
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Authenticated user is not registered as a helper | `{ "error": "User is not a helper" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
+---
+ 
+## 6. Profile & Gamification
+ 
+---
+ 
+### 6.1 GET /api/users/me/profile
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/users/me/profile` |
+| **Method** | `GET` |
+| **Purpose** | Returns the authenticated user's own profile — neighbourhood zone, progression level, XP, trust score, skills/tags, availability, achievements, and completed-task history (UC5-US1). The user is resolved from the JWT |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "userId": 5,
+  "displayName": "David W.",
+  "neighbourhood": "Greenfield",
+  "level": "Gold",
+  "currentXp": 4500,
+  "nextLevelXp": 5000,
+  "trustScore": 4.8,
+  "skills": ["Home Repair", "Transportation Support"],
+  "availability": ["Weekday evenings", "Weekends"],
+  "achievements": [
+    { "badgeId": 5, "name": "Home Repair Specialist", "awardedOn": "2026-05-01" }
+  ],
+  "completedTasks": 27,
+  "recentTasks": [
+    { "taskId": 1, "type": "Home Repair", "endDate": "2026-05-01" }
+  ]
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 6.2 PATCH /api/users/me/profile
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/users/me/profile` |
+| **Method** | `PATCH` |
+| **Purpose** | Updates the user's editable profile fields — skills/tags and availability preferences (UC5-US1 AC3 & AC6, requirement R1.2.3) |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Required Parameters
+ 
+At least one of the following must be supplied.
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `skills` | Array | Array of task-type names or IDs the user can help with |
+| `availability` | Array | Array of availability preference strings e.g. `"Weekends"` |
+ 
+#### Request Body
+ 
+```json
+{
+  "skills": ["Home Repair", "Pet Care"],
+  "availability": ["Weekends"]
+}
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "message": "Profile updated",
+  "skills": ["Home Repair", "Pet Care"],
+  "availability": ["Weekends"]
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | An unrecognised skill or value was supplied | `{ "error": "Invalid skill id" }` |
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `422 Unprocessable Entity` | Neither `skills` nor `availability` was provided | `{ "error": "At least one of skills or availability must be provided" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 6.3 GET /api/leaderboard
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/leaderboard` |
+| **Method** | `GET` |
+| **Purpose** | Returns the ranked top helpers in the user's neighbourhood zone, plus the user's own rank — pinned even if it falls outside the top N. Backs the Leaderboard screen (UC5-US2) |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Query Parameters (optional)
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `rankBy` | String | Ranking metric: `trustScore` or `xp`. Default `trustScore` |
+| `limit` | int | Number of top helpers to return. Default `10` |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Example Request
+ 
+```
+GET /api/leaderboard?rankBy=trustScore&limit=10
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "neighbourhood": "Greenfield",
+  "rankBy": "trustScore",
+  "leaderboard": [
+    { "rank": 1, "userId": 5, "displayName": "David W.", "level": "Gold", "score": 4.8 }
+  ],
+  "currentUser": {
+    "rank": 14,
+    "userId": 5,
+    "displayName": "David W.",
+    "level": "Gold",
+    "score": 4.8
+  }
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | Invalid `rankBy` value | `{ "error": "rankBy must be one of: trustScore, xp" }` |
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 6.4 GET /api/users/me/achievements
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/users/me/achievements` |
+| **Method** | `GET` |
+| **Purpose** | Returns all defined achievements grouped into earned and unearned sections — with the award date for earned ones and progress toward unearned ones (UC5-US3). The user is resolved from the JWT |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "earned": [
+    {
+      "badgeId": 5,
+      "name": "Home Repair Specialist",
+      "description": "Complete 10 home repair tasks",
+      "awardedOn": "2026-05-01"
+    }
+  ],
+  "unearned": [
+    {
+      "badgeId": 2,
+      "name": "Pet Care Helper",
+      "description": "Complete 5 pet care tasks",
+      "progress": "3/5"
+    }
+  ]
+}
+```
+
 #### Error Responses
 
 | Status Code | Scenario | Response Body |
@@ -713,6 +1270,59 @@ Authorization: Bearer <token>
 | `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
 | `403 Forbidden` | User is not a participant in this chat | `{ "error": "You are not authorised to view this chat" }` |
 | `404 Not Found` | Chat does not exist | `{ "error": "Chat not found" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
+### 6.5 POST /api/tasks/{taskId}/rate
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/tasks/{taskId}/rate` |
+| **Method** | `POST` |
+| **Purpose** | Called by the **requester** after a task is marked complete. Submits a rating category and a free-text review for the helper. Writes to `task_invoice_table.helper_rating_review` (FK into `rating_table`) and a review snippet field. Contributes to the helper's overall trust score (R5.3.1). |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `taskId` | int | The unique ID of the completed task being rated |
+ 
+#### Request Body
+ 
+| Field | Type | Description |
+|---|---|---|
+| `rating` | String | **Required.** One of the valid `rating_table` categories: `"Outstanding"`, `"Excellent"`, `"Very Good"`, `"Good"`, `"Average"` |
+| `reviewSnippet` | String | Optional. Short free-text comment (max 300 characters) displayed on the helper's profile |
+ 
+```json
+{
+  "rating": "Excellent",
+  "reviewSnippet": "Arrived on time and did a great job fixing the sink."
+}
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "message": "Rating submitted successfully.",
+  "taskId": 12,
+  "rating": "Excellent",
+  "reviewSnippet": "Arrived on time and did a great job fixing the sink."
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | `rating` missing or not a valid category | `{ "error": "rating must be one of: Outstanding, Excellent, Very Good, Good, Average" }` |
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Caller is not the requester for this task | `{ "error": "You are not authorised to rate this task" }` |
+| `404 Not Found` | Task does not exist | `{ "error": "Task not found" }` |
+| `409 Conflict` | Task has already been rated by this requester | `{ "error": "You have already submitted a rating for this task" }` |
+| `422 Unprocessable Entity` | Task is not yet in `Completed` status | `{ "error": "Task must be completed before it can be rated" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
 ---

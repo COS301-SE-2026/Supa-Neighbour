@@ -141,28 +141,33 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       category: _selectedCategory,
       date: _selectedDate,
       time: _selectedTime,
-      xpReward: 0, //Set to 0
+      xpReward: widget.task.xpReward, 
       instructions: _instructionsController.text.isNotEmpty
           ? _instructionsController.text
           : 'No additional instructions',
-      status: widget.task.status,
+      status: widget.task.status,  
       createdAt: widget.task.createdAt,
+      createdBy: widget.task.createdBy,        
+      requesterName: widget.task.requesterName, 
+      helperId: widget.task.helperId,         
+      helperName: widget.task.helperName,      
     );
-    Task.updateMockTask(updatedTask);
+  Task.updateMockTask(updatedTask);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Task saved locally (offline mode)'),
-          backgroundColor: Color(0xFFE9C46A),
-        ),
-      );
-      Navigator.pop(context, true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Task saved locally (offline mode)'),
+        backgroundColor: Color(0xFFE9C46A),
+      ),
+    );
+    Navigator.pop(context, true);
     }
   } finally {
     if (mounted) setState(() => _isSubmitting = false);
-  }
 }
+}
+
 
 
 

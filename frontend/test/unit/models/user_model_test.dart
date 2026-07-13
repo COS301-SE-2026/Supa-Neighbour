@@ -102,18 +102,18 @@ void main() {
       });
 
       test('fromJson should create User from map', () {
-        final json = {
-          'id': 'user_5',
-          'email': 'fromjson@example.com',
-          'firstName': 'Json',
-          'lastName': 'User',
-          'phone': '0987654321',
+       final json = {
+          'user_id': 'user_5',
+          'user_email': 'fromjson@example.com',
+          'user_name': 'Json',
+          'user_surname': 'User',
+          'user_phone_number': '0987654321',
           'username': 'jsonuser',
           'birthday': DateTime(1995, 5, 15).toIso8601String(),
-          'gender': 'Female',
-          'street': '789 Json St',
-          'town': 'Cape Town',
-          'zipCode': '8001',
+          'user_gender': 'Female',
+          'user_street': '789 Json St',
+          'user_town': 'Cape Town',
+          'user_zipcode': '8001',
           'createdAt': now.toIso8601String(),
         };
         

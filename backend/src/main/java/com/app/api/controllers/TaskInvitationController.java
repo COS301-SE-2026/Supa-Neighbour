@@ -16,13 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.models.TaskInvitation;
 import com.app.api.models.TaskInvoice;
+import com.app.api.models.Helper;
 import com.app.api.repositories.TaskInvoiceRepository;
+import com.app.api.repositories.HelperRepository;
+import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.TaskInvitationService;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.app.api.services.FirebaseAuthService;
-import com.app.api.models.Helper;
-import com.app.api.repositories.HelperRepository;
-
 import java.util.Map;
 /**
  * TaskInvitation controller.
@@ -34,15 +33,14 @@ public class TaskInvitationController {
 
     private final TaskInvitationService taskInvitationService;
     private final TaskInvoiceRepository taskInvoiceRepository;
-    private final FirebaseAuthService firebaseAuthService;
     private final HelperRepository helperRepository;
+    private final FirebaseAuthService firebaseAuthService;
 
-
-    public TaskInvitationController(TaskInvitationService taskInvitationService, TaskInvoiceRepository taskInvoiceRepository, FirebaseAuthService firebaseAuthService, HelperRepository helperRepository) {
+    public TaskInvitationController(TaskInvitationService taskInvitationService, HelperRepository helperRepository, FirebaseAuthService firebaseAuthService, TaskInvoiceRepository taskInvoiceRepository) {
         this.taskInvitationService = taskInvitationService;
-        this.firebaseAuthService = firebaseAuthService;
         this.taskInvoiceRepository = taskInvoiceRepository;
         this.helperRepository = helperRepository;
+        this.firebaseAuthService = firebaseAuthService;
     }
     // GET /api/task-invitations
     /**
@@ -119,10 +117,64 @@ public class TaskInvitationController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{taskId}/accept")
-    public ResponseEntity<?> acceptTask(
+    @PostMapping("/{taskId}/invite")
+    public ResponseEntity<?> inviteHelper(
         @PathVariable int taskId,
+        @RequestBody Map<String, Integer> body,
         @RequestHeader("Authorization") String authHeader
+    ){
+        int callerId;
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            callerId = firebaseAuthService.getUserIdFromToken(token);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        Integer helperId = body.get("helperId");
+        if(helperId == null){
+            return ResponseEntity.badRequest().body(Map.of("error", "helperId is required"));
+        }
+
+        TaskInvoice taskInvoice = taskInvoiceRepository.findById(taskId).orElse(null);
+        if(taskInvoice == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Task not found"));
+        }
+
+        if (!"open".equals(taskInvoice.getStatus())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Task is not open for invitations"));
+        }
+
+        if (taskInvoice.getDependentid().getUserId().getUserid() != callerId) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "You are not authorised to invite helpers to this task"));
+        }
+
+        Helper helper = helperRepository.findById(helperId).orElse(null);
+        if(helper == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Task not found"));
+        }
+
+        TaskInvitation invitation = taskInvitationService.inviteHelper(taskId, helperId, taskInvoice, helper);
+
+        if(invitation ==  null){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Helper already invited"));
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+            "message", "Invitation sent",
+            "taskId", taskId,
+            "helperId", helperId,
+            "status", "Invited"
+    ));
+    }
+
+
+    @PostMapping("/{taskId}/decline")
+    public ResponseEntity<?> declineTask(
+        @PathVariable int taskId,
+    @RequestHeader("Authorization") String authHeader
     ){
         int callerId;
         try{
@@ -134,8 +186,7 @@ public class TaskInvitationController {
 
         Helper helper = helperRepository.findByUserid_Userid(callerId).orElse(null);
         if(helper == null){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Map.of("error", "User is not a helper"));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "User is not a helper"));
         }
 
         TaskInvoice taskInvoice = taskInvoiceRepository.findById(taskId).orElse(null);
@@ -143,27 +194,29 @@ public class TaskInvitationController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Task not found"));
         }
 
-        if(!"open".equals(taskInvoice.getStatus())){
+        if (!"open".equals(taskInvoice.getStatus())) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(Map.of("error", "Task is not available for acceptance"));
+                    .body(Map.of("error", "Task is not available for declining"));
         }
 
-        try{
-            taskInvitationService.acceptInvitation(taskId, helper.getHelperid(), taskInvoice, helper);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-            "message", "Task accepted successfully.",
-            "taskId", taskId,
-            "status", "Accepted"
-        ));
+        try{
+            TaskInvitation updated = taskInvitationService.declineInvitation(taskId, helper.getHelperid(), taskInvoice, helper);
+            return ResponseEntity.ok(
+                Map.of(
+                "message", "Task declined.",
+                "taskId", taskId,
+                "status", "Declined"
+            ));
+
         }catch(IllegalStateException e){
             if("CONFLICT".equals(e.getMessage())){
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", "This task has already been accepted"));
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Task cannot be declined in its current state"));
             }
 
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(Map.of("error", "Task is not available for acceptance"));
+                .body(Map.of("error", "Task is not available for declining"));
         }
+
     }
 }
