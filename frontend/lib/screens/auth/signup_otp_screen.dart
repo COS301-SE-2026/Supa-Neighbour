@@ -33,7 +33,7 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
     return;
   }
 
-  // will add real verification later (check if page is complete)
+  // will add real verification later (**check if page update is complete)
   Navigator.push(
     context,
     MaterialPageRoute(
