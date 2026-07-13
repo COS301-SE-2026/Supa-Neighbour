@@ -5,7 +5,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import com.app.api.models.TaskInvitation;
+import com.app.api.models.TaskInvoice;
 import com.app.api.repositories.TaskInvitationRepository;
+
+import jakarta.transaction.Transactional;
+import java.util.Optional;
+import com.app.api.models.Helper;
 
 /**
  * Service layer for managing task invitation operations.
@@ -85,5 +90,22 @@ public class TaskInvitationService {
      */
     public void deleteTaskInvitation(int id) {
         taskInvitationRepository.deleteById(id);
+    }
+
+    @Transactional
+    public TaskInvitation acceptInvitation(int taskId, int helperId, TaskInvoice taskInvoice, Helper helper){
+        Optional<TaskInvitation> existing = taskInvitationRepository.findByTaskId_TaskidAndHelperId_Helperid(taskId, helperId);
+
+        if(existing.isPresent()){
+            String status = existing.get().getStatus();
+            if("Invited".equals(status)){
+                throw new IllegalStateException("UNPROCESSABLE");
+            }
+            throw new IllegalStateException("CONFLICT");
+        }
+
+        TaskInvitation invitation = TaskInvitation.builder().taskId(taskInvoice).helperId(helper).status("Accepted").invitedAt(null).build();
+
+        return taskInvitationRepository.save(invitation);
     }
 }

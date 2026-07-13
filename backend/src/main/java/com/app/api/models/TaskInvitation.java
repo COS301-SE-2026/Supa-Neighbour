@@ -38,7 +38,7 @@ public class TaskInvitation {
 
     @ManyToOne
     @JoinColumn(name = "helper_id")
-    private User helperId;  
+    private Helper helperId;  
 
     @Column(name = "status")
     private String status;
@@ -49,7 +49,7 @@ public class TaskInvitation {
     public TaskInvitation() {
     }
 
-    public TaskInvitation(int taskInvitationId, TaskInvoice taskId, User helperId, String status, Date invitedAt) {
+    public TaskInvitation(int taskInvitationId, TaskInvoice taskId, Helper helperId, String status, Date invitedAt) {
         this.taskInvitationId = taskInvitationId;
         this.taskId = taskId;
         this.helperId = helperId;

@@ -10,11 +10,20 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.models.TaskInvitation;
+import com.app.api.models.TaskInvoice;
+import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.services.TaskInvitationService;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.app.api.services.FirebaseAuthService;
+import com.app.api.models.Helper;
+import com.app.api.repositories.HelperRepository;
+
+import java.util.Map;
 /**
  * TaskInvitation controller.
  * REST controller for TaskInvitation.
@@ -24,9 +33,16 @@ import com.app.api.services.TaskInvitationService;
 public class TaskInvitationController {
 
     private final TaskInvitationService taskInvitationService;
+    private final TaskInvoiceRepository taskInvoiceRepository;
+    private final FirebaseAuthService firebaseAuthService;
+    private final HelperRepository helperRepository;
 
-    public TaskInvitationController(TaskInvitationService taskInvitationService) {
+
+    public TaskInvitationController(TaskInvitationService taskInvitationService, TaskInvoiceRepository taskInvoiceRepository, FirebaseAuthService firebaseAuthService, HelperRepository helperRepository) {
         this.taskInvitationService = taskInvitationService;
+        this.firebaseAuthService = firebaseAuthService;
+        this.taskInvoiceRepository = taskInvoiceRepository;
+        this.helperRepository = helperRepository;
     }
     // GET /api/task-invitations
     /**
@@ -101,5 +117,53 @@ public class TaskInvitationController {
         }
         taskInvitationService.deleteTaskInvitation(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{taskId}/accept")
+    public ResponseEntity<?> acceptTask(
+        @PathVariable int taskId,
+        @RequestHeader("Authorization") String authHeader
+    ){
+        int callerId;
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            callerId = firebaseAuthService.getUserIdFromToken(token);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        Helper helper = helperRepository.findByUserid_Userid(callerId).orElse(null);
+        if(helper == null){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "User is not a helper"));
+        }
+
+        TaskInvoice taskInvoice = taskInvoiceRepository.findById(taskId).orElse(null);
+        if(taskInvoice == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Task not found"));
+        }
+
+        if(!"open".equals(taskInvoice.getStatus())){
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error", "Task is not available for acceptance"));
+        }
+
+        try{
+            taskInvitationService.acceptInvitation(taskId, helper.getHelperid(), taskInvoice, helper);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+            "message", "Task accepted successfully.",
+            "taskId", taskId,
+            "status", "Accepted"
+        ));
+        }catch(IllegalStateException e){
+            if("CONFLICT".equals(e.getMessage())){
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "This task has already been accepted"));
+            }
+
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error", "Task is not available for acceptance"));
+        }
     }
 }
