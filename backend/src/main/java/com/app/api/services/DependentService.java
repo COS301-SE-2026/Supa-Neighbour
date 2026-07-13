@@ -16,6 +16,11 @@ public class DependentService {
 
     private final DependentRepository dependentRepository;
 
+    /**
+     * Constructs the services with its required repository dependency.
+     *
+     * @param dependentRepository repository providing analytics data for posts
+     */
     public DependentService(DependentRepository dependentRepository) {
         this.dependentRepository = dependentRepository;
     }

@@ -26,6 +26,10 @@ public class TaskTypeController {
 
     private final TaskTypeService taskTypeService;
 
+    /**
+     * TaskType Contructor
+     * @param taskTypeService taskTypeService
+     */
     public TaskTypeController(TaskTypeService taskTypeService) {
         this.taskTypeService = taskTypeService;
     }

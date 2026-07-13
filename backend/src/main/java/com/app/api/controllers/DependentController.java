@@ -26,6 +26,11 @@ public class DependentController {
 
     private final DependentService dependentService;
 
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param dependentService service providing analytics data for dependents
+     */
     public DependentController(DependentService dependentService) {
         this.dependentService = dependentService;
     }

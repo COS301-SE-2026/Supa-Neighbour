@@ -26,6 +26,11 @@ public class TaskInvoiceController {
     
     private final TaskInvoiceService taskInvoiceService;
 
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param taskInvoiceService service providing analytics data for taskInvoice
+     */
     public TaskInvoiceController(TaskInvoiceService taskInvoiceService) {
         this.taskInvoiceService = taskInvoiceService;
     }

@@ -17,6 +17,11 @@ public class CompatibilityService {
 
     private final CompatibilityRepository compatibilityRepository;
 
+    /**
+     * Constructs the repository with its required service dependency.
+     *
+     * @param compatibilityRepository repository providing analytics data for compatibility
+     */
     public CompatibilityService(CompatibilityRepository compatibilityRepository) {
         this.compatibilityRepository = compatibilityRepository;
     }

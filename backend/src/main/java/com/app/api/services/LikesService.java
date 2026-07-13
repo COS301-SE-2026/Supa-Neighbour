@@ -16,6 +16,11 @@ public class LikesService {
 
     private final LikesRepository likesRepository;
 
+    /**
+     * Constructs the repository with its required service dependency.
+     *
+     * @param likesRepository repository providing analytics data for likes
+     */
     public LikesService(LikesRepository likesRepository) {
         this.likesRepository = likesRepository;
     }

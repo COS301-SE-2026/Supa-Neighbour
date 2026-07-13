@@ -27,6 +27,11 @@ public class AddressController {
 
     private final AddressService addressService;
 
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param addressService service providing analytics data for address.
+     */
     public AddressController(AddressService addressService) {
         this.addressService = addressService;
     }

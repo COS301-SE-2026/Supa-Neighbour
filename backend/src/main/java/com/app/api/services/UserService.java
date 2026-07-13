@@ -20,6 +20,11 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param userRepository repository providing analytics data for user
+     */
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }

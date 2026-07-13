@@ -15,6 +15,11 @@ public class DependentAnalyticsService {
 
     private final DependentAnalyticsRepository dependentAnalyticsRepository;
 
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param dependentAnalyticsRepository repository providing analytics data for dependent
+     */
     public DependentAnalyticsService(DependentAnalyticsRepository dependentAnalyticsRepository) {
         this.dependentAnalyticsRepository = dependentAnalyticsRepository;
     }

@@ -22,6 +22,10 @@ public class AvailabilityController {
 
     private final AvailabilityService availabilityService;
 
+    /**
+     * Basic constructor
+     * @param availabilityService service handling the availabilty controllers
+     */
     public AvailabilityController(AvailabilityService availabilityService) {
         this.availabilityService = availabilityService;
     }

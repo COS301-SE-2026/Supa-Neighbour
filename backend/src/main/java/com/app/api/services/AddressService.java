@@ -17,6 +17,11 @@ public class AddressService {
 
     private final AddressRepository addressRepository;
 
+    /**
+     * Constructs the repository with its required service dependency.
+     *
+     * @param addressRepository repository providing analytics data for address
+     */
     public AddressService(AddressRepository addressRepository) {
         this.addressRepository = addressRepository;
     }

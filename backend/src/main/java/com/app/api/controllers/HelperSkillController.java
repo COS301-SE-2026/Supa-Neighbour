@@ -24,6 +24,10 @@ import com.app.api.services.HelperSkillService;
 public class HelperSkillController {
         private final HelperSkillService helperSkillService;
 
+
+    /**
+     * Basic HelperSkill Contructor
+     */
     public HelperSkillController(HelperSkillService helperSkillService) {
         this.helperSkillService = helperSkillService;
     }

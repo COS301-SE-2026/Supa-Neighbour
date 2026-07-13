@@ -36,6 +36,14 @@ public class TaskInvitationController {
     private final HelperRepository helperRepository;
     private final FirebaseAuthService firebaseAuthService;
 
+    /**
+     * Constructs the controller with its required collaborators.
+     *
+     * @param taskInvitationService service handling invite/accept/decline business logic
+     * @param helperRepository      repository for looking up {@link Helper} records
+     * @param firebaseAuthService   service for validating Firebase tokens and resolving user IDs
+     * @param taskInvoiceRepository repository for looking up {@link TaskInvoice} records
+     */
     public TaskInvitationController(TaskInvitationService taskInvitationService, HelperRepository helperRepository, FirebaseAuthService firebaseAuthService, TaskInvoiceRepository taskInvoiceRepository) {
         this.taskInvitationService = taskInvitationService;
         this.taskInvoiceRepository = taskInvoiceRepository;
@@ -117,6 +125,23 @@ public class TaskInvitationController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Invites a helper to a specific task.
+     * <p>
+     * Only the requester (dependent) who owns the task may send invitations,
+     * and the task must currently be in the "open" status. Creates a new
+     * {@link TaskInvitation} record with status "Invited".
+     *
+     * @param taskId     the ID of the task to invite a helper to
+     * @param body       request body containing the {@code helperId} of the helper being invited
+     * @param authHeader the Firebase Authorization header ("Bearer &lt;token&gt;")
+     * @return 201 Created with invitation details on success;
+     *         400 if {@code helperId} is missing;
+     *         401 if the token is invalid or missing;
+     *         403 if the caller does not own the task;
+     *         404 if the task or helper does not exist;
+     *         409 if the task is not open or the helper has already been invited
+     */
     @PostMapping("/{taskId}/invite")
     public ResponseEntity<?> inviteHelper(
         @PathVariable int taskId,
@@ -170,7 +195,93 @@ public class TaskInvitationController {
     ));
     }
 
+    /**
+     * Accepts a task invitation on behalf of the calling helper.
+     * <p>
+     * The caller must be a registered helper, and the target task must be
+     * in "open" status. On success, the underlying invitation/task record
+     * transitions to "Accepted".
+     *
+     * @param taskId     the ID of the task being accepted
+     * @param authHeader the Firebase Authorization header ("Bearer &lt;token&gt;")
+     * @return 201 Created with acceptance details on success;
+     *         401 if the token is invalid or missing;
+     *         403 if the caller is not a registered helper;
+     *         404 if the task does not exist;
+     *         409 if the task has already been accepted;
+     *         422 if the task is not otherwise available for acceptance
+     */
+    @PostMapping("/{taskId}/accept")
+    public ResponseEntity<?> acceptTask(
+        @PathVariable int taskId,
+        @RequestHeader("Authorization") String authHeader
+    ){
+        int callerId;
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            callerId = firebaseAuthService.getUserIdFromToken(token);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
 
+
+        Helper helper = helperRepository.findByUserid_Userid(callerId).orElse(null);
+        if(helper == null){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "User is not a helper"));
+        }
+
+
+        TaskInvoice taskInvoice = taskInvoiceRepository.findById(taskId).orElse(null);
+        if(taskInvoice == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Task not found"));
+        }
+
+
+        if(!"open".equals(taskInvoice.getStatus())){
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error", "Task is not available for acceptance"));
+        }
+
+
+        try{
+            taskInvitationService.acceptInvitation(taskId, helper.getHelperid(), taskInvoice, helper);
+
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+            "message", "Task accepted successfully.",
+            "taskId", taskId,
+            "status", "Accepted"
+        ));
+        }catch(IllegalStateException e){
+            if("CONFLICT".equals(e.getMessage())){
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "This task has already been accepted"));
+            }
+
+
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error", "Task is not available for acceptance"));
+        }
+    }
+
+
+    /**
+     * Declines a task invitation on behalf of the calling helper.
+     * <p>
+     * The caller must be a registered helper, and the target task must be
+     * in "open" status. On success, the underlying invitation/task record
+     * transitions to "Declined".
+     *
+     * @param taskId     the ID of the task being declined
+     * @param authHeader the Firebase Authorization header ("Bearer &lt;token&gt;")
+     * @return 200 OK with decline details on success;
+     *         401 if the token is invalid or missing;
+     *         403 if the caller is not a registered helper;
+     *         404 if the task does not exist;
+     *         409 if the task cannot be declined in its current state;
+     *         422 if the task is not otherwise available for declining
+     */
     @PostMapping("/{taskId}/decline")
     public ResponseEntity<?> declineTask(
         @PathVariable int taskId,
@@ -195,6 +306,7 @@ public class TaskInvitationController {
         }
 
         if (!"open".equals(taskInvoice.getStatus())) {
+            System.out.println(taskInvoice.getStatus());
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                     .body(Map.of("error", "Task is not available for declining"));
         }

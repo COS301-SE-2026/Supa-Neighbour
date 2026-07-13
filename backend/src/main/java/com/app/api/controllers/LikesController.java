@@ -26,6 +26,11 @@ public class LikesController {
 
     private final LikesService likesService;
 
+    /**
+     * Basic Likes Contructor
+     * 
+     * @param LikesService likesService
+     */
     public LikesController(LikesService likesService) {
         this.likesService = likesService;
     }

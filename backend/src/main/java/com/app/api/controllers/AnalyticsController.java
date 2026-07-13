@@ -24,6 +24,10 @@ public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
 
+    /**
+     * Basic Analytics Controller Contructor
+     * @param analyticsService service for the analytics 
+     */
     public AnalyticsController(AnalyticsService analyticsService) {
         this.analyticsService = analyticsService;
     }

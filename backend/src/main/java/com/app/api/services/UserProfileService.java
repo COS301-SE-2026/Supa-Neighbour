@@ -187,8 +187,8 @@ public class UserProfileService {
             List<HelperSkill> newSkills = matchedTypes.stream()
                     .map(taskType -> {
                         HelperSkill hs = new HelperSkill();
-                        hs.setHelperid(helper);
-                        hs.setTaskTypeid(taskType);
+                        hs.setHelperId(helper);
+                        hs.setTaskTypeId(taskType);
                         return hs;
                     })
                     .collect(Collectors.toList());

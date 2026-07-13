@@ -35,8 +35,7 @@ public class HelperSkillService {
      *
      * @return a list of all helper skill records
      */
-    public List<HelperSkill> getAllHelpersSkills()
-    {
+    public List<HelperSkill> getAllHelpersSkills(){
         return helperSkillRepository.findAll();
     }
 
@@ -46,8 +45,7 @@ public class HelperSkillService {
      * @param id the helper skill identifier
      * @return the helper skill record if found, or null if no record exists with the given id
      */
-    public HelperSkill getHelperSkillById(int id)
-    {
+    public HelperSkill getHelperSkillById(int id){
         return helperSkillRepository.findById(id).orElse(null);
     }
 
@@ -57,10 +55,8 @@ public class HelperSkillService {
      * @param helperSkill the helper skill record to save
      * @return the saved helper skill record, or null if the provided record is null
      */
-    public HelperSkill saveHelperSkill(HelperSkill helperSkill)
-    {
-        if(helperSkill == null)
-        {
+    public HelperSkill saveHelperSkill(HelperSkill helperSkill){
+        if(helperSkill == null){
             return null;
         }
         return helperSkillRepository.save(helperSkill);
@@ -73,11 +69,9 @@ public class HelperSkillService {
      * @param updated the helper skill object containing the updated fields
      * @return the updated helper skill record, or null if no record exists with the given id
      */
-    public HelperSkill updateHelperSkill(int id, HelperSkill updated)
-    {
+    public HelperSkill updateHelperSkill(int id, HelperSkill updated){
         HelperSkill existing = helperSkillRepository.findById(id).orElse(null);
-        if(existing == null)
-        {
+        if(existing == null){
             return null;
         }
         existing.setHelperId(updated.getHelperId());
@@ -85,10 +79,15 @@ public class HelperSkillService {
         return helperSkillRepository.save(existing);
     }
 
-    public boolean deleteHelperSkill(int id)
-    {
-        if(!helperSkillRepository.existsById(id))
-        {
+    /**
+     * Deletes a helper skill record by its identifier.
+     *
+     * @param id the identifier of the helper skill record to delete
+     * @return {@code true} if a record with the given id existed and was deleted,
+     *         {@code false} if no record exists with the given id
+     */
+    public boolean deleteHelperSkill(int id){
+        if(!helperSkillRepository.existsById(id)){
             return false;
         }
 

@@ -26,6 +26,10 @@ public class LocationController {
 
     private final LocationService locationService;
 
+    /**
+     * Basic Location Controller
+     * @param locationService locationService
+     */
     public LocationController(LocationService locationService) {
         this.locationService = locationService;
     }

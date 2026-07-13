@@ -23,6 +23,11 @@ public class DependentAnalyticsController {
     
     private final DependentAnalyticsService dependentAnalyticsService;
 
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param dependentAnalyticsService service providing analytics data for dependents
+     */
     public DependentAnalyticsController(DependentAnalyticsService dependentAnalyticsService) {
         this.dependentAnalyticsService = dependentAnalyticsService;
     }

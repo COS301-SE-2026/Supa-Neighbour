@@ -16,6 +16,11 @@ public class BadgesService {
 
     private final BadgesRepository badgesRepository;
 
+    /**
+     * Constructs the repository with its required service dependency.
+     *
+     * @param badgesRepository repository providing analytics data for badges
+     */
     public BadgesService(BadgesRepository badgesRepository) {
         this.badgesRepository = badgesRepository;
     }

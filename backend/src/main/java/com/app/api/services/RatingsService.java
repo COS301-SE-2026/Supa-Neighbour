@@ -15,6 +15,11 @@ public class RatingsService {
 
     private final RatingsRepository ratingsRepository;
 
+    /**
+     * Constructs the repository with its required service dependency.
+     *
+     * @param ratingsRepository repository providing analytics data for rating
+     */
     public RatingsService(RatingsRepository ratingsRepository) {
         this.ratingsRepository = ratingsRepository;
     }

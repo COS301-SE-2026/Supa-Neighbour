@@ -26,6 +26,11 @@ public class RatingsController {
     
     private final RatingsService ratingsService;
 
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param ratingsService service providing analytics data for dependents
+     */
     public RatingsController(RatingsService ratingsService) {
         this.ratingsService = ratingsService;
     }

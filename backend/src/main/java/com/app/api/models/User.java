@@ -122,7 +122,6 @@ public class User {
      */
     public User(int userid,String firebaseUid, String firstName, String lastName, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
         this.userid = userid;
-        this.password = password;
         this.firebaseUid = firebaseUid;
         this.emailVerified = emailVerified;
         this.phoneVerified = phoneVerified;

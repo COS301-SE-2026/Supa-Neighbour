@@ -15,6 +15,11 @@ public class HelperService {
 
     private final HelperRepository helperRepository;
 
+    /**
+     * Constructs theservice with its required repository dependency.
+     *
+     * @param helperRepository repository providing analytics data for helpers
+     */
     public HelperService(HelperRepository helperRepository) {
         this.helperRepository = helperRepository;
     }

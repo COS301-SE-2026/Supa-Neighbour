@@ -16,6 +16,11 @@ public class HelperAnalyticsService {
     
     private final HelperAnalyticsRepository helperAnalyticsRepository;
 
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param herlperAnalyticsRepository repository providing analytics data for posts
+     */
     public HelperAnalyticsService(HelperAnalyticsRepository helperAnalyticsRepository) {
         this.helperAnalyticsRepository = helperAnalyticsRepository;
     }

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import com.app.api.models.TaskInvitation;
 import com.app.api.models.TaskInvoice;
-import com.app.api.models.User;
 import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 import java.util.Optional;
@@ -27,6 +26,12 @@ public class TaskInvitationService {
     private final TaskInvitationRepository taskInvitationRepository;
     private final TaskInvoiceRepository taskInvoiceRepository;
 
+    /**
+     * Constructs the service with its required repository dependencies.
+     *
+     * @param taskInvitationRepository repository for {@link TaskInvitation} persistence operations
+     * @param taskInvoiceRepository    repository for {@link TaskInvoice} persistence operations
+     */
     TaskInvitationService(TaskInvitationRepository taskInvitationRepository, TaskInvoiceRepository taskInvoiceRepository) {
         this.taskInvitationRepository = taskInvitationRepository;
         this.taskInvoiceRepository = taskInvoiceRepository;
@@ -98,6 +103,25 @@ public class TaskInvitationService {
         taskInvitationRepository.deleteById(id);
     }
 
+    /**
+     * Invites a helper to a task, handling both first-time invitations and
+     * re-invitations of a previously invited/rejected helper.
+     * <p>
+     * If the helper has an existing invitation that is already "Invited",
+     * the call is a no-op and returns {@code null} (already invited).
+     * Otherwise, any other pending invitations for the same task that are
+     * not already "Invited" or "Rejected" are marked "Rejected", since a
+     * task can only have one active invitee at a time. The target helper's
+     * invitation is then created or updated to "Invited", and the
+     * associated {@link TaskInvoice} is marked "assigned" with the helper set.
+     *
+     * @param taskId       the ID of the task the helper is being invited to
+     * @param helperId     the ID of the helper being invited
+     * @param taskInvoice  the task invoice record associated with the task
+     * @param helper       the helper being invited
+     * @return the created or updated {@link TaskInvitation} with status "Invited",
+     *         or {@code null} if the helper was already invited
+     */
     @Transactional 
     public TaskInvitation inviteHelper(int taskId, int helperId, TaskInvoice taskInvoice, Helper helper){
         Optional<TaskInvitation> existing = taskInvitationRepository.findByTaskId_TaskidAndHelperId_Helperid(taskId, helperId);
@@ -133,6 +157,25 @@ public class TaskInvitationService {
         return invitation;
     }
 
+    /**
+     * Records a helper's decline of a task.
+     * <p>
+     * If an invitation record already exists for this task/helper pair, the
+     * decline is rejected: an "Invited" status throws an unprocessable-state
+     * exception (the requester has already formally selected the helper, so
+     * it's too late to casually decline), and any other existing status
+     * throws a conflict exception. Otherwise, a new invitation record is
+     * created with status "Declined".
+     *
+     * @param taskId      the ID of the task being declined
+     * @param helperId    the ID of the helper declining the task
+     * @param taskInvoice the task invoice record associated with the task
+     * @param helper      the helper declining the task
+     * @return the newly saved {@link TaskInvitation} with status "Declined"
+     * @throws IllegalStateException with message {@code "UNPROCESSABLE"} if the
+     *         existing invitation is in "Invited" status, or {@code "CONFLICT"}
+     *         if an invitation already exists in any other status
+     */
     @Transactional
     public TaskInvitation declineInvitation(int taskId, int helperId, TaskInvoice taskInvoice, Helper helper){
         Optional<TaskInvitation> existing = taskInvitationRepository.findByTaskId_TaskidAndHelperId_Helperid(taskId, helperId);
@@ -149,7 +192,24 @@ public class TaskInvitationService {
 
         return taskInvitationRepository.save(invitation);
     }
-}
+
+    /**
+     * Records a helper's acceptance of a task.
+     * <p>
+     * If an invitation record already exists for this task/helper pair, the
+     * acceptance is rejected: an "Invited" status throws an unprocessable-state
+     * exception, and any other existing status throws a conflict exception.
+     * Otherwise, a new invitation record is created with status "Accepted".
+     *
+     * @param taskId      the ID of the task being accepted
+     * @param helperId    the ID of the helper accepting the task
+     * @param taskInvoice the task invoice record associated with the task
+     * @param helper      the helper accepting the task
+     * @return the newly saved {@link TaskInvitation} with status "Accepted"
+     * @throws IllegalStateException with message {@code "UNPROCESSABLE"} if the
+     *         existing invitation is in "Invited" status, or {@code "CONFLICT"}
+     *         if an invitation already exists in any other status
+     */
     @Transactional
     public TaskInvitation acceptInvitation(int taskId, int helperId, TaskInvoice taskInvoice, Helper helper){
         Optional<TaskInvitation> existing = taskInvitationRepository.findByTaskId_TaskidAndHelperId_Helperid(taskId, helperId);
