@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supa_neighbour/widgets/achievements/achievement_progress_stats.dart';
-
+//goign to modify the test cases
 void main() {
   group('AchievementProgressStats Tests', () {
     testWidgets('displays correct earned and total counts', (tester) async {

@@ -49,6 +49,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      //going to modify
+
       expect(find.text('2'), findsOneWidget);
       expect(find.text('3/5'), findsOneWidget);
       expect(find.text('Earned'), findsNothing);
