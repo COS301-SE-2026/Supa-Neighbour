@@ -116,7 +116,7 @@ create table helper_table (
     task_type_id int,
     badge_id int,
     helper_xp int NOT NULL DEFAULT 0,
-
+    isAvailable boolean default true,
     foreign key (user_id) 
         references user_table(user_id),
 
@@ -670,17 +670,17 @@ values
 -- 7. helper table
 -- =============================================
 insert into helper_table
-(user_id, task_type_id, badge_id, helper_xp)    
+(user_id, task_type_id, badge_id, helper_xp, isAvailable)
 values
-(2,  2, 4, 500), 
-(3,  3, 2, 250),  
-(4,  4, 3, 150),  
-(5,  5, 5, 500),  
-(7,  1, 1, 500),  
-(10, 2, 4, 500),  
-(11, 3, 2, 500), 
-(12, 4, 3, 500),  
-(13, 5, 5, 500); 
+(2,  2, 4, 500, true), 
+(3,  3, 2, 250, false),  
+(4,  4, 3, 150, false),  
+(5,  5, 5, 500, false),  
+(7,  1, 1, 500, true),  
+(10, 2, 4, 500, true),  
+(11, 3, 2, 500, true), 
+(12, 4, 3, 500, true),  
+(13, 5, 5, 500, true);  
 
 -- =============================================
 -- 8. dependent table
@@ -753,8 +753,9 @@ insert into task_invoice_table
 values
 (1, 1, true,  1, 1, true,  1, '2026-05-01', '2026-05-01', 3, null, 'Outstanding', 'Excellent medical assistance provided.', 1, 'completed'),
 (2, 2, false, 2, 4, false, 2, '2026-05-02', '2026-05-03', 2, null, 'Very Good',   'Reliable transport support.',            2, 'completed'),
-(3, 3, false, 3, 3, false, 1, '2026-05-04', '2026-05-04', 4, null, 'Very Good',   'Resolved device setup issues quickly.',   3, 'completed');
-
+(3, 3, false, 3, 3, false, 1, '2026-05-04', '2026-05-04', 4, null, 'Very Good',   'Resolved device setup issues quickly.',   3, 'completed'),
+(NULL, 5, false, 4, 5, false, NULL, '2026-07-15', NULL, NULL, NULL, NULL, NULL, NULL, 'open'),
+(NULL, 1, false, 1, 1, false, NULL, '2026-07-20', NULL, NULL, NULL, NULL, NULL, NULL, 'open');
 -- =============================================
 -- 12. helper analytics table
 -- =============================================
@@ -904,13 +905,16 @@ values
 -- =============================================
 -- 19. task_invitation_table mock data
 -- =============================================
-INSERT INTO task_invitation_table (task_id, helper_id, status)
+INSERT INTO task_invitation_table (task_id, helper_id, status, invited_at)
 VALUES
-(1, 1, 'Invited'),   
-(1, 2, 'Rejected'), 
-(2, 4, 'Accepted'),  
-(2, 5, 'Declined'), 
-(3, 3, 'Invited');
+(1, 1, 'Invited', NOW()),   
+(1, 2, 'Rejected', NULL), 
+(2, 4, 'Accepted', NULL),  
+(2, 5, 'Declined', NULL), 
+(3, 3, 'Invited', NOW()),
+(4, 2, 'Accepted', NULL),   -- Michael (user 3) expressed interest
+(4, 4, 'Accepted', NULL),   -- David (user 5) expressed interest
+(4, 6, 'Declined', NULL);  -- Emma (user 10) declined
 
 -- =============================================
 -- 19. helper skill mock data

@@ -11,7 +11,10 @@ import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
 
-
+/**
+ * Represents a helper user who provides assistance with tasks.
+ * Helpers specialize in certain task types and can earn badges.
+ */
 @Data
 @Builder
 @Entity
@@ -21,34 +24,32 @@ public class HelperSkill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "helper_skill_id")
-    private int helperSkillid;
+    private int helperSkillId;
 
     @ManyToOne
     @JoinColumn(name = "helper_id")
-    private Helper helperid;
+    private Helper helperId;
 
     @ManyToOne
     @JoinColumn(name = "task_type_id")
-    private TaskType taskTypeid;
+    private TaskType taskTypeId;
 
     /**
      * Constructs a HelperSkill with all fields specified.
      *
-     * @param helperSkillid the helper skill identifier
-     * @param helperid      the helper who has this skill
-     * @param taskTypeid    the task type this skill covers
+     * @param helperSkillId the helper skill identifier
+     * @param helperId      the helper associated with this skill
+     * @param taskTypeId    the task type associated with this skill
      */
-    public HelperSkill(int helperSkillis, Helper helperid, TaskType taskTypeid){
-        this.helperSkillid = helperSkillid;
-        this.helperid = helperid;
-        this.taskTypeid = taskTypeid;
+    public HelperSkill(int helperSkillId, Helper helperId, TaskType taskTypeId) {
+        this.helperSkillId = helperSkillId;
+        this.helperId = helperId;
+        this.taskTypeId = taskTypeId;
     }
-
     /**
-     * Default Contructor
+     * Default constructor for JPA.
      */
-    public HelperSkill(){
-        
+    public HelperSkill() {
     }
 
     /**
@@ -56,53 +57,52 @@ public class HelperSkill {
      *
      * @return the helper skill identifier
      */
-    public int getHelperSkillid(){
-        return helperSkillid;
-    }
+    public int getHelperSkillId() {
+        return helperSkillId;
+    }   
 
     /**
      * Sets the helper skill identifier.
      *
-     * @param helperSkillid the helper skill identifier
+     * @param helperSkillId the helper skill identifier to set
      */
-    public void setHelperSkillid(int helperSkillid){
-        this.helperSkillid = helperSkillid;
+    public void setHelperSkillId(int helperSkillId) {
+        this.helperSkillId = helperSkillId;
     }
 
-     /**
-     * Gets the helper who has this skill.
+    /**
+     * Gets the helper associated with this helper skill.
      *
      * @return the helper
      */
-    public Helper getHelperid(){
-        return helperid;
-    }
-
-
-    /**
-     * Sets the helper who has this skill.
-     *
-     * @param helperid the helper
-     */
-    public void setHelperid(Helper helperid){
-        this.helperid = helperid;
+    public Helper getHelperId() {
+        return helperId;
     }
 
     /**
-     * Gets the task type this skill covers.
+     * Sets the helper associated with this helper skill.
      *
-     * @return the task type
+     * @param helperId the helper to set
      */
-    public TaskType getTaskTypeid(){
-        return taskTypeid;
+    public void setHelperId(Helper helperId) {
+        this.helperId = helperId;
+    }
+    /**
+     * Gets the task type identifier for this helper skill.
+     *
+     * @return the task type identifier
+     */     
+
+    public TaskType getTaskTypeId() {
+        return taskTypeId;
+    }
+    /**
+     * Sets the task type identifier for this helper skill.
+     *
+     * @param taskTypeId the task type identifier to set
+     */
+    public void setTaskTypeId(TaskType taskTypeId) {
+        this.taskTypeId = taskTypeId;
     }
 
-    /**
-     * Sets the task type this skill covers.
-     *
-     * @param taskTypeid the task type
-     */
-    public void setTaskTypeid(TaskType taskTypeid) {
-        this.taskTypeid = taskTypeid;
-    }
 }

@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,8 +23,16 @@ import com.app.api.services.CommentsService;
 @RequestMapping("/api/comments")
 public class CommentsController {
 
-    @Autowired
-    private CommentsService commentsService;
+
+    private final CommentsService commentsService;
+
+    /**
+     * Basic Comments constructor
+     * @param commentService service for the comments contructor
+     */
+    public CommentsController(CommentsService commentsService) {
+        this.commentsService = commentsService;
+    }
 
     // GET /api/comments
     /**

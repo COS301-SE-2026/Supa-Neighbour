@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Location;
@@ -15,8 +13,16 @@ import com.app.api.repositories.LocationRepository;
 @Service
 public class LocationService {
 
-    @Autowired
-    private LocationRepository locationRepository;
+    private final LocationRepository locationRepository;
+
+    /**
+     * Constructs the repository with its required service dependency.
+     *
+     * @param locationRepository repository providing analytics data for location
+     */
+    public LocationService(LocationRepository locationRepository) {
+        this.locationRepository = locationRepository;
+    }
 
     // Get all
     /**
@@ -63,11 +69,11 @@ public class LocationService {
      */
     public Location updateLocation(int id, Location updated) {
         Location existing = locationRepository.findById(id).orElse(null);
-    
-        existing.setLocationCenterPoint(updated.getLocationCenterPoint());
         if (existing == null) {
             return null;
-        }
+            }
+
+        existing.setLocationCenterPoint(updated.getLocationCenterPoint());
         existing.setLocationCenterPoint(updated.getLocationCenterPoint());
         existing.setLocationRadius(updated.getLocationRadius());
         existing.setNeighbourhoodName(updated.getNeighbourhoodName());

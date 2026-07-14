@@ -19,7 +19,7 @@ public interface HelperSkillRepository extends JpaRepository<HelperSkill, Intege
      * @param helperId the identifier of the helper
      * @return a list of {@link HelperSkill} entities belonging to the helper
      */
-    @Query("select hs from HelperSkill hs where hs.helperid.helperid = :helperId")
+    @Query("select hs from HelperSkill hs where hs.helperId.helperid = :helperId")
     List<HelperSkill> findHelperId(@Param("helperId") int helperId);
 
     /**
@@ -29,6 +29,6 @@ public interface HelperSkillRepository extends JpaRepository<HelperSkill, Intege
      */
     @Modifying(clearAutomatically = true)
     @Transactional
-    @Query("delete from HelperSkill hs where hs.helperid.helperid = :helperId")
+    @Query("delete from HelperSkill hs where hs.helperId.helperid = :helperId")
     void deleteHelperId(@Param("helperId") int helperId);
 }

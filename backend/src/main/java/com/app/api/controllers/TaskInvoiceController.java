@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,9 +23,17 @@ import com.app.api.services.TaskInvoiceService;
 @RequestMapping("/api/taskinvoices")
 public class TaskInvoiceController {
 
-    @Autowired
-    private TaskInvoiceService taskInvoiceService;
+    
+    private final TaskInvoiceService taskInvoiceService;
 
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param taskInvoiceService service providing analytics data for taskInvoice
+     */
+    public TaskInvoiceController(TaskInvoiceService taskInvoiceService) {
+        this.taskInvoiceService = taskInvoiceService;
+    }
     // GET /api/taskinvoices    
     /**
      * Retrieves all task invoice.

@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,8 +20,17 @@ import com.app.api.services.AdminService;
 @RequestMapping("/api/admins")
 public class AdminController {
 
-    @Autowired
-    private AdminService adminService;
+
+    private final AdminService adminService;
+
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param adminService service providing analytics data for admins
+     */
+    public AdminController(AdminService adminService) {
+        this.adminService = adminService;
+    }
 
     // GET /api/admins
     /**

@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Comments;
@@ -15,9 +13,17 @@ import com.app.api.repositories.CommentsRepository;
 @Service
 public class CommentsService {
 
-    @Autowired
-    private CommentsRepository commentsRepository;
 
+    private final CommentsRepository commentsRepository;
+
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param  commentsRepository repository providing analytics data for comments
+     */
+    public CommentsService(CommentsRepository commentsRepository) {
+        this.commentsRepository = commentsRepository;
+    }
     // Get all
     /**
      * Retrieves all comments from the repository.
