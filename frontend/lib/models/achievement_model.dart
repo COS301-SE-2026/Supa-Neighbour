@@ -100,7 +100,7 @@ class AchievementsResponse {
     required this.earned,
     required this.unearned,
   });
-
+//can be updated
   factory AchievementsResponse.fromJson(Map<String, dynamic> json) {
     return AchievementsResponse(
       earned: (json['earned'] as List<dynamic>)

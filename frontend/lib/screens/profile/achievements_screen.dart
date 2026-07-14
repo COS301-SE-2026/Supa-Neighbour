@@ -4,6 +4,7 @@ import '../../constants/app_colors.dart';
 import '../../models/achievement_model.dart';
 import '../../widgets/achievements/achievement_progress_stats.dart';
 import '../../widgets/achievements/achievement_grid.dart';
+import 'package:supa_neighbour/screens/profile/settings_screen.dart';
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
@@ -137,7 +138,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: const Icon(Icons.arrow_back, color: AppColors.primaryTeal),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -145,7 +146,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         title: Text(
           'Achievements',
           style: GoogleFonts.poppins(
-            color: AppColors.primary,
+            color: AppColors.primaryTeal,
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -153,8 +154,15 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: AppColors.primary),
-            onPressed: () {},
+            icon: const Icon(Icons.settings_outlined, color: AppColors.charcoal),
+            onPressed: () {
+              Navigator.push(
+              context,
+              MaterialPageRoute(
+              builder: (context) => const SettingsScreen(),
+        ),
+      );
+            },
           ),
         ],
       ),
@@ -166,7 +174,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryTeal),
         ),
       );
     }
@@ -205,7 +213,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               child: Text(
                 'Retry',
                 style: GoogleFonts.openSans(
-                  color: AppColors.primary,
+                  color: AppColors.primaryTeal,
                   fontWeight: FontWeight.w600,
                 ),
               ),
