@@ -14,6 +14,8 @@ class Task {
   final String? helperId;  // User ID of who accepted (null if open)
   final String? requesterName; // Name of requester for display
   final String? helperName; // Name of helper for display (optional)
+  final String? completionNote;
+  final List<String>? completionPhotos;
 
   Task({
     required this.id,
@@ -28,7 +30,9 @@ class Task {
     required this.createdBy,
     this.helperId,
     this.requesterName,
-    this.helperName
+    this.helperName,
+    this.completionNote,
+    this.completionPhotos,
   });
 
   //note:
@@ -55,7 +59,11 @@ class Task {
       createdBy: json['createdBy'] as String? ?? 'unknown',  
       requesterName: json['requesterName'] as String?,       
       helperId: json['helperId'] as String?,                 
-      helperName: json['helperName'] as String?,             
+      helperName: json['helperName'] as String?,
+      completionNote: json['completionNote'] as String?,
+      completionPhotos: json['completionPhotos'] != null
+      ? List<String>.from(json['completionPhotos'] as List)
+      : null,             
     );
   }
 
@@ -126,6 +134,8 @@ class Task {
           requesterName: 'You',
           helperId: null,
           helperName: null,
+          completionNote: null,
+          completionPhotos: null,
         ),
         Task(
           id: '2',
@@ -141,6 +151,8 @@ class Task {
           requesterName: 'You',
           helperId: 'helper123',
           helperName: 'Sarah Johnson',
+          completionNote: null,
+          completionPhotos: null,
         ),
 
         Task(
@@ -157,6 +169,8 @@ class Task {
         requesterName: 'You',
         helperId: 'helper456',
         helperName: 'Mike Johnson',
+        completionNote: null,
+        completionPhotos: null,
       ),
 
       // Task 4: Created by current user, pending approval (helper says done)
@@ -174,6 +188,8 @@ class Task {
           requesterName: 'You',
           helperId: 'helper789',
           helperName: 'Lisa Wong',
+          completionNote: null,
+          completionPhotos: null,
         ),
         
         // Task 5: Created by current user, completed
@@ -191,6 +207,8 @@ class Task {
           requesterName: 'You',
           helperId: 'helper111',
           helperName: 'Tom Brown',
+          completionNote: null,
+          completionPhotos: null,
         ),
         
         // Task 6: Created by neighbour, current user is helper (accepted)
@@ -208,6 +226,8 @@ class Task {
           requesterName: 'Sarah Johnson',
           helperId: currentUserId,
           helperName: 'You',
+          completionNote: null,
+          completionPhotos: null,
         ),
         
         // Task 7: Created by neighbour, current user is helper (in progress)
@@ -260,6 +280,28 @@ class Task {
           helperId: currentUserId,
           helperName: 'You',
         ),
+
+        // Task 10: Created by current user, pending approval with completion details
+        Task(
+          id: '10',
+          title: 'Fix the garden fence',
+          category: 'Home Check-in',
+          date: DateTime.now().subtract(const Duration(days: 2)),
+          time: const TimeOfDay(hour: 10, minute: 0),
+          xpReward: 80,
+          instructions: 'Fix the broken fence panel in the backyard',
+          status: 'pending_approval',
+          createdAt: DateTime.now().subtract(const Duration(days: 3)),
+          createdBy: currentUserId,
+          requesterName: 'You',
+          helperId: 'helper999',
+          helperName: 'John Carpenter',
+          completionNote: 'Fixed the fence panel. Replaced two broken slats and secured the hinges. Good as new!',
+          completionPhotos: [
+            'https://via.placeholder.com/150/2A9D8F/FFFFFF?text=Fence+After',
+            'https://via.placeholder.com/150/E9C46A/264653?text=Repair+Detail',
+          ],
+        ),
       ];
     }
     return _mockTasks;
@@ -286,6 +328,8 @@ class Task {
         requesterName: _mockTasks[index].requesterName,
         helperId: _mockTasks[index].helperId,
         helperName: _mockTasks[index].helperName,
+        completionNote: _mockTasks[index].completionNote,
+        completionPhotos: _mockTasks[index].completionPhotos,
       );
     }
   }

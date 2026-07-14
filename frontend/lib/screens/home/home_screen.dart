@@ -4,10 +4,12 @@ import '../../models/auth_session.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
 import '../../widgets/bottom_nav_bar.dart';
-import 'create_task_screen.dart';
-import 'inbox_screen.dart';
-import 'my_tasks_screen.dart';
-import 'task_detail_screen.dart';
+import '../tasks/create_task_screen.dart';
+import '../leaderboard/leaderboard_screen.dart';
+import '../chat/inbox_screen.dart';
+import '../tasks/my_tasks_screen.dart';
+import '../profile/profile_screen.dart';
+import '../tasks/task_detail_screen.dart';
 import '../../services/task_service.dart';
 
 
@@ -25,8 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
     const HomeContent(),
     const MyTasksScreen(),
     const InboxScreen(),
-    const StatsPlaceholder(),
-    const ProfilePlaceholder(),
+    const LeaderboardScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -46,7 +48,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Home Content Widget
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -128,7 +129,6 @@ class _HomeContentState extends State<HomeContent> {
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Color(0xFF2A9D8F)),
             onPressed: () {
-              // next feature
             },
           ),
         ],
@@ -143,19 +143,12 @@ class _HomeContentState extends State<HomeContent> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome Section - Now using AuthSession
               _buildWelcomeSection(),
               const SizedBox(height: 24),
-
-              // Quick Stats Row
               _buildStatsRow(),
               const SizedBox(height: 24),
-
-              // Nearby Tasks Section
               _buildNearbyTasksSection(context),
               const SizedBox(height: 12),
-
-              // Task List
               _nearbyTasks.isEmpty
                   ? _buildEmptyState()
                   : _buildNearbyTaskList(context),
@@ -505,95 +498,5 @@ class _HomeContentState extends State<HomeContent> {
       default:
         return Icons.assignment;
     }
-  }
-}
-
-
-// Placeholder Screens
-class StatsPlaceholder extends StatelessWidget {
-  const StatsPlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFFFFFFF),
-        elevation: 0,
-        title: Text(
-          'Statistics',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF2A9D8F),
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.bar_chart,
-              size: 80,
-              color: const Color(0xFF2A9D8F).withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Statistics Coming Soon',
-              style: GoogleFonts.openSans(
-                color: const Color(0xFF264653),
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ProfilePlaceholder extends StatelessWidget {
-  const ProfilePlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFFFFFFF),
-        elevation: 0,
-        title: Text(
-          'Profile',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF2A9D8F),
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.person_outline,
-              size: 80,
-              color: const Color(0xFF2A9D8F).withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Profile Coming Soon',
-              style: GoogleFonts.openSans(
-                color: const Color(0xFF264653),
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
