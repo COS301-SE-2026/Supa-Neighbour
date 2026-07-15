@@ -92,28 +92,24 @@ class User {
     };
   }
 
-
+  
 factory User.fromJson(Map<String, dynamic> json) {
   return User(
-    id: (json['userid'] ?? json['user_id'])?.toString() ?? '',
-    email: json['email'] as String? ?? json['user_email'] as String? ?? '',
-    firstName: json['firstName'] as String? ?? json['user_name'] as String? ?? '',
-    lastName: json['lastName'] as String? ?? json['user_surname'] as String? ?? '',
-    phone: json['phoneNumber'] as String? ?? json['user_phone_number'] as String?,
+    id: json['userid'].toString(),
+    email: json['email'] as String? ?? '',
+    firstName: json['firstName'] as String? ?? '',
+    lastName: json['lastName'] as String? ?? '',
+    phone: json['phoneNumber'] as String?,
     username: json['username'] as String?,
-    birthday: json['dateOfBirth'] != null
-        ? DateTime.tryParse(json['dateOfBirth'].toString())
-        : json['birthday'] != null
-            ? DateTime.tryParse(json['birthday'].toString())
-            : null,
-    gender: json['gender'] as String? ?? json['user_gender'] as String?,
-    street: (json['addressid'] as Map<String, dynamic>?)?['street'] as String?,
-    town: ((json['addressid'] as Map<String, dynamic>?)?['neighbourhoodid']
-        as Map<String, dynamic>?)?['neighbourhoodName'] as String?,
-    zipCode: (json['addressid'] as Map<String, dynamic>?)?['zipcode']?.toString(),
-    createdAt: DateTime.now(),
+    birthday: json['birthday'] != null ? DateTime.parse(json['birthday'].toString()) : null,
+    gender: json['user_gender'] as String?,
+    street: json['user_street'] as String?,      
+    town: json['user_town'] as String?,          
+    zipCode: json['user_zipcode'] as String?,
+    createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
   );
 }
+
 
 
   // Creates an empty user
