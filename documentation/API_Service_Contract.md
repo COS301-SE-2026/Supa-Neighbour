@@ -1,14 +1,18 @@
 # Supa-Neighbour — API Service Contract
 
+
 > All endpoints require a valid JWT Bearer Token unless stated otherwise.
 > Include the token in the request header as follows:
 > ```
 > Authorization: Bearer <token>
 > ```
 
+
 ---
 
+
 ## Table of Contents
+
 
 1. [Authentication](#1-authentication)
    - [POST /api/auth/login](#11-post-apiauthlogin)
@@ -38,13 +42,30 @@
    - [GET /api/leaderboard](#63-get-apileaderboard)
    - [GET /api/users/me/achievements](#64-get-apiusersmeachievements)
    - [POST /api/tasks/{taskId}/rate](#65-post-apitaskstaskidrate)
+7. [Community Bulletin Board](#7-community-bulletin-board)
+   - [GET /api/bulletin/posts](#71-get-apibulletinposts)
+   - [GET /api/bulletin/posts/{postId}](#72-get-apibulletinpostspostid)
+   - [POST /api/bulletin/posts](#73-post-apibulletinposts)
+   - [POST /api/upload/image](#74-post-apiuploadimage)
+   - [DELETE /api/bulletin/posts/{postId}](#75-delete-apibulletinpostspostid)
+   - [POST /api/bulletin/posts/{postId}/helpful](#76-post-apibulletinpostspostidhelpful)
+   - [DELETE /api/bulletin/posts/{postId}/helpful](#77-delete-apibulletinpostspostidhelpful)
+   - [GET /api/bulletin/posts/{postId}/comments](#78-get-apibulletinpostspostidcomments)
+   - [POST /api/bulletin/posts/{postId}/comments](#79-post-apibulletinpostspostidcomments)
+   - [POST /api/bulletin/posts/{postId}/dis-helpful](#710-post-apibulletinpostspostiddis-helpful)
+   - [DELETE /api/bulletin/posts/{postId}/dis-helpful](#711-delete-apibulletinpostspostiddis-helpful)
+8. [Http Status Code Reference](#8-http-status-code-reference)
 ---
+
 
 ## 1. Authentication
 
+
 ---
 
+
 ### 1.1 POST /api/auth/login
+
 
 | Field | Details |
 |---|---|
@@ -54,14 +75,18 @@
 | **Authentication** | None — public endpoint |
 | **Content-Type** | `application/json` |
 
+
 #### Required Parameters
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `email` | String | The user's registered email address |
 | `password` | String | The user's password |
 
+
 #### Request Body
+
 
 ```json
 {
@@ -70,7 +95,9 @@
 }
 ```
 
+
 #### Success Response — `200 OK`
+
 
 ```json
 {
@@ -80,7 +107,9 @@
 }
 ```
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
@@ -88,9 +117,12 @@
 | `422 Unprocessable Entity` | Missing required fields | `{ "error": "Email and password are required" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
 ---
 
+
 ### 1.2 POST /api/auth/register
+
 
 | Field | Details |
 |---|---|
@@ -100,7 +132,9 @@
 | **Authentication** | None — public endpoint |
 | **Content-Type** | `application/json` |
 
+
 #### Required Parameters
+
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -114,7 +148,9 @@
 | `password` | String | Minimum 8 characters, mixed case, number, and special character |
 | `username` | String | Unique display name |
 
+
 #### Request Body
+
 
 ```json
 {
@@ -130,7 +166,9 @@
 }
 ```
 
+
 #### Success Response — `201 Created`
+
 
 ```json
 {
@@ -140,7 +178,9 @@
 }
 ```
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
@@ -149,13 +189,18 @@
 | `422 Unprocessable Entity` | Missing required fields | `{ "error": "All fields are required" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
 ---
+
 
 ## 2. Dashboard
 
+
 ---
 
+
 ### 2.1 GET /api/dashboard
+
 
 | Field | Details |
 |---|---|
@@ -165,13 +210,17 @@
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 
+
 #### Request Headers
+
 
 ```
 Authorization: Bearer <token>
 ```
 
+
 #### Success Response — `200 OK`
+
 
 ```json
 {
@@ -209,20 +258,27 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
 | `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
 ---
+
 
 ## 3. Task Management
 
+
 ---
 
+
 ### 3.1 POST /api/task/create
+
 
 | Field | Details |
 |---|---|
@@ -232,7 +288,9 @@ Authorization: Bearer <token>
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 
+
 #### Required Parameters
+
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -244,7 +302,9 @@ Authorization: Bearer <token>
 | `adminReview` | varchar(1) | Whether task requires admin review before publishing — `Y` or `N` |
 | `specialInstructions` | String / null | Optional additional instructions for the helper |
 
+
 #### Request Body
+
 
 ```json
 {
@@ -258,7 +318,9 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Success Response — `201 Created`
+
 
 ```json
 {
@@ -268,7 +330,9 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
@@ -277,9 +341,12 @@ Authorization: Bearer <token>
 | `422 Unprocessable Entity` | Missing required fields | `{ "error": "userID, taskType, and startDate are required" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
 ---
 
+
 ### 3.2 PUT /api/task/{taskID}
+
 
 | Field | Details |
 |---|---|
@@ -289,13 +356,17 @@ Authorization: Bearer <token>
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 
+
 #### Path Parameters
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `taskID` | String | The unique ID of the task to update |
 
+
 #### Request Body
+
 
 ```json
 {
@@ -308,7 +379,9 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Success Response — `200 OK`
+
 
 ```json
 {
@@ -317,7 +390,9 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
@@ -327,9 +402,12 @@ Authorization: Bearer <token>
 | `404 Not Found` | Task does not exist | `{ "error": "Task not found" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
 ---
 
+
 ### 3.3 PATCH /api/task/{taskID}/complete
+
 
 | Field | Details |
 |---|---|
@@ -339,13 +417,17 @@ Authorization: Bearer <token>
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 
+
 #### Path Parameters
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `taskID` | String | The unique ID of the task to complete |
 
+
 #### Request Body
+
 
 ```json
 {
@@ -354,9 +436,12 @@ Authorization: Bearer <token>
 }
 ```
 
+
 > `photoEvidenceUrl` is optional. If provided, the photo must be uploaded to Azure Blob Storage first and the returned URL passed here.
 
+
 #### Success Response — `200 OK`
+
 
 ```json
 {
@@ -366,7 +451,9 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
@@ -376,9 +463,12 @@ Authorization: Bearer <token>
 | `409 Conflict` | Task already completed | `{ "error": "Task has already been marked as complete" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
 ---
 
+
 ### 3.4 PATCH /api/task/{taskID}/status
+
 
 | Field | Details |
 |---|---|
@@ -388,13 +478,17 @@ Authorization: Bearer <token>
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 
+
 #### Path Parameters
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `taskID` | String | The unique ID of the task |
 
+
 #### Valid Status Values
+
 
 | Status | Description | Who sets it |
 |---|---|---|
@@ -406,7 +500,9 @@ Authorization: Bearer <token>
 | `cancelled` | Task was cancelled before completion | Requester or Admin |
 | `expired` | Task passed its end date without completion | System |
 
+
 #### Request Body
+
 
 ```json
 {
@@ -415,7 +511,9 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Success Response — `200 OK`
+
 
 ```json
 {
@@ -426,7 +524,9 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
@@ -437,9 +537,12 @@ Authorization: Bearer <token>
 | `409 Conflict` | Invalid status transition | `{ "error": "Cannot transition from current status to the requested status" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
 ---
 
+
 ### 3.5 GET /api/task/assigned/{userID}
+
 
 | Field | Details |
 |---|---|
@@ -449,25 +552,33 @@ Authorization: Bearer <token>
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 
+
 #### Path Parameters
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `userID` | int | The unique ID of the helper |
 
+
 #### Query Parameters (optional)
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `status` | String | Filter by task status e.g. `?status=in_progress` |
 
+
 #### Request Headers
+
 
 ```
 Authorization: Bearer <token>
 ```
 
+
 #### Success Response — `200 OK`
+
 
 ```json
 {
@@ -495,7 +606,9 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
@@ -504,9 +617,12 @@ Authorization: Bearer <token>
 | `404 Not Found` | User does not exist | `{ "error": "User not found" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
 ---
 
+
 ### 3.6 GET /api/task/created/{userID}
+
 
 | Field | Details |
 |---|---|
@@ -516,25 +632,33 @@ Authorization: Bearer <token>
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 
+
 #### Path Parameters
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `userID` | int | The unique ID of the requester |
 
+
 #### Query Parameters (optional)
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `status` | String | Filter by task status e.g. `?status=open` |
 
+
 #### Request Headers
+
 
 ```
 Authorization: Bearer <token>
 ```
 
+
 #### Success Response — `200 OK`
+
 
 ```json
 {
@@ -564,7 +688,9 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
@@ -573,13 +699,18 @@ Authorization: Bearer <token>
 | `404 Not Found` | User does not exist | `{ "error": "User not found" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
 ---
+
 
 ## 4. Chat
 
+
 ---
 
+
 ### 4.1 GET /api/chats/{userID}
+
 
 | Field | Details |
 |---|---|
@@ -589,19 +720,25 @@ Authorization: Bearer <token>
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 
+
 #### Path Parameters
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `userID` | int | The unique ID of the user |
 
+
 #### Request Headers
+
 
 ```
 Authorization: Bearer <token>
 ```
 
+
 #### Success Response — `200 OK`
+
 
 ```json
 {
@@ -633,7 +770,9 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
@@ -642,9 +781,12 @@ Authorization: Bearer <token>
 | `404 Not Found` | User does not exist | `{ "error": "User not found" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
 ---
 
+
 ### 4.2 GET /api/chats/{chatID}/messages
+
 
 | Field | Details |
 |---|---|
@@ -654,26 +796,34 @@ Authorization: Bearer <token>
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 
+
 #### Path Parameters
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `chatID` | int | The unique ID of the chat thread |
 
+
 #### Query Parameters (optional)
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `page` | int | Page number for pagination — default `1` |
 | `limit` | int | Number of messages per page — default `50` |
 
+
 #### Request Headers
+
 
 ```
 Authorization: Bearer <token>
 ```
 
+
 #### Success Response — `200 OK`
+
 
 ```json
 {
@@ -717,6 +867,7 @@ Authorization: Bearer <token>
   ]
 }
 ```
+
 
 ---
  
@@ -899,7 +1050,9 @@ GET /api/helpers/5/profile?taskId=12
 | `409 Conflict` | Helper has already been invited to this task | `{ "error": "Helper already invited" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
 ### 5.4 POST /api/task/{taskId}/accept
+
 
 | Field | Details |
 |---|---|
@@ -909,21 +1062,28 @@ GET /api/helpers/5/profile?taskId=12
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 
+
 #### Path Parameters
+
 
 | Parameter | Type | Description |
 |---|---|---|
 | `taskId` | int | The unique ID of the task being accepted |
 
+
 > No request body is needed — the helper is resolved from the JWT.
 
+
 #### Request Headers
+
 
 ```
 Authorization: Bearer <token>
 ```
 
+
 #### Success Response — `201 Created`
+
 
 ```json
 {
@@ -934,9 +1094,12 @@ Authorization: Bearer <token>
 }
 ```
 
+
 > `addressRevealed: true` signals to the Flutter client to navigate to the Address Confirmation screen (UC6-US1).
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
@@ -946,6 +1109,7 @@ Authorization: Bearer <token>
 | `409 Conflict` | Task has already been accepted by another helper | `{ "error": "This task has already been accepted" }` |
 | `422 Unprocessable Entity` | Task is not in an open/available state | `{ "error": "Task is not available for acceptance" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
 
 ### 5.5 POST /api/task/{taskId}/decline
  
@@ -991,6 +1155,7 @@ Authorization: Bearer <token>
 | `409 Conflict` | Task has already been accepted or declined | `{ "error": "Task cannot be declined in its current state" }` |
 | `422 Unprocessable Entity` | Task is not in an open/available state | `{ "error": "Task is not available for declining" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
 
 ### 5.6 GET /api/helpers/me/tasks
  
@@ -1062,6 +1227,7 @@ GET /api/helpers/me/tasks?status=Completed&limit=10
 | `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
 | `403 Forbidden` | Authenticated user is not registered as a helper | `{ "error": "User is not a helper" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
 
 ---
  
@@ -1263,7 +1429,9 @@ Authorization: Bearer <token>
 }
 ```
 
+
 #### Error Responses
+
 
 | Status Code | Scenario | Response Body |
 |---|---|---|
@@ -1271,6 +1439,7 @@ Authorization: Bearer <token>
 | `403 Forbidden` | User is not a participant in this chat | `{ "error": "You are not authorised to view this chat" }` |
 | `404 Not Found` | Chat does not exist | `{ "error": "Chat not found" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+
 
 ### 6.5 POST /api/tasks/{taskId}/rate
  
@@ -1325,9 +1494,576 @@ Authorization: Bearer <token>
 | `422 Unprocessable Entity` | Task is not yet in `Completed` status | `{ "error": "Task must be completed before it can be rated" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
 
+
+## 7. Community Bulletin Board
+ 
+> **Schema dependency notes (UC8):**
+> - `posts_table`, `comments_table`, and `likes_table` are confirmed in schema — see below.
+> - Endpoints **7.3 and 7.4 (create post / upload image) are blocked until the `posts` Blob Storage container is provisioned** by Gendac. Read/delete/reaction/comment endpoints (7.1, 7.2, 7.5–7.11) are not blocked by this and can be built against existing seeded/test data in the meantime.
+> - **`category` filtering (7.1) has no backing column yet** — `posts_table` currently has no `category` field. This contract assumes a `category` column will be added to `posts_table`; flagged to Divo, not yet in schema.
+> - **`helpful` / `dis-helpful` reactions (7.6, 7.7, 7.10, 7.11) currently collide in `likes_table`** — there is no column distinguishing a "helpful" reaction from a "dis-helpful" one, so today's schema can't tell them apart. This contract assumes a `reaction_type` column (e.g. `varchar(20) check (reaction_type in ('helpful','dis-helpful'))`) will be added to `likes_table`; flagged to Divo, not yet in schema.
+> - `media_url` on `posts_table` holds a single Blob Storage URL string (see 7.4) — not an array; one image per post.
+ 
+---
+ 
+### 7.1 GET /api/bulletin/posts
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/bulletin/posts` |
+| **Method** | `GET` |
+| **Purpose** | Returns the community bulletin board feed — posts from the caller's neighbourhood zone, with optional category filtering, keyword search, and pagination |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Query Parameters (optional)
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `category` | String | Filter by post category. ⚠️ Pending schema addition — see note above |
+| `search` | String | Free-text keyword search against `post_content` |
+| `page` | int | Page number for pagination — default `1` |
+| `limit` | int | Number of posts per page — default `20` |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Example Request
+ 
+```
+GET /api/bulletin/posts?category=lost_found&search=cat&page=1&limit=20
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "neighbourhoodZone": "Pretoria East",
+  "page": 1,
+  "totalPosts": 42,
+  "posts": [
+    {
+      "postId": 14,
+      "userId": 3,
+      "authorUsername": "johndoe",
+      "postContent": "Has anyone seen a grey tabby cat near Example Road? Answers to Milo.",
+      "mediaUrl": "https://parseandcoblob.blob.core.windows.net/posts/abc123.jpg",
+      "category": "lost_found",
+      "helpfulCount": 5,
+      "disHelpfulCount": 0,
+      "commentCount": 2,
+      "createdAt": "2026-07-10T09:15:00Z",
+      "updatedAt": "2026-07-10T09:15:00Z"
+    }
+  ]
+}
+```
+ 
+> When no posts match the given filters, the endpoint still returns `200 OK` with an empty array — `{ "neighbourhoodZone": "Pretoria East", "page": 1, "totalPosts": 0, "posts": [] }`.
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 7.2 GET /api/bulletin/posts/{postId}
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/bulletin/posts/{postId}` |
+| **Method** | `GET` |
+| **Purpose** | Returns a single bulletin board post by ID, for a permalink/detail view |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `postId` | int | The unique ID of the post |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "postId": 14,
+  "userId": 3,
+  "authorUsername": "johndoe",
+  "postContent": "Has anyone seen a grey tabby cat near Example Road? Answers to Milo.",
+  "mediaUrl": "https://parseandcoblob.blob.core.windows.net/posts/abc123.jpg",
+  "category": "lost_found",
+  "helpfulCount": 5,
+  "disHelpfulCount": 0,
+  "commentCount": 2,
+  "createdAt": "2026-07-10T09:15:00Z",
+  "updatedAt": "2026-07-10T09:15:00Z"
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `404 Not Found` | Post does not exist | `{ "error": "Post not found" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 7.3 POST /api/bulletin/posts
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/bulletin/posts` |
+| **Method** | `POST` |
+| **Purpose** | Creates a new bulletin board post in the caller's neighbourhood zone |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+| **Dependency** | ⚠️ If `mediaUrl` is supplied, it must already be a valid Blob Storage URL obtained from **7.4 POST /api/upload/image** — this endpoint does not accept raw image files itself. Blocked until the `posts` container is provisioned |
+ 
+#### Required Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `postContent` | String | **Required.** The text content of the post |
+| `mediaUrl` | String | Optional. A Blob Storage URL returned by `/api/upload/image` |
+| `category` | String | Optional. ⚠️ Pending schema addition — see note above |
+ 
+#### Request Body
+ 
+```json
+{
+  "postContent": "Has anyone seen a grey tabby cat near Example Road? Answers to Milo.",
+  "mediaUrl": "https://parseandcoblob.blob.core.windows.net/posts/abc123.jpg",
+  "category": "lost_found"
+}
+```
+ 
+#### Success Response — `201 Created`
+ 
+```json
+{
+  "postId": 14,
+  "userId": 3,
+  "postContent": "Has anyone seen a grey tabby cat near Example Road? Answers to Milo.",
+  "mediaUrl": "https://parseandcoblob.blob.core.windows.net/posts/abc123.jpg",
+  "category": "lost_found",
+  "createdAt": "2026-07-10T09:15:00Z"
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | `mediaUrl` supplied but not a recognised Blob Storage URL | `{ "error": "mediaUrl must be a valid uploaded image URL" }` |
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `422 Unprocessable Entity` | `postContent` missing or empty | `{ "error": "postContent is required" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 7.4 POST /api/upload/image
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/upload/image` |
+| **Method** | `POST` |
+| **Purpose** | Uploads an image file to Azure Blob Storage and returns its URL, for use as a post's `mediaUrl` (see 7.3) |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `multipart/form-data` |
+| **Dependency** | ⚠️ Blocked until the `posts` Blob Storage container is provisioned by Gendac |
+ 
+#### Required Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `file` | File (multipart) | **Required.** The image file to upload. Supported types: `.jpg`, `.jpeg`, `.png`. Max size: 5MB |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+ 
+#### Success Response — `201 Created`
+ 
+```json
+{
+  "imageUrl": "https://parseandcoblob.blob.core.windows.net/posts/abc123.jpg"
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | Missing file, unsupported file type, or file exceeds size limit | `{ "error": "File must be a jpg or png under 5MB" }` |
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `500 Internal Server Error` | Blob Storage upload failed or unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 7.5 DELETE /api/bulletin/posts/{postId}
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/bulletin/posts/{postId}` |
+| **Method** | `DELETE` |
+| **Purpose** | Deletes a bulletin board post. Owner only. Cascades to associated comments and reactions (`comments_table` and `likes_table` both have `on delete cascade` on `post_id`) |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `postId` | int | The unique ID of the post to delete |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "message": "Post deleted",
+  "postId": 14
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Caller is not the post's owner | `{ "error": "You are not authorised to delete this post" }` |
+| `404 Not Found` | Post does not exist | `{ "error": "Post not found" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 7.6 POST /api/bulletin/posts/{postId}/helpful
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/bulletin/posts/{postId}/helpful` |
+| **Method** | `POST` |
+| **Purpose** | Adds a "helpful" reaction to a post on behalf of the caller. Once per user per post |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+| **Dependency** | ⚠️ Requires `reaction_type` column on `likes_table` — see schema note above |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `postId` | int | The unique ID of the post being reacted to |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `201 Created`
+ 
+```json
+{
+  "message": "Reaction added",
+  "postId": 14,
+  "reactionType": "helpful",
+  "helpfulCount": 6
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `404 Not Found` | Post does not exist | `{ "error": "Post not found" }` |
+| `409 Conflict` | Caller has already reacted to this post (either helpful or dis-helpful) | `{ "error": "You have already reacted to this post" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 7.7 DELETE /api/bulletin/posts/{postId}/helpful
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/bulletin/posts/{postId}/helpful` |
+| **Method** | `DELETE` |
+| **Purpose** | Removes the caller's "helpful" reaction from a post |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+| **Dependency** | ⚠️ Requires `reaction_type` column on `likes_table` — see schema note above |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `postId` | int | The unique ID of the post |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "message": "Reaction removed",
+  "postId": 14,
+  "helpfulCount": 5
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `404 Not Found` | Post does not exist, or caller has no "helpful" reaction on it to remove | `{ "error": "No helpful reaction found to remove" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 7.8 GET /api/bulletin/posts/{postId}/comments
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/bulletin/posts/{postId}/comments` |
+| **Method** | `GET` |
+| **Purpose** | Returns comments for a post, including threaded replies via `parentCommentId` |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `postId` | int | The unique ID of the post |
+ 
+#### Query Parameters (optional)
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `page` | int | Page number for pagination — default `1` |
+| `limit` | int | Number of comments per page — default `20` |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "postId": 14,
+  "page": 1,
+  "totalComments": 2,
+  "comments": [
+    {
+      "commentId": 31,
+      "userId": 7,
+      "authorUsername": "mike_helps",
+      "parentCommentId": null,
+      "commentContent": "I think I saw a cat like that near the park this morning!",
+      "createdAt": "2026-07-10T10:00:00Z",
+      "updatedAt": null
+    },
+    {
+      "commentId": 32,
+      "userId": 3,
+      "authorUsername": "johndoe",
+      "parentCommentId": 31,
+      "commentContent": "Which park? That would be so helpful, thank you!",
+      "createdAt": "2026-07-10T10:05:00Z",
+      "updatedAt": null
+    }
+  ]
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `404 Not Found` | Post does not exist | `{ "error": "Post not found" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 7.9 POST /api/bulletin/posts/{postId}/comments
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/bulletin/posts/{postId}/comments` |
+| **Method** | `POST` |
+| **Purpose** | Adds a comment to a post. Supply `parentCommentId` to post a threaded reply to another comment |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `postId` | int | The unique ID of the post being commented on |
+ 
+#### Required Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `commentContent` | String | **Required.** The text of the comment |
+| `parentCommentId` | int | Optional. ID of the comment being replied to, for threaded replies |
+ 
+#### Request Body
+ 
+```json
+{
+  "commentContent": "Which park? That would be so helpful, thank you!",
+  "parentCommentId": 31
+}
+```
+ 
+#### Success Response — `201 Created`
+ 
+```json
+{
+  "commentId": 32,
+  "postId": 14,
+  "userId": 3,
+  "parentCommentId": 31,
+  "commentContent": "Which park? That would be so helpful, thank you!",
+  "createdAt": "2026-07-10T10:05:00Z"
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `404 Not Found` | Post does not exist, or `parentCommentId` does not exist on this post | `{ "error": "Post not found" }` |
+| `422 Unprocessable Entity` | `commentContent` missing or empty | `{ "error": "commentContent is required" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 7.10 POST /api/bulletin/posts/{postId}/dis-helpful
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/bulletin/posts/{postId}/dis-helpful` |
+| **Method** | `POST` |
+| **Purpose** | Adds a "dis-helpful" reaction to a post on behalf of the caller. Once per user per post |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+| **Dependency** | ⚠️ Requires `reaction_type` column on `likes_table` — see schema note above |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `postId` | int | The unique ID of the post being reacted to |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `201 Created`
+ 
+```json
+{
+  "message": "Reaction added",
+  "postId": 14,
+  "reactionType": "dis-helpful",
+  "disHelpfulCount": 1
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `404 Not Found` | Post does not exist | `{ "error": "Post not found" }` |
+| `409 Conflict` | Caller has already reacted to this post (either helpful or dis-helpful) | `{ "error": "You have already reacted to this post" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+---
+ 
+### 7.11 DELETE /api/bulletin/posts/{postId}/dis-helpful
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/bulletin/posts/{postId}/dis-helpful` |
+| **Method** | `DELETE` |
+| **Purpose** | Removes the caller's "dis-helpful" reaction from a post |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+| **Dependency** | ⚠️ Requires `reaction_type` column on `likes_table` — see schema note above |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `postId` | int | The unique ID of the post |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "message": "Reaction removed",
+  "postId": 14,
+  "disHelpfulCount": 0
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `404 Not Found` | Post does not exist, or caller has no "dis-helpful" reaction on it to remove | `{ "error": "No dis-helpful reaction found to remove" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
 ---
 
-## 5. HTTP Status Code Reference
+
+## 8. HTTP Status Code Reference
+
 
 | Code | Meaning | When used |
 |---|---|---|
@@ -1340,3 +2076,4 @@ Authorization: Bearer <token>
 | `409 Conflict` | Resource conflict | Duplicate accounts, invalid state transitions |
 | `422 Unprocessable Entity` | Missing required fields | Incomplete request bodies |
 | `500 Internal Server Error` | Unexpected server failure | All endpoints |
+
