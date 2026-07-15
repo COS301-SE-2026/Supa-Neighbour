@@ -74,4 +74,5 @@ windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugins.cmake
 
 # Pub lock file (auto-generated)
-pubspec.lock
+#pubspec.lock
+#need ci to use the same version and the local tests
