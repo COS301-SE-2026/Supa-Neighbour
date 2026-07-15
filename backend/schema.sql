@@ -339,22 +339,20 @@ create table helper_skill_table (
 -- =============================================
 create table posts_table (
     post_id int generated always as identity primary key,
-
     user_id int not null,
-
     post_content text not null,
-
     media_url text,
-
+    category varchar(20) not null default 'general'
+        check (category in (
+            'general', 'lost_pet', 'local_event',
+            'alert', 'free_items', 'complaint', 'admin'
+        )),
     created_at timestamp default current_timestamp,
-
     updated_at timestamp default current_timestamp,
-
     foreign key (user_id)
         references user_table(user_id)
         on delete cascade
 );
-
 -- =============================================
 -- 16. comments table
 -- =============================================
@@ -809,17 +807,13 @@ values
 -- 15. posts table
 -- =============================================
 insert into posts_table
-(user_id, post_content, media_url)
+(user_id, post_content, media_url, category)
 values
-(1, 'Just completed an elderly care session today!', 'https://example.com/eldercare.jpg'),
-
-(2, 'Pet care services available this weekend.', 'https://example.com/petcare.jpg'),
-
-(3, 'Offering free technology support for seniors.', null),
-
-(4, 'Transportation assistance available tomorrow morning.', null),
-
-(5, 'Finished repairing a leaking sink today.', 'https://example.com/repair.jpg');
+(1, 'Just completed an elderly care session today!', 'https://example.com/eldercare.jpg', 'general'),
+(2, 'Pet care services available this weekend.', 'https://example.com/petcare.jpg', 'local_event'),
+(3, 'Offering free technology support for seniors.', null, 'free_items'),
+(4, 'Transportation assistance available tomorrow morning.', null, 'general'),
+(5, 'Finished repairing a leaking sink today.', 'https://example.com/repair.jpg', 'general');
 
 -- =============================================
 -- 16. comments table
@@ -844,20 +838,20 @@ values
 -- =============================================
 -- 17. likes table
 -- =============================================
-insert into likes_table
-(user_id, post_id, comment_id)
+insert into reaction_table
+(user_id, post_id, comment_id, reaction_type)
 values
-(6, 1, null),
-(7, 1, null),
-(8, 2, null),
-(9, 3, null),
-(10, 4, null),
+(6, 1, null, 'like'),
+(7, 1, null, 'like'),
+(8, 2, null, 'like'),
+(9, 3, null, 'dislike'),
+(10, 4, null, 'like'),
 
-(1, null, 1),
-(2, null, 3),
-(3, null, 5),
-(4, null, 6),
-(5, null, 7);
+(1, null, 1, 'like'),
+(2, null, 3, 'like'),
+(3, null, 5, 'dislike'),
+(4, null, 6, 'like'),
+(5, null, 7, 'like');
 
 -- =============================================
 -- 18. chat table mock data
