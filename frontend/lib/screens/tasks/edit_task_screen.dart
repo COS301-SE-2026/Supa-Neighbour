@@ -103,17 +103,16 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   }
 
 
-  Future<void> _updateTask() async  {
-    if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a task title')),
-      );
-      return;
-    }
+  Future<void> _updateTask() async {
+  if (_titleController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter a task title')),
+    );
+    return;
+  }
 
-    setState(() => _isSubmitting = true);
+  setState(() => _isSubmitting = true);
 
-    
   try {
     await _taskService.updateTask(
       taskId: int.parse(widget.task.id),
@@ -122,6 +121,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       adminReview: _instructionsController.text.isNotEmpty
           ? _instructionsController.text
           : 'No additional instructions',
+      status: widget.task.status,
     );
 
     if (mounted) {
@@ -133,40 +133,20 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       );
       Navigator.pop(context, true);
     }
-  } catch (e) {
-    ///////fallback
-    final updatedTask = Task(
-      id: widget.task.id,
-      title: _titleController.text,
-      category: _selectedCategory,
-      date: _selectedDate,
-      time: _selectedTime,
-      xpReward: widget.task.xpReward, 
-      instructions: _instructionsController.text.isNotEmpty
-          ? _instructionsController.text
-          : 'No additional instructions',
-      status: widget.task.status,  
-      createdAt: widget.task.createdAt,
-      createdBy: widget.task.createdBy,        
-      requesterName: widget.task.requesterName, 
-      helperId: widget.task.helperId,         
-      helperName: widget.task.helperName,      
-    );
-  Task.updateMockTask(updatedTask);
-
+  } on Exception catch (e) {
     if (mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Task saved locally (offline mode)'),
-        backgroundColor: Color(0xFFE9C46A),
-      ),
-    );
-    Navigator.pop(context, true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   } finally {
     if (mounted) setState(() => _isSubmitting = false);
+  }
 }
-}
+
 
 
 
