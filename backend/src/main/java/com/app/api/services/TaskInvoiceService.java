@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.TaskInvoice;
@@ -15,8 +13,16 @@ import com.app.api.repositories.TaskInvoiceRepository;
 @Service
 public class TaskInvoiceService {
 
-    @Autowired
-    private TaskInvoiceRepository taskInvoiceRepository;
+    private final TaskInvoiceRepository taskInvoiceRepository;
+
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param taskInvoiceRepository repository providing analytics data for taskInvoice
+     */
+    public TaskInvoiceService(TaskInvoiceRepository taskInvoiceRepository) {
+        this.taskInvoiceRepository = taskInvoiceRepository;
+    }
 
     // Get all
     /**

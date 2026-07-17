@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Ratings;
@@ -15,8 +13,16 @@ import com.app.api.repositories.RatingsRepository;
 @Service
 public class RatingsService {
 
-    @Autowired
-    private RatingsRepository ratingsRepository;
+    private final RatingsRepository ratingsRepository;
+
+    /**
+     * Constructs the repository with its required service dependency.
+     *
+     * @param ratingsRepository repository providing analytics data for rating
+     */
+    public RatingsService(RatingsRepository ratingsRepository) {
+        this.ratingsRepository = ratingsRepository;
+    }
 
     // Get all
     /**

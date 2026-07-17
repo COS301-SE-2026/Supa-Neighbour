@@ -1,6 +1,5 @@
 package com.app.api.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import com.app.api.models.User;
@@ -18,8 +17,17 @@ public class UserService {
     /**
      * Repository used to perform database operations on users.
      */
-    @Autowired
-    private UserRepository userRepository;
+
+    private final UserRepository userRepository;
+
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param userRepository repository providing analytics data for user
+     */
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * Retrieves all users.
@@ -73,7 +81,6 @@ public class UserService {
         existing.setFirstName(updated.getFirstName());
         existing.setGender(updated.getGender());
         existing.setLastName(updated.getLastName());
-        existing.setPassword(updated.getPassword());
         existing.setPhoneNumber(updated.getPhoneNumber());
         existing.setRatingid(updated.getRatingid());
         existing.setUserType(updated.getUserType());
@@ -90,4 +97,3 @@ public class UserService {
         userRepository.deleteById(id);
     }
 }
-

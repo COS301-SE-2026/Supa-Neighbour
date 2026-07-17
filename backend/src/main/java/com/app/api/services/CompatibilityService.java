@@ -2,7 +2,6 @@ package com.app.api.services;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Compatibility;
@@ -15,8 +14,17 @@ import com.app.api.repositories.CompatibilityRepository;
 @Service
 public class CompatibilityService {
 
-    @Autowired
-    private CompatibilityRepository compatibilityRepository;
+
+    private final CompatibilityRepository compatibilityRepository;
+
+    /**
+     * Constructs the repository with its required service dependency.
+     *
+     * @param compatibilityRepository repository providing analytics data for compatibility
+     */
+    public CompatibilityService(CompatibilityRepository compatibilityRepository) {
+        this.compatibilityRepository = compatibilityRepository;
+    }
 
     // Get all
     /**

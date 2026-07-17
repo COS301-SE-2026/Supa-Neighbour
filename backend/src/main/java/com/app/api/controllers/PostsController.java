@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,8 +23,17 @@ import com.app.api.services.PostsService;
 @RequestMapping("/api/posts")
 public class PostsController {
 
-    @Autowired
-    private PostsService postsService;
+    
+    private final PostsService postsService;
+
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param postsService service providing analytics data for dependents
+     */
+    public PostsController(PostsService postsService) {
+        this.postsService = postsService;
+    }
 
     // GET /api/posts
     /**

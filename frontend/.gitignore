@@ -44,9 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# ===== Custom additions for Supa Neighbour =====
-# Personal
-*_tree.txt
 
 # Android auto-generated
 android/build/
@@ -74,8 +71,5 @@ windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugins.cmake
 
 # Pub lock file (auto-generated)
-pubspec.lock
-# Personal tree output files
-*.txt
-build_log.txt
-tree_frontend.txt
+#pubspec.lock
+#need ci to use the same version and the local tests

@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,8 +23,17 @@ import com.app.api.services.LikesService;
 @RequestMapping("/api/likes")
 public class LikesController {
 
-    @Autowired
-    private LikesService likesService;
+
+    private final LikesService likesService;
+
+    /**
+     * Basic Likes Contructor
+     * 
+     * @param LikesService likesService
+     */
+    public LikesController(LikesService likesService) {
+        this.likesService = likesService;
+    }
 
     // GET /api/likes
     /**

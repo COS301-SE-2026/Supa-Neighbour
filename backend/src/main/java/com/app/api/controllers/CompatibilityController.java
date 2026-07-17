@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,8 +23,17 @@ import com.app.api.services.CompatibilityService;
 @RequestMapping("/api/compatibility")
 public class CompatibilityController {
 
-    @Autowired
-    private CompatibilityService compatibilityService;
+
+    private final CompatibilityService compatibilityService;
+
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param compatibilityService service providing analytics data for dependents
+     */
+    public CompatibilityController(CompatibilityService compatibilityService) {
+        this.compatibilityService = compatibilityService;
+    }
 
     // GET /api/compatibility
     /**

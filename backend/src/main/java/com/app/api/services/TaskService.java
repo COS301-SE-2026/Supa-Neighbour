@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +43,7 @@ public class TaskService {
      * @param chatRepo the chat repository
      * @param messageRepo the message repository
      */
-    @Autowired
+
     public TaskService(TaskRepository taskRepo, AnalyticsRepository analyticsRepo,
             DependentRepository dependentRepo, ChatRepository chatRepo,
             MessageRepository messageRepo) {
@@ -166,4 +164,5 @@ public class TaskService {
     public Task createTask(Task task) {
         return taskRepo.save(task);
     }
+
 }

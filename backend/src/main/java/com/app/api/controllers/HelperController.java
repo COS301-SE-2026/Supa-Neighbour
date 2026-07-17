@@ -1,8 +1,6 @@
 package com.app.api.controllers;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,8 +22,15 @@ import com.app.api.services.HelperService;
 @RequestMapping("/api/helpers")
 public class HelperController {
 
-    @Autowired
-    private HelperService helperService;
+    private final HelperService helperService;
+
+
+    /**
+     * Basis HelperController contructor
+     */
+    public HelperController(HelperService helperService) {
+        this.helperService = helperService;
+    }
 
     // GET /api/helpers
     /**
@@ -100,5 +105,18 @@ public class HelperController {
         }
         helperService.deleteHelper(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // GET /api/helpers/status/available
+    /**
+     * Retrieves all helpers with the specified status.
+     *
+     * @param status the status to filter helpers by
+     * @return a list of helpers with the specified status
+     */
+    @GetMapping("/available")
+    public ResponseEntity<List<Helper>> getAllAvailableHelpers() {
+        List<Helper> helpers = helperService.findAllByStatus(true);
+        return ResponseEntity.ok(helpers);
     }
 }

@@ -5,7 +5,6 @@ import com.app.api.services.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,7 +31,6 @@ public class ChatController {
      * Constructs a ChatController with the given ChatService.
      * @param chatService  chat service
      */
-    @Autowired
     public ChatController(ChatService chatService) {
         this.chatService = chatService;
     }
