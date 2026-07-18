@@ -846,7 +846,6 @@ values
 (8, 2, null, 'like'),
 (9, 3, null, 'dislike'),
 (10, 4, null, 'like'),
-
 (1, null, 1, 'like'),
 (2, null, 3, 'like'),
 (3, null, 5, 'dislike'),

@@ -1917,11 +1917,11 @@ Authorization: Bearer <token>
  
 ---
  
-### 7.9 POST /api/bulletin/posts/{postId}/comments
+### 7.9 POST /api/comments/bulletin/{postId}
  
 | Field | Details |
 |---|---|
-| **Endpoint** | `/api/bulletin/posts/{postId}/comments` |
+| **Endpoint** | `/api/comments/bulletin/{postId}` |
 | **Method** | `POST` |
 | **Purpose** | Adds a comment to a post. Supply `parentCommentId` to post a threaded reply to another comment |
 | **Authentication** | JWT Bearer Token required |
