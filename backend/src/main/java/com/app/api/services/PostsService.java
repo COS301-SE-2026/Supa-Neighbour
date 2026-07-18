@@ -1,11 +1,17 @@
 package com.app.api.services;
 
 import java.util.List;
+import java.sql.Timestamp;
 
 import org.springframework.stereotype.Service;
 
+import com.app.api.dtos.CreatePostRequest;
 import com.app.api.models.Posts;
+import com.app.api.models.User;
 import com.app.api.repositories.PostsRepository;
+import com.app.api.repositories.UserRepository;
+
+import jakarta.xml.bind.annotation.XmlElement.DEFAULT;
 
 /**
  * Service layer for managing post operations.
@@ -15,14 +21,19 @@ import com.app.api.repositories.PostsRepository;
 public class PostsService {
 
     private final PostsRepository postsRepository;
+    private final UserRepository userRepository;
+    private static final List<String> VALID_CATEGORIES = List.of("general", "lost_pet", "local_event", "alert", "free_items", "complaint", "admin");
 
+    private static final String EXPECTED_BLOB_HOST = "blob.core.windows.net";
+    private static final String DEFAULT_CATEGORY = "general";
     /**
      * Constructs the repository with its required service dependency.
      *
      * @param postsRepository repository providing analytics data for posts
      */
-    public PostsService(PostsRepository postsRepository) {
+    public PostsService(PostsRepository postsRepository, UserRepository userRepository) {
         this.postsRepository = postsRepository;
+        this.userRepository = userRepository;
     }
 
     // Get all
@@ -46,20 +57,69 @@ public class PostsService {
         return postsRepository.findById(id).orElse(null);
     }
 
-    // Create
     /**
-     * Saves a new post to the repository.
-     *
-     * @param post the post to save
-     * @return the saved post, or null if the provided post is null
+     * Validation result for a create-post request. Thrown as an exception
+     * so the controller can translate it into the documented HTTP status.
      */
-    public Posts savePost(Posts post) {
-        if(post == null) {
-            return null;
+
+    public static class InvalidPostException extends RuntimeException{
+        private final int statusCode;
+
+        public InvalidPostException(String message, int statusCode){
+            super(message);
+            this.statusCode = statusCode;
         }
+
+        public int getStatusCode(){
+            return statusCode;
+        }
+    }
+    
+    /**
+     * Creates a new bulletin board post for the given authenticated user,
+     * validating fields per the documented API contract (7.3):
+     * - postContent is required
+     * - mediaUrl, if supplied, must look like a Blob Storage URL
+     * - category, if supplied, must be one of the known values; defaults to "general"
+     *
+     * @param user    the authenticated user creating the post (resolved from JWT, not client input)
+     * @param request the validated request body
+     * @return the saved post
+     */
+
+    public Posts createPost(int userId, CreatePostRequest request){
+        User user = userRepository.findById(userId).orElse(null);
+        if(user == null){
+            throw new InvalidPostException("Unauthorized", 401);
+        }
+        if(request.getPostContent() == null || request.getPostContent().isBlank()){
+            throw new InvalidPostException("postContent is required", 422);
+        }
+        String mediaUrl = request.getMediaUrl();
+
+        if(mediaUrl != null && !mediaUrl.isBlank() && !mediaUrl.contains(EXPECTED_BLOB_HOST)){
+            throw new InvalidPostException("mediaUrl must be a valid uploaded image URL", 400);
+        }
+
+        String category = request.getCategory();
+        if(category == null || category.isBlank()){
+            category = DEFAULT_CATEGORY;
+        }else if(!VALID_CATEGORIES.contains(category)){
+            throw new InvalidPostException("category must be one of: " + String.join(", ", VALID_CATEGORIES), 400);
+        }
+
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        Posts post = new Posts();
+        post.setUserid(user);
+        post.setPostContent(request.getPostContent());
+        post.setMediaURL(mediaUrl);
+        post.setCategory(category);
+        post.setCreatedAt(now);
+        post.setUpdatedAt(now);
+
         return postsRepository.save(post);
     }
-
     // Update
     /**
      * Updates an existing post with the provided details.
@@ -78,7 +138,7 @@ public class PostsService {
         existing.setCreatedAt(updated.getCreatedAt());
         existing.setUpdatedAt(updated.getUpdatedAt());
         existing.setMediaURL(updated.getMediaURL());
-
+        existing.setCategory(updated.getCategory());
 
         return postsRepository.save(existing);
     }
