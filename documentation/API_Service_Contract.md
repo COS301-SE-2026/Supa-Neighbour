@@ -54,6 +54,7 @@
    - [POST /api/comments/bulletin/{postId}](#79-post-apicommentsbulletinpostid)
    - [POST /api/bulletin/posts/{postId}/dis-helpful](#710-post-apibulletinpostspostiddis-helpful)
    - [DELETE /api/bulletin/posts/{postId}/dis-helpful](#711-delete-apibulletinpostspostiddis-helpful)
+   - [DELETE /api/bulletin/posts/{postId}/comments/{commentId}](#712-delete-apicommentsbulletinpostspostidcommentid)
 8. [Http Status Code Reference](#8-http-status-code-reference)
 ---
 
@@ -2057,6 +2058,42 @@ Authorization: Bearer <token>
 |---|---|---|
 | `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
 | `404 Not Found` | Post does not exist, or caller has no "dis-helpful" reaction on it to remove | `{ "error": "No dis-helpful reaction found to remove" }` |
+| `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
+ 
+### 7.12 DELETE /api/comments/bulletin/posts/{postId}/{commentId}
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/comments/bulletin/posts/{postId}/{commentId}` |
+| **Method** | `DELETE` |
+| **Purpose** | Deletes a comment under a post. Works for both top-level comments and threaded replies, as long as the comment belongs to the specified post |
+| **Authentication** | JWT Bearer Token required |
+| **Content-Type** | `application/json` |
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description |
+|---|---|---|
+| `postId` | int | The unique ID of the post the comment belongs to |
+| `commentId` | int | The unique ID of the comment to delete |
+ 
+#### Request Headers
+ 
+```
+Authorization: Bearer <token>
+```
+ 
+#### Success Response — `204 No Content`
+ 
+No response body.
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Caller is not the author of the comment | `{ "error": "You can only delete your own comments" }` |
+| `404 Not Found` | Comment does not exist, or does not belong to `postId` | `{ "error": "Comment not found" }` |
 | `500 Internal Server Error` | Unexpected server failure | `{ "error": "An unexpected error occurred. Please try again." }` |
  
 ---
