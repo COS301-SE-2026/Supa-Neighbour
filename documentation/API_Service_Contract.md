@@ -1498,15 +1498,6 @@ Authorization: Bearer <token>
 
 ## 7. Community Bulletin Board
  
-> **Schema dependency notes (UC8):**
-> - `posts_table`, `comments_table`, and `likes_table` are confirmed in schema — see below.
-> - Endpoints **7.3 and 7.4 (create post / upload image) are blocked until the `posts` Blob Storage container is provisioned** by Gendac. Read/delete/reaction/comment endpoints (7.1, 7.2, 7.5–7.11) are not blocked by this and can be built against existing seeded/test data in the meantime.
-> - **`category` filtering (7.1) has no backing column yet** — `posts_table` currently has no `category` field. This contract assumes a `category` column will be added to `posts_table`; flagged to Divo, not yet in schema.
-> - **`helpful` / `dis-helpful` reactions (7.6, 7.7, 7.10, 7.11) currently collide in `likes_table`** — there is no column distinguishing a "helpful" reaction from a "dis-helpful" one, so today's schema can't tell them apart. This contract assumes a `reaction_type` column (e.g. `varchar(20) check (reaction_type in ('helpful','dis-helpful'))`) will be added to `likes_table`; flagged to Divo, not yet in schema.
-> - `media_url` on `posts_table` holds a single Blob Storage URL string (see 7.4) — not an array; one image per post.
- 
----
- 
 ### 7.1 GET /api/bulletin/posts
  
 | Field | Details |
