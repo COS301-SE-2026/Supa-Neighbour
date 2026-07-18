@@ -384,16 +384,18 @@ create table comments_table (
 -- =============================================
 -- 17. likes table
 -- =============================================
-create table likes_table (
-    like_id int generated always as identity primary key,
+create table reaction_table (
+    reaction_id int generated always as identity primary key,
 
     user_id int not null,
 
     post_id int null,
     comment_id int null,
 
-    created_at timestamp default current_timestamp,
+    reaction_type varchar(10) not null
+        check (reaction_type in ('like', 'dislike')),
 
+    created_at timestamp default current_timestamp,
     updated_at timestamp null,
 
     foreign key (user_id)
@@ -412,11 +414,21 @@ create table likes_table (
         (post_id is not null and comment_id is null)
         or
         (post_id is null and comment_id is not null)
-    ),
-
-    constraint uq_no_duplicate_likes
-        unique (user_id, post_id, comment_id)
+    )
 );
+
+-- enforces "one reaction per user per post" — properly, unlike the old constraint
+create unique index uq_no_duplicate_reaction_post
+    on reaction_table(user_id, post_id)
+    where post_id is not null;
+
+-- enforces "one reaction per user per comment"
+create unique index uq_no_duplicate_reaction_comment
+    on reaction_table(user_id, comment_id)
+    where comment_id is not null;
+
+create index idx_reaction_post on reaction_table(post_id);
+create index idx_reaction_comment on reaction_table(comment_id);
 
 -- =============================================
 -- 18. chat table
@@ -514,12 +526,6 @@ on comments_table(post_id);
 
 create index idx_comments_parent
 on comments_table(parent_comment_id);
-
-create index idx_likes_post
-on likes_table(post_id);
-
-create index idx_likes_comment
-on likes_table(comment_id);
 
 create index idx_messages_chat
 on message_table(chat_id);

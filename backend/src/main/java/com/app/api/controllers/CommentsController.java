@@ -85,7 +85,7 @@ public class CommentsController {
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
             CommentResponseDTO created = commentsService.addCommentToPost(postId, request, userId);
-             return ResponseEntity.status(HttpStatus.CREATED).body(created);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
         }catch(FirebaseAuthException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -109,20 +109,28 @@ public class CommentsController {
         return ResponseEntity.ok(updated);
     }
 
-    // DELETE /api/comments/1
+    // DELETE bulletin/posts/{postId}/comments/{commentId}
     /**
-     * Deletes a comment by its ID.
+     * Deletes a comment under a particular post
      *
      * @param id the ID of the comment to delete
      * @return 204 No Content if deleted, otherwise 404 Not Found
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteComments(@PathVariable int id) {
-        Comments existing = commentsService.getCommentsById(id);
-        if (existing == null) {
-            return ResponseEntity.notFound().build();
+    @DeleteMapping("/bulletin/posts/{postId}/comments/{commentId}")
+    public ResponseEntity<Void> deleteCommentsUnderPost(
+        @PathVariable int postId,
+        @PathVariable int commentId,
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            commentsService.deleteCommentFromPost(postId, commentId, userId);
+            return ResponseEntity.noContent().build();
+        }catch(FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
-        commentsService.deleteComments(id);
-        return ResponseEntity.noContent().build();
-    }
+    }  
+    
 }
+

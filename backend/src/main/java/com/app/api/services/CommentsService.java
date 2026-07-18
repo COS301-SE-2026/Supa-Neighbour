@@ -145,4 +145,18 @@ public class CommentsService {
         dto.setCreatedAt(c.getCreatedAt());
         return dto;
     }
+
+    public void deleteCommentFromPost(int postId, int commentId, int userId){
+        Comments comment = commentsRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
+        if(comment.getPostid().getPostid() != postId){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found under post");
+        }
+
+        if(comment.getUserid().getUserid() != userId){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can onlly delete your own comments");
+        }
+
+        commentsRepository.delete(comment);
+    }
 }
