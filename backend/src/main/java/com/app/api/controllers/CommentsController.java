@@ -116,7 +116,7 @@ public class CommentsController {
      * @param id the ID of the comment to delete
      * @return 204 No Content if deleted, otherwise 404 Not Found
      */
-    @DeleteMapping("/bulletin/posts/{postId}/comments/{commentId}")
+    @DeleteMapping("/bulletin/posts/{postId}/{commentId}")
     public ResponseEntity<Void> deleteCommentsUnderPost(
         @PathVariable int postId,
         @PathVariable int commentId,
