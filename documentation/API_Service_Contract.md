@@ -51,7 +51,7 @@
    - [POST /api/bulletin/posts/{postId}/helpful](#76-post-apibulletinpostspostidhelpful)
    - [DELETE /api/bulletin/posts/{postId}/helpful](#77-delete-apibulletinpostspostidhelpful)
    - [GET /api/bulletin/posts/{postId}/comments](#78-get-apibulletinpostspostidcomments)
-   - [POST /api/bulletin/posts/{postId}/comments](#79-post-apibulletinpostspostidcomments)
+   - [POST /api/comments/bulletin/{postId}](#79-post-apicommentsbulletinpostid)
    - [POST /api/bulletin/posts/{postId}/dis-helpful](#710-post-apibulletinpostspostiddis-helpful)
    - [DELETE /api/bulletin/posts/{postId}/dis-helpful](#711-delete-apibulletinpostspostiddis-helpful)
 8. [Http Status Code Reference](#8-http-status-code-reference)
@@ -2018,11 +2018,11 @@ Authorization: Bearer <token>
  
 ---
  
-### 7.11 DELETE /api/bulletin/posts/{postId}/dis-helpful
+### 7.11 DELETE /api/reaction/posts/{postId}/dislike
  
 | Field | Details |
 |---|---|
-| **Endpoint** | `/api/bulletin/posts/{postId}/dis-helpful` |
+| **Endpoint** | /api/reaction/posts/{postId}/dislike` |
 | **Method** | `DELETE` |
 | **Purpose** | Removes the caller's "dis-helpful" reaction from a post |
 | **Authentication** | JWT Bearer Token required |
