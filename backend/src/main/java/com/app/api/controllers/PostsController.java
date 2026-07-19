@@ -168,7 +168,7 @@ public class PostsController {
         }catch(FirebaseAuthException e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }catch(InvalidPostException e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getMessage()));
         }
     }
 }
