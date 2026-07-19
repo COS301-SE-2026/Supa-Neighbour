@@ -1,15 +1,19 @@
 package com.app.api.services;
 
-import java.util.List;
 import java.sql.Timestamp;
-
+import java.util.List;
+ 
 import org.springframework.stereotype.Service;
-
+ 
 import com.app.api.dtos.CreatePostRequest;
+import com.app.api.dtos.PostFeedItemDTO;
+import com.app.api.dtos.PostFeedResponseDTO;
 import com.app.api.models.Posts;
 import com.app.api.models.User;
+import com.app.api.repositories.BulletinFeedRepository;
 import com.app.api.repositories.PostsRepository;
 import com.app.api.repositories.UserRepository;
+import com.app.api.dtos.PostDetailDTO;
 
 import jakarta.xml.bind.annotation.XmlElement.DEFAULT;
 
@@ -22,6 +26,7 @@ public class PostsService {
 
     private final PostsRepository postsRepository;
     private final UserRepository userRepository;
+     private final BulletinFeedRepository bulletinFeedRepository;
     private static final List<String> VALID_CATEGORIES = List.of("general", "lost_pet", "local_event", "alert", "free_items", "complaint", "admin");
 
     private static final String EXPECTED_BLOB_HOST = "blob.core.windows.net";
@@ -31,9 +36,10 @@ public class PostsService {
      *
      * @param postsRepository repository providing analytics data for posts
      */
-    public PostsService(PostsRepository postsRepository, UserRepository userRepository) {
+    public PostsService(PostsRepository postsRepository, UserRepository userRepository,  BulletinFeedRepository bulletinFeedRepository) {
         this.postsRepository = postsRepository;
         this.userRepository = userRepository;
+        this.bulletinFeedRepository = bulletinFeedRepository;
     }
 
     // Get all
@@ -145,11 +151,68 @@ public class PostsService {
 
     // Delete
     /**
-     * Deletes a post by its identifier.
+     * Deletes a post by its identifier 
      *
-     * @param id the identifier of the post to delete
+     * @param postId the identifier of the post to delete
+     * @param userId the authenticated user's id, resolved from the JWT
+     *               (never trusted from client input)
      */
-    public void deletePost(int id) {
-        postsRepository.deleteById(id);
+    public void deletePost(int postId, int userId) {
+       Posts existing = postsRepository.findById(postId).orElse(null);
+       if(existing == null){
+            throw new InvalidPostException("Post not found", 404);
+       }    
+
+       if(existing.getUserid().getUserid() != userId){
+        throw new InvalidPostException("You are not authorised to delete this post", 403);
+       }
+
+       postsRepository.deleteById(postId);
+    }
+
+    private static final int DEFAULT_PAGE = 1;
+    private static final int DEFAULT_LIMIT = 20;
+     /**
+     * Returns the bulletin board feed for the caller's neighbourhood zone (7.1),
+     * with optional category filter, keyword search, and pagination.
+     *
+     * @param userId   the authenticated user's id, resolved from the JWT
+     * @param category optional category filter, or null for no filter.
+     *                 An unrecognised category simply yields no matches (not an error),
+     *                 matching the endpoint's documented empty-state behaviour.
+     * @param search   optional keyword search against post_content, or null for no filter
+     * @param page     requested page number; defaults to 1 if null or less than 1
+     * @param limit    requested page size; defaults to 20 if null or less than 1
+     * @return the feed response envelope
+     */
+
+     public PostFeedResponseDTO getFeed(int userId, String category, String search, Integer page, Integer limit){
+        int resolvedPage = (page == null || page < 1) ? DEFAULT_PAGE : page;
+        int resolvedLimit = (limit == null || limit < 1) ? DEFAULT_LIMIT : limit;
+
+        int offset = (resolvedPage - 1) * resolvedLimit;
+
+        BulletinFeedRepository.CallerNeighbourhood neighbourhood = bulletinFeedRepository.findCallerNeighbourhood(userId);
+
+        if(neighbourhood == null){
+            return new PostFeedResponseDTO(null, resolvedPage, 0, List.of());
+        }
+
+        List<PostFeedItemDTO> posts = bulletinFeedRepository.findFeed(neighbourhood.locationId, category, search, resolvedLimit, offset);
+        long totalPosts = bulletinFeedRepository.countFeed(neighbourhood.locationId, category, search);
+
+        return new PostFeedResponseDTO(neighbourhood.neighbourhoodName, resolvedPage, totalPosts, posts);
+     
+    }
+
+
+    /**
+     * Returns the full detail view for a single post 
+     *
+     * @param postId the post's id
+     * @return the post detail, or null if the post doesn't exist
+     */
+    public PostDetailDTO getPostDetail(int postId){
+        return bulletinFeedRepository.findPostDetail(postId);
     }
 }

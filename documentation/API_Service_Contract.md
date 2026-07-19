@@ -1716,7 +1716,7 @@ Content-Type: multipart/form-data
 |---|---|
 | **Endpoint** | `/api/bulletin/posts/{postId}` |
 | **Method** | `DELETE` |
-| **Purpose** | Deletes a bulletin board post. Owner only. Cascades to associated comments and reactions (`comments_table` and `likes_table` both have `on delete cascade` on `post_id`) |
+| **Purpose** | Deletes a bulletin board post. Owner only. Cascades to associated comments and reactions (`comments_table` and `reaction_table` both have `on delete cascade` on `post_id`) |
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
  
@@ -1761,7 +1761,7 @@ Authorization: Bearer <token>
 | **Purpose** | Adds a "helpful" reaction to a post on behalf of the caller. Once per user per post |
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
-| **Dependency** | ⚠️ Requires `reaction_type` column on `likes_table` — see schema note above |
+| **Dependency** | ⚠️ Requires `reaction_type` column on `reaction_table` — see schema note above |
  
 #### Path Parameters
  
@@ -1806,7 +1806,7 @@ Authorization: Bearer <token>
 | **Purpose** | Removes the caller's "helpful" reaction from a post |
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
-| **Dependency** | ⚠️ Requires `reaction_type` column on `likes_table` — see schema note above |
+| **Dependency** | ⚠️ Requires `reaction_type` column on `reaction_table` — see schema note above |
  
 #### Path Parameters
  
@@ -1974,7 +1974,7 @@ Authorization: Bearer <token>
 | **Purpose** | Adds a "dis-helpful" reaction to a post on behalf of the caller. Once per user per post |
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
-| **Dependency** | ⚠️ Requires `reaction_type` column on `likes_table` — see schema note above |
+| **Dependency** | ⚠️ Requires `reaction_type` column on `reaction_table` — see schema note above |
  
 #### Path Parameters
  
@@ -2019,7 +2019,7 @@ Authorization: Bearer <token>
 | **Purpose** | Removes the caller's "dis-helpful" reaction from a post |
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
-| **Dependency** | ⚠️ Requires `reaction_type` column on `likes_table` — see schema note above |
+| **Dependency** | ⚠️ Requires `reaction_type` column on `reaction_table` — see schema note above |
  
 #### Path Parameters
  
