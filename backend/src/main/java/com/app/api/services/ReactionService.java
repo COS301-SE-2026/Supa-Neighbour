@@ -177,26 +177,25 @@ public class ReactionService {
         return new ReactionRemovedResponseDTO("Reaction removed", postId, count);
     }
 
-    public CommentReactionResponseDTO addHelpfulReactionToComment(int commentId, int userId){
-        Comments comment = commentsRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+    public CommentReactionResponseDTO addHelpfulReactionToPost(int postId, int userId){
+    Posts post = postsRepository.findById(postId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
 
-        if(reactionRepository.countByUserAndComment(userId, commentId) > 0){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already reacted to this comment");
-        }
-
-        Reaction reaction = new Reaction();
-        reaction.setCommentid(comment);
-        reaction.setUserid(userRepository.getReferenceById(userId));
-        reaction.setReactionType("Helpful");
-        reaction.setCreatedAt(Timestamp.from(Instant.now()));
-
-        saveReactionSafely(reaction, "You have already reacted to this comment");
-
-        
-
-        long helpfulCount = reactionRepository.countHelpfulComment(commentId);
-        return new CommentReactionResponseDTO("Reaction added", commentId, "helpful", helpfulCount);
+    if(reactionRepository.countByUserAndPost(userId, postId) > 0){
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already reacted to this post");
     }
+
+    Reaction reaction = new Reaction();
+    reaction.setPostid(post);
+    reaction.setUserid(userRepository.getReferenceById(userId));
+    reaction.setReactionType("helpful");
+    reaction.setCreatedAt(Timestamp.from(Instant.now()));
+
+    saveReactionSafely(reaction, "You have already reacted to this post");
+
+    long helpfulCount = reactionRepository.countHelpful(postId); // see note below
+    return new CommentReactionResponseDTO("Reaction added", postId, "helpful", helpfulCount);
+}
 
         public ReactionRemovedResponseDTO removeHelpfulReaction(int postId, int userId) {
         Reaction reaction = reactionRepository.findByUserAndPostAndType(userId, postId, "helpful").orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "no helpful reaction to remove"));

@@ -8,5 +8,5 @@ import java.util.List;
  * Repository for Comment entities.
  */
 public interface CommentsRepository extends JpaRepository<Comments,Integer>{
-    List<Comments> findByPostId_PostId(int postId);
+    List<Comments> findByPostid_Postid(int postId);
 }

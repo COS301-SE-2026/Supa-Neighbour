@@ -140,12 +140,12 @@ public class CommentsController {
     }  
     
     @PostMapping("/bulletin/posts/{postId}/helpful")
-    public ResponseEntity<CommentReactionResponseDTO> postHelpfulReation(@RequestBody int postId,@RequestBody Reaction reaction,@RequestHeader("Authorization") String authHead) {
+    public ResponseEntity<CommentReactionResponseDTO> postHelpfulReation(@PathVariable int postId,@RequestHeader("Authorization") String authHead) {
 
         try{
             String token = authHead.replace("Bearer ", "");
             int userId= firebaseAuthService.getUserIdFromToken(token);
-            CommentReactionResponseDTO created = reactionService.addHelpfulReactionToComment(postId, userId);
+            CommentReactionResponseDTO created = reactionService.addHelpfulReactionToPost(postId, userId);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         }catch(FirebaseAuthException e)
         {
@@ -154,7 +154,7 @@ public class CommentsController {
     }
 
     @DeleteMapping("/bulletin/posts/{postId}/helpful")
-    public ResponseEntity<Void> deleteCommentsUnderPost(@PathVariable int postId, @RequestBody Reaction reaction,@RequestHeader("Authorization") String authHeader){
+    public ResponseEntity<Void> deleteCommentsUnderPost(@PathVariable int postId,@RequestHeader("Authorization") String authHeader){
         try{
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);

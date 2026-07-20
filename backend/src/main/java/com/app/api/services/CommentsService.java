@@ -148,7 +148,7 @@ public class CommentsService {
 
 
     public List<CommentPostResponseDTO> getAllCommentsByPostId(int postId) {
-        List<Comments> comments = commentsRepository.findByPostId_PostId(postId);
+        List<Comments> comments = commentsRepository.findByPostid_Postid(postId);
 
         return comments.stream()
                 .map(this::toCommentPostResponseDTO)
@@ -156,7 +156,7 @@ public class CommentsService {
     }
 
     public List<CommentPostResponseDTO> getCommentsByPostId(int postId, int userId) {
-    List<Comments> comments = commentsRepository.findByPostId_PostId(postId);
+    List<Comments> comments = commentsRepository.findByPostid_Postid(postId);
         return comments.stream()
                 .map(this::toCommentPostResponseDTO)
                 .toList();
