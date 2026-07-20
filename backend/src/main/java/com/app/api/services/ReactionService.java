@@ -194,7 +194,7 @@ public class ReactionService {
 
         
 
-        long helpfulCount = reactionRepository.countDislikedComment(commentId);
+        long helpfulCount = reactionRepository.countHelpfulComment(commentId);
         return new CommentReactionResponseDTO("Reaction added", commentId, "helpful", helpfulCount);
     }
 

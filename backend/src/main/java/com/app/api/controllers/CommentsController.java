@@ -152,6 +152,18 @@ public class CommentsController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
+
+    @DeleteMapping("/bulletin/posts/{postId}/helpful")
+    public ResponseEntity<Void> deleteCommentsUnderPost(@PathVariable int postId, @RequestBody Reaction reaction,@RequestHeader("Authorization") String authHeader){
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            reactionService.removeHelpfulReaction(postId, userId);
+            return ResponseEntity.noContent().build();
+        }catch(FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+    }  
     
 }
 
