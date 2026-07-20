@@ -1,7 +1,6 @@
 package com.app.api.models;
 import java.sql.Timestamp;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,7 +27,7 @@ public class Posts {
     @Column(name = "post_id")
     private int postid;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User userid;
 
@@ -40,6 +39,9 @@ public class Posts {
     private Timestamp createdAt;
     @Column(name = "updated_at")
     private Timestamp updatedAt;
+
+    @Column(name = "category")
+    private String category;
 
     /**
      * Default constructor.
@@ -57,13 +59,14 @@ public class Posts {
      * @param createdAt           the timestamp of creation of the post
      * @param updatedAt           the timestamp of when the post was updated
      */
-    public Posts(int postid, User userid, String postContent,String mediaURL, Timestamp createdAt, Timestamp updatedAt) {
+    public Posts(int postid, User userid, String postContent,String mediaURL, Timestamp createdAt, Timestamp updatedAt, String category) {
         this.postid=postid;
         this.userid= userid;
         this.postContent = postContent;
         this.mediaURL = mediaURL;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.category = category;
     }
 
     /**
@@ -82,6 +85,24 @@ public class Posts {
      */
     public void setPostid(int postid) {
         this.postid = postid;
+    }
+
+      /**
+     * Gets the posts category
+     *
+     * @return the posts category
+     */
+    public String getCategory() {
+        return category;
+    }
+
+    /**
+     * Sets the post category
+     *
+     * @param category the post category
+     */
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     /**

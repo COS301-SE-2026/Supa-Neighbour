@@ -1,10 +1,20 @@
 package com.app.api.services;
 
 import java.util.List;
-import org.springframework.stereotype.Service;
+import java.sql.Timestamp;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.app.api.dtos.CommentRequestDTO;
+import com.app.api.dtos.CommentResponseDTO;
 import com.app.api.models.Comments;
+import com.app.api.models.Posts;
 import com.app.api.repositories.CommentsRepository;
+import com.app.api.repositories.PostsRepository;
+import com.app.api.repositories.UserRepository;
+import java.time.Instant;
 
 /**
  * Service layer for managing comment operations.
@@ -15,14 +25,18 @@ public class CommentsService {
 
 
     private final CommentsRepository commentsRepository;
+    private final PostsRepository postsRepository;
+    private final UserRepository userRepository;
 
     /**
      * Constructs the service with its required repository dependency.
      *
      * @param  commentsRepository repository providing analytics data for comments
      */
-    public CommentsService(CommentsRepository commentsRepository) {
+    public CommentsService(CommentsRepository commentsRepository, PostsRepository postsRepository, UserRepository userRepository) {
         this.commentsRepository = commentsRepository;
+        this.postsRepository = postsRepository;
+        this.userRepository = userRepository;
     }
     // Get all
     /**
@@ -92,5 +106,57 @@ public class CommentsService {
      */
     public void deleteComments(int id) {
         commentsRepository.deleteById(id);
+    }
+
+    public CommentResponseDTO addCommentToPost(int postId, CommentRequestDTO request, int authenticatedUserId){
+        if(request.getCommentContent() == null || request.getCommentContent().isBlank()){
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "commentContent is required");
+        }
+
+        Posts post = postsRepository.findById(postId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+
+        if(request.getParentCommentId() != null){
+            Comments parent = commentsRepository.findById(request.getParentCommentId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent Comment Not Found"));
+
+            if(parent.getPostid().getPostid() != postId) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
+            }
+        }
+        Comments comment = new Comments();
+
+        comment.setPostid(post);
+        comment.setUserid(userRepository.getReferenceById(authenticatedUserId));
+        comment.setParentCommentid(request.getParentCommentId());
+        comment.setCommentContent(request.getCommentContent());
+        comment.setCreatedAt(Timestamp.from(Instant.now()));
+
+        Comments saved = commentsRepository.save(comment);
+        return toResponseDTO(saved);
+
+    }
+
+    private CommentResponseDTO toResponseDTO(Comments c){
+        CommentResponseDTO dto = new CommentResponseDTO();
+        dto.setCommentId(c.getCommentid());
+        dto.setPostId(c.getPostid().getPostid());
+        dto.setUserId(c.getUserid().getUserid());
+        dto.setParentCommentId(c.getParentCommentid());
+        dto.setCommentContent(c.getCommentContent());
+        dto.setCreatedAt(c.getCreatedAt());
+        return dto;
+    }
+
+    public void deleteCommentFromPost(int postId, int commentId, int userId){
+        Comments comment = commentsRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
+        if(comment.getPostid().getPostid() != postId){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found under post");
+        }
+
+        if(comment.getUserid().getUserid() != userId){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can onlly delete your own comments");
+        }
+
+        commentsRepository.delete(comment);
     }
 }

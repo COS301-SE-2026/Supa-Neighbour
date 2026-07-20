@@ -339,22 +339,20 @@ create table helper_skill_table (
 -- =============================================
 create table posts_table (
     post_id int generated always as identity primary key,
-
     user_id int not null,
-
     post_content text not null,
-
     media_url text,
-
+    category varchar(20) not null default 'general'
+        check (category in (
+            'general', 'lost_pet', 'local_event',
+            'alert', 'free_items', 'complaint', 'admin'
+        )),
     created_at timestamp default current_timestamp,
-
     updated_at timestamp default current_timestamp,
-
     foreign key (user_id)
         references user_table(user_id)
         on delete cascade
 );
-
 -- =============================================
 -- 16. comments table
 -- =============================================
@@ -386,16 +384,18 @@ create table comments_table (
 -- =============================================
 -- 17. likes table
 -- =============================================
-create table likes_table (
-    like_id int generated always as identity primary key,
+create table reaction_table (
+    reaction_id int generated always as identity primary key,
 
     user_id int not null,
 
     post_id int null,
     comment_id int null,
 
-    created_at timestamp default current_timestamp,
+    reaction_type varchar(10) not null
+        check (reaction_type in ('like', 'dislike')),
 
+    created_at timestamp default current_timestamp,
     updated_at timestamp null,
 
     foreign key (user_id)
@@ -414,11 +414,21 @@ create table likes_table (
         (post_id is not null and comment_id is null)
         or
         (post_id is null and comment_id is not null)
-    ),
-
-    constraint uq_no_duplicate_likes
-        unique (user_id, post_id, comment_id)
+    )
 );
+
+-- enforces "one reaction per user per post" — properly, unlike the old constraint
+create unique index uq_no_duplicate_reaction_post
+    on reaction_table(user_id, post_id)
+    where post_id is not null;
+
+-- enforces "one reaction per user per comment"
+create unique index uq_no_duplicate_reaction_comment
+    on reaction_table(user_id, comment_id)
+    where comment_id is not null;
+
+create index idx_reaction_post on reaction_table(post_id);
+create index idx_reaction_comment on reaction_table(comment_id);
 
 -- =============================================
 -- 18. chat table
@@ -516,12 +526,6 @@ on comments_table(post_id);
 
 create index idx_comments_parent
 on comments_table(parent_comment_id);
-
-create index idx_likes_post
-on likes_table(post_id);
-
-create index idx_likes_comment
-on likes_table(comment_id);
 
 create index idx_messages_chat
 on message_table(chat_id);
@@ -809,17 +813,13 @@ values
 -- 15. posts table
 -- =============================================
 insert into posts_table
-(user_id, post_content, media_url)
+(user_id, post_content, media_url, category)
 values
-(1, 'Just completed an elderly care session today!', 'https://example.com/eldercare.jpg'),
-
-(2, 'Pet care services available this weekend.', 'https://example.com/petcare.jpg'),
-
-(3, 'Offering free technology support for seniors.', null),
-
-(4, 'Transportation assistance available tomorrow morning.', null),
-
-(5, 'Finished repairing a leaking sink today.', 'https://example.com/repair.jpg');
+(1, 'Just completed an elderly care session today!', 'https://example.com/eldercare.jpg', 'general'),
+(2, 'Pet care services available this weekend.', 'https://example.com/petcare.jpg', 'local_event'),
+(3, 'Offering free technology support for seniors.', null, 'free_items'),
+(4, 'Transportation assistance available tomorrow morning.', null, 'general'),
+(5, 'Finished repairing a leaking sink today.', 'https://example.com/repair.jpg', 'general');
 
 -- =============================================
 -- 16. comments table
@@ -844,20 +844,19 @@ values
 -- =============================================
 -- 17. likes table
 -- =============================================
-insert into likes_table
-(user_id, post_id, comment_id)
+insert into reaction_table
+(user_id, post_id, comment_id, reaction_type)
 values
-(6, 1, null),
-(7, 1, null),
-(8, 2, null),
-(9, 3, null),
-(10, 4, null),
-
-(1, null, 1),
-(2, null, 3),
-(3, null, 5),
-(4, null, 6),
-(5, null, 7);
+(6, 1, null, 'like'),
+(7, 1, null, 'like'),
+(8, 2, null, 'like'),
+(9, 3, null, 'dislike'),
+(10, 4, null, 'like'),
+(1, null, 1, 'like'),
+(2, null, 3, 'like'),
+(3, null, 5, 'dislike'),
+(4, null, 6, 'like'),
+(5, null, 7, 'like');
 
 -- =============================================
 -- 18. chat table mock data
