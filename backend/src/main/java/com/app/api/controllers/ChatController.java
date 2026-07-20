@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 
 import java.util.Map;
@@ -103,6 +105,28 @@ public class ChatController {
         return ResponseEntity.status(201).body(result);
     }
 
+    /**
+     * Marks all messages in a chat as read, excluding messages sent by the given user.
+     * @param chatId the ID of the chat
+     * @param body request body containing userID
+     * @return confirmation of marking messages as read
+     */
+    @Operation(summary = "Mark all messages in a chat as read")
+    @ApiResponse(responseCode = "200", description = "Messages marked as read")
+    @PutMapping("/{chatId}/read")
+    public ResponseEntity<Map<String, Object>> markAsRead(
+            @PathVariable int chatId,
+            @RequestBody Map<String, Object> body) {
+
+        int userId = (Integer) body.get("userID");
+        chatService.markAsRead(chatId, userId);
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("chatID", chatId);
+        res.put("markedAsRead", true);
+        return ResponseEntity.ok(res);
+    }
 
 
+    
 }
