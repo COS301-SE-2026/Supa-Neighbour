@@ -116,7 +116,7 @@ public class CommentsController {
         return ResponseEntity.ok(updated);
     }
 
-    // DELETE bulletin/posts/{postId}/comments/{commentId}
+    // DELETE api/comments/bulletin/posts/{postId}/comments/{commentId}
     /**
      * Deletes a comment under a particular post
      *
@@ -139,7 +139,7 @@ public class CommentsController {
         }
     }  
     
-    @PostMapping("/bulletin/posts/{postId}/helpful")
+    @PostMapping("/bulletin/posts/{postId}/like")
     public ResponseEntity<CommentReactionResponseDTO> postHelpfulReation(@PathVariable int postId,@RequestHeader("Authorization") String authHead) {
 
         try{
@@ -153,7 +153,7 @@ public class CommentsController {
         }
     }
 
-    @DeleteMapping("/bulletin/posts/{postId}/helpful")
+    @DeleteMapping("/bulletin/posts/{postId}/like")
     public ResponseEntity<Void> deleteCommentsUnderPost(@PathVariable int postId,@RequestHeader("Authorization") String authHeader){
         try{
             String token = authHeader.replace("Bearer ", "");
