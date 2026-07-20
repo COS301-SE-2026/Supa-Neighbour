@@ -15,7 +15,6 @@ import com.app.api.repositories.PostsRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.dtos.PostDetailDTO;
 
-import jakarta.xml.bind.annotation.XmlElement.DEFAULT;
 
 /**
  * Service layer for managing post operations.
@@ -67,15 +66,26 @@ public class PostsService {
      * Validation result for a create-post request. Thrown as an exception
      * so the controller can translate it into the documented HTTP status.
      */
-
     public static class InvalidPostException extends RuntimeException{
         private final int statusCode;
 
+        /**
+         * Constructs a new {@code InvalidPostException}.
+         *
+         * @param message the error message describing why the request is invalid
+         * @param statusCode the HTTP status code that should be returned
+         *                   to the client
+         */
         public InvalidPostException(String message, int statusCode){
             super(message);
             this.statusCode = statusCode;
         }
 
+        /**
+         * Returns the HTTP status code associated with this exception.
+         *
+         * @return the HTTP status code to return to the client
+         */
         public int getStatusCode(){
             return statusCode;
         }
@@ -92,7 +102,6 @@ public class PostsService {
      * @param request the validated request body
      * @return the saved post
      */
-
     public Posts createPost(int userId, CreatePostRequest request){
         User user = userRepository.findById(userId).orElse(null);
         if(user == null){
@@ -185,7 +194,6 @@ public class PostsService {
      * @param limit    requested page size; defaults to 20 if null or less than 1
      * @return the feed response envelope
      */
-
      public PostFeedResponseDTO getFeed(int userId, String category, String search, Integer page, Integer limit){
         int resolvedPage = (page == null || page < 1) ? DEFAULT_PAGE : page;
         int resolvedLimit = (limit == null || limit < 1) ? DEFAULT_LIMIT : limit;

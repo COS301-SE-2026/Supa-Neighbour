@@ -115,6 +115,21 @@ public class ReactionService {
         reactionRepository.deleteById(id);
     }
 
+    /**
+     * Adds a dislike reaction to a post for the specified user.
+     * <p>
+     * The method verifies that the post exists and that the user has not already
+     * reacted to it. If the reaction is successfully created, the updated dislike
+     * count for the post is returned.
+     * </p>
+     *
+     * @param postId the unique identifier of the post to dislike
+     * @param userId the unique identifier of the user adding the reaction
+     * @return a {@link ReactionResponseDTO} containing the result of the operation
+     *         and the updated dislike count
+     * @throws ResponseStatusException if the post does not exist or the user has
+     *                                 already reacted to the post
+     */
     public ReactionResponseDTO addDislikeReaction(int postId, int userId){
         Posts post = postsRepository.findById(postId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
 
@@ -136,6 +151,21 @@ public class ReactionService {
         return new ReactionResponseDTO("Reaction added", postId, "dislike", dislikeCount);
     }
 
+    /**
+     * Adds a dislike reaction to a comment for the specified user.
+     * <p>
+     * The method verifies that the comment exists and that the user has not
+     * already reacted to it. If the reaction is successfully created, the updated
+     * dislike count for the comment is returned.
+     * </p>
+     *
+     * @param commentId the unique identifier of the comment to dislike
+     * @param userId the unique identifier of the user adding the reaction
+     * @return a {@link CommentReactionResponseDTO} containing the result of the
+     *         operation and the updated dislike count
+     * @throws ResponseStatusException if the comment does not exist or the user
+     *                                 has already reacted to the comment
+     */
     public CommentReactionResponseDTO addDislikeReactionToComment(int commentId, int userId){
         Comments comment = commentsRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 
@@ -159,6 +189,20 @@ public class ReactionService {
 
     
 
+    /**
+     * Saves a reaction while handling duplicate reaction attempts.
+     * <p>
+     * If saving the reaction violates a database integrity constraint, such as a
+     * unique constraint preventing duplicate reactions, a
+     * {@link ResponseStatusException} with a {@code 409 CONFLICT} status is thrown.
+     * </p>
+     *
+     * @param reaction the reaction to save
+     * @param conflictMessage the error message returned if the reaction already
+     *                        exists
+     * @throws ResponseStatusException if the reaction cannot be saved due to a
+     *                                 data integrity violation
+     */
     private void saveReactionSafely(Reaction reaction, String conflictMessage){
         try {
             reactionRepository.save(reaction);
@@ -167,6 +211,20 @@ public class ReactionService {
         }
     }
 
+    /**
+     * Removes a user's dislike reaction from a post.
+     * <p>
+     * The method locates the user's existing dislike reaction, removes it from the
+     * database, and returns the updated dislike count for the post.
+     * </p>
+     *
+     * @param postId the unique identifier of the post
+     * @param userId the unique identifier of the user removing the reaction
+     * @return a {@link ReactionRemovedResponseDTO} containing the result of the
+     *         operation and the updated dislike count
+     * @throws ResponseStatusException if the user has no dislike reaction for the
+     *                                 specified post
+     */
     public ReactionRemovedResponseDTO removeDisLikeReaction(int postId, int userId) {
         Reaction reaction = reactionRepository.findByUserAndPostAndType(userId, postId, "dislike").orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "no dislike reaction to remove"));
 

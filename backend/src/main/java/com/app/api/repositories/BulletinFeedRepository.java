@@ -31,6 +31,12 @@ public class BulletinFeedRepository {
         public final int locationId;
         public final String neighbourhoodName;
 
+          /**
+         * Constructs a new {@code CallerNeighbourhood}.
+         *
+         * @param locationId the unique identifier of the neighbourhood
+         * @param neighbourhoodName the name of the neighbourhood
+         */
         public CallerNeighbourhood(int locationId, String neighbourhoodName){
             this.locationId = locationId;
             this.neighbourhoodName = neighbourhoodName;
@@ -126,7 +132,6 @@ public class BulletinFeedRepository {
      * Counts the total posts matching the same filters as findFeed, for
      * populating totalPosts in the response (used for pagination on the client).
      */
-
     public long countFeed(int neighbourhoodLocationId, String category, String search){
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(*) " +
@@ -147,6 +152,19 @@ public class BulletinFeedRepository {
         return ((Number) query.getSingleResult()).longValue();
     }
 
+    /**
+     * Appends optional filter conditions to the SQL query.
+     * <p>
+     * Category and search filters are added only when corresponding values are
+     * provided. This allows the query to be built dynamically based on the
+     * supplied filter criteria.
+     * </p>
+     *
+     * @param sql the {@link StringBuilder} containing the SQL query being built
+     * @param category the category to filter posts by; ignored if {@code null} or blank
+     * @param search the search term used to filter post content; ignored if
+     *               {@code null} or blank
+     */
     private void appendOptionalFilters(StringBuilder sql,String category, String search){
         if(category != null && !category.isBlank()){
             sql.append(" AND p.category = :category");
@@ -156,6 +174,18 @@ public class BulletinFeedRepository {
         }
     }
 
+    /**
+     * Binds values for the optional query filters.
+     * <p>
+     * Parameters are bound only if the corresponding filter values are provided,
+     * ensuring they match the conditions added by
+     * {@link #appendOptionalFilters(StringBuilder, String, String)}.
+     * </p>
+     *
+     * @param query the JPA query to which parameters will be bound
+     * @param category the category filter value; ignored if {@code null} or blank
+     * @param search the search term filter value; ignored if {@code null} or blank
+     */
     private void bindOptionalFilters(Query query, String category, String search){
         if(category != null && !category.isBlank()){
             query.setParameter("category", category);

@@ -90,8 +90,7 @@ public class Reaction {
      *
      * @param reactionType the like type
      */
-    public void setReactionType(String reactionType) 
-    { 
+    public void setReactionType(String reactionType) { 
         this.reactionType = reactionType; 
     }
 

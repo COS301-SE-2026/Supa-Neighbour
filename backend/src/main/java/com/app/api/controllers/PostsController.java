@@ -1,12 +1,8 @@
 package com.app.api.controllers;
- 
-import java.util.List;
 import java.util.Map;
  
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -141,7 +137,7 @@ public class PostsController {
     @PutMapping("/{id}")
     public ResponseEntity<Posts> updatePosts(@PathVariable int id, @RequestBody Posts posts) {
         Posts existing = postsService.getPostById(id);
-        if (existing == null) {
+        if (existing == null){
             return ResponseEntity.notFound().build();
         }
         Posts updated = postsService.updatePost(id, posts);
