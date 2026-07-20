@@ -2,15 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/chat_thread.dart';
 import '../../services/chat_service.dart';
 
-
 class ChatDetailScreen extends StatefulWidget {
   final ChatThread chat;
-
   const ChatDetailScreen({super.key, required this.chat});
-
   @override
   State<ChatDetailScreen> createState() => _ChatDetailScreenState();
 }
@@ -23,48 +21,57 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   // service
   final ChatService _chatService = ChatService();
   bool _isSending = false;
-  static const int _currentUserId = 6; // auth usr update
-
+  int _currentUserId = 0;
 
   @override
   void initState() {
     super.initState();
+    _resolveUserId();
+  }
+
+  Future<void> _resolveUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getInt('current_user_id');
+    if (stored != null) {
+      setState(() => _currentUserId = stored);
+    }
     _loadMessages();
   }
 
-
-Future<void> _loadMessages() async {
-  try {
-    final data = await _chatService.getMessages(widget.chat.chatId);
-    final msgs = data['messages'] as List<dynamic>;
-    setState(() {
-      _messages.clear();
-      for (final m in msgs) {
-        _messages.add(ChatMessageWidget(
-          text: m['content'] as String,
-          isMe: (m['senderID'] as int) == _currentUserId,
-          time: _formatTimestamp(m['timestamp'] as String?),
-        ));
+  Future<void> _loadMessages() async {
+    try {
+      final data = await _chatService.getMessages(widget.chat.chatId);
+      final msgs = data['messages'] as List<dynamic>;
+      setState(() {
+        _messages.clear();
+        for (final m in msgs) {
+          _messages.add(ChatMessageWidget(
+            text: m['content'] as String,
+            isMe: (m['senderID'] as int) == _currentUserId,
+            time: _formatTimestamp(m['timestamp'] as String?),
+          ));
+        }
+      });
+      if (_currentUserId != 0) {
+        await _chatService.markAsRead(widget.chat.chatId, _currentUserId);
       }
-    });
-  } catch (e) {
-    //existing state kept on failure
+    } catch (e) {
+      //existing state kept on failure
+    }
   }
-}
 
-String _formatTimestamp(String? raw) {
-  if (raw == null) return _getCurrentTime();
-  try {
-    final dt = DateTime.parse(raw);
-    final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
-    final m = dt.minute.toString().padLeft(2, '0');
-    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-    return '$h:$m $ampm';
-  } catch (_) {
-    return _getCurrentTime();
+  String _formatTimestamp(String? raw) {
+    if (raw == null) return _getCurrentTime();
+    try {
+      final dt = DateTime.parse(raw);
+      final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+      final m = dt.minute.toString().padLeft(2, '0');
+      final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+      return '$h:$m $ampm';
+    } catch (_) {
+      return _getCurrentTime();
+    }
   }
-}
-
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -150,44 +157,41 @@ String _formatTimestamp(String? raw) {
   void _sendImage() {
     if (_selectedImage != null) {
       setState(() {
-        _messages.add(
-          ChatMessageWidget(
-            text: '📷 Image shared',
-            isMe: true,
-            time: _getCurrentTime(),
-            isImage: true,
-            imageFile: _selectedImage,
-          ),
-        );
+        _messages.add(ChatMessageWidget(
+          text: '📷 Image shared',
+          isMe: true,
+          time: _getCurrentTime(),
+          isImage: true,
+          imageFile: _selectedImage,
+        ));
         _selectedImage = null;
       });
     }
   }
 
   Future<void> _sendMessage() async {
-  final text = _messageController.text.trim();
-  if (text.isEmpty || _isSending) return;
-
-  setState(() => _isSending = true);
-  _messageController.clear();
-
-  setState(() {
-    _messages.add(ChatMessageWidget(
-      text: text,
-      isMe: true,
-      time: _getCurrentTime(),
-    ));
-  });
-
-  try {
-    await _chatService.sendMessage(widget.chat.chatId, _currentUserId, text);
-  } catch (e) {
-    // message already shown in UI — fail silently for now
-  } finally {
-    if (mounted) setState(() => _isSending = false);
+    final text = _messageController.text.trim();
+    if (text.isEmpty || _isSending) return;
+    setState(() => _isSending = true);
+    _messageController.clear();
+    setState(() {
+      _messages.add(ChatMessageWidget(
+        text: text,
+        isMe: true,
+        time: _getCurrentTime(),
+      ));
+    });
+    try {
+      await _chatService.sendMessage(widget.chat.chatId, _currentUserId, text);
+      if (_currentUserId != 0) {
+        await _chatService.markAsRead(widget.chat.chatId, _currentUserId);
+      }
+    } catch (e) {
+      // message already shown in UI — fail silently for now
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
   }
-}
-
 
   String _getCurrentTime() {
     final now = DateTime.now();
@@ -273,7 +277,7 @@ String _formatTimestamp(String? raw) {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, true);
           },
         ),
       ),
@@ -342,7 +346,8 @@ String _formatTimestamp(String? raw) {
                           color: const Color(0xFF9CA3AF),
                         ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ),
@@ -369,8 +374,8 @@ String _formatTimestamp(String? raw) {
                               ),
                             )
                           : const Icon(Icons.send, color: Colors.white, size: 22),
-                          ),
-                        ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -401,7 +406,6 @@ class ChatMessageWidget {
 // Message Bubble Widget
 class MessageBubble extends StatelessWidget {
   final ChatMessageWidget message;
-
   const MessageBubble({super.key, required this.message});
 
   @override
@@ -435,21 +439,23 @@ class MessageBubble extends StatelessWidget {
               ),
               child: message.isImage && message.imageFile != null
                   ? ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  message.imageFile!,
-                  width: 200,
-                  height: 150,
-                  fit: BoxFit.cover,
-                ),
-              )
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.file(
+                        message.imageFile!,
+                        width: 200,
+                        height: 150,
+                        fit: BoxFit.cover,
+                      ),
+                    )
                   : Text(
-                message.text,
-                style: GoogleFonts.openSans(
-                  fontSize: 15,
-                  color: message.isMe ? Colors.white : const Color(0xFF264653),
-                ),
-              ),
+                      message.text,
+                      style: GoogleFonts.openSans(
+                        fontSize: 15,
+                        color: message.isMe
+                            ? Colors.white
+                            : const Color(0xFF264653),
+                      ),
+                    ),
             ),
             const SizedBox(height: 4),
             Padding(

@@ -33,8 +33,11 @@ void initState() {
         final idToken = await fbUser.getIdToken();
         final authService = AuthService();
 
-        final user = await authService.loginWithToken(idToken!);
+         final user = await authService.loginWithToken(idToken!);
         AuthSession.instance.login(user);
+
+        final prefs2 = await SharedPreferences.getInstance();
+        await prefs2.setInt('current_user_id', int.parse(user.id));
 
         if (!mounted) return;
         Navigator.pushReplacement(

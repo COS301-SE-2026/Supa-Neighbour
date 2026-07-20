@@ -149,14 +149,14 @@ class _HomeContentState extends State<HomeContent> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const CreateTaskScreen(),
-            ),
-          );
-          await _loadNearbyTasks();
-        },
+            final created = await Navigator.push<bool>(
+              context,
+              MaterialPageRoute(builder: (context) => const CreateTaskScreen()),
+            );
+            if (created == true && mounted) {
+              _loadNearbyTasks();
+            }
+          },
         backgroundColor: const Color(0xFF2A9D8F),
         child: const Icon(Icons.add, color: Colors.white),
       ),

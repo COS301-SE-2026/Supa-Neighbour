@@ -55,4 +55,14 @@ class ChatService {
       throw Exception("Couldn't send message: ${e.message}");
     }
   }
+
+  /// mark chat as read via /api/chats/$chatId/read.
+  Future<void> markAsRead(int chatId, int userId) async {
+    try {
+      await _dio.put('/api/chats/$chatId/read', data: {'userID': userId});
+    } on DioException catch (e) {
+      throw Exception("Couldn't mark as read: ${e.message}");
+    }
+  }
+
 }
