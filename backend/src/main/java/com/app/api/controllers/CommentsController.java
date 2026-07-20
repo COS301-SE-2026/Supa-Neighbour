@@ -48,7 +48,7 @@ public class CommentsController {
      * @return a list of all comments
      */
     @GetMapping
-    public ResponseEntity<List<Comments>> getAllComments() {
+    public ResponseEntity<List<?>> getAllComments() {
         return ResponseEntity.ok(commentsService.getAllComments());
     }
 

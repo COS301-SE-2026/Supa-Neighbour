@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.app.api.dtos.CommentPostResponseDTO;
 import com.app.api.dtos.CommentRequestDTO;
 import com.app.api.dtos.CommentResponseDTO;
 import com.app.api.models.Comments;
@@ -22,7 +23,6 @@ import java.time.Instant;
  */
 @Service
 public class CommentsService {
-
 
     private final CommentsRepository commentsRepository;
     private final PostsRepository postsRepository;
@@ -58,7 +58,6 @@ public class CommentsService {
     public Comments getCommentsById(int id) {
         return commentsRepository.findById(id).orElse(null);
     }
-
     // Create
     /**
      * Saves a new comment to the repository.
@@ -144,6 +143,35 @@ public class CommentsService {
         dto.setCommentContent(c.getCommentContent());
         dto.setCreatedAt(c.getCreatedAt());
         return dto;
+    }
+
+
+    public List<CommentPostResponseDTO> getAllCommentsByPostId(int postId) {
+        List<Comments> comments = commentsRepository.findByPostId_PostId(postId);
+
+        return comments.stream()
+                .map(this::toCommentPostResponseDTO)
+                .toList();
+    }
+
+    public List<CommentPostResponseDTO> getCommentsByPostId(int postId) {
+    List<Comments> comments = commentsRepository.findByPostId_PostId(postId);
+
+        return comments.stream()
+                .map(this::toCommentPostResponseDTO)
+                .toList();
+    }
+
+        private CommentPostResponseDTO toCommentPostResponseDTO(Comments c) {
+        return new CommentPostResponseDTO(
+                c.getCommentid(),
+                c.getPostid().getPostid(),
+                c.getUserid().getUserid(),
+                c.getUserid().getFirstName() + " " + c.getUserid().getLastName(),
+                c.getParentCommentid(),
+                c.getCommentContent(),
+                c.getCreatedAt()
+        );
     }
 
     public void deleteCommentFromPost(int postId, int commentId, int userId){
