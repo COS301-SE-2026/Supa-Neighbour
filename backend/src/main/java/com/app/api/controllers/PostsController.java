@@ -3,6 +3,7 @@ package com.app.api.controllers;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.app.api.models.Comments;
+import com.app.api.dtos.CommentPostResponseDTO;
 import com.app.api.dtos.CreatePostRequest;
 import com.app.api.dtos.PostDetailDTO;
 import com.app.api.dtos.PostFeedResponseDTO;
@@ -175,11 +177,20 @@ public class PostsController {
         }
     }
 
+    //Get api bulletin/posts
+    /*  */
     @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<?> getPostComments(@PathVariable int postId, @RequestHeader("Authorization") String authHeader) {
-        
-        //List<Comments> comments = commentsService.getCommentsById(postId);
-        return ResponseEntity.ok().body("Comments for post " + postId);
+        try{
+            String token = authHeader.replace("Bearer ","");
+            int userId= firebaseAuthService.getUserIdFromToken(token);
+            List<CommentPostResponseDTO> comments = commentsService.getCommentsByPostId(postId,userId);
+            return ResponseEntity.ok(comments);
+
+        }catch (FirebaseAuthException e)
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
     }
     
 }

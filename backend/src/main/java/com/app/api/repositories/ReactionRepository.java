@@ -21,6 +21,12 @@ public interface ReactionRepository extends JpaRepository<Reaction,Integer> {
     @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE comment_id = :commentId AND reaction_type = 'dislike'", nativeQuery = true)
     long countDislikedComment(@Param("commentId") int commentId);
 
+        @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE post_id = :postId AND reaction_type = 'helpful'", nativeQuery=true)
+    long countHelpful(@Param("postId") int postId);
+
+    @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE comment_id = :commentId AND reaction_type = 'helpful'", nativeQuery = true)
+    long countHelpfulComment(@Param("commentId") int commentId);
+
     @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE user_id = :userId AND comment_id = :commentId", nativeQuery=true)
     long countByUserAndComment(@Param("userId") int userId, @Param("commentId") int commentId);
 

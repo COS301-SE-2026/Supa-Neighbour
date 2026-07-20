@@ -175,7 +175,37 @@ public class ReactionService {
         long count = reactionRepository.countDisLiked(postId);
 
         return new ReactionRemovedResponseDTO("Reaction removed", postId, count);
+    }
+
+    public CommentReactionResponseDTO addHelpfulReactionToComment(int commentId, int userId){
+        Comments comment = commentsRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
+        if(reactionRepository.countByUserAndComment(userId, commentId) > 0){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already reacted to this comment");
+        }
+
+        Reaction reaction = new Reaction();
+        reaction.setCommentid(comment);
+        reaction.setUserid(userRepository.getReferenceById(userId));
+        reaction.setReactionType("Helpful");
+        reaction.setCreatedAt(Timestamp.from(Instant.now()));
+
+        saveReactionSafely(reaction, "You have already reacted to this comment");
 
         
+
+        long helpfulCount = reactionRepository.countDislikedComment(commentId);
+        return new CommentReactionResponseDTO("Reaction added", commentId, "helpful", helpfulCount);
     }
+
+        public ReactionRemovedResponseDTO removeHelpfulReaction(int postId, int userId) {
+        Reaction reaction = reactionRepository.findByUserAndPostAndType(userId, postId, "helpful").orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "no helpful reaction to remove"));
+
+        reactionRepository.delete(reaction);
+
+        long count = reactionRepository.countHelpfulComment(postId);
+
+        return new ReactionRemovedResponseDTO("Reaction removed", postId, count);
+    }
+
 }

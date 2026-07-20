@@ -1,5 +1,6 @@
 package com.app.api.controllers;
 
+import com.app.api.security.FirebaseAuthenticationFilter;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -14,12 +15,15 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.app.api.dtos.CommentReactionResponseDTO;
 import com.app.api.dtos.CommentRequestDTO;
 import com.app.api.dtos.CommentResponseDTO;
 import com.app.api.models.Comments;
 import com.app.api.services.CommentsService;
 import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.ReactionService;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.app.api.models.Reaction;
 
 /**
  * REST controller for managing comments
@@ -28,7 +32,8 @@ import com.google.firebase.auth.FirebaseAuthException;
 @RequestMapping("/api/comments")
 public class CommentsController {
 
-
+    private final FirebaseAuthenticationFilter firebaseAuthenticationFilter;
+    private final ReactionService reactionService;
     private final CommentsService commentsService;
     private final FirebaseAuthService firebaseAuthService;
 
@@ -36,9 +41,11 @@ public class CommentsController {
      * Basic Comments constructor
      * @param commentService service for the comments contructor
      */
-    public CommentsController(CommentsService commentsService, FirebaseAuthService firebaseAuthService) {
+    public CommentsController(CommentsService commentsService, FirebaseAuthService firebaseAuthService,ReactionService reactionService, FirebaseAuthenticationFilter firebaseAuthenticationFilter) {
         this.commentsService = commentsService;
         this.firebaseAuthService = firebaseAuthService;
+        this.reactionService=reactionService;
+        this.firebaseAuthenticationFilter = firebaseAuthenticationFilter;
     }
 
     // GET /api/comments
@@ -131,6 +138,20 @@ public class CommentsController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }  
+    
+    @PostMapping("/bulletin/posts/{postId}/helpful")
+    public ResponseEntity<CommentReactionResponseDTO> postHelpfulReation(@RequestBody int postId,@RequestBody Reaction reaction,@RequestHeader("Authorization") String authHead) {
+
+        try{
+            String token = authHead.replace("Bearer ", "");
+            int userId= firebaseAuthService.getUserIdFromToken(token);
+            CommentReactionResponseDTO created = reactionService.addHelpfulReactionToComment(postId, userId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        }catch(FirebaseAuthException e)
+        {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+    }
     
 }
 
