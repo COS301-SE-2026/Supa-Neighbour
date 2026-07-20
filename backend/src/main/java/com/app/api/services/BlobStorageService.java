@@ -5,6 +5,12 @@ import com.azure.storage.blob.BlobContainerClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.azure.storage.blob.sas.BlobSasPermission;
+import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
+import java.time.OffsetDateTime;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -110,4 +116,62 @@ public class BlobStorageService {
     }
 
 
+    /**
+     * Generates a time-limited Shared Access Signature (SAS) URL for a blob.
+     * <p>
+     * The supplied blob URL is converted into its corresponding blob name, and a
+     * read-only SAS token is generated that allows temporary access to the blob.
+     * The returned URL can be safely sent to clients for accessing private blobs
+     * without exposing the storage account credentials.
+     * </p>
+     *
+     * @param blobUrl the original blob URL stored in the database
+     * @return a blob URL with an attached read-only SAS token that expires after
+     *         four hours
+     * @throws IllegalArgumentException if the provided blob URL is invalid
+     */
+    public String generateSasUrl(String blobUrl){
+        String blobName = extractBlobName(blobUrl);
+        BlobClient blobClient = postsContainerClient.getBlobClient(blobName);
+
+        BlobSasPermission permission = new BlobSasPermission().setReadPermission(true);
+        OffsetDateTime expiry = OffsetDateTime.now().plusHours(4);
+
+        BlobServiceSasSignatureValues sasValues = new BlobServiceSasSignatureValues(expiry, permission);
+
+        String sasToken = blobClient.generateSas(sasValues);
+
+        return blobClient.getBlobUrl() + "?" + sasToken;
+    }
+
+
+    /**
+     * Extracts the blob name from a full Azure Blob Storage URL.
+     * <p>
+     * For example, given the URL:
+     * </p>
+     * <pre>
+     * https://&lt;storage-account&gt;.blob.core.windows.net/posts/image.png
+     * </pre>
+     * <p>
+     * this method returns:
+     * </p>
+     * <pre>
+     * image.png
+     * </pre>
+     *
+     * @param blobUrl the full Azure Blob Storage URL
+     * @return the blob name relative to the container
+     * @throws IllegalArgumentException if the supplied URL is malformed
+     */
+    public String extractBlobName(String blobUrl){
+        try{
+            URI uri = new URI(blobUrl);
+            String path = uri.getPath();
+
+            return path.substring("/posts/".length());
+        }catch(URISyntaxException e){
+            throw new IllegalArgumentException("Invalid blob URL", e);
+        }
+    }
 }

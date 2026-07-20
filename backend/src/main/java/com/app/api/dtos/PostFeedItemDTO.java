@@ -97,6 +97,15 @@ public class PostFeedItemDTO {
     }
 
     /**
+     * Sets the URL of the attached media.
+     *
+     * @return the media URL, or {@code null} if no media is attached
+     */
+    public void setMediaUrl(String mediaUrl){
+        this.mediaUrl = mediaUrl;
+    }
+
+    /**
      * Returns the category of the post.
      *
      * @return the post category

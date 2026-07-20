@@ -93,8 +93,17 @@ public class PostDetailDTO {
      *
      * @return the media URL, or {@code null} if no media is attached
      */
-    public String mediaUrl(){
+    public String getMediaUrl(){
         return mediaUrl;
+    }
+
+    /**
+     * Returns the URL of the attached media.
+     *
+     * @return the media URL, or {@code null} if no media is attached
+     */
+    public void setMediaUrl(String mediaUrl){
+        this.mediaUrl = mediaUrl;
     }
 
     /**

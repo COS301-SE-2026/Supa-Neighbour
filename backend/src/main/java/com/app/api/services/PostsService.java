@@ -13,6 +13,7 @@ import com.app.api.models.User;
 import com.app.api.repositories.BulletinFeedRepository;
 import com.app.api.repositories.PostsRepository;
 import com.app.api.repositories.UserRepository;
+import com.app.api.services.BlobStorageService;
 import com.app.api.dtos.PostDetailDTO;
 
 
@@ -26,6 +27,7 @@ public class PostsService {
     private final PostsRepository postsRepository;
     private final UserRepository userRepository;
      private final BulletinFeedRepository bulletinFeedRepository;
+     private final BlobStorageService blobStorageService;
     private static final List<String> VALID_CATEGORIES = List.of("general", "lost_pet", "local_event", "alert", "free_items", "complaint", "admin");
 
     private static final String EXPECTED_BLOB_HOST = "blob.core.windows.net";
@@ -35,10 +37,11 @@ public class PostsService {
      *
      * @param postsRepository repository providing analytics data for posts
      */
-    public PostsService(PostsRepository postsRepository, UserRepository userRepository,  BulletinFeedRepository bulletinFeedRepository) {
+    public PostsService(PostsRepository postsRepository, UserRepository userRepository,  BulletinFeedRepository bulletinFeedRepository, BlobStorageService blobStorageService) {
         this.postsRepository = postsRepository;
         this.userRepository = userRepository;
         this.bulletinFeedRepository = bulletinFeedRepository;
+        this.blobStorageService = blobStorageService;
     }
 
     // Get all
@@ -207,8 +210,12 @@ public class PostsService {
         }
 
         List<PostFeedItemDTO> posts = bulletinFeedRepository.findFeed(neighbourhood.locationId, category, search, resolvedLimit, offset);
+        for(PostFeedItemDTO post: posts){
+            if(post.getMediaUrl() != null){
+                post.setMediaUrl(blobStorageService.generateSasUrl(post.getMediaUrl()));
+            }
+        }
         long totalPosts = bulletinFeedRepository.countFeed(neighbourhood.locationId, category, search);
-
         return new PostFeedResponseDTO(neighbourhood.neighbourhoodName, resolvedPage, totalPosts, posts);
      
     }
@@ -221,6 +228,10 @@ public class PostsService {
      * @return the post detail, or null if the post doesn't exist
      */
     public PostDetailDTO getPostDetail(int postId){
-        return bulletinFeedRepository.findPostDetail(postId);
+        PostDetailDTO detail = bulletinFeedRepository.findPostDetail(postId);
+        if(detail != null && detail.getMediaUrl() != null){
+            detail.setMediaUrl(blobStorageService.generateSasUrl(detail.getMediaUrl()));
+        }
+        return detail;
     }
 }
