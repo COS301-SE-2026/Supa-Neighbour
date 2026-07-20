@@ -1,6 +1,5 @@
 package com.app.api.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -17,9 +16,13 @@ import com.app.api.repositories.UserRepository;
 @Service
 public class FirebaseAuthService {
 
-    @Autowired
-    private UserRepository userRepository;
+    
+    private  final UserRepository userRepository;
 
+
+    public FirebaseAuthService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
        /**
      * Verifies a Firebase ID token.
      *
