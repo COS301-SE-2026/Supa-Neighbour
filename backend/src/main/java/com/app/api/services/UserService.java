@@ -20,6 +20,11 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param userRepository repository providing analytics data for user
+     */
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -76,7 +81,6 @@ public class UserService {
         existing.setFirstName(updated.getFirstName());
         existing.setGender(updated.getGender());
         existing.setLastName(updated.getLastName());
-        existing.setPassword(updated.getPassword());
         existing.setPhoneNumber(updated.getPhoneNumber());
         existing.setRatingid(updated.getRatingid());
         existing.setUserType(updated.getUserType());
@@ -93,4 +97,3 @@ public class UserService {
         userRepository.deleteById(id);
     }
 }
-

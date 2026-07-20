@@ -26,6 +26,11 @@ public class CompatibilityController {
 
     private final CompatibilityService compatibilityService;
 
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param compatibilityService service providing analytics data for dependents
+     */
     public CompatibilityController(CompatibilityService compatibilityService) {
         this.compatibilityService = compatibilityService;
     }

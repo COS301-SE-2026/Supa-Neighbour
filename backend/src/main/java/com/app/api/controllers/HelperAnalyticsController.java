@@ -22,6 +22,11 @@ public class HelperAnalyticsController {
 
     private final HelperAnalyticsService helperAnalyticsService;
 
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param helperAnalyticsService service providing analytics data for helpers
+     */
     public HelperAnalyticsController(HelperAnalyticsService helperAnalyticsService) {
         this.helperAnalyticsService = helperAnalyticsService;
     }

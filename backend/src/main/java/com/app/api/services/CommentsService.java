@@ -16,6 +16,11 @@ public class CommentsService {
 
     private final CommentsRepository commentsRepository;
 
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param  commentsRepository repository providing analytics data for comments
+     */
     public CommentsService(CommentsRepository commentsRepository) {
         this.commentsRepository = commentsRepository;
     }

@@ -23,6 +23,11 @@ public class AdminController {
 
     private final AdminService adminService;
 
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param adminService service providing analytics data for admins
+     */
     public AdminController(AdminService adminService) {
         this.adminService = adminService;
     }

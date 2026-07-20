@@ -1,21 +1,23 @@
 package com.app.api.security;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
 
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.app.api.services.FirebaseAuthService;
-import com.app.api.repositories.UserRepository;
+
 import com.app.api.models.User;
+import com.app.api.repositories.UserRepository;
+import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseToken;
-import java.io.IOException;
-import java.util.Collections;
-import org.springframework.lang.NonNull;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Spring Security filter responsible for authenticating incoming HTTP requests
@@ -104,10 +106,7 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
 
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     return;
-}   System.out.println(
-    "Authentication = " +
-    SecurityContextHolder.getContext().getAuthentication()
-);
+    }  
         filterChain.doFilter(request, response);
     }
     
@@ -115,7 +114,12 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
 
-        return path.equals("/api/auth/register") || path.equals("/api/auth/login") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs");
+        return path.equals("/api/auth/register") 
+        || path.equals("/api/auth/login") 
+        || path.startsWith("/swagger-ui") 
+        || path.startsWith("/v3/api-docs")
+        || path.equals("/swagger-ui.html")
+        || path.startsWith("/webjars");
     }
 
     

@@ -16,6 +16,11 @@ public class PostsService {
 
     private final PostsRepository postsRepository;
 
+    /**
+     * Constructs the repository with its required service dependency.
+     *
+     * @param postsRepository repository providing analytics data for posts
+     */
     public PostsService(PostsRepository postsRepository) {
         this.postsRepository = postsRepository;
     }

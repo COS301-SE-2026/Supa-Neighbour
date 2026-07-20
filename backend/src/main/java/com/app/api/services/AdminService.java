@@ -18,6 +18,11 @@ public class AdminService {
 
     private final AdminRepository adminRepository;
 
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param adminRepository repository providing analytics data for posts
+     */
     public AdminService(AdminRepository adminRepository) {
         this.adminRepository = adminRepository;
     }

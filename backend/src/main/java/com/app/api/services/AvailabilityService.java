@@ -17,6 +17,11 @@ public class AvailabilityService {
     
     private final AvailabilityRepository availabilityRepository;
 
+    /**
+     * Constructs the repository with its required service dependency.
+     *
+     * @param availabilityRepository repository providing analytics data for availability
+     */
     public AvailabilityService(AvailabilityRepository availabilityRepository) {
         this.availabilityRepository = availabilityRepository;
     }

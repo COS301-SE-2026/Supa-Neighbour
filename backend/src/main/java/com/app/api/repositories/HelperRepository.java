@@ -1,9 +1,11 @@
 package com.app.api.repositories;
+
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.app.api.models.Helper;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Repository for performing database operations on
@@ -12,7 +14,12 @@ import java.util.Optional;
 public interface HelperRepository extends JpaRepository<Helper, Integer> {
     
 
-    
+    /**
+     * Retrieves all helper records matching the given availability status.
+     *
+     * @param available the availability status to filter by
+     * @return a list of helpers matching the given availability, possibly empty
+     */
     List<Helper> findByAvailable(boolean available);
 
      /**

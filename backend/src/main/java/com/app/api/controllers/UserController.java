@@ -30,9 +30,12 @@ public class UserController {
      /**
      * Service used to perform user-related business logic.
      */
-
     private final UserService userService;
 
+    /**
+     * User Contructor
+     * @param userService service for the user controller
+     */
     public UserController(UserService userService) {
         this.userService = userService;
     }
@@ -99,7 +102,6 @@ public class UserController {
         existing.setUsername(user.getUsername());
         existing.setFirstName(user.getFirstName());
         existing.setLastName(user.getLastName());
-        existing.setPassword(user.getPassword());
         existing.setEmail(user.getEmail());
         existing.setPhoneNumber(user.getPhoneNumber());
         existing.setDateOfBirth(user.getDateOfBirth());

@@ -26,6 +26,11 @@ public class PostsController {
     
     private final PostsService postsService;
 
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param postsService service providing analytics data for dependents
+     */
     public PostsController(PostsService postsService) {
         this.postsService = postsService;
     }

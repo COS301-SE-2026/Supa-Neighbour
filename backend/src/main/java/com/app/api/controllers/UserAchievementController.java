@@ -21,6 +21,11 @@ public class UserAchievementController {
     
     private final UserAchievementService userAchievementService;
 
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param userAchievementService service providing analytics data for dependents
+     */
     public UserAchievementController(UserAchievementService userAchievementService) {
         this.userAchievementService = userAchievementService;
     }

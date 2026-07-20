@@ -15,6 +15,11 @@ public class TaskTypeService {
 
     private final TaskTypeRepository taskTypeRepository;
 
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param taskTypeRepository repository providing analytics data for taskType
+     */
     public TaskTypeService(TaskTypeRepository taskTypeRepository) {
         this.taskTypeRepository = taskTypeRepository;
     }

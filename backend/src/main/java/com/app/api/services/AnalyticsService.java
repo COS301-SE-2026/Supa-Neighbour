@@ -17,6 +17,11 @@ public class AnalyticsService {
     
     private AnalyticsRepository analyticsRepository;
 
+    /**
+     * Constructs the repository with its required repository dependency.
+     *
+     * @param analyticsRepository repository providing analytics data for analytics
+     */
     public AnalyticsService(AnalyticsRepository analyticsRepository) {
         this.analyticsRepository = analyticsRepository;
     }

@@ -100,8 +100,13 @@ class User {
     firstName: json['user_name'] as String? ?? '',
     lastName: json['user_surname'] as String? ?? '',
     phone: json['user_phone_number'] as String?,
+    username: json['username'] as String?,
+    birthday: json['birthday'] != null ? DateTime.parse(json['birthday'].toString()) : null,
     gender: json['user_gender'] as String?,
-    createdAt: DateTime.now(),
+    street: json['user_street'] as String?,      
+    town: json['user_town'] as String?,          
+    zipCode: json['user_zipcode'] as String?,
+    createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
   );
 }
 

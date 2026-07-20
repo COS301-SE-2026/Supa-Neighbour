@@ -24,6 +24,10 @@ public class HelperController {
 
     private final HelperService helperService;
 
+
+    /**
+     * Basis HelperController contructor
+     */
     public HelperController(HelperService helperService) {
         this.helperService = helperService;
     }

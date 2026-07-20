@@ -28,6 +28,10 @@ public class BadgesController {
 
     private final BadgesService badgesService;
 
+    /**
+     * Basis Contructor for the Badges Controller
+     * @param badgesService service for the badges
+     */
     public BadgesController(BadgesService badgesService) {
         this.badgesService = badgesService;
     }

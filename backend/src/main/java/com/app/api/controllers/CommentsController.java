@@ -26,6 +26,10 @@ public class CommentsController {
 
     private final CommentsService commentsService;
 
+    /**
+     * Basic Comments constructor
+     * @param commentService service for the comments contructor
+     */
     public CommentsController(CommentsService commentsService) {
         this.commentsService = commentsService;
     }

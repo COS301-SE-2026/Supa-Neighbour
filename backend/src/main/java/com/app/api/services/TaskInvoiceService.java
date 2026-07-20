@@ -15,6 +15,11 @@ public class TaskInvoiceService {
 
     private final TaskInvoiceRepository taskInvoiceRepository;
 
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param taskInvoiceRepository repository providing analytics data for taskInvoice
+     */
     public TaskInvoiceService(TaskInvoiceRepository taskInvoiceRepository) {
         this.taskInvoiceRepository = taskInvoiceRepository;
     }

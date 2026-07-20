@@ -15,6 +15,11 @@ public class LocationService {
 
     private final LocationRepository locationRepository;
 
+    /**
+     * Constructs the repository with its required service dependency.
+     *
+     * @param locationRepository repository providing analytics data for location
+     */
     public LocationService(LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
     }
