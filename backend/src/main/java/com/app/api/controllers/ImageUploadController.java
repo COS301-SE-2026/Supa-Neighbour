@@ -21,7 +21,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImageUploadController {
     
     private final BlobStorageService blobStorageService;
-
+    /**
+     * Creates a reaction response.
+     *
+     * @param blobstorageservice has the storage information 
+     */
     public ImageUploadController(BlobStorageService blobStorageService){
         this.blobStorageService = blobStorageService;
     }

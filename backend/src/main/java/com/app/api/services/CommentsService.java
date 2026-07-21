@@ -31,13 +31,15 @@ public class CommentsService {
     /**
      * Constructs the service with its required repository dependency.
      *
-     * @param  commentsRepository repository providing analytics data for comments
+     * @param commentsRepository repository providing analytics data for comments
      */
-    public CommentsService(CommentsRepository commentsRepository, PostsRepository postsRepository, UserRepository userRepository) {
+    public CommentsService(CommentsRepository commentsRepository, PostsRepository postsRepository,
+            UserRepository userRepository) {
         this.commentsRepository = commentsRepository;
         this.postsRepository = postsRepository;
         this.userRepository = userRepository;
     }
+
     // Get all
     /**
      * Retrieves all comments from the repository.
@@ -58,6 +60,7 @@ public class CommentsService {
     public Comments getCommentsById(int id) {
         return commentsRepository.findById(id).orElse(null);
     }
+
     // Create
     /**
      * Saves a new comment to the repository.
@@ -66,7 +69,7 @@ public class CommentsService {
      * @return the saved comment, or null if the provided comment is null
      */
     public Comments saveComments(Comments comments) {
-        if(comments == null) {
+        if (comments == null) {
             return null;
         }
         return commentsRepository.save(comments);
@@ -86,7 +89,7 @@ public class CommentsService {
         if (existing == null) {
             return null;
         }
-        
+
         existing.setUserid(updated.getUserid());
         existing.setUpdatedAt(updated.getUpdatedAt());
         existing.setCommentContent(updated.getCommentContent());
@@ -107,18 +110,28 @@ public class CommentsService {
         commentsRepository.deleteById(id);
     }
 
-    public CommentResponseDTO addCommentToPost(int postId, CommentRequestDTO request, int authenticatedUserId){
-        if(request.getCommentContent() == null || request.getCommentContent().isBlank()){
+    /**
+     * gets all comments based on the post
+     * 
+     * @param postId              used to id the post
+     * @param request             to use firebase authentication
+     * @param authenticatedUserId firebase authentication
+     * @return
+     */
+    public CommentResponseDTO addCommentToPost(int postId, CommentRequestDTO request, int authenticatedUserId) {
+        if (request.getCommentContent() == null || request.getCommentContent().isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "commentContent is required");
         }
 
-        Posts post = postsRepository.findById(postId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+        Posts post = postsRepository.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
 
-        if(request.getParentCommentId() != null){
-            Comments parent = commentsRepository.findById(request.getParentCommentId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent Comment Not Found"));
+        if (request.getParentCommentId() != null) {
+            Comments parent = commentsRepository.findById(request.getParentCommentId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent Comment Not Found"));
 
-            if(parent.getPostid().getPostid() != postId) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
+            if (parent.getPostid().getPostid() != postId) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
             }
         }
         Comments comment = new Comments();
@@ -134,7 +147,13 @@ public class CommentsService {
 
     }
 
-    private CommentResponseDTO toResponseDTO(Comments c){
+    /**
+     * creates a DTO of comment response
+     * 
+     * @param c
+     * @return
+     */
+    private CommentResponseDTO toResponseDTO(Comments c) {
         CommentResponseDTO dto = new CommentResponseDTO();
         dto.setCommentId(c.getCommentid());
         dto.setPostId(c.getPostid().getPostid());
@@ -145,7 +164,12 @@ public class CommentsService {
         return dto;
     }
 
-
+    /**
+     * get a list of comments to a post
+     * 
+     * @param postId uesd to find the post
+     * @return the comments http status 200
+     */
     public List<CommentPostResponseDTO> getAllCommentsByPostId(int postId) {
         List<Comments> comments = commentsRepository.findByPostid_Postid(postId);
 
@@ -156,19 +180,26 @@ public class CommentsService {
 
     /**
      * Retrieves all comments for a post.
-    *
-    * @param postId the ID of the post
-    * @param userId the authenticated user's ID
-    * @return a list of comments belonging to the post
-    */
+     *
+     * @param postId the ID of the post
+     * @param userId the authenticated user's ID
+     * @return a list of comments belonging to the post
+     */
     public List<CommentPostResponseDTO> getCommentsByPostId(int postId, int userId) {
-    List<Comments> comments = commentsRepository.findByPostid_Postid(postId);
+        List<Comments> comments = commentsRepository.findByPostid_Postid(postId);
         return comments.stream()
                 .map(this::toCommentPostResponseDTO)
                 .toList();
     }
 
-        private CommentPostResponseDTO toCommentPostResponseDTO(Comments c) {
+    /**
+     * Retrieves all response comments for a post.
+     *
+     * @param postId the ID of the post
+     * @param userId the authenticated user's ID
+     * @return a list of comments belonging to the post
+     */
+    private CommentPostResponseDTO toCommentPostResponseDTO(Comments c) {
         return new CommentPostResponseDTO(
                 c.getCommentid(),
                 c.getPostid().getPostid(),
@@ -176,24 +207,25 @@ public class CommentsService {
                 c.getUserid().getFirstName() + " " + c.getUserid().getLastName(),
                 c.getParentCommentid(),
                 c.getCommentContent(),
-                c.getCreatedAt()
-        );
+                c.getCreatedAt());
     }
-    /**
-    * Deletes a comment from a post.
-    *
-    * @param postId the ID of the post
-    * @param commentId the ID of the comment
-    * @param userId the authenticated user's ID
-    */
-    public void deleteCommentFromPost(int postId, int commentId, int userId){
-        Comments comment = commentsRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 
-        if(comment.getPostid().getPostid() != postId){
+    /**
+     * Deletes a comment from a post.
+     *
+     * @param postId    the ID of the post
+     * @param commentId the ID of the comment
+     * @param userId    the authenticated user's ID
+     */
+    public void deleteCommentFromPost(int postId, int commentId, int userId) {
+        Comments comment = commentsRepository.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
+        if (comment.getPostid().getPostid() != postId) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found under post");
         }
 
-        if(comment.getUserid().getUserid() != userId){
+        if (comment.getUserid().getUserid() != userId) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can onlly delete your own comments");
         }
 

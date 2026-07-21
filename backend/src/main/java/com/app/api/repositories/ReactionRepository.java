@@ -84,3 +84,4 @@ public interface ReactionRepository extends JpaRepository<Reaction, Integer> {
                                                 @Param("postId") int postId,
                                                 @Param("reactionType") String reactionType);
 }
+
