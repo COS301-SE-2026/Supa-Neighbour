@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import '../../components/logo_placeholder.dart';
 import '../../models/auth_session.dart';
 import '../../models/user_model.dart';
+import '../../services/auth_service.dart';
 import '../home/home_screen.dart';
 import 'forgot_password_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+
+
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,61 +24,73 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _rememberMe = false;
+  
+  final AuthService _authService = AuthService();
 
-  void _handleLogin() {
-    // Validation
-    if (_emailController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your email'),
-          backgroundColor: Color(0xFF1C9A89),
-        ),
-      );
-      return;
-    }
 
-    if (_passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your password'),
-          backgroundColor: Color(0xFF1C9A89),
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-
-        // Get mock user or use existing session user
-        User user = AuthSession.instance.currentUser ?? User.getMockUser();
-        
-        // Login using AuthSession
-        AuthSession.instance.login(user);
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login successful!'),
-            backgroundColor: Color(0xFF1C9A89),
-          ),
-        );
-
-        // Navigate to Home Screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      }
-    });
+Future<void> _handleLogin() async {
+  if (_emailController.text.trim().isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter your email'), backgroundColor: Color(0xFF1C9A89)),
+    );
+    return;
   }
+  if (_passwordController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter your password'), backgroundColor: Color(0xFF1C9A89)),
+    );
+    return;
+  }
+
+  setState(() => _isLoading = true);
+
+  try {
+    final User user = await _authService.login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
+    AuthSession.instance.login(user);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('remember_me', _rememberMe);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Login successful!'), backgroundColor: Color(0xFF1C9A89)),
+    );
+    Navigator.pushReplacement(context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()));
+  } on FirebaseAuthException catch (e) {
+    String message;
+    switch (e.code) {
+      case 'user-not-found':
+        message = 'No account found for this email.';
+        break;
+      case 'wrong-password':
+      case 'invalid-credential':
+        message = 'Incorrect email or password.';
+        break;
+      case 'too-many-requests':
+        message = 'Too many attempts. Try again later.';
+        break;
+      default:
+        message = 'Login failed. Please try again.';
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red));
+  } on Exception catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red),
+    );
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
