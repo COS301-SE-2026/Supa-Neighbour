@@ -61,4 +61,5 @@ public class PostFeedResponseDTO {
     public long getTotalPosts(){
         return totalPosts;
     }
+
 }

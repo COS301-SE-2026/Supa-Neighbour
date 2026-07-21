@@ -1,12 +1,12 @@
 package com.app.api.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
-import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Configuration class for Azure Blob Storage.
@@ -52,7 +52,7 @@ public class BlobStorageConfig {
      * @return the Azure Blob Storage client for post images
      */
     @Bean(name = "postsContainerClient")
-    public BlobContainerClient postsContainerClient(){
+    public BlobContainerClient postsContainerClient() {
         return serviceClient().getBlobContainerClient(postsContainer);
     }
 
@@ -62,7 +62,7 @@ public class BlobStorageConfig {
      * @return the Azure Blob Storage client for profile images
      */
     @Bean(name = "profilesContainerClient")
-    public BlobContainerClient profilesContainerClient(){
+    public BlobContainerClient profilesContainerClient() {
         return serviceClient().getBlobContainerClient(profilesContainer);
     }
 }
