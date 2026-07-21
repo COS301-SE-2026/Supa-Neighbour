@@ -271,7 +271,7 @@ public class ReactionService {
 
         saveReactionSafely(reaction, "You have already reacted to this post");
 
-        long helpfulCount = reactionRepository.countHelpful(postId); // see note below
+        long helpfulCount = reactionRepository.countByUserAndPost(userId,postId); // see note below
         return new CommentReactionResponseDTO("Reaction added", postId, "like", helpfulCount);
     }
 
@@ -290,7 +290,7 @@ public class ReactionService {
 
         reactionRepository.delete(reaction);
 
-        long count = reactionRepository.countHelpfulComment(postId);
+        long count = reactionRepository.countByUserAndComment(userId,postId);
 
         return new ReactionRemovedResponseDTO("Reaction removed", postId, count);
     }

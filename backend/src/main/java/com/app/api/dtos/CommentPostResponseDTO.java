@@ -28,7 +28,8 @@ import java.util.Objects;
 public class CommentPostResponseDTO implements Serializable {
     
     private static final long serialVersionUID = 1L;
-    private static final Logger logger = LoggerFactory.getLogger(CommentPostResponseDTO.class);
+    private static final Logger LOGGER =
+    LoggerFactory.getLogger(CommentPostResponseDTO.class);
     
     @JsonProperty("commentId")
     private final int commentId;
@@ -97,8 +98,8 @@ public class CommentPostResponseDTO implements Serializable {
         this.parentCommentId = parentCommentId;
         
         // Log creation for debugging
-        if (logger.isDebugEnabled()) {
-            logger.debug("Created CommentPostResponseDTO: commentId={}, userId={}, postId={}", 
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Created CommentPostResponseDTO: commentId={}, userId={}, postId={}", 
                         commentId, userId, postId);
         }
     }
@@ -111,7 +112,7 @@ public class CommentPostResponseDTO implements Serializable {
      */
     public int getCommentId() {
         if (commentId < 0) {
-            logger.warn("Accessing invalid commentId: {}", commentId);
+            LOGGER.warn("Accessing invalid commentId: {}", commentId);
         }
         return commentId;
     }
@@ -124,7 +125,7 @@ public class CommentPostResponseDTO implements Serializable {
      */
     public int getPostId() {
         if (postId < 0) {
-            logger.warn("Accessing invalid postId: {}", postId);
+            LOGGER.warn("Accessing invalid postId: {}", postId);
         }
         return postId;
     }
@@ -137,7 +138,7 @@ public class CommentPostResponseDTO implements Serializable {
      */
     public int getUserId() {
         if (userId < 0) {
-            logger.warn("Accessing invalid userId: {}", userId);
+            LOGGER.warn("Accessing invalid userId: {}", userId);
         }
         return userId;
     }
