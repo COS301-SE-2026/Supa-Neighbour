@@ -6,7 +6,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.app.api.repositories.UserRepository;
+import com.app.api.repositories.SettingsRepository;
 
+import java.time.Instant;
 /**
  * Service responsible for interacting with Firebase Authentication.
  * <p>
@@ -19,6 +21,9 @@ public class FirebaseAuthService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SettingsRepository settingsRepository;
 
        /**
      * Verifies a Firebase ID token.
@@ -44,8 +49,16 @@ public class FirebaseAuthService {
     public int getUserIdFromToken(String idToken) throws FirebaseAuthException{
         FirebaseToken decoded = verifyIdToken(idToken);
         String firebaseUid = decoded.getUid();
-        return userRepository.findByFirebaseUid(firebaseUid)
+        
+        int userId = userRepository.findByFirebaseUid(firebaseUid)
                 .orElseThrow(() -> new RuntimeException("No user found for FirebaseUID: " + firebaseUid))
                 .getUserid();
+
+        settingsRepository.findById(userId).ifPresent(settings ->{
+            settings.setLastSeen(Instant.now());
+            settingsRepository.save(settings);
+        });
+        
+        return userId;
     }
 }   
