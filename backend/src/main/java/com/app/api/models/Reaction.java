@@ -19,13 +19,13 @@ import lombok.Data;
 @Data
 @Builder
 @Entity
-@Table(name = "likes_table")
-public class Likes {
+@Table(name = "reaction_table")
+public class Reaction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "likes_id_seq")
-    @Column(name = "like_id")
-    private int likeid;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "reaction_id")
+    private int reactionid;
 
     @ManyToOne()
     @JoinColumn(name = "user_id")
@@ -45,29 +45,53 @@ public class Likes {
     @Column(name = "updated_at")
     private Timestamp updatedAt;
 
+    @Column(name = "reaction_type")
+    private String reactionType;
+    
+
     /**
      * Default constructor.
      */
-    public Likes() {
+    public Reaction() {
     }
 
     /**
      * Constructs a Likes record with all fields specified.
      *
-     * @param likeid     the like identifier
+     * @param reactionid     the like identifier
      * @param userid     the user who performed the like action
      * @param postid     the post that was liked
      * @param commentid  the comment that was liked
      * @param createdAt  the timestamp when the like was created
      * @param updatedAt  the timestamp when the like was last updated
      */
-    public Likes(int likeid,User userid,Posts postid,Comments commentid,Timestamp createdAt,Timestamp updatedAt) {
-        this.likeid = likeid;
+    public Reaction(int reactionid,User userid,Posts postid,Comments commentid,Timestamp createdAt,Timestamp updatedAt, String reactionType) {
+        this.reactionid = reactionid;
         this.commentid=commentid;
         this.postid = postid;
         this.userid= userid;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.reactionType = reactionType;
+    }
+
+
+    /**
+     * Gets the reaction type
+     *
+     * @return the reaction type
+     */
+    public String getReactionType() { 
+        return reactionType; 
+    }
+
+    /**
+     * Sets the reaction type
+     *
+     * @param reactionType the like type
+     */
+    public void setReactionType(String reactionType) { 
+        this.reactionType = reactionType; 
     }
 
     /**
@@ -75,8 +99,8 @@ public class Likes {
      *
      * @return the like identifier
      */
-    public int getLikeid(){
-        return likeid;
+    public int getreactionid(){
+        return reactionid;
     }
    
     /**
@@ -127,10 +151,10 @@ public class Likes {
     /**
      * Sets the like identifier.
      *
-     * @param likeid the like identifier
+     * @param reactionid the like identifier
      */
-    public void setLikeid(int likeid){
-        this.likeid=likeid;
+    public void setReactionid(int reactionid){
+        this.reactionid=reactionid;
     }
 
     /**

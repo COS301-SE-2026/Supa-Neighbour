@@ -10,11 +10,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.app.api.dtos.CommentRequestDTO;
+import com.app.api.dtos.CommentResponseDTO;
 import com.app.api.models.Comments;
 import com.app.api.services.CommentsService;
+import com.app.api.services.FirebaseAuthService;
+import com.google.firebase.auth.FirebaseAuthException;
 
 /**
  * REST controller for managing comments
@@ -25,13 +30,15 @@ public class CommentsController {
 
 
     private final CommentsService commentsService;
+    private final FirebaseAuthService firebaseAuthService;
 
     /**
      * Basic Comments constructor
      * @param commentService service for the comments contructor
      */
-    public CommentsController(CommentsService commentsService) {
+    public CommentsController(CommentsService commentsService, FirebaseAuthService firebaseAuthService) {
         this.commentsService = commentsService;
+        this.firebaseAuthService = firebaseAuthService;
     }
 
     // GET /api/comments
@@ -61,17 +68,27 @@ public class CommentsController {
         return ResponseEntity.ok(comments);
     }
 
-    // POST /api/comments
+    // POST /api/comments/bulletin/{postId}
     /**
      * Creates a new comment.
      *
      * @param comments the comment to create
      * @return the created comment with HTTP 201 status
      */
-    @PostMapping
-    public ResponseEntity<Comments> createComments(@RequestBody Comments comments) {
-        Comments saved = commentsService.saveComments(comments);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    @PostMapping("/bulletin/{postId}")
+    public ResponseEntity<CommentResponseDTO> createComments(
+        @PathVariable int postId,
+        @RequestHeader("Authorization") String authHeader,
+        @RequestBody CommentRequestDTO request) {
+
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            CommentResponseDTO created = commentsService.addCommentToPost(postId, request, userId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        }catch(FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
     }
 
     // PUT /api/comments/1
@@ -92,20 +109,28 @@ public class CommentsController {
         return ResponseEntity.ok(updated);
     }
 
-    // DELETE /api/comments/1
+    // DELETE bulletin/posts/{postId}/comments/{commentId}
     /**
-     * Deletes a comment by its ID.
+     * Deletes a comment under a particular post
      *
      * @param id the ID of the comment to delete
      * @return 204 No Content if deleted, otherwise 404 Not Found
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteComments(@PathVariable int id) {
-        Comments existing = commentsService.getCommentsById(id);
-        if (existing == null) {
-            return ResponseEntity.notFound().build();
+    @DeleteMapping("/bulletin/posts/{postId}/{commentId}")
+    public ResponseEntity<Void> deleteCommentsUnderPost(
+        @PathVariable int postId,
+        @PathVariable int commentId,
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            commentsService.deleteCommentFromPost(postId, commentId, userId);
+            return ResponseEntity.noContent().build();
+        }catch(FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
-        commentsService.deleteComments(id);
-        return ResponseEntity.noContent().build();
-    }
+    }  
+    
 }
+
