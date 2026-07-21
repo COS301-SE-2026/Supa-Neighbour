@@ -39,7 +39,7 @@ public class UserProfileResponse {
      * @param recentTasks the helper's recently completed tasks
      * @param achievements the user's earned achievements
      */
-    public UserProfileResponse(int userId, String displayName, String neighbourhood, String level,int currentXp,List<String> skills,int completedTasks,List<RecentTaskDTO>  recentTasks,List<AchievementDTO> achievements){
+    public UserProfileResponse(int userId, String displayName, String neighbourhood, String level,int currentXp,List<String> skills,int completedTasks,List<RecentTaskDTO>  recentTasks,List<AchievementDTO> achievements, double trustScore){
         this.userId = userId;
         this.displayName = displayName;
         this.neighbourhood = neighbourhood;

@@ -16,7 +16,24 @@ public class PostDetailDTO {
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
-    public PostDetailDTO(int postId, int userId, String authorUsername, String postContent,String mediaUrl, String category, long likeCount, long dislikeCount, List<CommentsDTO> comments, Timestamp createdAt, Timestamp updatedAt){
+    /**
+     * Creates a detailed representation of a post.
+     *
+     * @param postId         the post ID
+     * @param userId         the author's user ID
+     * @param authorUsername the author's username
+     * @param postContent    the post content
+     * @param mediaUrl       the image URL
+     * @param category       the post category
+     * @param likeCount      the number of likes
+     * @param dislikeCount   the number of dislikes
+     * @param comments       the comments on the post
+     * @param createdAt      the creation timestamp
+     * @param updatedAt      the last update timestamp
+     */
+    public PostDetailDTO(int postId, int userId, String authorUsername, String postContent, String mediaUrl,
+            String category, long likeCount, long dislikeCount, List<CommentsDTO> comments, Timestamp createdAt,
+            Timestamp updatedAt) {
         this.postId = postId;
         this.userId = userId;
         this.authorUsername = authorUsername;
@@ -30,47 +47,102 @@ public class PostDetailDTO {
         this.updatedAt = updatedAt;
     }
 
-    public int getPostId(){
+    /**
+     * Returns the post identifier.
+     *
+     * @return the post ID
+     */
+    public int getPostId() {
         return postId;
     }
 
-    public int getUserId(){
+    /**
+     * Returns the author's user identifier.
+     *
+     * @return the user ID
+     */
+    public int getUserId() {
         return userId;
     }
 
-    public String getauthorUsername(){
+    /**
+     * Returns the author's username.
+     *
+     * @return the author's username
+     */
+    public String getauthorUsername() {
         return authorUsername;
     }
 
-    public String getPostContent(){
+    /**
+     * Returns the post content.
+     *
+     * @return the post content
+     */
+    public String getPostContent() {
         return postContent;
     }
 
-    public String mediaUrl(){
+    /**
+     * Returns the media URL.
+     *
+     * @return the media URL
+     */
+    public String mediaUrl() {
         return mediaUrl;
     }
 
-    public String getCategory(){
+    /**
+     * Returns the post category.
+     *
+     * @return the post category
+     */
+    public String getCategory() {
         return category;
     }
 
-    public long getlikeCount(){
+    /**
+     * Returns the number of like reactions.
+     *
+     * @return the like count
+     */
+    public long getlikeCount() {
         return likeCount;
     }
 
-    public long getdislikeCount(){
+    /**
+     * Returns the number of dislike reactions.
+     *
+     * @return the dislike count
+     */
+    public long getdislikeCount() {
         return dislikeCount;
     }
 
-    public List<CommentsDTO> getComments(){
+    /**
+     * Returns the comments associated with the post.
+     *
+     * @return the list of comments
+     */
+    public List<CommentsDTO> getComments() {
         return comments;
     }
 
-    public Timestamp getcreatedAt(){
+    /**
+     * Returns the creation timestamp.
+     *
+     * @return the creation timestamp
+     */
+    public Timestamp getcreatedAt() {
         return createdAt;
     }
 
-    public Timestamp getUpdatedAt(){
+    /**
+     * Returns the updates timestamp.
+     *
+     * @return the updated timestamp
+     */
+    public Timestamp getUpdatedAt() {
         return updatedAt;
     }
 }

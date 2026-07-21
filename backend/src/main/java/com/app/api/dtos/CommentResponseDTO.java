@@ -1,6 +1,15 @@
 package com.app.api.dtos;
+
 import java.sql.Timestamp;
 
+/**
+ * Data Transfer Object representing the public profile of a comment.
+ *
+ * <p>
+ * This response includes the comments on a posts information,
+ * trust score, completed task statistics, skills, and reviews.
+ * </p>
+ */
 public class CommentResponseDTO {
     private Integer commentId;
     private Integer postId;
@@ -9,50 +18,111 @@ public class CommentResponseDTO {
     private String commentContent;
     private Timestamp createdAt;
 
-    public Integer getCommentId(){
+    /**
+     * Returns the comment identifier.
+     *
+     * @return the comment ID
+     */
+    public Integer getCommentId() {
         return commentId;
     }
 
-    public void setCommentId(Integer commentId){
+    /**
+     * Sets the comment identifier.
+     *
+     * @param commentId the comment ID
+     */
+    public void setCommentId(Integer commentId) {
         this.commentId = commentId;
     }
 
-    public Integer getPostId(){
+    /**
+     * Returns the post identifier.
+     *
+     * @return the post ID
+     */
+    public Integer getPostId() {
         return postId;
     }
 
-    public void setPostId(Integer postId){
+    /**
+     * Sets the post identifier.
+     *
+     * @param postId the post ID
+     */
+    public void setPostId(Integer postId) {
         this.postId = postId;
     }
 
-    public Integer getuserId(){
+    /**
+     * Returns the user identifier.
+     *
+     * @return the user ID
+     */
+    public Integer getuserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId){
+    /**
+     * Sets the user identifier.
+     *
+     * @param userId the user ID
+     */
+    public void setUserId(Integer userId) {
         this.userId = userId;
     }
 
-    public Integer getParentCommentId(){
+    /**
+     * Returns the parent comment identifier.
+     *
+     * @return the parent comment ID
+     */
+    public Integer getParentCommentId() {
         return parentCommentId;
     }
 
-    public void setParentCommentId(Integer parentCommentId){
+    /**
+     * Sets the parent comment identifier.
+     *
+     * @param parentCommentId the parent comment ID
+     */
+    public void setParentCommentId(Integer parentCommentId) {
         this.parentCommentId = parentCommentId;
     }
 
-    public String getCommentContent(){
+    /**
+     * Returns the comment content.
+     *
+     * @return the comment content
+     */
+    public String getCommentContent() {
         return commentContent;
     }
 
-    public void setCommentContent(String commentContent){
+    /**
+     * Sets the comment content.
+     *
+     * @param commentContent the comment content
+     */
+    public void setCommentContent(String commentContent) {
         this.commentContent = commentContent;
     }
-    public Timestamp getCreatedAt(){
+
+    /**
+     * Returns the comment creation timestamp.
+     *
+     * @return the creation timestamp
+     */
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt){
+    /**
+     * Sets the comment creation timestamp.
+     *
+     * @param createdAt the creation timestamp
+     */
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
-}   
+}

@@ -5,37 +5,77 @@ public class CreatePostRequest {
     private String mediaUrl;
     private String category;
 
-    public CreatePostRequest(){
+    /**
+     * Creates an empty post creation request.
+     */
+    public CreatePostRequest() {
 
     }
-    public CreatePostRequest(String postContent, String mediaUrl, String category){
+
+    /**
+     * Creates a new post creation request.
+     *
+     * @param postContent the post content
+     * @param mediaUrl    the image URL
+     * @param category    the post category
+     */
+    public CreatePostRequest(String postContent, String mediaUrl, String category) {
         this.postContent = postContent;
         this.mediaUrl = mediaUrl;
         this.category = category;
     }
 
-    public String getPostContent(){
+    /**
+     * Returns the post content.
+     *
+     * @return the post content
+     */
+    public String getPostContent() {
         return postContent;
     }
 
-    public void setPostContent(String postContent){
+    /**
+     * Sets the post content.
+     *
+     * @param postContent the post content
+     */
+    public void setPostContent(String postContent) {
         this.postContent = postContent;
     }
 
-    public String getMediaUrl(){
+    /**
+     * Returns the media URL.
+     *
+     * @return the media URL
+     */
+    public String getMediaUrl() {
         return mediaUrl;
     }
 
-    public void setMediaUrl(String mediaUrl){
+    /**
+     * Sets the media URL.
+     *
+     * @param mediaUrl the media URL
+     */
+    public void setMediaUrl(String mediaUrl) {
         this.mediaUrl = mediaUrl;
     }
 
-    public String getCategory(){
+    /**
+     * Returns the post category.
+     *
+     * @return the post category
+     */
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(String category){
+    /**
+     * Sets the post category.
+     *
+     * @param category the post category
+     */
+    public void setCategory(String category) {
         this.category = category;
     }
 }
-
