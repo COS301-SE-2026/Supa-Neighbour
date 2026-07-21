@@ -173,7 +173,12 @@ public class PostsController {
     }
 
     //Get api bulletin/posts
-    /*  */
+    /**
+    * returns all comments to a post.
+     *
+    * @param postId The comment request.
+    * @return comments and 200 status.
+    */
     @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<?> getPostComments(@PathVariable int postId, @RequestHeader("Authorization") String authHeader) {
         try{

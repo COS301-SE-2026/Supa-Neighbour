@@ -135,6 +135,13 @@ public class ReactionController {
         }
     }
 
+    //get dislikes
+    /**
+    * Creates a new comment for a post.
+    *
+    * @param commentId to add a dislike to a post.
+    * @return successful http status 201.
+    */
     @PostMapping("/comments/{commentId}/dislike")
     public ResponseEntity<CommentReactionResponseDTO>addDislikedToComment(
             @PathVariable int commentId,

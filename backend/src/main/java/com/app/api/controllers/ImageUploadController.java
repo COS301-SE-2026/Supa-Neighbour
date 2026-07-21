@@ -2,27 +2,20 @@ package com.app.api.controllers;
 
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.app.api.services.BlobStorageService;
-
-import com.app.api.models.Posts;
-import com.app.api.services.PostsService;
-import com.google.rpc.context.AttributeContext.Response;
 import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * ImageUploadController
+ */
 @RestController
 @RequestMapping("/api/upload")
 public class ImageUploadController {
@@ -33,7 +26,13 @@ public class ImageUploadController {
         this.blobStorageService = blobStorageService;
     }
 
-
+    //Post
+    /**
+    * Creates a new comment for a post.
+    *posts a new image to the database 
+    * @param file The comment request.
+    * @return image and http status 201 created
+    */
     @PostMapping("/image")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file){
         try{
