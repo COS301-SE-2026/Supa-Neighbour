@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.app.api.dtos.ModeResponse;
+
 import java.time.Duration;
 import java.time.Instant;
 
@@ -45,5 +47,30 @@ public class SettingsServices {
         settingsRepository.save(settings);
 
         return new ShowStatusResponse(settings.getShowStatus());
+    }
+
+    public ModeResponse getUserMode(int userId){
+        Settings settings = settingsRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "settings not found"));
+
+        String mode = settings.getMode().name().toLowerCase();
+
+        return new ModeResponse(mode);
+    }
+
+    public ModeResponse setUserMode(int userId, String mode){
+        if(mode == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid mode value");
+        }
+
+        Settings.ThemeMode parsedMode;
+        try{
+            parsedMode = Settings.ThemeMode.valueOf(mode.toUpperCase());
+        }catch(IllegalArgumentException e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid mode value");
+        }
+        Settings settings = settingsRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "settings not found"));
+        settings.setMode(parsedMode);
+        settingsRepository.save(settings);
+        return new ModeResponse(settings.getMode().name().toLowerCase());
     }
 }

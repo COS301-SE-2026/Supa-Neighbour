@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.app.api.dtos.ShowStatusResponse;
 import com.app.api.dtos.ShowStatusRequest;
 import com.app.api.dtos.UserStatusResponse;
+import com.app.api.dtos.ModeResponse;
 
 
 import com.app.api.services.FirebaseAuthService;
@@ -54,7 +55,7 @@ public class SettingsController {
         }
     }
 
-    @PostMapping("/users/me/show-status")
+    @PostMapping("/users/show-status")
     public ResponseEntity<?> updateStatus(
         @RequestHeader("Authorization") String authHeader, 
         @RequestBody ShowStatusRequest request
@@ -63,6 +64,35 @@ public class SettingsController {
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
             ShowStatusResponse response = settingsServices.updateShowStatus(userId, request.getshowStatus());
+            return ResponseEntity.ok(response);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+        }
+    }
+
+    @GetMapping("/users/mode")
+    public ResponseEntity<?> getMode(
+        @RequestHeader("Authorization") String authHeader
+    ){  
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            ModeResponse response = settingsServices.getUserMode(userId);
+            return ResponseEntity.ok(response);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+        }
+    }
+
+    @PostMapping("/users/mode")
+    public ResponseEntity<?> setMode(
+        @RequestHeader("Authorization") String authHeader,
+        @RequestBody ModeResponse request
+    ){
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            ModeResponse response = settingsServices.setUserMode(userId, request.getMode());
             return ResponseEntity.ok(response);
         }catch(FirebaseAuthException e){
             return ResponseEntity.status(401).body("Invalid or expired Firebase token");
