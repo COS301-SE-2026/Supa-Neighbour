@@ -135,6 +135,7 @@ public class ReactionService {
         return new ReactionResponseDTO("Reaction added", postId, "dislike", dislikeCount);
     }
 
+    
     public CommentReactionResponseDTO addDislikeReactionToComment(int commentId, int userId){
         Comments comment = commentsRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 
@@ -176,6 +177,7 @@ public class ReactionService {
         return new ReactionRemovedResponseDTO("Reaction removed", postId, count);
     }
 
+    
     public CommentReactionResponseDTO addHelpfulReactionToPost(int postId, int userId){
         Posts post = postsRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
@@ -196,6 +198,7 @@ public class ReactionService {
         return new CommentReactionResponseDTO("Reaction added", postId, "like", helpfulCount);
     }
 
+    
     public ReactionRemovedResponseDTO removeHelpfulReaction(int postId, int userId) {
         Reaction reaction = reactionRepository.findByUserAndPostAndType(userId, postId, "like").orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "no helpful reaction to remove"));
 
@@ -205,5 +208,4 @@ public class ReactionService {
 
         return new ReactionRemovedResponseDTO("Reaction removed", postId, count);
     }
-
 }

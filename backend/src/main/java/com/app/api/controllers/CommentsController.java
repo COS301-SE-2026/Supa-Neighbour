@@ -120,7 +120,9 @@ public class CommentsController {
      *
      * @param id the ID of the comment to delete
      * @return 204 No Content if deleted, otherwise 404 Not Found
+     * 
      */
+
     @DeleteMapping("/bulletin/posts/{postId}/{commentId}")
     public ResponseEntity<Void> deleteCommentsUnderPost(
         @PathVariable int postId,
@@ -136,7 +138,8 @@ public class CommentsController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }  
-    
+   
+    //
     @PostMapping("/bulletin/posts/{postId}/like")
     public ResponseEntity<CommentReactionResponseDTO> postHelpfulReation(@PathVariable int postId,@RequestHeader("Authorization") String authHead) {
 
@@ -150,7 +153,7 @@ public class CommentsController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
-
+    /* */
     @DeleteMapping("/bulletin/posts/{postId}/like")
     public ResponseEntity<Void> deleteCommentsUnderPost(@PathVariable int postId,@RequestHeader("Authorization") String authHeader){
         try{
