@@ -63,7 +63,7 @@ public class BlobStorageService {
         String blobName = UUID.randomUUID() + extension;
 
         BlobClient blobClient = postsContainerClient.getBlobClient(blobName);
-        try(InputStream dataStream = file.getInputStream()){
+        try (InputStream dataStream = file.getInputStream()) {
             blobClient.upload(dataStream, file.getSize(), true);
         }
 
@@ -85,17 +85,23 @@ public class BlobStorageService {
      * @param file the uploaded image to validate
      * @throws IllegalArgumentException if the image fails validation
      */
-    private void validateImage(MultipartFile file){
-        if(file == null || file.isEmpty()){
+    /**
+     * Validates an uploaded image.
+     *
+     * @param file the uploaded image
+     * @throws IllegalArgumentException if the image is invalid
+     */
+    private void validateImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File is required");
         }
 
         String contentType = file.getContentType();
-        if(contentType == null || !(contentType.equals("image/jpeg") || contentType.equals("image/png"))){
+        if (contentType == null || !(contentType.equals("image/jpeg") || contentType.equals("image/png"))) {
             throw new IllegalArgumentException("File must be a jpg or png");
         }
 
-        if(file.getSize() > 5 * 1024 * 1024){
+        if (file.getSize() > 5 * 1024 * 1024) {
             throw new IllegalArgumentException("File must be under 5MB");
         }
     }
@@ -107,8 +113,14 @@ public class BlobStorageService {
      * @return the file extension, including the leading period (e.g. ".png"),
      *         or an empty string if no extension exists
      */
-    private String getExtension(String filename){
-        if(filename == null || !filename.contains(".")){
+    /**
+     * Returns the file extension.
+     *
+     * @param filename the original filename
+     * @return the file extension, or an empty string if none exists
+     */
+    private String getExtension(String filename) {
+        if (filename == null || !filename.contains(".")) {
             return "";
         }
 

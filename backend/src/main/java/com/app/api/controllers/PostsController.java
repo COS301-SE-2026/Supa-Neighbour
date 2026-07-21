@@ -22,6 +22,7 @@ import com.app.api.services.CommentsService;
 import com.app.api.services.PostsService;
 import com.app.api.services.PostsService.InvalidPostException;
 import com.google.firebase.auth.FirebaseAuthException;
+import java.util.List;
 
 /**
  * REST controller for Posts.

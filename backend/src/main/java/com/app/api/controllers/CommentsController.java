@@ -139,7 +139,14 @@ public class CommentsController {
         }
     }  
    
-    //
+    // PUT /api/bulletin/posta/{1}/like
+    /**
+     * Updates an existing comment.
+     *
+     * @param postId the ID of the comment to update
+     * @param comments the updated comment data
+     * @return the updated comment if found, otherwise 404 Not Found
+     */
     @PostMapping("/bulletin/posts/{postId}/like")
     public ResponseEntity<CommentReactionResponseDTO> postHelpfulReation(@PathVariable int postId,@RequestHeader("Authorization") String authHead) {
 
@@ -152,7 +159,15 @@ public class CommentsController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
-    /* */
+    
+    // DELETE /api/comments/posts/{1}/1
+    /**
+     * Updates an existing comment.
+     *
+     * @param postId the ID of the comment needed to be deleted
+     * @param request the updated comment data
+     * @return the updated comment if found, otherwise 404 Not Found
+     */
     @DeleteMapping("/bulletin/posts/{postId}/like")
     public ResponseEntity<Void> deleteCommentsUnderPost(@PathVariable int postId,@RequestHeader("Authorization") String authHeader){
         try{
