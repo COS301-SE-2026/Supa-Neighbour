@@ -182,8 +182,7 @@ public class PostsController {
             List<CommentPostResponseDTO> comments = commentsService.getCommentsByPostId(postId,userId);
             return ResponseEntity.ok(comments);
 
-        }catch (FirebaseAuthException e)
-        {
+        }catch (FirebaseAuthException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }

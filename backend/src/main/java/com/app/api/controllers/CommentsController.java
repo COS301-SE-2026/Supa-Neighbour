@@ -148,8 +148,7 @@ public class CommentsController {
             int userId= firebaseAuthService.getUserIdFromToken(token);
             CommentReactionResponseDTO created = reactionService.addHelpfulReactionToPost(postId, userId);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        }catch(FirebaseAuthException e)
-        {
+        }catch(FirebaseAuthException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
