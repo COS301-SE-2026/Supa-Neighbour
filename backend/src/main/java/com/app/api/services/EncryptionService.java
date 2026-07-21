@@ -33,7 +33,7 @@ public class EncryptionService {
      * Initialised the secretKey
      */
     public EncryptionService(
-        @Value("${app.encryption.key") String base64Key
+        @Value("${app.encryption.key}") String base64Key
     ){
         byte[] decodedKey = Base64.getDecoder().decode(base64Key);
         System.out.println(decodedKey.length);
