@@ -2090,7 +2090,7 @@ No response body.
 ---
 
 ## 8. Settings and Privacy
-### 8.1 GET /api/settings/users/status
+### 8.1 GET /api/settings/users/show-status
 
 | Field              | Details                                                                                          |
 | ------------------ | ------------------------------------------------------------------------------------------------ |
@@ -2138,11 +2138,11 @@ Authorization: Bearer <Firebase ID Token>
 
 ---
 
-### 8.2 POST /api/settings/users/me/show-status
+### 8.2 POST /api/settings/users/show-status
 
 | Field              | Details                                                              |
 | ------------------ | -------------------------------------------------------------------- |
-| **Endpoint**       | `/api/users/me/settings/show-status`                                 |
+| **Endpoint**       | `/api/settings/users/show-status`                                 |
 | **Method**         | `POST`                                                               |
 | **Purpose**        | Updates the authenticated user's online status visibility preference |
 | **Authentication** | Firebase ID Token required                                           |
@@ -2209,11 +2209,11 @@ Authorization: Bearer <Firebase ID Token>
 
 ---
 
-### 8.4 POST /api/users/me/settings/mode
+### 8.4 POST /api/settings/users/mode
 
 | Field              | Details                                                  |
 | ------------------ | -------------------------------------------------------- |
-| **Endpoint**       | `/api/users/me/settings/mode`                            |
+| **Endpoint**       | `/api/settings/users/mode`                            |
 | **Method**         | `POST`                                                   |
 | **Purpose**        | Updates the authenticated user's display mode preference |
 | **Authentication** | Firebase ID Token required                               |
