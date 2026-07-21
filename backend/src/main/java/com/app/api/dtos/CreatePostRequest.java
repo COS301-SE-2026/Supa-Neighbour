@@ -1,81 +1,89 @@
 package com.app.api.dtos;
 
+
+/**
+ * Data Transfer Object (DTO) representing a request to create a new post.
+ * <p>
+ * This object contains the post content, an optional media URL, and the
+ * category associated with the post.
+ * </p>
+ */
 public class CreatePostRequest {
     private String postContent;
     private String mediaUrl;
     private String category;
 
+
     /**
-     * Creates an empty post creation request.
+     * Default contructor
      */
-    public CreatePostRequest() {
+    public CreatePostRequest(){
 
     }
-
     /**
-     * Creates a new post creation request.
+     * Constructs a new {@code CreatePostRequest}.
      *
-     * @param postContent the post content
-     * @param mediaUrl    the image URL
-     * @param category    the post category
+     * @param postContent the textual content of the post
+     * @param mediaUrl the URL of the attached media, if any
+     * @param category the category assigned to the post
      */
-    public CreatePostRequest(String postContent, String mediaUrl, String category) {
+    public CreatePostRequest(String postContent, String mediaUrl, String category){
         this.postContent = postContent;
         this.mediaUrl = mediaUrl;
         this.category = category;
     }
 
     /**
-     * Returns the post content.
+     * Returns the content of the post.
      *
      * @return the post content
      */
-    public String getPostContent() {
+    public String getPostContent(){
         return postContent;
     }
 
     /**
-     * Sets the post content.
+     * Sets the content of the post.
      *
      * @param postContent the post content
      */
-    public void setPostContent(String postContent) {
+    public void setPostContent(String postContent){
         this.postContent = postContent;
     }
 
     /**
-     * Returns the media URL.
+     * Returns the URL of the attached media.
      *
-     * @return the media URL
+     * @return the media URL, or {@code null} if no media is attached
      */
-    public String getMediaUrl() {
+    public String getMediaUrl(){
         return mediaUrl;
     }
 
     /**
-     * Sets the media URL.
+     * Sets the URL of the attached media.
      *
      * @param mediaUrl the media URL
      */
-    public void setMediaUrl(String mediaUrl) {
+    public void setMediaUrl(String mediaUrl){
         this.mediaUrl = mediaUrl;
     }
 
     /**
-     * Returns the post category.
+     * Returns the category of the post.
      *
      * @return the post category
      */
-    public String getCategory() {
+    public String getCategory(){
         return category;
     }
 
     /**
-     * Sets the post category.
+     * Sets the category of the post.
      *
      * @param category the post category
      */
-    public void setCategory(String category) {
+    public void setCategory(String category){
         this.category = category;
     }
 }

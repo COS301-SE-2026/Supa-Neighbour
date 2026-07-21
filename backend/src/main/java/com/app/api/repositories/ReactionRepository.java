@@ -11,73 +11,54 @@ import com.app.api.models.Reaction;
 /**
  * Repository for Reaction entities.
  */
-public interface ReactionRepository extends JpaRepository<Reaction, Integer> {
-
+public interface ReactionRepository extends JpaRepository<Reaction,Integer> {
     /**
-     * Counts the number of reactions made by a user on a specific post.
+     * Counts the number of reactions a user has made to a specific post.
      *
-     * @param userId the ID of the user
-     * @param postId the ID of the post
-     * @return the number of matching reactions
+     * @param userId the unique identifier of the user
+     * @param postId the unique identifier of the post
+     * @return the number of reactions the user has made to the post
      */
     @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE user_id = :userId AND post_id = :postId", nativeQuery = true)
     long countByUserAndPost(@Param("userId") int userId,
                             @Param("postId") int postId);
 
     /**
-     * Counts the number of dislike reactions for a post.
+     * Counts the total number of dislike reactions for a post.
      *
-     * @param postId the ID of the post
-     * @return the number of dislike reactions
+     * @param postId the unique identifier of the post
+     * @return the total number of dislikes on the post
      */
-    @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE post_id = :postId AND reaction_type = 'dislike'", nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE post_id = :postId AND reaction_type = 'dislike'", nativeQuery=true)
     long countDisLiked(@Param("postId") int postId);
 
     /**
-     * Counts the number of dislike reactions for a comment.
+     * Counts the total number of dislike reactions for a comment.
      *
-     * @param commentId the ID of the comment
-     * @return the number of dislike reactions
+     * @param commentId the unique identifier of the comment
+     * @return the total number of dislikes on the comment
      */
     @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE comment_id = :commentId AND reaction_type = 'dislike'", nativeQuery = true)
     long countDislikedComment(@Param("commentId") int commentId);
 
-    /**
-     * Counts the number of like (helpful) reactions for a comment.
+     /**
+     * Counts the number of reactions a user has made to a specific comment.
      *
-     * @param commentId the ID of the comment
-     * @return the number of helpful reactions
+     * @param userId the unique identifier of the user
+     * @param commentId the unique identifier of the comment
+     * @return the number of reactions the user has made to the comment
      */
-    @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE comment_id = :commentId AND reaction_type = 'like'", nativeQuery = true)
-    long countHelpfulComment(@Param("commentId") int commentId);
+    @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE user_id = :userId AND comment_id = :commentId", nativeQuery=true)
+    long countByUserAndComment(@Param("userId") int userId, @Param("commentId") int commentId);
 
     /**
-     * Counts the number of reactions made by a user on a specific comment.
+     * Finds a user's reaction of a specific type on a post.
      *
-     * @param userId the ID of the user
-     * @param commentId the ID of the comment
-     * @return the number of matching reactions
-     */
-    @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE user_id = :userId AND comment_id = :commentId", nativeQuery = true)
-    long countByUserAndComment(@Param("userId") int userId,
-                               @Param("commentId") int commentId);
-
-    /**
-     * Counts the number of like (helpful) reactions for a post.
-     *
-     * @param postId the ID of the post
-     * @return the number of helpful reactions
-     */
-    @Query("SELECT COUNT(r) FROM Reaction r WHERE r.postid.postid = :postId AND r.reactionType = 'like'")
-    long countHelpful(@Param("postId") int postId);
-
-    /**
-     * Finds a specific reaction made by a user on a post.
-     *
-     * @param userId the ID of the user
-     * @param postId the ID of the post
-     * @param reactionType the type of reaction to search for
-     * @return an Optional containing the matching reaction if found, otherwise empty
+     * @param userId the unique identifier of the user
+     * @param postId the unique identifier of the post
+     * @param reactionType the type of reaction to retrieve (e.g. "dislike")
+     * @return an {@link Optional} containing the matching reaction if one
+     *         exists; otherwise an empty {@link Optional}
      */
     @Query(value = "SELECT * FROM reaction_table WHERE user_id = :userId AND post_id = :postId AND reaction_type = :reactionType", nativeQuery = true)
     Optional<Reaction> findByUserAndPostAndType(@Param("userId") int userId,

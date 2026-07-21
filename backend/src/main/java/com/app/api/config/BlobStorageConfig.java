@@ -11,38 +11,45 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 /**
  * Configuration class for Azure Blob Storage.
  * <p>
- * Creates and exposes {@link BlobContainerClient} beans for the
- * application's Azure Blob Storage containers.
+ * This class creates and configures the Azure Blob Storage clients used by the
+ * application. Separate {@link BlobContainerClient} beans are provided for the
+ * posts and profile images containers.
  * </p>
  */
 @Configuration
 public class BlobStorageConfig {
-
+     /**
+     * Azure Blob Storage connection string.
+     */
     @Value("${azure.storage.connection-string}")
     private String connectionString;
 
+    /**
+     * Name of the Azure Blob Storage container used for post images.
+     */
     @Value("${azure.storage.posts-container}")
     private String postsContainer;
 
+    /**
+     * Name of the Azure Blob Storage container used for profile images.
+     */
     @Value("${azure.storage.profiles-container}")
     private String profilesContainer;
 
     /**
-     * Creates an Azure Blob Service client using the configured
+     * Creates an Azure {@link BlobServiceClient} using the configured
      * connection string.
      *
      * @return a configured {@link BlobServiceClient}
      */
-    private BlobServiceClient serviceClient() {
-        return new BlobServiceClientBuilder()
-                .connectionString(connectionString)
-                .buildClient();
+    private BlobServiceClient serviceClient(){
+        return new BlobServiceClientBuilder().connectionString(connectionString).buildClient();
     }
 
     /**
      * Creates a {@link BlobContainerClient} for the posts container.
      *
-     * @return the BlobContainerClient used to store post images
+     * @return the Azure Blob Storage client for post images
      */
     @Bean(name = "postsContainerClient")
     public BlobContainerClient postsContainerClient() {
@@ -52,7 +59,7 @@ public class BlobStorageConfig {
     /**
      * Creates a {@link BlobContainerClient} for the profiles container.
      *
-     * @return the BlobContainerClient used to store profile images
+     * @return the Azure Blob Storage client for profile images
      */
     @Bean(name = "profilesContainerClient")
     public BlobContainerClient profilesContainerClient() {

@@ -1,12 +1,19 @@
 package com.app.api.dtos;
 
+/**
+ * Data Transfer Object (DTO) representing a request to create a comment.
+ * <p>
+ * This object contains the content of the comment and, optionally, the
+ * identifier of the parent comment if the new comment is a reply.
+ * </p>
+ */
 public class CommentRequestDTO {
     private String commentContent;
     private Integer parentCommentId;
 
     /**
-    * Returns the comment text.
-    *
+     * Returns the content of the comment.
+     *
      * @return the comment content
      */
     public String getCommentContent(){
@@ -14,7 +21,7 @@ public class CommentRequestDTO {
     }
 
     /**
-     * Sets the comment text.
+     * Sets the content of the comment.
      *
      * @param commentContent the comment content
      */
@@ -23,19 +30,21 @@ public class CommentRequestDTO {
     }
 
     /**
-     * Returns the parent comment identifier.
+     * Returns the identifier of the parent comment.
      *
-    * @return the parent comment ID, or null if this is a top-level comment
-    */
+     * @return the parent comment identifier, or {@code null} if this comment
+     *         is not a reply
+     */
     public Integer getParentCommentId(){
         return parentCommentId;
     }
 
     /**
-     * Sets the parent comment identifier.
-    *
-    * @param parentCommentId the parent comment ID
-    */
+     * Sets the identifier of the parent comment.
+     *
+     * @param parentCommentId the parent comment identifier, or {@code null}
+     *                        if this comment is not a reply
+     */
     public void setParentCommentId(Integer parentCommentId){
         this.parentCommentId = parentCommentId;
     }

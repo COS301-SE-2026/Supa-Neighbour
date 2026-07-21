@@ -6,66 +6,59 @@ import java.util.List;
  * Full response envelope for GET /api/bulletin/posts (7.1).
  */
 public class PostFeedResponseDTO {
-    private String neighbourhoodZone;
-    private int page;
-    private long totalPosts;
-    private List<PostFeedItemDTO> posts;
-
+   private String neighbourhoodZone;
+   private int page;
+   private long totalPosts;
+   private List<PostFeedItemDTO> posts;
+   
     /**
-     * Creates a bulletin board feed item.
+     * Constructs a new {@code PostFeedResponseDTO}.
      *
-     * @param postId         the post identifier
-     * @param userId         the author's user identifier
-     * @param authorUsername the author's username
-     * @param postContent    the post content
-     * @param mediaUrl       the media URL
-     * @param category       the post category
-     * @param likeCount      the number of likes
-     * @param disLikeCount   the number of dislikes
-     * @param commentCount   the number of comments
-     * @param createdAt      the creation timestamp
-     * @param updatedAt      the last update timestamp
+     * @param neighbourhoodZone the name of the neighbourhood
+     * @param page the current page number
+     * @param totalPosts the total number of posts
+     * @param posts the list of posts in the current page
      */
-    public PostFeedResponseDTO(String neighbourhoodZone, int page, long totalPosts, List<PostFeedItemDTO> posts) {
+    public PostFeedResponseDTO(String neighbourhoodZone, int page, long totalPosts, List<PostFeedItemDTO> posts){
         this.neighbourhoodZone = neighbourhoodZone;
         this.page = page;
         this.totalPosts = totalPosts;
         this.posts = posts;
     }
 
+
     /**
-     * Returns the neighbourhood zone.
-     * 
-     * @return the neighbourhood zone (never null)
+     * Returns the name of the neighbourhood.
+     *
+     * @return the neighbourhood name
      */
-    public String getNeighbourhoosZone() {
+    public String getNeighbourhoodZone(){
         return neighbourhoodZone;
     }
 
     /**
      * Returns the current page number.
-     * 
-     * @return the page number (>= 0)
+     *
+     * @return the page number
      */
-    public int getPage() {
+    public int getPage(){
         return page;
     }
 
     /**
-     * Returns the total number of posts.
-     * 
-     * @return the total posts count (>= 0)
+     * Returns the posts in the current page.
+     *
+     * @return the list of posts
      */
-    public List<PostFeedItemDTO> getPosts() {
+    public List<PostFeedItemDTO> getPosts(){
         return posts;
     }
-
     /**
      * Returns the total number of posts.
-     * 
-     * @return the total posts count (>= 0)
+     *
+     * @return the total number of posts
      */
-    public long getTotalPosts() {
+    public long getTotalPosts(){
         return totalPosts;
     }
 

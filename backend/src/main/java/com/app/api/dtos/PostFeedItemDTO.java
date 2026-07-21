@@ -3,12 +3,11 @@ package com.app.api.dtos;
 import java.sql.Timestamp;
 
 /**
- * Represents a single post item in the bulletin board feed response (7.1).
- *
+ * Represents a single post item in the bulletin board feed response.
  * <p>
- * This DTO contains summary information about a bulletin board post,
- * including the author, content, category, reaction counts, comment count,
- * and timestamps.
+ * This Data Transfer Object (DTO) contains the details of a post displayed
+ * in the bulletin board feed, including the author information, post
+ * content, reaction counts, comment count, and timestamps.
  * </p>
  */
 public class PostFeedItemDTO {
@@ -24,6 +23,21 @@ public class PostFeedItemDTO {
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
+    /**
+     * Constructs a new {@code PostFeedItemDTO}.
+     *
+     * @param postId the unique identifier of the post
+     * @param userId the unique identifier of the author
+     * @param authorUsername the username of the author
+     * @param postContent the textual content of the post
+     * @param mediaUrl the URL of the attached media, if any
+     * @param category the category assigned to the post
+     * @param likeCount the total number of likes
+     * @param dislikeCount the total number of dislikes
+     * @param commentCount the total number of comments
+     * @param createdAt the timestamp when the post was created
+     * @param updatedAt the timestamp when the post was last updated
+     */
     /**
      * Creates a new bulletin board feed item.
      *
@@ -60,6 +74,11 @@ public class PostFeedItemDTO {
      *
      * @return the post identifier
      */
+    /**
+     * Returns the unique identifier of the post.
+     *
+     * @return the post identifier
+     */
     public int getPostId() {
         return postId;
     }
@@ -68,6 +87,11 @@ public class PostFeedItemDTO {
      * Returns the unique identifier of the post's author.
      *
      * @return the user identifier
+     */
+    /**
+     * Returns the unique identifier of the author.
+     *
+     * @return the author identifier
      */
     public int getUserId() {
         return userId;
@@ -78,10 +102,20 @@ public class PostFeedItemDTO {
      *
      * @return the author's username
      */
+    /**
+     * Returns the username of the author.
+     *
+     * @return the author's username
+     */
     public String getAuthorUsername() {
         return authorUsername;
     }
 
+    /**
+     * Returns the content of the post.
+     *
+     * @return the post content
+     */
     /**
      * Returns the content of the post.
      *
@@ -96,6 +130,11 @@ public class PostFeedItemDTO {
      *
      * @return the media URL, or {@code null} if no media is attached
      */
+    /**
+     * Returns the URL of the attached media.
+     *
+     * @return the media URL, or {@code null} if no media is attached
+     */
     public String getMediaUrl() {
         return mediaUrl;
     }
@@ -105,10 +144,29 @@ public class PostFeedItemDTO {
      *
      * @return the post category
      */
+    /**
+     * Sets the URL of the attached media.
+     *
+     * @return the media URL, or {@code null} if no media is attached
+     */
+    public void setMediaUrl(String mediaUrl){
+        this.mediaUrl = mediaUrl;
+    }
+
+    /**
+     * Returns the category of the post.
+     *
+     * @return the post category
+     */
     public String getCategory() {
         return category;
     }
 
+    /**
+     * Returns the total number of dislikes on the post.
+     *
+     * @return the dislike count
+     */
     /**
      * Returns the number of dislike reactions on the post.
      *
@@ -119,6 +177,11 @@ public class PostFeedItemDTO {
     }
 
     /**
+     * Returns the total number of likes on the post.
+     *
+     * @return the like count
+     */
+    /**
      * Returns the number of helpful reactions on the post.
      *
      * @return the helpful reaction count
@@ -127,6 +190,11 @@ public class PostFeedItemDTO {
         return likeCount;
     }
 
+    /**
+     * Returns the total number of comments on the post.
+     *
+     * @return the comment count
+     */
     /**
      * Returns the number of comments on the post.
      *
@@ -141,10 +209,20 @@ public class PostFeedItemDTO {
      *
      * @return the creation timestamp
      */
+    /**
+     * Returns the timestamp when the post was created.
+     *
+     * @return the creation timestamp
+     */
     public Timestamp getCreatedAt() {
         return createdAt;
     }
 
+    /**
+     * Returns the timestamp when the post was last updated.
+     *
+     * @return the last update timestamp
+     */
     /**
      * Returns the timestamp when the post was last updated.
      *
