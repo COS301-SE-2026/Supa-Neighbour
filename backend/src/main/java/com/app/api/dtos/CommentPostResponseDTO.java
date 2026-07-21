@@ -1,6 +1,4 @@
 package com.app.api.dtos;
-
-import java.time.LocalDate;
 import java.sql.Timestamp;
 
 public class CommentPostResponseDTO {

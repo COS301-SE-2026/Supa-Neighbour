@@ -23,8 +23,6 @@ import com.app.api.services.CommentsService;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.ReactionService;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.app.api.models.Reaction;
-
 /**
  * REST controller for managing comments
  */
@@ -39,7 +37,7 @@ public class CommentsController {
 
     /**
      * Basic Comments constructor
-     * @param commentService service for the comments contructor
+     * @param commentService service for the comments constructor
      */
     public CommentsController(CommentsService commentsService, FirebaseAuthService firebaseAuthService,ReactionService reactionService, FirebaseAuthenticationFilter firebaseAuthenticationFilter) {
         this.commentsService = commentsService;
@@ -139,6 +137,13 @@ public class CommentsController {
         }
     }  
     
+    //DELETE bulletin/posts/{postId}/helpful
+    /**
+     * Deletes a comment under a particular post
+     *
+     * @param id the ID of the comment to delete
+     * @return 204 No Content if deleted, otherwise 404 Not Found
+     */
     @PostMapping("/bulletin/posts/{postId}/helpful")
     public ResponseEntity<CommentReactionResponseDTO> postHelpfulReation(@PathVariable int postId,@RequestHeader("Authorization") String authHead) {
 
@@ -153,6 +158,13 @@ public class CommentsController {
         }
     }
 
+    // DELETE bulletin/posts/{postId}/helpful
+    /**
+     * Deletes a comment under a particular post
+     *
+     * @param id the ID of the comment to delete
+     * @return 204 No Content if deleted, otherwise 404 Not Found
+     */
     @DeleteMapping("/bulletin/posts/{postId}/helpful")
     public ResponseEntity<Void> deleteCommentsUnderPost(@PathVariable int postId,@RequestHeader("Authorization") String authHeader){
         try{

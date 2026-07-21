@@ -17,7 +17,6 @@ import com.app.api.dtos.CommentReactionResponseDTO;
 import com.app.api.dtos.ReactionRemovedResponseDTO;
 import  com.app.api.repositories.UserRepository;
 import com.app.api.repositories.PostsRepository;
-import com.app.api.dtos.ReactionRemovedResponseDTO;
 import java.sql.Timestamp;
 import java.time.Instant;
 
