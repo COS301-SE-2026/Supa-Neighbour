@@ -30,7 +30,11 @@ public class ImageUploadController {
      * Service used to upload images to Azure Blob Storage.
      */
     private final BlobStorageService blobStorageService;
-
+    /**
+     * Creates a reaction response.
+     *
+     * @param blobstorageservice has the storage information 
+     */
     /**
      * Constructs a new {@code ImageUploadController}.
      *

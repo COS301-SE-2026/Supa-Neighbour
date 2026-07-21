@@ -4,11 +4,11 @@ import java.sql.Timestamp;
 
 
 /**
- * Data Transfer Object (DTO) representing a comment.
+ * Data Transfer Object representing the public profile of a comment.
+ *
  * <p>
- * This object contains the details of a comment, including its author,
- * content, parent comment (if it is a reply), and creation and update
- * timestamps.
+ * This response includes the comments on a posts information,
+ * trust score, completed task statistics, skills, and reviews.
  * </p>
  */
 public class CommentsDTO {
@@ -20,6 +20,18 @@ public class CommentsDTO {
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
+    /**
+     * Creates a comments data transfer object.
+     *
+     * @param commentId       the unique identifier of the comment
+     * @param userId          the unique identifier of the comment's author
+     * @param authorUsername  the username of the comment's author
+     * @param parentCommentId the identifier of the parent comment, or {@code null}
+     *                        if this is a top-level comment
+     * @param commentContent  the content of the comment
+     * @param createdAt       the timestamp when the comment was created
+     * @param updatedAt       the timestamp when the comment was last updated
+     */
    
     /**
      * Constructs a new {@code CommentsDTO}.
@@ -33,7 +45,8 @@ public class CommentsDTO {
      * @param createdAt the timestamp when the comment was created
      * @param updatedAt the timestamp when the comment was last updated
      */
-    public CommentsDTO(int commentId, int userId, String authorUsername, Integer parentCommentId, String commentContent, Timestamp createdAt, Timestamp updatedAt){
+    public CommentsDTO(int commentId, int userId, String authorUsername, Integer parentCommentId, String commentContent,
+            Timestamp createdAt, Timestamp updatedAt) {
         this.commentId = commentId;
         this.userId = userId;
         this.authorUsername = authorUsername;
@@ -48,7 +61,7 @@ public class CommentsDTO {
      *
      * @return the comment identifier
      */
-    public int getCommentId(){
+    public int getCommentId() {
         return commentId;
 
     }
@@ -58,7 +71,7 @@ public class CommentsDTO {
      *
      * @return the user identifier
      */
-    public int getUserId(){
+    public int getUserId() {
         return userId;
     }
 
@@ -67,7 +80,7 @@ public class CommentsDTO {
      *
      * @return the author's username
      */
-    public String getAuthorUsername(){
+    public String getAuthorUsername() {
         return authorUsername;
     }
 
@@ -77,7 +90,7 @@ public class CommentsDTO {
      * @return the parent comment identifier, or {@code null} if this comment
      *         is not a reply
      */
-    public Integer getParentCommentId(){
+    public Integer getParentCommentId() {
         return parentCommentId;
     }
 
@@ -86,7 +99,7 @@ public class CommentsDTO {
      *
      * @return the comment content
      */
-    public String getcommentContent(){
+    public String getcommentContent() {
         return commentContent;
     }
 
@@ -95,7 +108,7 @@ public class CommentsDTO {
      *
      * @return the creation timestamp
      */
-    public Timestamp getCreatedAt(){
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
@@ -104,7 +117,7 @@ public class CommentsDTO {
      *
      * @return the last update timestamp
      */
-    public Timestamp getUpdatedAt(){
+    public Timestamp getUpdatedAt() {
         return updatedAt;
     }
 }
