@@ -19,7 +19,11 @@ public class FirebaseAuthService {
     
     private  final UserRepository userRepository;
 
-
+    /**
+    * Creates a new Firebase authentication service.
+    *
+    * @param userRepository repository used to retrieve application users
+    */
     public FirebaseAuthService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }

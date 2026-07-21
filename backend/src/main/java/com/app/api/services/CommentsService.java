@@ -154,6 +154,13 @@ public class CommentsService {
                 .toList();
     }
 
+    /**
+     * Retrieves all comments for a post.
+    *
+    * @param postId the ID of the post
+    * @param userId the authenticated user's ID
+    * @return a list of comments belonging to the post
+    */
     public List<CommentPostResponseDTO> getCommentsByPostId(int postId, int userId) {
     List<Comments> comments = commentsRepository.findByPostid_Postid(postId);
         return comments.stream()
@@ -172,7 +179,13 @@ public class CommentsService {
                 c.getCreatedAt()
         );
     }
-
+    /**
+    * Deletes a comment from a post.
+    *
+    * @param postId the ID of the post
+    * @param commentId the ID of the comment
+    * @param userId the authenticated user's ID
+    */
     public void deleteCommentFromPost(int postId, int commentId, int userId){
         Comments comment = commentsRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 

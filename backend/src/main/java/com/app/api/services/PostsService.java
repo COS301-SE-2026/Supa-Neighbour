@@ -15,8 +15,6 @@ import com.app.api.repositories.PostsRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.dtos.PostDetailDTO;
 
-import jakarta.xml.bind.annotation.XmlElement.DEFAULT;
-
 /**
  * Service layer for managing post operations.
  * Provides CRUD functionality for Posts entities.
@@ -185,7 +183,17 @@ public class PostsService {
      * @param limit    requested page size; defaults to 20 if null or less than 1
      * @return the feed response envelope
      */
-
+    /**
+     * Retrieves the bulletin board feed for the authenticated user's
+     * neighbourhood.
+     *
+     * @param userId the authenticated user's ID
+     * @param category optional category filter
+     * @param search optional search keyword
+     * @param page requested page number
+     * @param limit requested page size
+     * @return the bulletin board feed
+     */
      public PostFeedResponseDTO getFeed(int userId, String category, String search, Integer page, Integer limit){
         int resolvedPage = (page == null || page < 1) ? DEFAULT_PAGE : page;
         int resolvedLimit = (limit == null || limit < 1) ? DEFAULT_LIMIT : limit;

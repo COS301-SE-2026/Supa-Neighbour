@@ -146,7 +146,10 @@ public class BulletinFeedRepository {
 
         return ((Number) query.getSingleResult()).longValue();
     }
-
+    /**
+     * Adds other filters to create a search option
+     * populating totalPosts in the response (used for pagination on the client).
+     */
     private void appendOptionalFilters(StringBuilder sql,String category, String search){
         if(category != null && !category.isBlank()){
             sql.append(" AND p.category = :category");
@@ -156,6 +159,10 @@ public class BulletinFeedRepository {
         }
     }
 
+    /**
+    * binds the filter to the objects 
+    * populating totalPosts in the response (used for pagination on the client).
+    */
     private void bindOptionalFilters(Query query, String category, String search){
         if(category != null && !category.isBlank()){
             query.setParameter("category", category);

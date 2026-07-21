@@ -10,8 +10,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
+/**
+ * Adds a new comment to the specified post.
+ *
+ * @param postId the ID of the post
+ * @param request the request containing the comment content
+ * @param authenticatedUserId the authenticated user's ID
+ * @return the newly created comment
+ */
 @Service
 public class BlobStorageService {
+    
     private final BlobContainerClient postsContainerClient;
 
     public BlobStorageService(@Qualifier("postsContainerClient") BlobContainerClient postsContainerClient){
@@ -54,6 +63,4 @@ public class BlobStorageService {
 
         return filename.substring(filename.lastIndexOf("."));
     }
-
-
 }
