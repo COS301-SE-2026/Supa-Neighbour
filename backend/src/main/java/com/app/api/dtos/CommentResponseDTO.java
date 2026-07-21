@@ -1,4 +1,5 @@
 package com.app.api.dtos;
+
 import java.sql.Timestamp;
 
 /**
@@ -124,4 +125,4 @@ public class CommentResponseDTO {
     public void setCreatedAt(Timestamp createdAt){
         this.createdAt = createdAt;
     }
-}   
+}

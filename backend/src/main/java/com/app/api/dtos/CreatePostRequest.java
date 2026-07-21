@@ -87,4 +87,3 @@ public class CreatePostRequest {
         this.category = category;
     }
 }
-

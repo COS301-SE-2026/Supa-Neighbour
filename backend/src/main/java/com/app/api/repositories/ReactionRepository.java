@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import com.app.api.models.Reaction;
 
 /**
- * Repository for Likes entities.
+ * Repository for Reaction entities.
  */
 public interface ReactionRepository extends JpaRepository<Reaction,Integer> {
     /**
@@ -20,7 +20,8 @@ public interface ReactionRepository extends JpaRepository<Reaction,Integer> {
      * @return the number of reactions the user has made to the post
      */
     @Query(value = "SELECT COUNT(*) FROM reaction_table WHERE user_id = :userId AND post_id = :postId", nativeQuery = true)
-    long countByUserAndPost(@Param("userId") int userId, @Param("postId") int postId);
+    long countByUserAndPost(@Param("userId") int userId,
+                            @Param("postId") int postId);
 
     /**
      * Counts the total number of dislike reactions for a post.
@@ -60,5 +61,7 @@ public interface ReactionRepository extends JpaRepository<Reaction,Integer> {
      *         exists; otherwise an empty {@link Optional}
      */
     @Query(value = "SELECT * FROM reaction_table WHERE user_id = :userId AND post_id = :postId AND reaction_type = :reactionType", nativeQuery = true)
-    Optional<Reaction> findByUserAndPostAndType(@Param("userId") int userId, @Param("postId") int postId, @Param("reactionType") String reactionType);
+    Optional<Reaction> findByUserAndPostAndType(@Param("userId") int userId,
+                                                @Param("postId") int postId,
+                                                @Param("reactionType") String reactionType);
 }

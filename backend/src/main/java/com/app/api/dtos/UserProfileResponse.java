@@ -19,12 +19,12 @@ public class UserProfileResponse {
     private String displayName;
     private String neighbourhood;
     private String level;
-    private int currentXp;
-    private double trustScore;
+    private Integer currentXp;
     private List<String> skills;
     private List<AchievementDTO> achievements;
     private int completedTasks;
     private List<RecentTaskDTO>  recentTasks;
+    private Double trustScore;
 
     /**
      * Creates a user profile response.
@@ -39,7 +39,7 @@ public class UserProfileResponse {
      * @param recentTasks the helper's recently completed tasks
      * @param achievements the user's earned achievements
      */
-    public UserProfileResponse(int userId, String displayName, String neighbourhood, String level,int currentXp,List<String> skills,int completedTasks,List<RecentTaskDTO>  recentTasks,List<AchievementDTO> achievements){
+    public UserProfileResponse(int userId, String displayName, String neighbourhood, String level,Integer currentXp,List<String> skills,int completedTasks,List<RecentTaskDTO>  recentTasks,List<AchievementDTO> achievements,Double trustScore){
         this.userId = userId;
         this.displayName = displayName;
         this.neighbourhood = neighbourhood;

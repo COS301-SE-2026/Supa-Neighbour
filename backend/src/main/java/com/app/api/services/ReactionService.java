@@ -17,7 +17,6 @@ import com.app.api.dtos.CommentReactionResponseDTO;
 import com.app.api.dtos.ReactionRemovedResponseDTO;
 import  com.app.api.repositories.UserRepository;
 import com.app.api.repositories.PostsRepository;
-import com.app.api.dtos.ReactionRemovedResponseDTO;
 import java.sql.Timestamp;
 import java.time.Instant;
 
@@ -233,7 +232,37 @@ public class ReactionService {
         long count = reactionRepository.countDisLiked(postId);
 
         return new ReactionRemovedResponseDTO("Reaction removed", postId, count);
+    }
 
-        
+    
+    public CommentReactionResponseDTO addHelpfulReactionToPost(int postId, int userId){
+        Posts post = postsRepository.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+
+        if(reactionRepository.countByUserAndPost(userId, postId) > 0){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already reacted to this post");
+        }
+
+        Reaction reaction = new Reaction();
+        reaction.setPostid(post);
+        reaction.setUserid(userRepository.getReferenceById(userId));
+        reaction.setReactionType("like");
+        reaction.setCreatedAt(Timestamp.from(Instant.now()));
+
+        saveReactionSafely(reaction, "You have already reacted to this post");
+
+        long helpfulCount = reactionRepository.countHelpful(postId); // see note below
+        return new CommentReactionResponseDTO("Reaction added", postId, "like", helpfulCount);
+    }
+
+    
+    public ReactionRemovedResponseDTO removeHelpfulReaction(int postId, int userId) {
+        Reaction reaction = reactionRepository.findByUserAndPostAndType(userId, postId, "like").orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "no helpful reaction to remove"));
+
+        reactionRepository.delete(reaction);
+
+        long count = reactionRepository.countHelpfulComment(postId);
+
+        return new ReactionRemovedResponseDTO("Reaction removed", postId, count);
     }
 }

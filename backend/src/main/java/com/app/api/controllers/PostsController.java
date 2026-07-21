@@ -1,6 +1,5 @@
 package com.app.api.controllers;
 import java.util.Map;
- 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,12 +12,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
- 
+import com.app.api.dtos.CommentPostResponseDTO;
 import com.app.api.dtos.CreatePostRequest;
 import com.app.api.dtos.PostDetailDTO;
 import com.app.api.dtos.PostFeedResponseDTO;
 import com.app.api.models.Posts;
 import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.CommentsService;
 import com.app.api.services.PostsService;
 import com.app.api.services.PostsService.InvalidPostException;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -33,15 +33,17 @@ public class PostsController {
     
     private final PostsService postsService;
     private final FirebaseAuthService firebaseAuthService;
+    private final CommentsService commentsService;
 
     /**
      * Constructs the controller with its required service dependency.
      *
      * @param postsService service providing analytics data for dependents
      */
-    public PostsController(PostsService postsService,FirebaseAuthService firebaseAuthService) {
+    public PostsController(PostsService postsService,FirebaseAuthService firebaseAuthService, CommentsService commentsService) {
         this.postsService = postsService;
         this.firebaseAuthService = firebaseAuthService;
+        this.commentsService = commentsService;
     }
 
     // GET /api/bulletin/posts
@@ -167,4 +169,25 @@ public class PostsController {
             return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getMessage()));
         }
     }
+
+    //Get api bulletin/posts
+    /**
+    * returns all comments to a post.
+     *
+    * @param postId The comment request.
+    * @return comments and 200 status.
+    */
+    @GetMapping("/posts/{postId}/comments")
+    public ResponseEntity<?> getPostComments(@PathVariable int postId, @RequestHeader("Authorization") String authHeader) {
+        try{
+            String token = authHeader.replace("Bearer ","");
+            int userId= firebaseAuthService.getUserIdFromToken(token);
+            List<CommentPostResponseDTO> comments = commentsService.getCommentsByPostId(postId,userId);
+            return ResponseEntity.ok(comments);
+
+        }catch (FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+    }
+    
 }
