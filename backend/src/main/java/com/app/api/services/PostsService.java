@@ -13,7 +13,9 @@ import com.app.api.models.User;
 import com.app.api.repositories.BulletinFeedRepository;
 import com.app.api.repositories.PostsRepository;
 import com.app.api.repositories.UserRepository;
+import com.app.api.services.BlobStorageService;
 import com.app.api.dtos.PostDetailDTO;
+
 
 /**
  * Service layer for managing post operations.
@@ -25,6 +27,7 @@ public class PostsService {
     private final PostsRepository postsRepository;
     private final UserRepository userRepository;
      private final BulletinFeedRepository bulletinFeedRepository;
+     private final BlobStorageService blobStorageService;
     private static final List<String> VALID_CATEGORIES = List.of("general", "lost_pet", "local_event", "alert", "free_items", "complaint", "admin");
 
     private static final String EXPECTED_BLOB_HOST = "blob.core.windows.net";
@@ -34,10 +37,11 @@ public class PostsService {
      *
      * @param postsRepository repository providing analytics data for posts
      */
-    public PostsService(PostsRepository postsRepository, UserRepository userRepository,  BulletinFeedRepository bulletinFeedRepository) {
+    public PostsService(PostsRepository postsRepository, UserRepository userRepository,  BulletinFeedRepository bulletinFeedRepository, BlobStorageService blobStorageService) {
         this.postsRepository = postsRepository;
         this.userRepository = userRepository;
         this.bulletinFeedRepository = bulletinFeedRepository;
+        this.blobStorageService = blobStorageService;
     }
 
     // Get all
@@ -65,15 +69,26 @@ public class PostsService {
      * Validation result for a create-post request. Thrown as an exception
      * so the controller can translate it into the documented HTTP status.
      */
-
     public static class InvalidPostException extends RuntimeException{
         private final int statusCode;
 
+        /**
+         * Constructs a new {@code InvalidPostException}.
+         *
+         * @param message the error message describing why the request is invalid
+         * @param statusCode the HTTP status code that should be returned
+         *                   to the client
+         */
         public InvalidPostException(String message, int statusCode){
             super(message);
             this.statusCode = statusCode;
         }
 
+        /**
+         * Returns the HTTP status code associated with this exception.
+         *
+         * @return the HTTP status code to return to the client
+         */
         public int getStatusCode(){
             return statusCode;
         }
@@ -90,7 +105,6 @@ public class PostsService {
      * @param request the validated request body
      * @return the saved post
      */
-
     public Posts createPost(int userId, CreatePostRequest request){
         User user = userRepository.findById(userId).orElse(null);
         if(user == null){
@@ -183,17 +197,6 @@ public class PostsService {
      * @param limit    requested page size; defaults to 20 if null or less than 1
      * @return the feed response envelope
      */
-    /**
-     * Retrieves the bulletin board feed for the authenticated user's
-     * neighbourhood.
-     *
-     * @param userId the authenticated user's ID
-     * @param category optional category filter
-     * @param search optional search keyword
-     * @param page requested page number
-     * @param limit requested page size
-     * @return the bulletin board feed
-     */
      public PostFeedResponseDTO getFeed(int userId, String category, String search, Integer page, Integer limit){
         int resolvedPage = (page == null || page < 1) ? DEFAULT_PAGE : page;
         int resolvedLimit = (limit == null || limit < 1) ? DEFAULT_LIMIT : limit;
@@ -207,8 +210,12 @@ public class PostsService {
         }
 
         List<PostFeedItemDTO> posts = bulletinFeedRepository.findFeed(neighbourhood.locationId, category, search, resolvedLimit, offset);
+        for(PostFeedItemDTO post: posts){
+            if(post.getMediaUrl() != null){
+                post.setMediaUrl(blobStorageService.generateSasUrl(post.getMediaUrl()));
+            }
+        }
         long totalPosts = bulletinFeedRepository.countFeed(neighbourhood.locationId, category, search);
-
         return new PostFeedResponseDTO(neighbourhood.neighbourhoodName, resolvedPage, totalPosts, posts);
      
     }
@@ -221,6 +228,10 @@ public class PostsService {
      * @return the post detail, or null if the post doesn't exist
      */
     public PostDetailDTO getPostDetail(int postId){
-        return bulletinFeedRepository.findPostDetail(postId);
+        PostDetailDTO detail = bulletinFeedRepository.findPostDetail(postId);
+        if(detail != null && detail.getMediaUrl() != null){
+            detail.setMediaUrl(blobStorageService.generateSasUrl(detail.getMediaUrl()));
+        }
+        return detail;
     }
 }

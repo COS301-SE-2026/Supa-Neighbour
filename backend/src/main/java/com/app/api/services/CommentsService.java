@@ -107,6 +107,23 @@ public class CommentsService {
         commentsRepository.deleteById(id);
     }
 
+    /**
+     * Adds a new comment to a post.
+     * <p>
+     * The method validates the comment content, verifies that the specified post
+     * exists, and, if a parent comment is provided, ensures that it exists and
+     * belongs to the same post. The comment is then persisted and returned as a
+     * response DTO.
+     * </p>
+     *
+     * @param postId the unique identifier of the post being commented on
+     * @param request the request containing the comment details
+     * @param authenticatedUserId the unique identifier of the authenticated user
+     * @return a {@link CommentResponseDTO} representing the newly created comment
+     * @throws ResponseStatusException if the comment content is missing, the post
+     *                                 does not exist, or the parent comment is
+     *                                 invalid
+     */
     public CommentResponseDTO addCommentToPost(int postId, CommentRequestDTO request, int authenticatedUserId){
         if(request.getCommentContent() == null || request.getCommentContent().isBlank()){
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "commentContent is required");
@@ -134,6 +151,12 @@ public class CommentsService {
 
     }
 
+    /**
+     * Converts a {@link Comments} entity into a {@link CommentResponseDTO}.
+     *
+     * @param c the comment entity to convert
+     * @return a DTO containing the comment's details
+     */
     private CommentResponseDTO toResponseDTO(Comments c){
         CommentResponseDTO dto = new CommentResponseDTO();
         dto.setCommentId(c.getCommentid());
@@ -145,47 +168,20 @@ public class CommentsService {
         return dto;
     }
 
-
-    public List<CommentPostResponseDTO> getAllCommentsByPostId(int postId) {
-        List<Comments> comments = commentsRepository.findByPostid_Postid(postId);
-
-        return comments.stream()
-                .map(this::toCommentPostResponseDTO)
-                .toList();
-    }
-
     /**
-     * Retrieves all comments for a post.
-    *
-    * @param postId the ID of the post
-    * @param userId the authenticated user's ID
-    * @return a list of comments belonging to the post
-    */
-    public List<CommentPostResponseDTO> getCommentsByPostId(int postId, int userId) {
-    List<Comments> comments = commentsRepository.findByPostid_Postid(postId);
-        return comments.stream()
-                .map(this::toCommentPostResponseDTO)
-                .toList();
-    }
-
-        private CommentPostResponseDTO toCommentPostResponseDTO(Comments c) {
-        return new CommentPostResponseDTO(
-                c.getCommentid(),
-                c.getPostid().getPostid(),
-                c.getUserid().getUserid(),
-                c.getUserid().getFirstName() + " " + c.getUserid().getLastName(),
-                c.getParentCommentid(),
-                c.getCommentContent(),
-                c.getCreatedAt()
-        );
-    }
-    /**
-    * Deletes a comment from a post.
-    *
-    * @param postId the ID of the post
-    * @param commentId the ID of the comment
-    * @param userId the authenticated user's ID
-    */
+     * Deletes a comment from a post.
+     * <p>
+     * The method verifies that the comment exists, belongs to the specified post,
+     * and was created by the authenticated user before deleting it.
+     * </p>
+     *
+     * @param postId the unique identifier of the post containing the comment
+     * @param commentId the unique identifier of the comment to delete
+     * @param userId the unique identifier of the authenticated user
+     * @throws ResponseStatusException if the comment does not exist, does not
+     *                                 belong to the specified post, or the user
+     *                                 is not the owner of the comment
+     */
     public void deleteCommentFromPost(int postId, int commentId, int userId){
         Comments comment = commentsRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 

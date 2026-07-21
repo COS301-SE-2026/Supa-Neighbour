@@ -2,8 +2,12 @@ package com.app.api.dtos;
 import java.sql.Timestamp;
 
 /**
- * Represents a single post item in the bulletin board feed response (7.1).
- * Shape matches the documented API contract exactly.
+ * Represents a single post item in the bulletin board feed response.
+ * <p>
+ * This Data Transfer Object (DTO) contains the details of a post displayed
+ * in the bulletin board feed, including the author information, post
+ * content, reaction counts, comment count, and timestamps.
+ * </p>
  */
 public class PostFeedItemDTO {
     private int postId;
@@ -18,6 +22,21 @@ public class PostFeedItemDTO {
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
+    /**
+     * Constructs a new {@code PostFeedItemDTO}.
+     *
+     * @param postId the unique identifier of the post
+     * @param userId the unique identifier of the author
+     * @param authorUsername the username of the author
+     * @param postContent the textual content of the post
+     * @param mediaUrl the URL of the attached media, if any
+     * @param category the category assigned to the post
+     * @param likeCount the total number of likes
+     * @param dislikeCount the total number of dislikes
+     * @param commentCount the total number of comments
+     * @param createdAt the timestamp when the post was created
+     * @param updatedAt the timestamp when the post was last updated
+     */
     public PostFeedItemDTO(int postId, int userId, String authorUsername, String postContent, String mediaUrl, String category, long LikeCount, long DisLikeCount, long commentCount,Timestamp createdAt, Timestamp updatedAt){
         this.postId = postId;
         this.userId = userId;
@@ -32,46 +51,110 @@ public class PostFeedItemDTO {
         this.updatedAt = updatedAt;
     }
 
+    /**
+     * Returns the unique identifier of the post.
+     *
+     * @return the post identifier
+     */
     public int getPostId(){
         return postId;
     }
 
+    /**
+     * Returns the unique identifier of the author.
+     *
+     * @return the author identifier
+     */
     public int getUserId(){
         return userId;
     }
 
+    /**
+     * Returns the username of the author.
+     *
+     * @return the author's username
+     */
     public String getAuthorUsername(){
         return authorUsername;
     }
 
+    /**
+     * Returns the content of the post.
+     *
+     * @return the post content
+     */
     public String getPostContent(){
         return postContent;
     }
 
+    /**
+     * Returns the URL of the attached media.
+     *
+     * @return the media URL, or {@code null} if no media is attached
+     */
     public String getMediaUrl(){
         return mediaUrl;
     }
 
+    /**
+     * Sets the URL of the attached media.
+     *
+     * @return the media URL, or {@code null} if no media is attached
+     */
+    public void setMediaUrl(String mediaUrl){
+        this.mediaUrl = mediaUrl;
+    }
+
+    /**
+     * Returns the category of the post.
+     *
+     * @return the post category
+     */
     public String getCategory(){
         return category;
     }
 
+    /**
+     * Returns the total number of dislikes on the post.
+     *
+     * @return the dislike count
+     */
     public long getDislikeCount(){
         return disLikeCount;
     }
 
+    /**
+     * Returns the total number of likes on the post.
+     *
+     * @return the like count
+     */
     public long getLikeCount(){
         return likeCount;
     }
 
+    /**
+     * Returns the total number of comments on the post.
+     *
+     * @return the comment count
+     */
     public long getCommentCount(){
         return commentCount;
     }
 
+    /**
+     * Returns the timestamp when the post was created.
+     *
+     * @return the creation timestamp
+     */
     public Timestamp getCreatedAt(){
         return createdAt;
     }
 
+    /**
+     * Returns the timestamp when the post was last updated.
+     *
+     * @return the last update timestamp
+     */
     public Timestamp getUpdatedAt(){
         return updatedAt;
     }

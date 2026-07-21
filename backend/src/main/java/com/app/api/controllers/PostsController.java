@@ -1,6 +1,4 @@
 package com.app.api.controllers;
- 
-import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -141,7 +139,7 @@ public class PostsController {
     @PutMapping("/{id}")
     public ResponseEntity<Posts> updatePosts(@PathVariable int id, @RequestBody Posts posts) {
         Posts existing = postsService.getPostById(id);
-        if (existing == null) {
+        if (existing == null){
             return ResponseEntity.notFound().build();
         }
         Posts updated = postsService.updatePost(id, posts);

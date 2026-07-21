@@ -3,11 +3,10 @@ package com.app.api.dtos;
 import java.sql.Timestamp;
 
 /**
- * Data Transfer Object representing the public profile of a comment.
- *
+ * Data Transfer Object (DTO) representing a comment returned by the API.
  * <p>
- * This response includes the comments on a posts information,
- * trust score, completed task statistics, skills, and reviews.
+ * This object contains the details of a comment, including the associated
+ * post, author, optional parent comment, content, and creation timestamp.
  * </p>
  */
 public class CommentResponseDTO {
@@ -18,111 +17,112 @@ public class CommentResponseDTO {
     private String commentContent;
     private Timestamp createdAt;
 
+
     /**
-     * Returns the comment identifier.
+     * Returns the unique identifier of the comment.
      *
-     * @return the comment ID
+     * @return the comment identifier
      */
-    public Integer getCommentId() {
+    public Integer getCommentId(){
         return commentId;
     }
 
     /**
-     * Sets the comment identifier.
+     * Sets the unique identifier of the comment.
      *
-     * @param commentId the comment ID
+     * @param commentId the comment identifier
      */
-    public void setCommentId(Integer commentId) {
+    public void setCommentId(Integer commentId){
         this.commentId = commentId;
     }
 
     /**
-     * Returns the post identifier.
+     * Returns the unique identifier of the associated post.
      *
-     * @return the post ID
+     * @return the post identifier
      */
-    public Integer getPostId() {
+    public Integer getPostId(){
         return postId;
     }
 
     /**
-     * Sets the post identifier.
+     * Sets the unique identifier of the associated post.
      *
-     * @param postId the post ID
+     * @param postId the post identifier
      */
-    public void setPostId(Integer postId) {
+    public void setPostId(Integer postId){
         this.postId = postId;
     }
 
     /**
-     * Returns the user identifier.
+     * Returns the unique identifier of the comment's author.
      *
-     * @return the user ID
+     * @return the user identifier
      */
-    public Integer getuserId() {
+    public Integer getuserId(){
         return userId;
     }
 
     /**
-     * Sets the user identifier.
+     * Sets the unique identifier of the comment's author.
      *
-     * @param userId the user ID
+     * @param userId the user identifier
      */
-    public void setUserId(Integer userId) {
+    public void setUserId(Integer userId){
         this.userId = userId;
     }
 
     /**
-     * Returns the parent comment identifier.
+     * Returns the identifier of the parent comment.
      *
-     * @return the parent comment ID
+     * @return the parent comment identifier, or {@code null} if this comment
+     *         is not a reply
      */
-    public Integer getParentCommentId() {
+    public Integer getParentCommentId(){
         return parentCommentId;
     }
 
     /**
-     * Sets the parent comment identifier.
+     * Sets the identifier of the parent comment.
      *
-     * @param parentCommentId the parent comment ID
+     * @param parentCommentId the parent comment identifier
      */
-    public void setParentCommentId(Integer parentCommentId) {
+    public void setParentCommentId(Integer parentCommentId){
         this.parentCommentId = parentCommentId;
     }
 
     /**
-     * Returns the comment content.
+     * Returns the content of the comment.
      *
      * @return the comment content
      */
-    public String getCommentContent() {
+    public String getCommentContent(){
         return commentContent;
     }
 
     /**
-     * Sets the comment content.
+     * Sets the content of the comment.
      *
      * @param commentContent the comment content
      */
-    public void setCommentContent(String commentContent) {
+    public void setCommentContent(String commentContent){
         this.commentContent = commentContent;
     }
-
     /**
-     * Returns the comment creation timestamp.
+     * Returns the timestamp when the comment was created.
      *
      * @return the creation timestamp
      */
-    public Timestamp getCreatedAt() {
+    public Timestamp getCreatedAt(){
         return createdAt;
     }
 
-    /**
-     * Sets the comment creation timestamp.
+     /**
+     * Sets the timestamp when the comment was created.
      *
      * @param createdAt the creation timestamp
      */
-    public void setCreatedAt(Timestamp createdAt) {
+    public void setCreatedAt(Timestamp createdAt){
         this.createdAt = createdAt;
     }
 }
