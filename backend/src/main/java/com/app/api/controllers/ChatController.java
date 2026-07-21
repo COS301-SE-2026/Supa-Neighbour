@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 
 import java.util.Map;
+import java.util.HashMap;
+
 
 /**
  * controller for chat-related endpoints.
