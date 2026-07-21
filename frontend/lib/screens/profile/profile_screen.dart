@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../models/user_model.dart';
 import '../../models/auth_session.dart';
+import 'package:supa_neighbour/screens/profile/achievements_screen.dart';
+import 'package:supa_neighbour/screens/profile/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -243,6 +245,12 @@ final List<Map<String, dynamic>> _achievements = [
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: AppColors.charcoal),
             onPressed: () {
+              Navigator.push(
+              context,
+              MaterialPageRoute(
+              builder: (context) => const SettingsScreen(),
+        ),
+      );
             },
           ),
         ],
@@ -593,6 +601,12 @@ final List<Map<String, dynamic>> _achievements = [
               ),
               GestureDetector(
                 onTap: () {
+                  Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AchievementsScreen(),
+                  ),
+                );
                 },
                 child: Text(
                   'View All',
