@@ -169,4 +169,18 @@ public class SettingsController {
             return ResponseEntity.status(401).body("Invalid or expired Firebase token");
         }
     }
+
+    @GetMapping("/users/information/{userId}")
+    public ResponseEntity<?> getUserInfo(@PathVariable int userId, @RequestHeader("Authorization") String authHeader)
+    {
+        try{
+            String token = authHeader.replace("Bearer ","");
+            firebaseAuthService.getUserIdFromToken(token);
+            UserStatusResponse response = settingsServices.getUserStatus(userId);
+            return ResponseEntity.ok(response);
+        }
+        catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid Firebase Token");
+        }
+    }
 }

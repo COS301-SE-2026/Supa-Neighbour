@@ -3,15 +3,18 @@ package com.app.api.services;
 import com.app.api.dtos.UserStatusResponse;
 import com.app.api.models.Settings;
 import com.app.api.repositories.SettingsRepository;
+import com.app.api.repositories.UserRepository;
 import com.app.api.dtos.ShowStatusResponse;
+import com.app.api.dtos.UserSettingsResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
+import com.app.api.models.User;
+import com.app.api.dtos.AddressDTO;
 import com.app.api.dtos.ModeResponse;
-
-import java.time.Duration;
 import java.time.Instant;
+import java.time.Duration;
+import com.app.api.models.Address;
 /**
  * Service responsible for managing user application settings.
  * <p>
@@ -23,6 +26,7 @@ import java.time.Instant;
 public class SettingsServices {
     
     private SettingsRepository settingsRepository;
+    private UserRepository userRepository;
 
     /**
      * Constructs a new {@code SettingsServices}.
@@ -30,8 +34,9 @@ public class SettingsServices {
      * @param settingsRepository repository used to access and update
      *                           user settings
      */
-    public SettingsServices(SettingsRepository settingsRepository){
+    public SettingsServices(SettingsRepository settingsRepository, UserRepository userRepository){
         this.settingsRepository = settingsRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -131,4 +136,22 @@ public class SettingsServices {
         settingsRepository.save(settings);
         return new ModeResponse(settings.getMode().name().toLowerCase());
     }
+    
+    public UserSettingsResponseDTO getUserInfo(int userId)
+    {
+        User user = userRepository.findByUserId(userId);
+        if(user == null)
+        {
+            throw new RuntimeException("User not found");
+        }
+        Address address = user.getAddressid();
+        Settings settings = settingsRepository.findByUserid_Userid(userId)
+        .orElseThrow(() -> new RuntimeException("Settings not found"));
+        Instant lastSeen = settings.getLastSeen();
+        AddressDTO addressDTO = new AddressDTO(address.getAddressid(), address.getNeighbourhoodid());
+        UserSettingsResponseDTO response = new UserSettingsResponseDTO(userId,lastSeen, user.getUsername(),user.getFirstName(),user.getLastName(), addressDTO);
+        return response;
+    }
+
 }
+
