@@ -18,13 +18,22 @@ import java.time.Instant;
 @Service
 public class FirebaseAuthService {
 
-    @AutoWired
-    private  final UserRepository userRepository;
+    
+    private final UserRepository userRepository;
+    private final SettingsRepository settingsRepository;
 
-    @Autowired
-    private SettingsRepository settingsRepository;
 
-       /**
+    /**
+    * Creates a new Firebase authentication service.
+    *
+    * @param userRepository repository used to retrieve application users
+    */
+    public FirebaseAuthService(UserRepository userRepository, SettingsRepository settingsRepository) {
+        this.userRepository = userRepository;
+        this.settingsRepository = settingsRepository;
+    }
+
+    /**
      * Verifies a Firebase ID token.
      *
      * @param idToken the Firebase ID token to verify
