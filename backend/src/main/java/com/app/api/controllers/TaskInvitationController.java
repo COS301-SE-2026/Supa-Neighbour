@@ -358,7 +358,7 @@ public class TaskInvitationController {
     @Operation(summary = "Match and invite helpers for a task")
     @ApiResponse(responseCode = "200", description = "Helpers matched and invited")
     @ApiResponse(responseCode = "404", description = "Task not found")
-    @PostMapping("/tasks/{taskId}/match")
+     @PostMapping("/{taskId}/match")
     public ResponseEntity<?> matchHelpers(@PathVariable int taskId) {
         List<MatchedHelperDTO> matched = matchingService.matchHelpersForTask(taskId);
         if (matched == null) {
