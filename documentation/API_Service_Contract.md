@@ -55,7 +55,13 @@
    - [POST /api/bulletin/posts/{postId}/dis-helpful](#710-post-apibulletinpostspostiddis-helpful)
    - [DELETE /api/bulletin/posts/{postId}/dis-helpful](#711-delete-apibulletinpostspostiddis-helpful)
    - [DELETE /api/bulletin/posts/{postId}/comments/{commentId}](#712-delete-apicommentsbulletinpostspostidcommentid)
-8. [Http Status Code Reference](#8-http-status-code-reference)
+8. [Settings & Privacy](#8-settings-and-privacy)
+   - [GET /api/settings/users/show-status](#81-get-apisettingsusersshow-status)
+   - [POST /api/settings/users/show-status](#82-post-apisettingsusersshow-status)
+   - [GET /api/settings/users/mode](#83-get-apisettingsusersmode)
+   - [POST /api/settings/users/mode](#84-post-apisettingsusersmode)
+   - [GET api/settings//users/{userId}/status](#85-get-apisettingsusersuseridstatus)
+9.  [Http Status Code Reference](#8-http-status-code-reference)
 ---
 
 
