@@ -35,6 +35,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
      * @return an {@code Optional} containing the matching user if found;
      *         otherwise an empty {@code Optional}
      */
-    User findByUserId(int id);
 
 }
