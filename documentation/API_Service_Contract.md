@@ -2248,6 +2248,61 @@ Authorization: Bearer <Firebase ID Token>
 | `400 Bad Request`  | `mode` is missing or not one of the supported values | `{ "error": "Invalid mode value" }` |
 | `401 Unauthorized` | Missing or invalid Firebase ID token                 | `{ "error": "Unauthorized" }`       |
 
+--- 
+
+### 8.5 GET /api/settings/users/{userId}/status
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/settings/users/{userId}/status`                                   |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Retrieves another user's online status visibility/presence, respecting that user's `showStatus` preference |
+| **Authentication** | Firebase ID Token required                                              |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Path Parameters
+
+| Parameter | Type | Description                                  |
+| --------- | ---- | --------------------------------------------- |
+| `userId`  | int  | ID of the user whose status is being requested |
+
+#### Success Response — `200 OK`
+
+**If the target user has `showStatus` enabled:**
+
+```json
+{
+  "visible": true,
+  "online": true,
+}
+```
+
+**If the target user has `showStatus` disabled:**
+
+```json
+{
+  "visible": false
+}
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                                     | Response Body                        |
+| ------------------- | --------------------------------------------- | ------------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token          | `{ "error": "Unauthorized" }`         |
+| `404 Not Found`     | No settings row exists for the given `userId` | `{ "error": "Settings not found" }`   |
+
+#### Notes
+
+* Unlike `GET /api/settings/users/show-status` (self-only), this endpoint looks up an **arbitrary** `userId` from the path — the caller's own token is only used to confirm authentication, not to identify the target user.
+* Currently any authenticated user can query any `userId`'s status via this endpoint (subject to that user's own `showStatus` preference). 
+
 ---
 ## 9. HTTP Status Code Reference
 
