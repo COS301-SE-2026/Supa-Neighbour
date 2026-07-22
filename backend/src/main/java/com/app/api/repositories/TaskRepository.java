@@ -3,7 +3,7 @@ package com.app.api.repositories;
 import com.app.api.models.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
+import com.app.api.models.Helper;
 import java.util.List;
 
 /**
@@ -32,5 +32,7 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
      * @return tasks matching the given type
      */
     List<Task> findByTaskTypeId(int taskTypeId);
+
+    List<Task> findTop5ByHelperOrderByCompletedDateDesc(Helper helper);
 }
 

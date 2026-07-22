@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.app.api.models.Helper;
 import java.util.List;
 
 /**
@@ -31,4 +31,6 @@ public interface HelperSkillRepository extends JpaRepository<HelperSkill, Intege
     @Transactional
     @Query("delete from HelperSkill hs where hs.helperId.helperid = :helperId")
     void deleteHelperId(@Param("helperId") int helperId);
+
+    List<HelperSkill> findByHelper(Helper helper);
 }
