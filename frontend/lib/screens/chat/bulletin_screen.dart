@@ -220,22 +220,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
           ),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle, color: AppColors.primaryTeal, size: 28),
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CreateBulletinPostScreen(),
-                ),
-              );
-              if (result == true) {
-                _loadPosts(refresh: true);
-              }
-            },
-          ),
-        ],
+        actions: const [],
       ),
       body: Column(
         children: [
@@ -360,6 +345,22 @@ class _BulletinScreenState extends State<BulletinScreen> {
           ),
         ],
       ),
+        floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CreateBulletinPostScreen(),
+            ),
+          );
+          if (result == true) {
+            _loadPosts(refresh: true);
+          }
+        },
+        backgroundColor: AppColors.primaryTeal,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
