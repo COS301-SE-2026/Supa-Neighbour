@@ -1,5 +1,6 @@
 package com.app.api.controllers;
 
+import com.app.api.security.FirebaseAuthenticationFilter;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -14,13 +15,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.app.api.dtos.CommentReactionResponseDTO;
 import com.app.api.dtos.CommentRequestDTO;
 import com.app.api.dtos.CommentResponseDTO;
 import com.app.api.models.Comments;
 import com.app.api.services.CommentsService;
 import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.ReactionService;
 import com.google.firebase.auth.FirebaseAuthException;
-
 /**
  * REST controller for managing comments
  */
@@ -28,17 +30,20 @@ import com.google.firebase.auth.FirebaseAuthException;
 @RequestMapping("/api/comments")
 public class CommentsController {
 
-
+    private final FirebaseAuthenticationFilter firebaseAuthenticationFilter;
+    private final ReactionService reactionService;
     private final CommentsService commentsService;
     private final FirebaseAuthService firebaseAuthService;
 
     /**
      * Basic Comments constructor
-     * @param commentService service for the comments contructor
+     * @param commentService service for the comments constructor
      */
-    public CommentsController(CommentsService commentsService, FirebaseAuthService firebaseAuthService) {
+    public CommentsController(CommentsService commentsService, FirebaseAuthService firebaseAuthService,ReactionService reactionService, FirebaseAuthenticationFilter firebaseAuthenticationFilter) {
         this.commentsService = commentsService;
         this.firebaseAuthService = firebaseAuthService;
+        this.reactionService=reactionService;
+        this.firebaseAuthenticationFilter = firebaseAuthenticationFilter;
     }
 
     // GET /api/comments
@@ -48,7 +53,7 @@ public class CommentsController {
      * @return a list of all comments
      */
     @GetMapping
-    public ResponseEntity<List<Comments>> getAllComments() {
+    public ResponseEntity<List<?>> getAllComments() {
         return ResponseEntity.ok(commentsService.getAllComments());
     }
 
@@ -109,13 +114,15 @@ public class CommentsController {
         return ResponseEntity.ok(updated);
     }
 
-    // DELETE bulletin/posts/{postId}/comments/{commentId}
+    // DELETE api/comments/bulletin/posts/{postId}/comments/{commentId}
     /**
      * Deletes a comment under a particular post
      *
      * @param id the ID of the comment to delete
      * @return 204 No Content if deleted, otherwise 404 Not Found
+     * 
      */
+
     @DeleteMapping("/bulletin/posts/{postId}/{commentId}")
     public ResponseEntity<Void> deleteCommentsUnderPost(
         @PathVariable int postId,
@@ -126,6 +133,47 @@ public class CommentsController {
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
             commentsService.deleteCommentFromPost(postId, commentId, userId);
+            return ResponseEntity.noContent().build();
+        }catch(FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+    }  
+   
+    // PUT /api/bulletin/posta/{1}/like
+    /**
+     * Updates an existing comment.
+     *
+     * @param postId the ID of the comment to update
+     * @param comments the updated comment data
+     * @return the updated comment if found, otherwise 404 Not Found
+     */
+    @PostMapping("/bulletin/posts/{postId}/like")
+    public ResponseEntity<CommentReactionResponseDTO> postHelpfulReation(@PathVariable int postId,@RequestHeader("Authorization") String authHead) {
+
+        try{
+            String token = authHead.replace("Bearer ", "");
+            int userId= firebaseAuthService.getUserIdFromToken(token);
+            CommentReactionResponseDTO created = reactionService.addHelpfulReactionToPost(postId, userId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        }catch(FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+    }
+    
+    // DELETE /api/comments/posts/{1}/1
+    /**
+     * Updates an existing comment.
+     *
+     * @param postId the ID of the comment needed to be deleted
+     * @param request the updated comment data
+     * @return the updated comment if found, otherwise 404 Not Found
+     */
+    @DeleteMapping("/bulletin/posts/{postId}/like")
+    public ResponseEntity<Void> deleteCommentsUnderPost(@PathVariable int postId,@RequestHeader("Authorization") String authHeader){
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            reactionService.removeHelpfulReaction(postId, userId);
             return ResponseEntity.noContent().build();
         }catch(FirebaseAuthException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);

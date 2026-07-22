@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.models.DependentAnalytics;
 import com.app.api.services.DependentAnalyticsService;
-
+/**
+ * 
+ * DependentAnalyticsController
+ */
 @RestController
 @RequestMapping("/api/dependent-analytics")
 public class DependentAnalyticsController {

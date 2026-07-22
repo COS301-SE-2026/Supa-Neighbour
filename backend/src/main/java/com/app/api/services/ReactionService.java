@@ -15,9 +15,8 @@ import com.app.api.repositories.ReactionRepository;
 import com.app.api.dtos.ReactionResponseDTO;
 import com.app.api.dtos.CommentReactionResponseDTO;
 import com.app.api.dtos.ReactionRemovedResponseDTO;
-import  com.app.api.repositories.UserRepository;
+import com.app.api.repositories.UserRepository;
 import com.app.api.repositories.PostsRepository;
-import com.app.api.dtos.ReactionRemovedResponseDTO;
 import java.sql.Timestamp;
 import java.time.Instant;
 
@@ -27,7 +26,6 @@ import java.time.Instant;
  */
 @Service
 public class ReactionService {
-
 
     private final ReactionRepository reactionRepository;
     private final UserRepository userRepository;
@@ -39,7 +37,8 @@ public class ReactionService {
      *
      * @param reactionRepository repository providing analytics data for reaction
      */
-    public ReactionService(ReactionRepository reactionRepository, UserRepository userRepository,PostsRepository postsRepository, CommentsRepository commentsRepository) {
+    public ReactionService(ReactionRepository reactionRepository, UserRepository userRepository,
+            PostsRepository postsRepository, CommentsRepository commentsRepository) {
         this.reactionRepository = reactionRepository;
         this.userRepository = userRepository;
         this.postsRepository = postsRepository;
@@ -75,7 +74,7 @@ public class ReactionService {
      * @return the saved like, or null if the provided like is null
      */
     public Reaction saveLike(Reaction like) {
-        if(like == null){
+        if (like == null) {
             return null;
         }
         return reactionRepository.save(like);
@@ -91,8 +90,8 @@ public class ReactionService {
      */
     public Reaction updateLike(int id, Reaction updated) {
         Reaction existing = reactionRepository.findById(id).orElse(null);
-        
-        if (existing == null){
+
+        if (existing == null) {
             return null;
         }
 
@@ -130,10 +129,20 @@ public class ReactionService {
      * @throws ResponseStatusException if the post does not exist or the user has
      *                                 already reacted to the post
      */
-    public ReactionResponseDTO addDislikeReaction(int postId, int userId){
-        Posts post = postsRepository.findById(postId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+    /**
+     * Adds a dislike reaction to the specified post.
+     *
+     * @param postId the identifier of the post to react to
+     * @param userId the identifier of the authenticated user
+     * @return a response containing the created reaction and updated dislike count
+     * @throws ResponseStatusException if the post does not exist or the user has
+     *                                 already reacted to the post
+     */
+    public ReactionResponseDTO addDislikeReaction(int postId, int userId) {
+        Posts post = postsRepository.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
 
-        if(reactionRepository.countByUserAndPost(userId, postId) > 0){
+        if (reactionRepository.countByUserAndPost(userId, postId) > 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already reacted to this post");
         }
 
@@ -145,31 +154,24 @@ public class ReactionService {
 
         saveReactionSafely(reaction, "You have already reacted to this post");
 
-        
-
         long dislikeCount = reactionRepository.countDisLiked(postId);
         return new ReactionResponseDTO("Reaction added", postId, "dislike", dislikeCount);
     }
 
     /**
-     * Adds a dislike reaction to a comment for the specified user.
-     * <p>
-     * The method verifies that the comment exists and that the user has not
-     * already reacted to it. If the reaction is successfully created, the updated
-     * dislike count for the comment is returned.
-     * </p>
+     * Adds a dislike reaction to the specified comment.
      *
-     * @param commentId the unique identifier of the comment to dislike
-     * @param userId the unique identifier of the user adding the reaction
-     * @return a {@link CommentReactionResponseDTO} containing the result of the
-     *         operation and the updated dislike count
-     * @throws ResponseStatusException if the comment does not exist or the user
-     *                                 has already reacted to the comment
+     * @param commentId the identifier of the comment to react to
+     * @param userId    the identifier of the authenticated user
+     * @return a response containing the created reaction and updated dislike count
+     * @throws ResponseStatusException if the comment does not exist or the user has
+     *                                 already reacted to the comment
      */
-    public CommentReactionResponseDTO addDislikeReactionToComment(int commentId, int userId){
-        Comments comment = commentsRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+    public CommentReactionResponseDTO addDislikeReactionToComment(int commentId, int userId) {
+        Comments comment = commentsRepository.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 
-        if(reactionRepository.countByUserAndComment(userId, commentId) > 0){
+        if (reactionRepository.countByUserAndComment(userId, commentId) > 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already reacted to this comment");
         }
 
@@ -180,8 +182,6 @@ public class ReactionService {
         reaction.setCreatedAt(Timestamp.from(Instant.now()));
 
         saveReactionSafely(reaction, "You have already reacted to this comment");
-
-        
 
         long dislikeCount = reactionRepository.countDislikedComment(commentId);
         return new CommentReactionResponseDTO("Reaction added", commentId, "dislike", dislikeCount);
@@ -225,15 +225,73 @@ public class ReactionService {
      * @throws ResponseStatusException if the user has no dislike reaction for the
      *                                 specified post
      */
+    /**
+     * Removes a user's dislike reaction from a post.
+     *
+     * @param postId the identifier of the post
+     * @param userId the identifier of the authenticated user
+     * @return a response confirming the reaction removal and the updated dislike
+     *         count
+     * @throws ResponseStatusException if the dislike reaction does not exist
+     */
     public ReactionRemovedResponseDTO removeDisLikeReaction(int postId, int userId) {
-        Reaction reaction = reactionRepository.findByUserAndPostAndType(userId, postId, "dislike").orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "no dislike reaction to remove"));
+        Reaction reaction = reactionRepository.findByUserAndPostAndType(userId, postId, "dislike")
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "no dislike reaction to remove"));
 
         reactionRepository.delete(reaction);
 
         long count = reactionRepository.countDisLiked(postId);
 
         return new ReactionRemovedResponseDTO("Reaction removed", postId, count);
+    }
 
-        
+    /**
+     * Adds a helpful (like) reaction to the specified post.
+     *
+     * @param postId the identifier of the post to react to
+     * @param userId the identifier of the authenticated user
+     * @return a response containing the created reaction and updated helpful
+     *         reaction count
+     * @throws ResponseStatusException if the post does not exist or the user has
+     *                                 already reacted to the post
+     */
+    public CommentReactionResponseDTO addHelpfulReactionToPost(int postId, int userId) {
+        Posts post = postsRepository.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+
+        if (reactionRepository.countByUserAndPost(userId, postId) > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already reacted to this post");
+        }
+
+        Reaction reaction = new Reaction();
+        reaction.setPostid(post);
+        reaction.setUserid(userRepository.getReferenceById(userId));
+        reaction.setReactionType("like");
+        reaction.setCreatedAt(Timestamp.from(Instant.now()));
+
+        saveReactionSafely(reaction, "You have already reacted to this post");
+
+        long helpfulCount = reactionRepository.countByUserAndPost(userId,postId); // see note below
+        return new CommentReactionResponseDTO("Reaction added", postId, "like", helpfulCount);
+    }
+
+    /**
+     * Removes a user's helpful (like) reaction from a post.
+     *
+     * @param postId the identifier of the post
+     * @param userId the identifier of the authenticated user
+     * @return a response confirming the reaction removal and the updated helpful
+     *         reaction count
+     * @throws ResponseStatusException if the helpful reaction does not exist
+     */
+    public ReactionRemovedResponseDTO removeHelpfulReaction(int postId, int userId) {
+        Reaction reaction = reactionRepository.findByUserAndPostAndType(userId, postId, "like")
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "no helpful reaction to remove"));
+
+        reactionRepository.delete(reaction);
+
+        long count = reactionRepository.countByUserAndComment(userId,postId);
+
+        return new ReactionRemovedResponseDTO("Reaction removed", postId, count);
     }
 }

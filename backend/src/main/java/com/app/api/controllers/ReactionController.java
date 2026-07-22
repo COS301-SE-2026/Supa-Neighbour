@@ -135,22 +135,13 @@ public class ReactionController {
         }
     }
 
+    //get dislikes
     /**
-    h7i* Adds a dislike reaction to a comment on behalf of the authenticated user.
-    * <p>
-    * The user's identity is verified using the Firebase authentication token
-    * provided in the {@code Authorization} header. If authentication succeeds,
-    * a dislike reaction is created for the specified comment.
-    * </p>
+    * Creates a new comment for a post.
     *
-    * @param commentId the unique identifier of the comment to dislike
-    * @param authHeader the HTTP Authorization header containing the Bearer token
-    * @return a {@link ResponseEntity} containing:
-    * <ul>
-    *   <li><b>201 Created</b> with the created {@link CommentReactionResponseDTO} if the dislike is added successfully</li>
-    *   <li><b>401 Unauthorized</b> if the Firebase authentication token is invalid or cannot be verified</li>
-    * </ul>
-    */ 
+    * @param commentId to add a dislike to a post.
+    * @return successful http status 201.
+    */
     @PostMapping("/comments/{commentId}/dislike")
     public ResponseEntity<CommentReactionResponseDTO>addDislikedToComment(
             @PathVariable int commentId,
@@ -165,4 +156,5 @@ public class ReactionController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
+    
 }

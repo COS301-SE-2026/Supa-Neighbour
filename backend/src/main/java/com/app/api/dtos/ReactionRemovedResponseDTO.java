@@ -8,6 +8,9 @@ package com.app.api.dtos;
  * and the updated dislike count for the post.
  * </p>
  */
+/**
+ * Data Transfer Object returned after a reaction has been successfully removed.
+ */
 public class ReactionRemovedResponseDTO {
     private String message;
     private Integer postId;
@@ -20,7 +23,14 @@ public class ReactionRemovedResponseDTO {
      * @param postId the unique identifier of the post
      * @param dislikeCount the updated number of dislike reactions
      */
-    public ReactionRemovedResponseDTO(String message, Integer postId, long dislikeCount){
+    /**
+     * Creates a reaction removal response.
+     *
+     * @param message      the confirmation message
+     * @param postId       the identifier of the post
+     * @param dislikeCount the updated number of dislike reactions
+     */
+    public ReactionRemovedResponseDTO(String message, Integer postId, long dislikeCount) {
         this.message = message;
         this.postId = postId;
         this.dislikeCount = dislikeCount;
@@ -31,7 +41,12 @@ public class ReactionRemovedResponseDTO {
      *
      * @return the operation result message
      */
-    public String getMessage(){
+    /**
+     * Returns the confirmation message.
+     *
+     * @return the confirmation message
+     */
+    public String getMessage() {
         return message;
     }
 
@@ -40,7 +55,12 @@ public class ReactionRemovedResponseDTO {
      *
      * @return the post identifier
      */
-    public Integer getPostId(){
+    /**
+     * Returns the identifier of the post.
+     *
+     * @return the post identifier
+     */
+    public Integer getPostId() {
         return postId;
     }
 
@@ -49,7 +69,12 @@ public class ReactionRemovedResponseDTO {
      *
      * @return the dislike count
      */
-    public long getDislikedCount(){
+    /**
+     * Returns the updated dislike reaction count.
+     *
+     * @return the number of dislike reactions
+     */
+    public long getDislikedCount() {
         return dislikeCount;
     }
 }
