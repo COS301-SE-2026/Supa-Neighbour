@@ -69,4 +69,16 @@ public class FirebaseAuthService {
         
         return userId;
     }
+
+    /**
+ * Revokes all refresh tokens for a user, effectively logging them out
+ * of all devices/sessions. Existing ID tokens remain valid until they
+ * expire naturally, unless checkRevoked is used during verification.
+ *
+ * @param uid the Firebase UID of the user to log out
+ * @throws FirebaseAuthException if the UID is invalid or revocation fails
+ */
+public void revokeUserSessions(String uid) throws FirebaseAuthException {
+    FirebaseAuth.getInstance().revokeRefreshTokens(uid);
+}
 }   

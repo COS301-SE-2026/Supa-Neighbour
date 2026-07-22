@@ -2,7 +2,6 @@ package com.app.api.services;
 
 import com.app.api.dtos.UserStatusResponse;
 import com.app.api.models.Settings;
-import com.app.api.models.TaskType;
 import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.HelperSkillRepository;
 import com.app.api.repositories.LocationRepository;
@@ -13,7 +12,6 @@ import com.app.api.repositories.UserRepository;
 import com.app.api.dtos.ShowStatusResponse;
 import com.app.api.dtos.UpdateSettingsDTO;
 import com.app.api.dtos.UserProfileResponse;
-import com.app.api.dtos.UserSettingsResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,8 +30,6 @@ import com.app.api.dtos.UserSettingsDTO;
 import com.app.api.models.Location;
 import com.app.api.models.Helper;
 import java.util.List;
-import com.app.api.dtos.AchievementDTO;
-import com.app.api.models.UserAchievement;
 
 /**
  * Service responsible for managing user application settings.
@@ -250,7 +246,7 @@ public class SettingsServices {
     }
 
 
-    public List<UserProfileResponse> getAllUserProfiles() {
+    public List<UserProfileResponse> getAllUserProfiles(int userId) {
         return userRepository.findAll().stream().map(user ->
             {
                 Address address = user.getAddressid();
