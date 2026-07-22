@@ -15,6 +15,7 @@ import com.app.api.dtos.ModeResponse;
 import java.time.Instant;
 import java.time.Duration;
 import com.app.api.models.Address;
+
 /**
  * Service responsible for managing user application settings.
  * <p>
@@ -139,14 +140,16 @@ public class SettingsServices {
     
     public UserSettingsResponseDTO getUserInfo(int userId)
     {
-        User user = userRepository.findByUserId(userId);
+        User user = userRepository.findById(userId)
+        .orElseThrow(() ->
+        new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         if(user == null)
         {
             throw new RuntimeException("User not found");
         }
         Address address = user.getAddressid();
-        Settings settings = settingsRepository.findByUserid_Userid(userId)
-        .orElseThrow(() -> new RuntimeException("Settings not found"));
+        Settings settings = settingsRepository
+            .findByUserId(userId).orElseThrow(() -> new RuntimeException("Settings not found"));
         Instant lastSeen = settings.getLastSeen();
         AddressDTO addressDTO = new AddressDTO(address.getAddressid(), address.getNeighbourhoodid());
         UserSettingsResponseDTO response = new UserSettingsResponseDTO(userId,lastSeen, user.getUsername(),user.getFirstName(),user.getLastName(), addressDTO);

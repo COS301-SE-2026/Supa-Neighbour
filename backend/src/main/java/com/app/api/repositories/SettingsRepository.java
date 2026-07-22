@@ -11,5 +11,5 @@ public interface SettingsRepository extends JpaRepository<Settings, Integer>{
      * @param userId the user's identifier
      * @return the user's settings if found
      */
-    Optional<Settings> findByUserid_Userid(int userId);
+    Optional<Settings> findByUserId(Integer userId);
 }
