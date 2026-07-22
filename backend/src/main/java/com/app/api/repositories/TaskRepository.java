@@ -33,6 +33,5 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
      */
     List<Task> findByTaskTypeId(int taskTypeId);
 
-    List<Task> findTop5ByHelperOrderByCompletedDateDesc(Helper helper);
 }
 

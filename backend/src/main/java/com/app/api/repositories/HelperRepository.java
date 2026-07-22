@@ -32,6 +32,5 @@ public interface HelperRepository extends JpaRepository<Helper, Integer> {
      */
     Optional<Helper> findByUserid_Userid(int userId);
 
-    Optional<Helper> findByUser(User user);
 }
 

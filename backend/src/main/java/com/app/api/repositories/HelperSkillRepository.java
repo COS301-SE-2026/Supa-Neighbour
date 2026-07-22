@@ -32,5 +32,4 @@ public interface HelperSkillRepository extends JpaRepository<HelperSkill, Intege
     @Query("delete from HelperSkill hs where hs.helperId.helperid = :helperId")
     void deleteHelperId(@Param("helperId") int helperId);
 
-    List<HelperSkill> findByHelper(Helper helper);
 }

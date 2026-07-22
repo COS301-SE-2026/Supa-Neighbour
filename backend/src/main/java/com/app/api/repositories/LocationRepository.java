@@ -10,8 +10,6 @@ import com.app.api.models.Location;
  */
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Integer> {
-    Optional<Location> findByUserId(Integer userId);
-
-    Location findLocationbyId(int neighbourhoodId);
+    
 
 }

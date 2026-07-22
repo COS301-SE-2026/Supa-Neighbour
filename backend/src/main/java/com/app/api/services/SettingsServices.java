@@ -177,50 +177,11 @@ public class SettingsServices {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        Helper helper = helperRepository.findByUser(user)
+        Helper helper = helperRepository.findByUserid_Userid(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Helper not found"));
-
-        if (user == null) {
-            throw new RuntimeException("User not found");
-        }
         Address address = user.getAddressid();
-        Settings settings = settingsRepository
-                .findByUserId(userId).orElseThrow(() -> new RuntimeException("Settings not found"));
-        Instant lastSeen = settings.getLastSeen();
-
-        Location location = user.getAddressid().getNeighbourhoodid();
-        String neighbourhood = user.getAddressid().getNeighbourhoodid().getNeighbourhoodName();
-
-        List<HelperSkill> helperSkills = helperSkillRepository.findByHelper(helper);
-        // List<String> skills = helperSkills.stream().map(helperSkills ->
-        // helperSkills.getHelperSkillId()).toList();
-
-        List<String> skills = List.of(
-                helper.getTaskTypeid().getDescription());
-
-        List<UserAchievement> achievements = userAchievementRepository.findByUser(user);
-
-        // List<AchievementDTO> achievementDTOs =
-        // achievements.stream()
-        // .map(a ->
-        // new AchievementDTO(
-        // a.getAchievement().getAchievementId(),
-        // a.getAchievement().getAchievementName(),
-        // a.getAchievement().getDescription(),
-        // a.getAchievement().getBadgeImage()))
-        // .toList();
-
+        
         List<AchievementDTO> achievementDTOs = null;
-        List<Task> recentTasks = taskRepository.findTop5ByHelperOrderByCompletedDateDesc(helper);
-
-        // List<RecentTaskDTO> recentTaskDTOs =
-        // recentTasks.stream()
-        // .map(task ->
-        // new RecentTaskDTO(
-        // task.getTaskId(),
-        // task.getAdminReview(),
-        // task.getAdminReview(),
-        // .toList();
         List<RecentTaskDTO> recentTaskDTOs = null;
 
         AddressDTO addressDTO = new AddressDTO(address.getAddressid(), address.getNeighbourhoodid());
@@ -241,8 +202,7 @@ public class SettingsServices {
                 completedTask,
                 recentTaskDTOs, achievementDTOs,
                 trustScore);
-        UserSettingsDTO response = new UserSettingsDTO(responseProfile, addressDTO);
-        return response;
+        return new UserSettingsDTO(responseProfile, addressDTO);
     }
 
 

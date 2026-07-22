@@ -42,7 +42,7 @@ public class FirebaseAuthService {
      *         or cannot be verified
      */
     public FirebaseToken verifyIdToken(String idToken) throws FirebaseAuthException {
-        return FirebaseAuth.getInstance().verifyIdToken(idToken);
+        return FirebaseAuth.getInstance().verifyIdToken(idToken, true);
     }
 
     /**
@@ -71,14 +71,14 @@ public class FirebaseAuthService {
     }
 
     /**
- * Revokes all refresh tokens for a user, effectively logging them out
- * of all devices/sessions. Existing ID tokens remain valid until they
- * expire naturally, unless checkRevoked is used during verification.
- *
- * @param uid the Firebase UID of the user to log out
- * @throws FirebaseAuthException if the UID is invalid or revocation fails
- */
-public void revokeUserSessions(String uid) throws FirebaseAuthException {
-    FirebaseAuth.getInstance().revokeRefreshTokens(uid);
-}
+     * Revokes all refresh tokens for a user, effectively logging them out
+     * of all devices/sessions. Existing ID tokens remain valid until they
+     * expire naturally, unless checkRevoked is used during verification.
+     *
+     * @param uid the Firebase UID of the user to log out
+     * @throws FirebaseAuthException if the UID is invalid or revocation fails
+     */
+    public void revokeUserSessions(String uid) throws FirebaseAuthException {
+        FirebaseAuth.getInstance().revokeRefreshTokens(uid);
+    }
 }   

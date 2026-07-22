@@ -12,5 +12,4 @@ import com.app.api.models.UserAchievement;
 @Repository
 public interface UserAchievementRepository extends JpaRepository<UserAchievement, Integer> {
 
-    List<UserAchievement> findByUser(User user);
 }

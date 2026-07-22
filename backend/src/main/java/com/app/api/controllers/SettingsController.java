@@ -1,7 +1,6 @@
 package com.app.api.controllers;
 
-import org.apache.hc.core5.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -183,25 +182,12 @@ public class SettingsController {
         try {
             String token = authHeader.replace("Bearer ", "");
             firebaseAuthService.getUserIdFromToken(token);
-            UserStatusResponse response = settingsServices.getUserStatus(userId);
+            UserSettingsDTO response = settingsServices.getUserInfo(userId);
             return ResponseEntity.ok(response);
         } catch (FirebaseAuthException e) {
             return ResponseEntity.status(401).body("Invalid Firebase Token");
         }
     }
-
-    @GetMapping("/profiles/{userId}")
-    public ResponseEntity<?> getAllUserProfiles(@PathVariable int userId, @RequestHeader("Authorization") String authHeader) {
-        try {
-            String token = authHeader.replace("Bearer ", "");
-            firebaseAuthService.getUserIdFromToken(token);
-            List<UserProfileResponse> response = settingsServices.getAllUserProfiles(userId);
-            return ResponseEntity.ok(response);
-        } catch (FirebaseAuthException e) {
-            return ResponseEntity.status(401).body("Invalid Firebase Token");
-        }
-    }
-
 
     @PutMapping("/{userId}")
     public ResponseEntity<?> updateSettings(@PathVariable int userId, @RequestBody UpdateSettingsDTO dto,@RequestHeader("Authorization") String authHeader) {
@@ -215,19 +201,23 @@ public class SettingsController {
         }
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable int userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "User not found"));
-        if (user.getFirebaseUid() != null) {
-            FirebaseAuth.getInstance().deleteUser(user.getFirebaseUid());
+    @DeleteMapping("/me/user")
+    public ResponseEntity<Void> deleteUser(
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            User user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found"));
+            if (user.getFirebaseUid() != null) {
+                FirebaseAuth.getInstance().deleteUser(user.getFirebaseUid());
+            }
+            settingsRepository.deleteById(userId);
+            userRepository.delete(user);
+            return ResponseEntity.noContent().build();
+        }catch (FirebaseAuthException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Firebase Token");
         }
-        settingsRepository.deleteById(userId);
-
-        userRepository.delete(user);
     }
 }
 

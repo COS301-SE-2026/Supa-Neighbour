@@ -137,4 +137,8 @@ public class User {
         this.userType = userType;
     }
 
+    public String getFirebaseUid(){
+        return firebaseUid;
+    }
+
 }

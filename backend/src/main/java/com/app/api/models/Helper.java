@@ -48,4 +48,6 @@ public class Helper {
     @Column(name = "isAvailable")
     private boolean available;
 
+
+    
 }

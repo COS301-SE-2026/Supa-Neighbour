@@ -170,15 +170,15 @@ public AuthController(
  * @return 200 OK on success, or 401 if the token is invalid
  */
 @PostMapping("/logout")
-public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader){
+public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader){
 
     try{
         String token = authHeader.replace("Bearer ", "");
         String Uid = firebaseAuthService.verifyIdToken(token).getUid();
         firebaseAuthService.revokeUserSessions(Uid);
-        return ResponseEntity.ok(Map.of("message","Logged out successfully"));
+        return ResponseEntity.ok("Logged out successfully");
     }catch(FirebaseAuthException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(null);
     }
 }
 }
