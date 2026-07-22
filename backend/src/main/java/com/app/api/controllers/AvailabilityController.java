@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.app.api.models.Availability;
 import com.app.api.services.AvailabilityService;
  
-
+/**
+* Rest controller for helpers availability
+*/
 @RestController
 @RequestMapping("/api/availability")
 public class AvailabilityController {

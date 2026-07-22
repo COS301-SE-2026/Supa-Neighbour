@@ -3,7 +3,6 @@ package com.app.api.dtos;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
- 
 /**
  * Data Transfer Object representing the public profile of a helper.
  *

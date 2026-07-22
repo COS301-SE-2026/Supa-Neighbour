@@ -14,6 +14,9 @@ import com.app.api.services.UserAchievementService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestBody;
 
+/**
+ * UserAchievementController
+ */
 @RestController
 @RequestMapping("/api/userAchievement")
 public class UserAchievementController {

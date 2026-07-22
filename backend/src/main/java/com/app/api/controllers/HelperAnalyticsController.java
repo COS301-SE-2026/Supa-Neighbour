@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.app.api.models.HelperAnalytics;
 import com.app.api.services.HelperAnalyticsService;
 
+/**
+ * HelperAnalyticsController
+ */
 @RestController
 @RequestMapping("/api/helper-analytics")
 public class HelperAnalyticsController {

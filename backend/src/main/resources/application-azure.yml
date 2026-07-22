@@ -13,3 +13,11 @@ spring:
         hibernate:
           dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+azure:
+  storage:
+    connection-string: ${BLOB_CONNECTION_STRING}
+    posts-container: posts
+    profiles-container: profiles
+app:
+  encryption:
+    key: yvVMg5ymmdte9Wg2XszsAHVsY72Upcqeo8DEc2pwOLU=
