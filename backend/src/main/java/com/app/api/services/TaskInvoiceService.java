@@ -69,7 +69,6 @@ public class TaskInvoiceService {
      */
     public TaskInvoice updateTaskInvoice(int id, TaskInvoice updated) {
         TaskInvoice existing = taskInvoiceRepository.findById(id).orElse(null);
-
         if (existing == null) {
             return null;
         }

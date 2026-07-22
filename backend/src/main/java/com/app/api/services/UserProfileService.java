@@ -118,6 +118,7 @@ public class UserProfileService {
             )).toList();
         }
 
+        
         List<AchievementDTO> achievements = userProfileRepository.findEarnedAchievements(userId).stream()
         .map(row -> new AchievementDTO(
                 ((Number) row[0]).intValue(),
@@ -127,7 +128,7 @@ public class UserProfileService {
 
         )).toList();
 
-        return new UserProfileResponse(resolvedUserId, displayName, neighbourhood, level, currentXp, skills, completedTasks, recentTasks, achievements);
+        return new UserProfileResponse(resolvedUserId, displayName, neighbourhood, level, currentXp, skills, completedTasks, recentTasks, achievements,trustScore);
     }
 
     /**

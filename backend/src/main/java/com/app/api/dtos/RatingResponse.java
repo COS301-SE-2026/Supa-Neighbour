@@ -21,7 +21,7 @@ public class RatingResponse {
      * @param message the confirmation message
      * @param taskId the identifier of the rated task
      * @param rating the submitted rating
-     * @param reviewString the optional review snippet
+     * @param reviewSnippet the optional review snippet
      */
     public RatingResponse(String message, int taskId, String rating, String reviewString){
         this.message = message;
