@@ -1,0 +1,40 @@
+name: Burndown Snapshot
+
+on:
+  schedule:
+   - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: 
+          ref: data
+      
+      - name: Calculate remaining points
+        id: calc
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: | 
+          MILESTONE="Sprint 1"   # update this each sprint
+          ISSUES=$(gh issue list --repo ${{ github.repository }} --milestone "$MILESTONE" --state open --json labels)
+          POINTS=$(echo "$ISSUES" | jq '[.[].labels[] | select(.name | startswith("points:")) | (.name | split(":")[1] | tonumber)] | add // 0')
+          echo "points=$POINTS" >> $GITHUB_OUTPUT
+
+      - name: Append snapshot
+        run: | 
+          echo "$(date +'%Y-%m-%d'),${{ steps.calc.outputs.points }}" >> burndown-data.csv
+        
+      - name: Commit and push
+        run: | 
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add burndown-data.csv
+          git commit -m "Burndown snapshot $(date +'%Y-%m-%d')" || echo "No changes to commit"
+          git push origin data

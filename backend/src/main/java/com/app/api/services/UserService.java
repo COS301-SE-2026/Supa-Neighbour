@@ -1,73 +1,79 @@
 package com.app.api.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import com.app.api.models.User;
 import com.app.api.repositories.UserRepository;
 
 /**
- * Service layer for managing user operations.
- * Provides CRUD functionality for User entities.
+ * Service responsible for managing user-related business logic.
+ * <p>
+ * Provides methods for creating, retrieving, updating, and deleting users.
+ * </p>
  */
 @Service
 public class UserService {
 
-    /** The user repository. */
-    @Autowired
-    private UserRepository userRepository;
-
-    // Get all
     /**
-     * Retrieves all users from the repository.
+     * Repository used to perform database operations on users.
+     */
+
+    private final UserRepository userRepository;
+
+    /**
+     * Constructs the service with its required repository dependency.
      *
-     * @return a list of all users
+     * @param userRepository repository providing analytics data for user
+     */
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    /**
+     * Retrieves all users.
+     *
+     * @return a list containing all users
      */
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    // Get by id
     /**
-     * Retrieves a user by their identifier.
+     * Retrieves a user by its unique identifier.
      *
-     * @param id the user identifier
-     * @return the user if found, or null if no user exists with the given id
+     * @param id the ID of the user to retrieve
+     * @return the user if found; otherwise {@code null}
      */
     public User getUserById(int id) {
         return userRepository.findById(id).orElse(null);
     }
 
-    // Create
-    /**
-     * Retrieves a user by their identifier.
+     /**
+     * Saves a new user.
      *
-     * @param id the user identifier
-     * @return the user if found, or null if no user exists with the given id
+     * @param user the user to save
+     * @return the saved user, or {@code null} if the supplied user is
+     *         {@code null}
      */
     public User saveUser(User user) {
         if(user == null) {
             return null;
         }
-
         return userRepository.save(user);
     }
 
-    // Update
     /**
-     * Updates an existing user with the provided details.
+     * Updates an existing user's information.
      *
-     * @param id      the identifier of the user to update
-     * @param updated the user object containing the updated fields
-     * @return the updated user, or null if no user exists with the given id
+     * @param id the ID of the user to update
+     * @param updated the user object containing the updated values
+     * @return the updated user if the user exists; otherwise {@code null}
      */
     public User updateUser(int id, User updated) {
         User existing = userRepository.findById(id).orElse(null);
-     
-        if (existing == null) {
+        if (existing == null){  
             return null;
         }
-        
         existing.setBadgeid(updated.getBadgeid());
         existing.setAddressid(updated.getAddressid());
         existing.setDateOfBirth(updated.getDateOfBirth());
@@ -75,7 +81,6 @@ public class UserService {
         existing.setFirstName(updated.getFirstName());
         existing.setGender(updated.getGender());
         existing.setLastName(updated.getLastName());
-        existing.setPassword(updated.getPassword());
         existing.setPhoneNumber(updated.getPhoneNumber());
         existing.setRatingid(updated.getRatingid());
         existing.setUserType(updated.getUserType());
@@ -83,12 +88,10 @@ public class UserService {
         return userRepository.save(existing);
     }
 
-    // Delete
-    
     /**
-     * Deletes a user by their identifier.
+     * Deletes a user by its unique identifier.
      *
-     * @param id the identifier of the user to delete
+     * @param id the ID of the user to delete
      */
     public void deleteUser(int id) {
         userRepository.deleteById(id);

@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.TaskType;
@@ -15,8 +13,16 @@ import com.app.api.repositories.TaskTypeRepository;
 @Service
 public class TaskTypeService {
 
-    @Autowired
-    private TaskTypeRepository taskTypeRepository;
+    private final TaskTypeRepository taskTypeRepository;
+
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param taskTypeRepository repository providing analytics data for taskType
+     */
+    public TaskTypeService(TaskTypeRepository taskTypeRepository) {
+        this.taskTypeRepository = taskTypeRepository;
+    }
 
     // Get all
     /**

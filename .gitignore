@@ -145,3 +145,6 @@ htmlcov/
 *.deb
 
 qw
+
+# Firebase service account key 
+backend/src/main/resources/Firebase/serviceAccountKey.json

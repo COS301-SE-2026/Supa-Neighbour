@@ -25,7 +25,7 @@ public class Comments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
-    private int commentid;
+    private Integer commentid;
 
     @ManyToOne()
     @JoinColumn(name = "user_id")
@@ -36,7 +36,7 @@ public class Comments {
     private Posts postid;
 
     @Column(name = "parent_comment_id")
-    private int parentCommentid;
+    private Integer parentCommentid;
 
     @Column(name = "comment_content")
     private String commentContent; 

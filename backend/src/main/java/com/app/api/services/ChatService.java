@@ -7,7 +7,7 @@ import com.app.api.repositories.ChatRepository;
 import com.app.api.repositories.MessageRepository;
 //import com.sun.jna.platform.win32.WinUser.MSG;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,6 @@ public class ChatService {
      * @param chatRepo the chat repository
      * @param msgRepo the message repository
      */
-    @Autowired
     public ChatService(ChatRepository chatRepo, MessageRepository msgRepo) {
         this.chatRepo = chatRepo;
         this.msgRepo = msgRepo;

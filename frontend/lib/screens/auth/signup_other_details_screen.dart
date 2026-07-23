@@ -2,73 +2,90 @@ import 'package:flutter/material.dart';
 import '../../components/logo_placeholder.dart';
 import '../../models/auth_session.dart';
 import '../../models/user_model.dart';
+import '../../services/auth_service.dart';
 import '../home/home_screen.dart';
+
 
 class SignupOtherDetailsScreen extends StatefulWidget {
   final User user;
-  
+  final String idToken;  
+  final String password;  
+
   const SignupOtherDetailsScreen({
     super.key,
     required this.user,
+    required this.idToken,
+    required this.password,
   });
 
   @override
   State<SignupOtherDetailsScreen> createState() => _SignupOtherDetailsScreenState();
 }
 
+
 class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   bool _isLoading = false;
+  final AuthService _authService = AuthService();
 
-  User _buildCompleteUser() {
-    return widget.user.copyWith(
-      phone: _phoneController.text,
-      username: _usernameController.text,
+ Future<void> _handleFinish() async {
+  if (_phoneController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter your phone number'), backgroundColor: Color(0xFF1C9A89)),
     );
+    return;
+  }
+  if (_usernameController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter a username'), backgroundColor: Color(0xFF1C9A89)),
+    );
+    return;
   }
 
-  void _handleFinish() {
-    if (_phoneController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your phone number'), backgroundColor: Color(0xFF1C9A89)),
-      );
-      return;
-    }
+  setState(() => _isLoading = true);
 
-    if (_usernameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a username'), backgroundColor: Color(0xFF1C9A89)),
-      );
-      return;
-    }
+  try {
+    final birthday = widget.user.birthday ?? DateTime.now();
+    final dateOfBirth =
+        '${birthday.year}-${birthday.month.toString().padLeft(2, '0')}-${birthday.day.toString().padLeft(2, '0')}';
 
-    setState(() {
-      _isLoading = true;
-    });
+    final User registeredUser = await _authService.register(
+      idToken: widget.idToken,
+      firstName: widget.user.firstName,
+      lastName: widget.user.lastName,
+      password: widget.password,
+      phoneNumber: _phoneController.text.trim(),
+      dateOfBirth: dateOfBirth,
+      gender: widget.user.gender ?? 'Other',
+      username: _usernameController.text.trim(),
+    );
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+    AuthSession.instance.login(registeredUser);
 
-        final completedUser = _buildCompleteUser();
-        
-        // Login the user
-        AuthSession.instance.login(completedUser);
+    if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile completed successfully!'), backgroundColor: Color(0xFF1C9A89)),
-        );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Profile completed successfully!'), backgroundColor: Color(0xFF1C9A89)),
+    );
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      }
-    });
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
+    );
+  } on Exception catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.toString().replaceAll('Exception: ', '')),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

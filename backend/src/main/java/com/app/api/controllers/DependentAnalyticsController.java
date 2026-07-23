@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,13 +15,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.models.DependentAnalytics;
 import com.app.api.services.DependentAnalyticsService;
-
+/**
+ * 
+ * DependentAnalyticsController
+ */
 @RestController
 @RequestMapping("/api/dependent-analytics")
 public class DependentAnalyticsController {
 
-    @Autowired
-    private DependentAnalyticsService dependentAnalyticsService;
+    
+    private final DependentAnalyticsService dependentAnalyticsService;
+
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param dependentAnalyticsService service providing analytics data for dependents
+     */
+    public DependentAnalyticsController(DependentAnalyticsService dependentAnalyticsService) {
+        this.dependentAnalyticsService = dependentAnalyticsService;
+    }
 
     // GET /api/dependent-analytics
     /**
