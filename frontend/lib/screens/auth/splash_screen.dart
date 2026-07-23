@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../components/loading_bar.dart';
 import '../../components/splash_title.dart';
 import 'auth_screen.dart';
@@ -8,15 +9,16 @@ import '../home/home_screen.dart';
 import '../../services/auth_service.dart';
 import '../../models/auth_session.dart';
 import '../../components/logo_placeholder.dart';
+import '../../providers/firebase_providers.dart'; 
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
 @override
 void initState() {
   super.initState();
@@ -26,7 +28,8 @@ void initState() {
     final prefs = await SharedPreferences.getInstance();
     final rememberMe = prefs.getBool('remember_me') ?? false;
 
-    final fbUser = fb.FirebaseAuth.instance.currentUser;
+    final auth = ref.read(firebaseAuthProvider);
+    final fbUser = auth.currentUser;
 
     if (rememberMe && fbUser != null && fbUser.emailVerified) {
       try {
