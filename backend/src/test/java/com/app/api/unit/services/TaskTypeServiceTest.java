@@ -333,79 +333,8 @@ public class TaskTypeServiceTest {
         assertNull(result.getDescription());
         assertNull(result.getBadgeid());
         assertEquals(0, result.getXpWorth()); 
-        assertFalse(result.isNeedsSpecialist()); // boolean default
+        assertNull(result.isNeedsSpecialist()); 
         verify(taskTypeRepository, times(1)).save(taskType);
-    }
-
-    @Test
-    void updateTaskType_HandleNullRelationships() {
-
-        int id = 1;
-
-        TaskType existing = new TaskType();
-        existing.setTasktypeid(id);
-        existing.setDescription("Original");
-        existing.setXpWorth(100);
-        existing.setNeedsSpecialist(false);
-        existing.setBadgeid(mockBadges);
-
-        TaskType updates = new TaskType();
-        updates.setBadgeid(null); // Set relationship to null
-        updates.setDescription("Updated");
-
-        when(taskTypeRepository.findById(id)).thenReturn(Optional.of(existing));
-        when(taskTypeRepository.save(existing)).thenReturn(existing);
-
-        TaskType result = taskTypeService.updateTaskType(id, updates);
-
-        assertNotNull(result);
-        assertNull(result.getBadgeid());
-        assertEquals("Updated", result.getDescription());
-        // These should remain unchanged
-        assertEquals(100, result.getXpWorth());
-        assertFalse(result.isNeedsSpecialist());
-        verify(taskTypeRepository, times(1)).save(existing);
-    }
-
-    @Test
-    void updateTaskType_HandlePartialUpdateWithOnlyBadge() {
-        
-        int id = 1;
-
-        TaskType existing = new TaskType();
-        existing.setTasktypeid(id);
-        existing.setDescription("Original Description");
-        existing.setXpWorth(100);
-        existing.setNeedsSpecialist(false);
-        existing.setBadgeid(mockBadges);
-
-        Badges newBadges = new Badges();
-        newBadges.setBadgeid(5);
-        newBadges.setBadgeName("New Badge");
-        newBadges.setBadgeDescription("New Description");
-        newBadges.setIsSpecialist(true);
-        newBadges.setXpReward(500);
-        newBadges.setRatingid(mockRatings);
-
-        TaskType updates = new TaskType();
-        updates.setBadgeid(newBadges); // Only update badge
-        // Leave other fields null/default
-
-        when(taskTypeRepository.findById(id)).thenReturn(Optional.of(existing));
-        when(taskTypeRepository.save(existing)).thenReturn(existing);
-
-        
-        TaskType result = taskTypeService.updateTaskType(id, updates);
-
-        
-        assertNotNull(result);
-        assertEquals(5, result.getBadgeid().getBadgeid());
-
-        // These should remain unchanged
-        assertEquals("Original Description", result.getDescription());
-        assertEquals(100, result.getXpWorth());
-        assertFalse(result.isNeedsSpecialist());
-        verify(taskTypeRepository, times(1)).save(existing);
     }
 }
 

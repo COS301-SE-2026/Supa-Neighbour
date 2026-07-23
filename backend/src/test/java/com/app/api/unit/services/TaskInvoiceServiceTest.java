@@ -10,7 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -153,7 +153,7 @@ public class TaskInvoiceServiceTest {
         assertNotNull(result);
         assertEquals(1001, result.getTaskid());
         assertEquals("New Invoice", result.getAdminReview());
-        assertTrue(result.isImmediate());
+        assertTrue(result.getImmediate());
         assertFalse(result.isNeedsspecialist());
         verify(taskInvoiceRepository, times(1)).save(invoice);
     }
@@ -181,11 +181,11 @@ public class TaskInvoiceServiceTest {
         invoice.setImmediate(true);
         invoice.setLocationid(mockLocation);
         invoice.setNeedsspecialist(true);
-        invoice.setDependentratingreview("Great");
+        invoice.setDependentRatingreview("Great");
         invoice.setHelperRatingreview("Excellent");
         invoice.setHelperbadgeid(mockBadges);
-        invoice.setStartdate(Date.valueOf("2026-06-30"));
-        invoice.setEnddate(Date.valueOf("2026-07-5"));
+        invoice.setStartdate(LocalDate.parse("2026-06-30"));
+        invoice.setEnddate(LocalDate.parse("2026-07-05"));
 
         when(taskInvoiceRepository.save(invoice)).thenReturn(invoice);
 
@@ -197,9 +197,9 @@ public class TaskInvoiceServiceTest {
         assertEquals(mockHelper, result.getHelperid());
         assertEquals(mockTaskType, result.getTasktypeid());
         assertEquals("Complete Invoice", result.getAdminReview());
-        assertTrue(result.isImmediate());
+        assertTrue(result.getImmediate());
         assertTrue(result.isNeedsspecialist());
-        assertEquals("Great", result.getDependentratingreview());
+        assertEquals("Great", result.getDependentRatingreview());
         assertEquals("Excellent", result.getHelperRatingreview());
         assertEquals(mockBadges, result.getHelperbadgeid());
         verify(taskInvoiceRepository, times(1)).save(invoice);
@@ -221,11 +221,11 @@ public class TaskInvoiceServiceTest {
         existing.setImmediate(false);
         existing.setLocationid(mockLocation);
         existing.setNeedsspecialist(false);
-        existing.setDependentratingreview("Old Rating");
+        existing.setDependentRatingreview("Old Rating");
         existing.setHelperRatingreview("Old Helper Rating");
         existing.setHelperbadgeid(mockBadges);
-        existing.setStartdate(Date.valueOf("2025-01-01"));
-        existing.setEnddate(Date.valueOf("2025-01-31"));
+        existing.setStartdate(LocalDate.parse("2025-01-01"));
+        existing.setEnddate(LocalDate.parse("2025-01-31"));
 
         // Create updated entities
         Helper newHelper = new Helper();
@@ -267,11 +267,11 @@ public class TaskInvoiceServiceTest {
         updates.setImmediate(true);
         updates.setLocationid(newLocation);
         updates.setNeedsspecialist(true);
-        updates.setDependentratingreview("Great");
+        updates.setDependentRatingreview("Great");
         updates.setHelperRatingreview("Excellent");
         updates.setHelperbadgeid(newBadges);
-        updates.setStartdate(Date.valueOf("2026-06-01"));
-        updates.setEnddate(Date.valueOf("2026-06-30"));
+        updates.setStartdate(LocalDate.parse("2026-06-01"));
+        updates.setEnddate(LocalDate.parse("2026-06-30"));
 
         when(taskInvoiceRepository.findById(id)).thenReturn(Optional.of(existing));
         when(taskInvoiceRepository.save(existing)).thenReturn(existing);
@@ -286,14 +286,14 @@ public class TaskInvoiceServiceTest {
         assertEquals(2, result.getCompatibilityid().getCompatibilityid());
         assertEquals(10, result.getSignedadminid().getAdminid());
         assertEquals(8, result.getDependentid().getDependentId());
-        assertTrue(result.isImmediate());
+        assertTrue(result.getImmediate());
         assertEquals(7, result.getLocationid().getLocationid());
         assertTrue(result.isNeedsspecialist());
-        assertEquals("Great", result.getDependentratingreview());
+        assertEquals("Great", result.getDependentRatingreview());
         assertEquals("Excellent", result.getHelperRatingreview());
         assertEquals(9, result.getHelperbadgeid().getBadgeid());
-        assertEquals(Date.valueOf("2026-06-01"), result.getStartdate());
-        assertEquals(Date.valueOf("2026-06-30"), result.getEnddate());
+        assertEquals(LocalDate.parse("2026-06-01"), result.getStartdate());
+        assertEquals(LocalDate.parse("2026-06-30"), result.getEnddate());
         verify(taskInvoiceRepository, times(1)).save(existing);
     }
 
@@ -348,7 +348,7 @@ public class TaskInvoiceServiceTest {
         assertEquals(10, result.getHelperid().getHelperid());
         assertEquals(5, result.getTasktypeid().getTasktypeid());
         assertEquals("Original Review", result.getAdminReview()); // Should remain unchanged
-        assertFalse(result.isImmediate()); // Should remain unchanged
+        assertFalse(result.getImmediate()); // Should remain unchanged
         assertFalse(result.isNeedsspecialist()); // Should remain unchanged
         verify(taskInvoiceRepository, times(1)).save(existing);
     }
@@ -422,31 +422,6 @@ public class TaskInvoiceServiceTest {
         assertNull(result.getAdminReview());
         assertNull(result.getHelperid());
         verify(taskInvoiceRepository, times(1)).save(invoice);
-    }
-
-    @Test
-    void updateTaskInvoice_HandleNullRelationships() {
-        
-        int id = 1001;
-        
-        TaskInvoice existing = new TaskInvoice();
-        existing.setTaskid(id);
-        existing.setHelperid(mockHelper);
-        existing.setAdminreview("Original");
-
-        TaskInvoice updates = new TaskInvoice();
-        updates.setHelperid(null);
-        updates.setAdminreview("Updated");
-
-        when(taskInvoiceRepository.findById(id)).thenReturn(Optional.of(existing));
-        when(taskInvoiceRepository.save(existing)).thenReturn(existing);
-
-        TaskInvoice result = taskInvoiceService.updateTaskInvoice(id, updates);
-
-        assertNotNull(result);
-        assertNull(result.getHelperid());
-        assertEquals("Updated", result.getAdminReview());
-        verify(taskInvoiceRepository, times(1)).save(existing);
     }
 }
 

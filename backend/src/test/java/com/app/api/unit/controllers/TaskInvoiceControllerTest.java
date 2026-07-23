@@ -14,12 +14,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -40,7 +41,7 @@ class TaskInvoiceControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(taskInvoiceController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = new ObjectMapper().findAndRegisterModules();
 
         Helper helper = new Helper();
         helper.setHelperid(101);
@@ -74,8 +75,8 @@ class TaskInvoiceControllerTest {
                 .compatibilityid(compatibility)
                 .isImmediate(true)
                 .needsspecialist(false)
-                .startdate(Date.valueOf("2026-07-01"))
-                .enddate(Date.valueOf("2026-07-03"))
+                .startdate(LocalDate.parse("2026-07-01"))
+                .enddate(LocalDate.parse("2026-07-03"))
                 .dependentRatingreview("Excellent helper, very professional")
                 .helperRatingreview("Great family, easy to work with")
                 .adminReview("Task completed successfully")
@@ -203,8 +204,8 @@ class TaskInvoiceControllerTest {
                 .compatibilityid(compatibility)
                 .isImmediate(true)
                 .needsspecialist(false)
-                .startdate(Date.valueOf("2026-07-01"))
-                .enddate(Date.valueOf("2026-07-03"))
+                .startdate(LocalDate.parse("2026-07-01"))
+                .enddate(LocalDate.parse("2026-07-03"))
                 .dependentRatingreview("Test review")
                 .helperRatingreview("Test helper review")
                 .adminReview("Test admin review")
@@ -221,8 +222,8 @@ class TaskInvoiceControllerTest {
                 .compatibilityid(compatibility)
                 .isImmediate(true)
                 .needsspecialist(false)
-                .startdate(Date.valueOf("2026-07-01"))
-                .enddate(Date.valueOf("2026-07-03"))
+                .startdate(LocalDate.parse("2026-07-01"))
+                .enddate(LocalDate.parse("2026-07-03"))
                 .dependentRatingreview("Test review")
                 .helperRatingreview("Test helper review")
                 .adminReview("Test admin review")
@@ -241,17 +242,13 @@ class TaskInvoiceControllerTest {
     }
 
     @Test
-    void createTaskInvoice_WithNullObject() throws Exception {
-        // Given
-        when(taskInvoiceService.saveTaskInvoice(any(TaskInvoice.class))).thenReturn(null);
-
-        
+    void createTaskInvoice_WithNullObject() throws Exception {        
         mockMvc.perform(post("/api/taskinvoices")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("null"))
-                .andExpect(status().isCreated());
+                .andExpect(status().isBadRequest());
 
-        verify(taskInvoiceService, times(1)).saveTaskInvoice(any(TaskInvoice.class));
+        verify(taskInvoiceService, never()).saveTaskInvoice(any());
     }
     
     @Test
@@ -402,19 +399,27 @@ class TaskInvoiceControllerTest {
     @Test
     void updateTaskInvoice_WithDateFields() throws Exception {
         // Given
-        Date newStartDate = Date.valueOf("2026-08-01");
-        Date newEndDate = Date.valueOf("2026-08-05");
+        LocalDate newStartDate = LocalDate.parse("2026-08-01");
+        LocalDate newEndDate = LocalDate.parse("2026-08-05");
 
+        System.out.println(newStartDate.toString());
+        System.out.println(newEndDate.toString());
+        
         TaskInvoice dateUpdate = TaskInvoice.builder()
                 .startdate(newStartDate)
                 .enddate(newEndDate)
                 .build();
 
+        System.out.println(newStartDate);
+        System.out.println(newEndDate);
         TaskInvoice updatedInvoice = TaskInvoice.builder()
                 .taskid(1)
                 .startdate(newStartDate)
                 .enddate(newEndDate)
                 .build();
+        System.out.println(updatedInvoice.getStartdate());
+        System.out.println(updatedInvoice.getEnddate());
+        System.out.println(objectMapper.writeValueAsString(updatedInvoice));
 
         when(taskInvoiceService.getTaskInvoiceById(1)).thenReturn(taskInvoice);
         when(taskInvoiceService.updateTaskInvoice(eq(1), any(TaskInvoice.class))).thenReturn(updatedInvoice);
