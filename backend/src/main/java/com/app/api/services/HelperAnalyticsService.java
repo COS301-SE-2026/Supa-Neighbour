@@ -1,8 +1,6 @@
 package com.app.api.services;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.HelperAnalytics;
@@ -15,9 +13,17 @@ import com.app.api.repositories.HelperAnalyticsRepository;
 @Service
 public class HelperAnalyticsService {
 
-    @Autowired
-    private HelperAnalyticsRepository helperAnalyticsRepository;
+    
+    private final HelperAnalyticsRepository helperAnalyticsRepository;
 
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param herlperAnalyticsRepository repository providing analytics data for posts
+     */
+    public HelperAnalyticsService(HelperAnalyticsRepository helperAnalyticsRepository) {
+        this.helperAnalyticsRepository = helperAnalyticsRepository;
+    }
     // Get all
     /**
      * Retrieves all helper analytics records from the repository.

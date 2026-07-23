@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,8 +23,17 @@ import com.app.api.services.RatingsService;
 @RequestMapping("/api/ratings")
 public class RatingsController {
 
-    @Autowired
-    private RatingsService ratingsService;
+    
+    private final RatingsService ratingsService;
+
+    /**
+     * Constructs the controller with its required service dependency.
+     *
+     * @param ratingsService service providing analytics data for dependents
+     */
+    public RatingsController(RatingsService ratingsService) {
+        this.ratingsService = ratingsService;
+    }
 
     // GET /api/ratings
     /**

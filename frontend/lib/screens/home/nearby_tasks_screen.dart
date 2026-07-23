@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
-import 'task_detail_screen.dart';
+import '../tasks/task_detail_screen.dart';
 
 class NearbyTasksScreen extends StatelessWidget {
   const NearbyTasksScreen({super.key});

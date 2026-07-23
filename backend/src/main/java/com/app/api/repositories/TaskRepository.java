@@ -33,3 +33,4 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
      */
     List<Task> findByTaskTypeId(int taskTypeId);
 }
+

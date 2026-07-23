@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'otp_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../../components/logo_placeholder.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -13,8 +13,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
   bool _isLoading = false;
 
-  void _sendOTP() {
-    if (_emailController.text.isEmpty) {
+  // keyword "email enumeration protection"
+  Future<void> _sendResetLink() async {
+    if (_emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter your email'),
@@ -24,25 +25,35 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+    try {
+      await fb.FirebaseAuth.instance
+          .sendPasswordResetEmail(email: _emailController.text.trim());
 
-        // Navigate to OTP Screen (Step 2 of 3)
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OTPScreen(email: _emailController.text),
-          ),
-        );
-      }
-    });
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Reset link sent to ${_emailController.text.trim()}. Check your inbox.'),
+          backgroundColor: const Color(0xFF1C9A89),
+        ),
+      );
+
+      // back to login
+      Navigator.pop(context);
+    } on fb.FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      final message = e.code == 'invalid-email'
+          ? 'Please enter a valid email address.'
+          : 'Failed to send reset link. Please try again.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -50,7 +61,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Responsive sizing
     final logoSize = screenWidth * 0.3;
     final titleSize = screenWidth * 0.08;
     final subtitleSize = screenWidth * 0.045;
@@ -71,13 +81,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 children: [
                   SizedBox(height: screenHeight * 0.03),
 
-                  // Back Button
                   Align(
                     alignment: Alignment.centerLeft,
                     child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
+                      onTap: () => Navigator.pop(context),
                       child: Container(
                         width: 50,
                         height: 50,
@@ -85,49 +92,36 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           color: Color(0xFF1C9A89),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                          size: 30,
-                        ),
+                        child: const Icon(Icons.arrow_back,
+                            color: Colors.white, size: 30),
                       ),
                     ),
                   ),
 
                   SizedBox(height: screenHeight * 0.02),
-
-                  // Logo - Using LogoPlaceholder component (single)
                   LogoPlaceholder(size: logoSize),
-
                   SizedBox(height: screenHeight * 0.03),
 
-                  // Title
                   Text(
                     'super Neighbour',
                     style: TextStyle(
-                      fontSize: titleSize,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1C9A89),
-                    ),
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1C9A89)),
                     textAlign: TextAlign.center,
                   ),
-
                   SizedBox(height: screenHeight * 0.01),
-
-                  // Subtitle
                   Text(
                     'Your neighbourly helper',
                     style: TextStyle(
-                      fontSize: subtitleSize,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1C9A89),
-                    ),
+                        fontSize: subtitleSize,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1C9A89)),
                     textAlign: TextAlign.center,
                   ),
 
                   SizedBox(height: screenHeight * 0.04),
 
-                  // White Card Container
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -145,30 +139,35 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       padding: EdgeInsets.all(screenWidth * 0.07),
                       child: Column(
                         children: [
-                          // Forgot Password Title
                           Text(
                             'Forgot Password',
                             style: TextStyle(
-                              fontSize: titleSize * 0.8,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1C9A89),
-                            ),
+                                fontSize: titleSize * 0.8,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1C9A89)),
+                          ),
+
+                          SizedBox(height: screenHeight * 0.02),
+
+                          // Explanation text
+                          Text(
+                            'Enter your email and we\'ll send you a link to reset your password.',
+                            style: TextStyle(
+                                fontSize: smallFontSize,
+                                color: Colors.grey[600]),
+                            textAlign: TextAlign.center,
                           ),
 
                           SizedBox(height: screenHeight * 0.04),
 
-                          // Email Field
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Email',
-                                style: TextStyle(
-                                  fontSize: fontSize,
-                                  fontWeight: FontWeight.w400,
-                                  color: const Color(0xFF1C9A89),
-                                ),
-                              ),
+                              Text('Email',
+                                  style: TextStyle(
+                                      fontSize: fontSize,
+                                      fontWeight: FontWeight.w400,
+                                      color: const Color(0xFF1C9A89))),
                               SizedBox(height: screenHeight * 0.01),
                               Container(
                                 width: double.infinity,
@@ -177,9 +176,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   borderRadius: BorderRadius.circular(29),
                                   color: Colors.white,
                                   border: Border.all(
-                                    color: const Color(0xFF1C9A89),
-                                    width: 2,
-                                  ),
+                                      color: const Color(0xFF1C9A89),
+                                      width: 2),
                                 ),
                                 child: TextField(
                                   controller: _emailController,
@@ -188,14 +186,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   decoration: InputDecoration(
                                     hintText: 'Enter your email',
                                     hintStyle: TextStyle(
-                                      fontSize: fontSize * 0.6,
-                                      color: Colors.grey,
-                                    ),
+                                        fontSize: fontSize * 0.6,
+                                        color: Colors.grey),
                                     border: InputBorder.none,
                                     contentPadding: EdgeInsets.symmetric(
-                                      horizontal: screenWidth * 0.05,
-                                      vertical: screenHeight * 0.02,
-                                    ),
+                                        horizontal: screenWidth * 0.05,
+                                        vertical: screenHeight * 0.02),
                                   ),
                                 ),
                               ),
@@ -204,9 +200,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                           SizedBox(height: screenHeight * 0.04),
 
-                          // Send OTP Button
                           GestureDetector(
-                            onTap: _isLoading ? null : _sendOTP,
+                            onTap: _isLoading ? null : _sendResetLink,
                             child: Container(
                               width: double.infinity,
                               height: buttonHeight,
@@ -220,17 +215,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                         width: buttonHeight * 0.4,
                                         height: buttonHeight * 0.4,
                                         child: const CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
-                                        ),
+                                            color: Colors.white, strokeWidth: 2),
                                       )
                                     : Text(
-                                        'Send OTP',
+                                        'Send Reset Link',
                                         style: TextStyle(
-                                          fontSize: fontSize,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white,
-                                        ),
+                                            fontSize: fontSize,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white),
                                       ),
                               ),
                             ),
@@ -238,20 +230,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                           SizedBox(height: screenHeight * 0.02),
 
-                          // Back Link
                           Center(
                             child: GestureDetector(
-                              onTap: () {
-                                Navigator.pop(context);
-                              },
-                              child: Text(
-                                'Back',
-                                style: TextStyle(
-                                  fontSize: smallFontSize,
-                                  color: const Color(0xFF1C9A89),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                              onTap: () => Navigator.pop(context),
+                              child: Text('Back',
+                                  style: TextStyle(
+                                      fontSize: smallFontSize,
+                                      color: const Color(0xFF1C9A89),
+                                      fontWeight: FontWeight.w500)),
                             ),
                           ),
                         ],

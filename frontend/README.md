@@ -172,6 +172,8 @@ frontend/
 | `flutter pub get` | Installs/updates dependencies from pubspec.yaml |
 | `flutter run -d web-server --web-port=3000` | Runs the web dashboard locally |
 | `flutter test` | Runs all unit and widget tests |
+| `flutter test --coverage`| Runs all , ensure you have lcov installed
+| `flutter analyze`| Runs Linting on all frontend files
 | `flutter build web` | Builds the web dashboard for deployment |
 | `flutter doctor` | Checks your Flutter setup for any issues |
 

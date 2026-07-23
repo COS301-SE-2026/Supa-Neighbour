@@ -2,7 +2,7 @@ package com.app.api.services;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Admin;
@@ -15,9 +15,17 @@ import com.app.api.repositories.AdminRepository;
 @Service
 public class AdminService {
 
-    @Autowired
-    private AdminRepository adminRepository;
 
+    private final AdminRepository adminRepository;
+
+    /**
+     * Constructs the service with its required repository dependency.
+     *
+     * @param adminRepository repository providing analytics data for posts
+     */
+    public AdminService(AdminRepository adminRepository) {
+        this.adminRepository = adminRepository;
+    }
     // Get all
     /**
      * Retrieves all admins from the repository.

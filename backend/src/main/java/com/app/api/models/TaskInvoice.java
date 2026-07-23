@@ -84,6 +84,9 @@ public class TaskInvoice {
     @Column(name = "admin_review")
     private String adminReview;
 
+    @Column(name = "status")
+    private String status;
+
     @ManyToOne
     @JoinColumn(name = "compatibility_id")
     private Compatibility compatibilityid;
@@ -266,6 +269,25 @@ public class TaskInvoice {
      */
     public void setEnddate(LocalDate enddate) {
         this.enddate = enddate;
+    }
+
+    /**
+     * Gets the status of task
+     *
+     * @return status of task
+     */
+    public String getStatus() {
+        return status;
+    }
+
+    
+    /**
+     * Sets the status of the task
+     *
+     * @param status the status of task
+     */
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     /**
