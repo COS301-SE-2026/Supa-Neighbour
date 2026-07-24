@@ -69,24 +69,49 @@ public class TaskInvoiceService {
      */
     public TaskInvoice updateTaskInvoice(int id, TaskInvoice updated) {
         TaskInvoice existing = taskInvoiceRepository.findById(id).orElse(null);
-        if (existing == null) {
+
+        if (existing == null || updated == null) {
             return null;
         }
 
-        existing.setHelperid(updated.getHelperid());
-        existing.setTasktypeid(updated.getTasktypeid());
-        existing.setAdminreview(updated.getAdminReview());
-        existing.setCompatibilityid(updated.getCompatibilityid());
-        existing.setSignedadminid(updated.getSignedadminid());
-        existing.setDependentid(updated.getDependentid());
-        existing.setImmediate(updated.isImmediate());
-        existing.setLocationid(updated.getLocationid());
+        if (updated.getHelperid() != null) {
+            existing.setHelperid(updated.getHelperid());
+        }
+        if (updated.getTasktypeid() != null) {
+            existing.setTasktypeid(updated.getTasktypeid());
+        }
+        if (updated.getAdminReview() != null) {
+            existing.setAdminreview(updated.getAdminReview());
+        }
+        if (updated.getCompatibilityid() != null) {
+            existing.setCompatibilityid(updated.getCompatibilityid());
+        }
+        if (updated.getSignedadminid() != null) {
+            existing.setSignedadminid(updated.getSignedadminid());
+        }
+        if (updated.getDependentid() != null) {
+            existing.setDependentid(updated.getDependentid());
+        }
+        existing.setImmediate(updated.getImmediate());
+        if (updated.getLocationid() != null) {
+            existing.setLocationid(updated.getLocationid());
+        }
         existing.setNeedsspecialist(updated.isNeedsspecialist());
-        existing.setDependentratingreview(updated.getDependentratingreview());
-        existing.setHelperRatingreview(updated.getHelperRatingreview());
-        existing.setHelperbadgeid(updated.getHelperbadgeid());
-        existing.setStartdate(updated.getStartdate());
-        existing.setEnddate(updated.getEnddate());
+        if (updated.getDependentRatingreview() != null) {
+            existing.setDependentRatingreview(updated.getDependentRatingreview());
+        }
+        if (updated.getHelperRatingreview() != null) {
+            existing.setHelperRatingreview(updated.getHelperRatingreview());
+        }
+        if (updated.getHelperbadgeid() != null) {
+            existing.setHelperbadgeid(updated.getHelperbadgeid());
+        }
+        if (updated.getStartdate() != null) {
+            existing.setStartdate(updated.getStartdate());
+        }
+        if (updated.getEnddate() != null) {
+            existing.setEnddate(updated.getEnddate());
+        }
 
         return taskInvoiceRepository.save(existing);
     }

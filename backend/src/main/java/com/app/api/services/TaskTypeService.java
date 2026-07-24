@@ -56,6 +56,9 @@ public class TaskTypeService {
         if(taskType == null) {
             return null;
         }
+        if (taskType.getXpWorth() == null) {
+            taskType.setXpWorth(0);
+        }
         return taskTypeRepository.save(taskType);
     }
 
@@ -68,16 +71,28 @@ public class TaskTypeService {
      * @return the updated task type, or null if no task type exists with the given id
      */
     public TaskType updateTaskType(int id, TaskType updated) {
+        if (updated == null) {
+            return null;
+        }
         TaskType existing = taskTypeRepository.findById(id).orElse(null);
         
         if (existing == null) {
             return null;
         }
         
-        existing.setDescription(updated.getDescription());
-        existing.setBadgeid(updated.getBadgeid());
-        existing.setXpWorth(updated.getXpWorth());
-        existing.setNeedsSpecialist(updated.isNeedsSpecialist());
+        if (updated.getDescription() != null) {
+            existing.setDescription(updated.getDescription());
+        }
+        if (updated.getBadgeid() != null) {
+            existing.setBadgeid(updated.getBadgeid());
+        }
+        if (updated.getXpWorth() != null) {
+            existing.setXpWorth(updated.getXpWorth());
+        }
+        
+        if (updated.isNeedsSpecialist() != null) {
+            existing.setNeedsSpecialist(updated.isNeedsSpecialist());
+        }
 
         return taskTypeRepository.save(existing);
     }

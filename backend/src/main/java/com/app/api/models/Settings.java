@@ -56,13 +56,6 @@ public class Settings {
     private ThemeMode mode = ThemeMode.LIGHT;
 
     /**
-     * Default constructor required by JPA.
-     */
-    public Settings(){
-
-    }
-
-    /**
      * Returns the ID of the user associated with these settings.
      *
      * @return the user's unique identifier

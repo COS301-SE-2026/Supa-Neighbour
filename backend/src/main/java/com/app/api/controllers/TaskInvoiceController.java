@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.app.api.models.TaskInvoice;
 import com.app.api.services.TaskInvoiceService;
 
@@ -69,9 +71,20 @@ public class TaskInvoiceController {
      * @return the created task invoice with HTTP 201 status
      */
     @PostMapping
-    public ResponseEntity<TaskInvoice> createTaskInvoice(@RequestBody TaskInvoice taskInvoice) {
+    public ResponseEntity<TaskInvoice> createTaskInvoice(@RequestBody(required = false) TaskInvoice taskInvoice) {
+        if(taskInvoice == null){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         TaskInvoice saved = taskInvoiceService.saveTaskInvoice(taskInvoice);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+     /**
+     * Adding this to handle the exception handling within tests
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
     }
 
     // PUT /api/taskinvoices/1

@@ -1,5 +1,8 @@
 package com.app.api.models;
-import java.sql.Date;
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,6 +44,7 @@ public class TaskInvoice {
     private Dependent dependentid;
 
 
+    @JsonProperty("isImmediate")
     @Column(name = "is_immediate")
     private boolean isImmediate;
 
@@ -59,11 +63,13 @@ public class TaskInvoice {
     @JoinColumn(name = "signed_admin_id")
     private Admin signedadminid;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     @Column(name = "start_date")
-    private Date startdate;
+    private LocalDate startdate;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     @Column(name = "end_date")
-    private Date enddate;
+    private LocalDate enddate;
 
     @ManyToOne
     @JoinColumn(name = "helper_badge_id")
@@ -145,7 +151,7 @@ public class TaskInvoice {
      *
      * @return true if the task is immediate, false otherwise
      */
-    public boolean isImmediate() {
+    public boolean getImmediate() {
         return isImmediate;
     }
 
@@ -235,7 +241,7 @@ public class TaskInvoice {
      *
      * @return the start date
      */
-    public Date getStartdate() {
+    public LocalDate getStartdate() {
         return startdate;
     }
 
@@ -244,7 +250,7 @@ public class TaskInvoice {
      *
      * @param startdate the start date
      */
-    public void setStartdate(Date startdate) {
+    public void setStartdate(LocalDate startdate) {
         this.startdate = startdate;
     }
 
@@ -253,7 +259,7 @@ public class TaskInvoice {
      *
      * @return the end date
      */
-    public Date getEnddate() {
+    public LocalDate getEnddate() {
         return enddate;
     }
 
@@ -262,7 +268,7 @@ public class TaskInvoice {
      *
      * @param enddate the end date
      */
-    public void setEnddate(Date enddate) {
+    public void setEnddate(LocalDate enddate) {
         this.enddate = enddate;
     }
 
@@ -304,20 +310,11 @@ public class TaskInvoice {
     }
 
     /**
-     * Gets the dependent's rating and review of the task.
-     *
-     * @return the dependent rating review
-     */
-    public String getDependentratingid() {
-        return dependentRatingreview;
-    }
-
-    /**
      * Sets the dependent's rating and review of the task.
      *
      * @param dependentRatingreview the dependent rating review
      */
-    public void setDependentratingreview(String dependentRatingreview) {
+    public void setDependentRatingreview(String dependentRatingreview) {
         this.dependentRatingreview = dependentRatingreview;
     }
 
@@ -326,7 +323,7 @@ public class TaskInvoice {
      *
      * @returnthe dependent rating review
      */
-    public String getDependentratingreview() {
+    public String getDependentRatingreview() {
         return dependentRatingreview;
     }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/chat_thread.dart';
+import 'bulletin_screen.dart';
 import 'chat_detail_screen.dart';
 import '../../services/chat_service.dart';
 
@@ -12,18 +13,27 @@ class InboxScreen extends StatefulWidget {
   State<InboxScreen> createState() => _InboxScreenState();
 }
 
-class _InboxScreenState extends State<InboxScreen> {
+class _InboxScreenState extends State<InboxScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   final ChatService _chatService = ChatService();
   List<ChatThread> _chats = [];
   bool _isLoading = false;
   String? _error;
 
-  static const int _currentUserId = 6; // auth user update
+  static const int _currentUserId = 6;
 
   @override
   void initState() {
     super.initState();
-    _loadChats();
+   _tabController = TabController(length: 2, vsync: this);
+  _loadChats();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadChats() async {
@@ -68,37 +78,53 @@ class _InboxScreenState extends State<InboxScreen> {
             Navigator.pop(context);
           },
         ),
+          bottom: TabBar(
+          controller: _tabController,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
+          tabs: const [
+            Tab(text: 'Inbox'),
+            Tab(text: 'Bulletin'),
+          ],
+        ),
       ),
-        body: _isLoading
-      ? const Center(child: CircularProgressIndicator(color: Color(0xFF1C9A89)))
-      : _error != null
-          ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
-          : RefreshIndicator(
-              onRefresh: _loadChats,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                itemCount: _chats.length,
-                itemBuilder: (context, index) {
-                  final chat = _chats[index];
-                  return ChatCard(
-                    chat: chat,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatDetailScreen(chat: chat),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
+      body: TabBarView(
+  controller: _tabController,
+  children: [
+    // Inbox Tab
+      _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1C9A89)))
+          : _error != null
+              ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
+              : RefreshIndicator(
+                  onRefresh: _loadChats,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    itemCount: _chats.length,
+                    itemBuilder: (context, index) {
+                      final chat = _chats[index];
+                      return ChatCard(
+                        chat: chat,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatDetailScreen(chat: chat),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+      // Bulletin Tab
+      const BulletinScreen(),
+    ],
+  ),
     );
   }
 }
-
-// Chat Card Widget - Fixed Overflow
 class ChatCard extends StatelessWidget {
   final ChatThread chat;
   final VoidCallback onTap;
@@ -111,8 +137,6 @@ class ChatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-   // final screenWidth = MediaQuery.of(context).size.width;
-    
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -125,7 +149,6 @@ class ChatCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Avatar - Fixed size
             Container(
               width: 55,
               height: 55,
@@ -155,12 +178,10 @@ class ChatCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // Chat Info - Expanded to take remaining space
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Name and Unread Badge Row
                   Row(
                     children: [
                       Expanded(
@@ -196,7 +217,6 @@ class ChatCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  // Location
                   Row(
                     children: [
                       const Icon(
@@ -219,7 +239,6 @@ class ChatCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  // Last Message
                   Text(
                     chat.lastMessage,
                     style: GoogleFonts.openSans(
@@ -236,7 +255,6 @@ class ChatCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            // Timestamp - Fixed width
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 8,
