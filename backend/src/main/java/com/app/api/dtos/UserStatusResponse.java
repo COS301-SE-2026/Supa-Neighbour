@@ -90,7 +90,7 @@ public class UserStatusResponse {
      *
      * @return the last seen timestamp
      */
-    public Instant getlastSeen(){
+    public Instant getLastSeen(){
         return lastSeen;
     }
 
