@@ -20,6 +20,7 @@ import com.app.api.dtos.ShowStatusResponse;
 import com.app.api.dtos.UpdateSettingsDTO;
 import com.app.api.dtos.UserProfileResponse;
 import com.app.api.dtos.UserSettingsDTO;
+import com.app.api.dtos.AddressInfoDTO;
 import com.app.api.dtos.UserStatusResponse;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.SettingsServices;
