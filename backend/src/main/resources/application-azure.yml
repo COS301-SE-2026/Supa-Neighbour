@@ -18,6 +18,12 @@ azure:
     connection-string: ${BLOB_CONNECTION_STRING}
     posts-container: posts
     profiles-container: profiles
-app:
-  encryption:
-    key: yvVMg5ymmdte9Wg2XszsAHVsY72Upcqeo8DEc2pwOLU=
+management:
+  endpoint:
+    health:
+      show-details: always
+
+  endpoints:
+    web:
+      exposure:
+        include: health

@@ -55,7 +55,13 @@
    - [POST /api/bulletin/posts/{postId}/dis-helpful](#710-post-apibulletinpostspostiddis-helpful)
    - [DELETE /api/bulletin/posts/{postId}/dis-helpful](#711-delete-apibulletinpostspostiddis-helpful)
    - [DELETE /api/bulletin/posts/{postId}/comments/{commentId}](#712-delete-apicommentsbulletinpostspostidcommentid)
-8. [Http Status Code Reference](#8-http-status-code-reference)
+8. [Settings & Privacy](#8-settings-and-privacy)
+   - [GET /api/settings/users/show-status](#81-get-apisettingsusersshow-status)
+   - [POST /api/settings/users/show-status](#82-post-apisettingsusersshow-status)
+   - [GET /api/settings/users/mode](#83-get-apisettingsusersmode)
+   - [POST /api/settings/users/mode](#84-post-apisettingsusersmode)
+   - [GET api/settings//users/{userId}/status](#85-get-apisettingsusersuseridstatus)
+9.  [Http Status Code Reference](#8-http-status-code-reference)
 ---
 
 
@@ -2089,8 +2095,222 @@ No response body.
  
 ---
 
+## 8. Settings and Privacy
+### 8.1 GET /api/settings/users/show-status
 
-## 8. HTTP Status Code Reference
+| Field              | Details                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| **Endpoint**       | `/api/settings/users/status`                                                                     |
+| **Method**         | `GET`                                                                                            |
+| **Purpose**        | Returns whether a user's online status is visible and, if visible, their current online presence |
+| **Authentication** | Firebase ID Token required                                                                       |
+| **Content-Type**   | `application/json`                                                                               |
+
+#### Path Parameters
+
+| Parameter | Type | Description                                                      |
+| --------- | ---- | ---------------------------------------------------------------- |
+| `userId`  | int  | The unique ID of the user whose online status is being requested |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Success Response — `200 OK` (Visibility Disabled)
+
+```json
+{
+  "visible": false
+}
+```
+
+#### Success Response — `200 OK` (Visibility Enabled)
+
+```json
+{
+  "visible": true,
+  "online": true,
+  "lastSeen": "2026-07-21T09:15:00Z"
+}
+```
+
+#### Notes
+
+* `visible` reflects the **target user's** `Show_status` setting, not the requester's.
+* `online` is calculated server-side using `last_active_at` and a configured timeout (e.g. 2 minutes).
+* `lastSeen` is only included when `visible` is `true`.
+
+---
+
+### 8.2 POST /api/settings/users/show-status
+
+| Field              | Details                                                              |
+| ------------------ | -------------------------------------------------------------------- |
+| **Endpoint**       | `/api/settings/users/show-status`                                 |
+| **Method**         | `POST`                                                               |
+| **Purpose**        | Updates the authenticated user's online status visibility preference |
+| **Authentication** | Firebase ID Token required                                           |
+| **Content-Type**   | `application/json`                                                   |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Request Body
+
+```json
+{
+  "showStatus": true
+}
+```
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "showStatus": true
+}
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                                 | Response Body                             |
+| ------------------ | ---------------------------------------- | ----------------------------------------- |
+| `400 Bad Request`  | `showStatus` is missing or not a boolean | `{ "error": "Invalid showStatus value" }` |
+| `401 Unauthorized` | Missing or invalid Firebase ID token     | `{ "error": "Unauthorized" }`             |
+
+---
+
+### 8.3 GET /api/settings/users/mode
+
+| Field              | Details                                                    |
+| ------------------ | ---------------------------------------------------------- |
+| **Endpoint**       | `/api/settings/users/mode`                              |
+| **Method**         | `GET`                                                      |
+| **Purpose**        | Retrieves the authenticated user's display mode preference |
+| **Authentication** | Firebase ID Token required                                 |
+| **Content-Type**   | `application/json`                                         |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "mode": "dark"
+}
+```
+
+#### Notes
+
+* `mode` is one of `"light"` or `"dark"` (subject to the database constraint defined for `settings_table.Mode`).
+
+---
+
+### 8.4 POST /api/settings/users/mode
+
+| Field              | Details                                                  |
+| ------------------ | -------------------------------------------------------- |
+| **Endpoint**       | `/api/settings/users/mode`                            |
+| **Method**         | `POST`                                                   |
+| **Purpose**        | Updates the authenticated user's display mode preference |
+| **Authentication** | Firebase ID Token required                               |
+| **Content-Type**   | `application/json`                                       |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Request Body
+
+```json
+{
+  "mode": "dark"
+}
+```
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "mode": "dark"
+}
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                                             | Response Body                       |
+| ------------------ | ---------------------------------------------------- | ----------------------------------- |
+| `400 Bad Request`  | `mode` is missing or not one of the supported values | `{ "error": "Invalid mode value" }` |
+| `401 Unauthorized` | Missing or invalid Firebase ID token                 | `{ "error": "Unauthorized" }`       |
+
+--- 
+
+### 8.5 GET /api/settings/users/{userId}/status
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/settings/users/{userId}/status`                                   |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Retrieves another user's online status visibility/presence, respecting that user's `showStatus` preference |
+| **Authentication** | Firebase ID Token required                                              |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Path Parameters
+
+| Parameter | Type | Description                                  |
+| --------- | ---- | --------------------------------------------- |
+| `userId`  | int  | ID of the user whose status is being requested |
+
+#### Success Response — `200 OK`
+
+**If the target user has `showStatus` enabled:**
+
+```json
+{
+  "visible": true,
+  "online": true,
+}
+```
+
+**If the target user has `showStatus` disabled:**
+
+```json
+{
+  "visible": false
+}
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                                     | Response Body                        |
+| ------------------- | --------------------------------------------- | ------------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token          | `{ "error": "Unauthorized" }`         |
+| `404 Not Found`     | No settings row exists for the given `userId` | `{ "error": "Settings not found" }`   |
+
+#### Notes
+
+* Unlike `GET /api/settings/users/show-status` (self-only), this endpoint looks up an **arbitrary** `userId` from the path — the caller's own token is only used to confirm authentication, not to identify the target user.
+* Currently any authenticated user can query any `userId`'s status via this endpoint (subject to that user's own `showStatus` preference). 
+
+---
+## 9. HTTP Status Code Reference
 
 
 | Code | Meaning | When used |
