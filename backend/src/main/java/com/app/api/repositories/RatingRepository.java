@@ -176,14 +176,12 @@ public class RatingRepository {
      * @param helperId the identifier of the helper
      * @return the helper's average rating, or {@code null} if none exists
      */
-    public Double findEaverageRating(int helperId)
-
-    {
+    public Double findAverageRating(int helperId) {
         String sql = """
         SELECT  ha.average_rating
         FROM helper_table h
         JOIN helper_analytics_table ha ON ha.user_id = h.user_id
-        WHERE h.helper_id = :helperOd
+        WHERE h.helper_id = :helperId
         """;
         try{
             Object result = em.createNativeQuery(sql).setParameter("helperId", helperId).getSingleResult();

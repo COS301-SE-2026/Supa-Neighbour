@@ -105,6 +105,6 @@ public class RatingService {
      * @return the helper's average rating, or {@code null} if unavailable
      */
     public Double getAverageRating(int helperId){
-        return ratingRepository.findEaverageRating(helperId);
+        return ratingRepository.findAverageRating(helperId);
     }
 }
