@@ -1,8 +1,10 @@
 package com.app.api.unit.controllers;
+
 import com.app.api.dtos.ModeResponse;
 import com.app.api.dtos.ShowStatusRequest;
 import com.app.api.dtos.ShowStatusResponse;
 import com.app.api.dtos.UserStatusResponse;
+import com.app.api.repositories.SettingsRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.SettingsServices;
@@ -45,6 +47,9 @@ public class SettingsControllerTest {
 
     @MockitoBean
     private UserRepository userRepository;
+
+    @MockitoBean
+    private SettingsRepository settingsRepository;
 
     private static final String VALID_TOKEN = "Bearer valid-token";
 
