@@ -171,11 +171,10 @@ public AuthController(
  */
 @PostMapping("/logout")
 public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader){
-
     try{
         String token = authHeader.replace("Bearer ", "");
-        String Uid = firebaseAuthService.verifyIdToken(token).getUid();
-        firebaseAuthService.revokeUserSessions(Uid);
+        String uid = firebaseAuthService.verifyIdToken(token).getUid();
+        firebaseAuthService.revokeUserSessions(uid);
         return ResponseEntity.ok("Logged out successfully");
     }catch(FirebaseAuthException e) {
         return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(null);
