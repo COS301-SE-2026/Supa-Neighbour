@@ -44,9 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# ===== Custom additions for Supa Neighbour =====
-# Personal
-*_tree.txt
 
 # Android auto-generated
 android/build/

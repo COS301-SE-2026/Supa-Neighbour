@@ -33,10 +33,10 @@ public class TaskType {
     private String description;
 
     @Column(name = "needs_specialist")
-    private boolean needsSpecialist;
+    private Boolean needsSpecialist;
 
     @Column(name = "xp_worth")
-    private int xpWorth;
+    private Integer xpWorth;
 
     /**
      * Default constructor.
@@ -53,7 +53,7 @@ public class TaskType {
      * @param needsSpecialist whether a specialist is required
      * @param xpWorth the XP reward for completing the task
      */
-    public TaskType(int tasktypeid, Badges badgeid, String description, boolean needsSpecialist, int xpWorth) {
+    public TaskType(int tasktypeid, Badges badgeid, String description, Boolean needsSpecialist, Integer xpWorth) {
         this.tasktypeid = tasktypeid;
         this.badgeid=badgeid;
         this.badgeid = badgeid;
@@ -85,7 +85,7 @@ public class TaskType {
      *
      * @return true if a specialist is required, false otherwise
      */
-    public boolean isNeedsSpecialist() {
+    public Boolean isNeedsSpecialist() {
         return needsSpecialist;
     }
 
@@ -94,7 +94,7 @@ public class TaskType {
      *
      * @return the XP reward
      */
-    public int getXpWorth() {
+    public Integer getXpWorth() {
         return xpWorth;
     }
 
@@ -130,7 +130,7 @@ public class TaskType {
      *
      * @param needsSpecialist true if a specialist is required
      */
-    public void setNeedsSpecialist(boolean needsSpecialist) {
+    public void setNeedsSpecialist(Boolean needsSpecialist) {
         this.needsSpecialist = needsSpecialist;
     }
 
