@@ -26,8 +26,7 @@ public class UpdateSettingsDTO {
      *
      * @return the new show-status value, or {@code null} if unchanged
      */
-    public Boolean getShowStatus()
-    {
+    public Boolean getShowStatus(){
         return showStatus;
     }
 

@@ -1,7 +1,6 @@
 package com.app.api.controllers;
 
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.hibernate.mapping.Map;
 import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
 import com.app.api.models.Badges;

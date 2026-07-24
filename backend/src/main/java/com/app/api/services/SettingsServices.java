@@ -2,13 +2,8 @@ package com.app.api.services;
 
 import com.app.api.dtos.UserStatusResponse;
 import com.app.api.models.Settings;
-import com.app.api.repositories.AchievementRepository;
 import com.app.api.repositories.HelperRepository;
-import com.app.api.repositories.HelperSkillRepository;
-import com.app.api.repositories.LocationRepository;
 import com.app.api.repositories.SettingsRepository;
-import com.app.api.repositories.TaskRepository;
-import com.app.api.repositories.UserAchievementRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.dtos.ShowStatusResponse;
 import com.app.api.dtos.UserSettingsDTO;
@@ -18,25 +13,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import com.app.api.models.User;
-import com.app.api.models.UserAchievement;
 import com.app.api.dtos.AchievementDTO;
 import com.app.api.dtos.AddressDTO;
 import com.app.api.dtos.ModeResponse;
 import java.time.Instant;
 import com.app.api.dtos.RecentTaskDTO;
-import com.app.api.models.Task;
 import java.time.Duration;
 import com.app.api.models.Address;
-import com.app.api.models.HelperSkill;
-import com.app.api.dtos.AddressInfoDTO;
-import com.app.api.models.Location;
 import com.app.api.models.Helper;
 import java.util.List;
-
-import com.app.api.services.RatingService;
-import com.app.api.services.HelperTasksService;
-import com.app.api.services.AchievementService;
-
 
 /**
  * Service responsible for managing user application settings.
@@ -47,8 +32,6 @@ import com.app.api.services.AchievementService;
  */
 @Service
 public class SettingsServices {
-
-
 
     /**
      * Constructs a new {@code SettingsServices}.
@@ -63,6 +46,12 @@ public class SettingsServices {
     private final HelperTasksService helperTasksService;
     private final AchievementService achievementService;
 
+    /**
+     * Creates a new SettingsServices instance.
+     *
+     * @param settingsRepository repository for settings
+     * @param userRepository     repository for users
+     */
     public SettingsServices(
             SettingsRepository settingsRepository,
             UserRepository userRepository,
@@ -149,14 +138,28 @@ public class SettingsServices {
         return new ModeResponse(mode);
     }
 
-
-    private String calculateLevel(int xp){
-        if(xp>=1000) return "Master";
-        if(xp>=500) return "Expert";
-        if(xp>=200) return "Skilled";
-        if(xp>=50) return "Novice";
+    /**
+     * Find the user xp level.
+     *
+     * @param xp the users xp lavel
+     * @return the current level
+     */
+    private String calculateLevel(int xp) {
+        if (xp >= 1000) {
+            return "Master";
+        }
+        if (xp >= 500) {
+            return "Expert";
+        }
+        if (xp >= 200) {
+            return "Skilled";
+        }
+        if (xp >= 50) {
+            return "Novice";
+        }
         return "Beginner";
     }
+
     /**
      * Updates the user's preferred application theme mode.
      * <p>
@@ -197,40 +200,47 @@ public class SettingsServices {
      * @throws ResponseStatusException if the user or their settings cannot be found
      */
     public UserSettingsDTO getUserInfo(int userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        Helper helper = helperRepository.findByUserid_Userid(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Helper not found"));
+        Helper helper = helperRepository.findByUserid_Userid(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Helper not found"));
 
-        Address address= user.getAddressid();
-        AddressDTO addressDTO = new AddressDTO(address.getAddressid(),address.getNeighbourhoodid());
+        Address address = user.getAddressid();
+        AddressDTO addressDTO = new AddressDTO(address.getAddressid(), address.getNeighbourhoodid());
 
         Double trustScore = ratingService.getAverageRating(helper.getHelperid());
         String level = calculateLevel(helper.getHelperXp());
         Integer xp = helper.getHelperXp();
 
         List<RecentTaskDTO> recentTaskDTOs = helperTasksService.getTasks(userId, "completed", 5, 0)
-            .getTasks()
-            .stream()
-            .map(t -> new RecentTaskDTO(t.getTaskId(), t.getTaskType(), t.getEndDate()))
-            .toList();
+                .getTasks()
+                .stream()
+                .map(t -> new RecentTaskDTO(t.getTaskId(), t.getTaskType(), t.getEndDate()))
+                .toList();
 
         List<AchievementDTO> achievementDTOs = achievementService.getAchievements(userId).getEarned();
         UserProfileResponse responseProfile = new UserProfileResponse(
-            user.getUserid(),
-            user.getUsername(), 
-            address.getNeighbourhoodid().getNeighbourhoodName(), 
-            level, 
-            xp, 
-            List.of(helper.getTaskTypeid().getDescription()),
-            recentTaskDTOs.size(),
-            recentTaskDTOs,
-            achievementDTOs,
-            trustScore
-        );
+                user.getUserid(),
+                user.getUsername(),
+                address.getNeighbourhoodid().getNeighbourhoodName(),
+                level,
+                xp,
+                List.of(helper.getTaskTypeid().getDescription()),
+                recentTaskDTOs.size(),
+                recentTaskDTOs,
+                achievementDTOs,
+                trustScore);
 
         return new UserSettingsDTO(responseProfile, addressDTO);
     }
 
+    /**
+     * Retrieves user information.
+     *
+     * @param userId the user id
+     * @return the user settings
+     */
     public List<UserProfileResponse> getAllUserProfiles(int userId) {
         return userRepository.findAll().stream().map(user -> {
             Address address = user.getAddressid();
@@ -246,19 +256,26 @@ public class SettingsServices {
         }).toList();
     }
 
-    public UserSettingsDTO updateSettings(int userId, UpdateSettingsDTO  dto)
-    {
-        Settings settings = settingsRepository.findById(userId).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Settings not found"));
-        
-        if(dto.getShowStatus() != null){
-           settings.setShowStatus(dto.getShowStatus());
+    /**
+     * Updates user information.
+     *
+     * @param userId the user id
+     * @param dto    the user settings
+     * @return the new user settings
+     */
+    public UserSettingsDTO updateSettings(int userId, UpdateSettingsDTO dto) {
+        Settings settings = settingsRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Settings not found"));
+
+        if (dto.getShowStatus() != null) {
+            settings.setShowStatus(dto.getShowStatus());
         }
 
-        if(dto.getShowPhoneNo() != null){
-                settings.setShowPhoneNo(dto.getShowPhoneNo());       
+        if (dto.getShowPhoneNo() != null) {
+            settings.setShowPhoneNo(dto.getShowPhoneNo());
         }
 
-        if(dto.getMode() != null){
+        if (dto.getMode() != null) {
             settings.setMode(Settings.ThemeMode.valueOf(dto.getMode().toUpperCase()));
         }
 
@@ -267,6 +284,12 @@ public class SettingsServices {
         return getUserInfo(userId);
     }
 
+    /**
+     * Deletes the user information.
+     *
+     * @param userId the user id
+     * @return nothing
+     */
     public void deleteUser(int userId) {
 
         User user = userRepository.findById(userId)

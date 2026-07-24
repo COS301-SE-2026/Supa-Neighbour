@@ -18,15 +18,12 @@ import com.app.api.dtos.ModeResponse;
 import com.app.api.dtos.ShowStatusRequest;
 import com.app.api.dtos.ShowStatusResponse;
 import com.app.api.dtos.UpdateSettingsDTO;
-import com.app.api.dtos.UserProfileResponse;
 import com.app.api.dtos.UserSettingsDTO;
-import com.app.api.dtos.AddressInfoDTO;
 import com.app.api.dtos.UserStatusResponse;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.SettingsServices;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import java.util.List;
 import com.app.api.models.User;
 
 /**
@@ -45,6 +42,7 @@ public class SettingsController {
     private final SettingsServices settingsServices;
     private final UserRepository userRepository;
     private final SettingsRepository settingsRepository;
+
     /**
      * Constructs a new {@code SettingsController}.
      *
@@ -53,11 +51,12 @@ public class SettingsController {
      * @param settingsServices    service responsible for retrieving and
      *                            updating user settings
      */
-    public SettingsController(FirebaseAuthService firebaseAuthService, SettingsServices settingsServices,UserRepository userRepository,SettingsRepository settingsRepository) {
+    public SettingsController(FirebaseAuthService firebaseAuthService, SettingsServices settingsServices,
+            UserRepository userRepository, SettingsRepository settingsRepository) {
         this.firebaseAuthService = firebaseAuthService;
         this.settingsServices = settingsServices;
-        this.userRepository= userRepository;
-        this.settingsRepository= settingsRepository;
+        this.userRepository = userRepository;
+        this.settingsRepository = settingsRepository;
     }
 
     /**
@@ -178,6 +177,13 @@ public class SettingsController {
         }
     }
 
+    /**
+     * Retrieves settings and profile information for the specified user.
+     *
+     * @param userId     the identifier of the user
+     * @param authHeader the Firebase Bearer token
+     * @return the user's settings information, or 401 if unauthenticated
+     */
     @GetMapping("/users/information/{userId}")
     public ResponseEntity<?> getUserInfo(@PathVariable int userId, @RequestHeader("Authorization") String authHeader) {
         try {
@@ -190,36 +196,49 @@ public class SettingsController {
         }
     }
 
+    /**
+     * Updates settings for the specified user.
+     *
+     * @param userId     the identifier of the user
+     * @param dto        the settings fields to update
+     * @param authHeader the Firebase Bearer token
+     * @return the updated settings information, or 401 if unauthenticated
+     */
     @PutMapping("/{userId}")
-    public ResponseEntity<?> updateSettings(@PathVariable int userId, @RequestBody UpdateSettingsDTO dto,@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> updateSettings(@PathVariable int userId, @RequestBody UpdateSettingsDTO dto,
+            @RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.replace("Bearer ", "");
             firebaseAuthService.getUserIdFromToken(token);
-            UserSettingsDTO response = settingsServices.updateSettings(userId,dto);
+            UserSettingsDTO response = settingsServices.updateSettings(userId, dto);
             return ResponseEntity.ok(response);
         } catch (FirebaseAuthException e) {
             return ResponseEntity.status(401).body("Invalid Firebase Token");
         }
     }
 
+    /**
+     * Deletes the authenticated user's account.
+     *
+     * @param authHeader the Firebase Bearer token
+     * @return 204 No Content on success
+     */
     @DeleteMapping("/me/user")
     public ResponseEntity<Void> deleteUser(
-        @RequestHeader("Authorization") String authHeader
-    ) {
-        try{
+            @RequestHeader("Authorization") String authHeader) {
+        try {
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
-            User user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found"));
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
             if (user.getFirebaseUid() != null) {
                 FirebaseAuth.getInstance().deleteUser(user.getFirebaseUid());
             }
             settingsRepository.deleteById(userId);
             userRepository.delete(user);
             return ResponseEntity.noContent().build();
-        }catch (FirebaseAuthException e) {
+        } catch (FirebaseAuthException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Firebase Token");
         }
     }
 }
-
-
