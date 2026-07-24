@@ -462,7 +462,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  post.authorName,
+                  post.authorUsername,
                   style: GoogleFonts.openSans(
                     color: AppColors.charcoal,
                     fontSize: 14,
@@ -496,49 +496,29 @@ class _BulletinScreenState extends State<BulletinScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              post.title,
+           Text(
+              post.postContent,
               style: GoogleFonts.poppins(
                 color: AppColors.charcoal,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              post.body,
-              style: GoogleFonts.openSans(
-                color: AppColors.charcoal,
-                fontSize: 14,
-                height: 1.4,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
             const SizedBox(height: 8),
-            if (post.imageUrls.isNotEmpty)
-              SizedBox(
-                height: 80,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: post.imageUrls.length > 3 ? 3 : post.imageUrls.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      width: 80,
-                      height: 80,
-                      margin: const EdgeInsets.only(right: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceGrey,
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: NetworkImage(post.imageUrls[index]),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    );
-                  },
+            if (post.mediaUrl != null)
+              Container(
+                  width: double.infinity,
+                  height: 160,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceGrey,
+                    borderRadius: BorderRadius.circular(8),
+                    image: DecorationImage(
+                      image: NetworkImage(post.mediaUrl!),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -555,7 +535,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        post.helpfulCount.toString(),
+                        post.likeCount.toString(),
                         style: GoogleFonts.openSans(
                           color: post.isHelpfulByUser ? AppColors.primaryTeal : AppColors.textGrey,
                           fontSize: 12,
@@ -588,10 +568,10 @@ class _BulletinScreenState extends State<BulletinScreen> {
                   onTap: () {
                     _showReportDialog(post);
                   },
-                  child: Icon(
+                  child: const Icon(
                     Icons.flag_outlined,
                     size: 16,
-                    color: post.isReported ? Colors.red : AppColors.textGrey,
+                    color: AppColors.textGrey,
                   ),
                 ),
               ],
@@ -610,67 +590,34 @@ Future<void> _toggleHelpful(BulletinPost post) async {
     if (post.isHelpfulByUser) {
       await _bulletinService.removeHelpful(post.id);
       if (!mounted) return;
-      
-      // Create updated post with helpful count decreased
-      final updatedPost = BulletinPost(
-        id: post.id,
-        title: post.title,
-        body: post.body,
-        category: post.category,
-        authorId: post.authorId,
-        authorName: post.authorName,
-        authorAvatar: post.authorAvatar,
-        imageUrls: post.imageUrls,
-        helpfulCount: post.helpfulCount - 1,
-        commentCount: post.commentCount,
-        createdAt: post.createdAt,
-        isOwner: post.isOwner,
-        isReported: post.isReported,
-        isHelpfulByUser: false,
-        isExpired: post.isExpired,
-      );
-      
       setState(() {
-        _posts[index] = updatedPost;
+        _posts[index] = post.copyWith(
+          isHelpfulByUser: false,
+          likeCount: post.likeCount - 1,
+        );
       });
     } else {
       await _bulletinService.addHelpful(post.id);
       if (!mounted) return;
-      
-      // Create updated post with helpful count increased
-      final updatedPost = BulletinPost(
-        id: post.id,
-        title: post.title,
-        body: post.body,
-        category: post.category,
-        authorId: post.authorId,
-        authorName: post.authorName,
-        authorAvatar: post.authorAvatar,
-        imageUrls: post.imageUrls,
-        helpfulCount: post.helpfulCount + 1,
-        commentCount: post.commentCount,
-        createdAt: post.createdAt,
-        isOwner: post.isOwner,
-        isReported: post.isReported,
-        isHelpfulByUser: true,
-        isExpired: post.isExpired,
-      );
-      
       setState(() {
-        _posts[index] = updatedPost;
+        _posts[index] = post.copyWith(
+          isHelpfulByUser: true,
+          likeCount: post.likeCount + 1,
+        );
       });
     }
   } catch (e) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Text('Failed to update helpful status'),
         backgroundColor: AppColors.error,
-        duration: const Duration(seconds: 2),
+        duration: Duration(seconds: 2),
       ),
     );
   }
 }
+
 
  void _showReportDialog(BulletinPost post) {
   final TextEditingController reasonController = TextEditingController();
@@ -733,65 +680,19 @@ Future<void> _toggleHelpful(BulletinPost post) async {
           ),
         ),
         ElevatedButton(
-          onPressed: () async {
+        onPressed: () {
             if (reasonController.text.isNotEmpty) {
-              try {
-                await _bulletinService.reportPost(post.id, reasonController.text);
-                
-                
-                if (!mounted) {
-                  if (context.mounted) Navigator.pop(context);
-                  return;
-                }
-                
-                setState(() {
-                  final index = _posts.indexWhere((p) => p.id == post.id);
-                  if (index != -1) {
-                    _posts[index] = BulletinPost(
-                      id: post.id,
-                      title: post.title,
-                      body: post.body,
-                      category: post.category,
-                      authorId: post.authorId,
-                      authorName: post.authorName,
-                      authorAvatar: post.authorAvatar,
-                      imageUrls: post.imageUrls,
-                      helpfulCount: post.helpfulCount,
-                      commentCount: post.commentCount,
-                      createdAt: post.createdAt,
-                      isOwner: post.isOwner,
-                      isReported: true,
-                      isHelpfulByUser: post.isHelpfulByUser,
-                      isExpired: post.isExpired,
-                    );
-                  }
-                });
-                
-                if (context.mounted) Navigator.pop(context);
-                
-                
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Post reported successfully'),
-                    backgroundColor: AppColors.success,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              } catch (e) {
-                if (context.mounted) Navigator.pop(context);
-                
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to report post'),
-                    backgroundColor: AppColors.error,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              }
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Post reported successfully'),
+                  backgroundColor: AppColors.success,
+                  duration: Duration(seconds: 2),
+                ),
+              );
             }
           },
+
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red,
             shape: RoundedRectangleBorder(
