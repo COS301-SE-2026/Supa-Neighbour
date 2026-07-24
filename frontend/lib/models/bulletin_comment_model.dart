@@ -1,8 +1,9 @@
 class BulletinComment {
-  final String id;
+  final int id;
   final String content;
-  final String authorId;
+  final int authorId;
   final String authorName;
+  final int? parentCommentId;
   final DateTime createdAt;
 
   BulletinComment({
@@ -10,33 +11,18 @@ class BulletinComment {
     required this.content,
     required this.authorId,
     required this.authorName,
+    this.parentCommentId,
     required this.createdAt,
   });
 
-  // Mock data for now
-  static List<BulletinComment> getMockComments(String postId) {
-    return [
-      BulletinComment(
-        id: 'c1',
-        content: 'I hope you find Max!',
-        authorId: 'user_2',
-        authorName: 'Michael Jackson',
-        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-      ),
-      BulletinComment(
-        id: 'c2',
-        content: 'Have you checked plaza maybe someone saw him?',
-        authorId: 'user_3',
-        authorName: 'Lisa Wong',
-        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
-      ),
-      BulletinComment(
-        id: 'c3',
-        content: 'I will keep an eye out!',
-        authorId: 'user_4',
-        authorName: 'Tom Jerry',
-        createdAt: DateTime.now().subtract(const Duration(minutes: 10)),
-      ),
-    ];
+  factory BulletinComment.fromJson(Map<String, dynamic> json) {
+    return BulletinComment(
+      id: json['commentId'] as int,
+      content: json['commentContent'] as String? ?? '',
+      authorId: json['userId'] as int,
+      authorName: json['authorUsername'] as String? ?? '',
+      parentCommentId: json['parentCommentId'] as int?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
   }
 }
