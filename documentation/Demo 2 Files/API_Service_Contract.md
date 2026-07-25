@@ -48,12 +48,12 @@
    - [POST /api/bulletin/posts](#73-post-apibulletinposts)
    - [POST /api/upload/image](#74-post-apiuploadimage)
    - [DELETE /api/bulletin/posts/{postId}](#75-delete-apibulletinpostspostid)
-   - [POST /api/bulletin/posts/{postId}/helpful](#76-post-apibulletinpostspostidhelpful)
-   - [DELETE /api/bulletin/posts/{postId}/helpful](#77-delete-apibulletinpostspostidhelpful)
+   - [POST /api/bulletin/posts/{postId}/like](#76-post-apibulletinpostspostidlike)
+   - [DELETE /api/bulletin/posts/{postId}/like](#77-delete-apibulletinpostspostidlike)
    - [GET /api/bulletin/posts/{postId}/comments](#78-get-apibulletinpostspostidcomments)
    - [POST /api/comments/bulletin/{postId}](#79-post-apicommentsbulletinpostid)
-   - [POST /api/bulletin/posts/{postId}/dis-helpful](#710-post-apibulletinpostspostiddis-helpful)
-   - [DELETE /api/bulletin/posts/{postId}/dis-helpful](#711-delete-apibulletinpostspostiddis-helpful)
+   - [POST /api/bulletin/posts/{postId}/dislike](#710-post-apibulletinpostspostiddislike)
+   - [DELETE /api/bulletin/posts/{postId}/dislike](#711-delete-apireactionpostspostiddislike)
    - [DELETE /api/bulletin/posts/{postId}/comments/{commentId}](#712-delete-apicommentsbulletinpostspostidcommentid)
 8. [Settings & Privacy](#8-settings-and-privacy)
    - [GET /api/settings/users/show-status](#81-get-apisettingsusersshow-status)
@@ -61,6 +61,8 @@
    - [GET /api/settings/users/mode](#83-get-apisettingsusersmode)
    - [POST /api/settings/users/mode](#84-post-apisettingsusersmode)
    - [GET api/settings//users/{userId}/status](#85-get-apisettingsusersuseridstatus)
+   - [GET /api/settings/users/information/{userId}](#86-get-apisettingsusersinformationuserid)
+   - []
 9.  [Http Status Code Reference](#8-http-status-code-reference)
 ---
 
@@ -1758,13 +1760,13 @@ Authorization: Bearer <token>
  
 ---
  
-### 7.6 POST /api/bulletin/posts/{postId}/helpful
+### 7.6 POST /api/bulletin/posts/{postId}/like
  
 | Field | Details |
 |---|---|
-| **Endpoint** | `/api/bulletin/posts/{postId}/helpful` |
+| **Endpoint** | `/api/bulletin/posts/{postId}/like` |
 | **Method** | `POST` |
-| **Purpose** | Adds a "helpful" reaction to a post on behalf of the caller. Once per user per post |
+| **Purpose** | Adds a "like" reaction to a post on behalf of the caller. Once per user per post |
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 | **Dependency** | ⚠️ Requires `reaction_type` column on `reaction_table` — see schema note above |
@@ -1787,7 +1789,7 @@ Authorization: Bearer <token>
 {
   "message": "Reaction added",
   "postId": 14,
-  "reactionType": "helpful",
+  "reactionType": "like",
   "helpfulCount": 6
 }
 ```
@@ -1803,13 +1805,13 @@ Authorization: Bearer <token>
  
 ---
  
-### 7.7 DELETE /api/bulletin/posts/{postId}/helpful
+### 7.7 DELETE /api/bulletin/posts/{postId}/like
  
 | Field | Details |
 |---|---|
-| **Endpoint** | `/api/bulletin/posts/{postId}/helpful` |
+| **Endpoint** | `/api/bulletin/posts/{postId}/like` |
 | **Method** | `DELETE` |
-| **Purpose** | Removes the caller's "helpful" reaction from a post |
+| **Purpose** | Removes the caller's "like" reaction from a post |
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 | **Dependency** | ⚠️ Requires `reaction_type` column on `reaction_table` — see schema note above |
@@ -1971,13 +1973,13 @@ Authorization: Bearer <token>
  
 ---
  
-### 7.10 POST /api/bulletin/posts/{postId}/dis-helpful
+### 7.10 POST /api/bulletin/posts/{postId}/dislike
  
 | Field | Details |
 |---|---|
-| **Endpoint** | `/api/bulletin/posts/{postId}/dis-helpful` |
+| **Endpoint** | `/api/bulletin/posts/{postId}/dislike` |
 | **Method** | `POST` |
-| **Purpose** | Adds a "dis-helpful" reaction to a post on behalf of the caller. Once per user per post |
+| **Purpose** | Adds a "dislike" reaction to a post on behalf of the caller. Once per user per post |
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 | **Dependency** | ⚠️ Requires `reaction_type` column on `reaction_table` — see schema note above |
@@ -2022,7 +2024,7 @@ Authorization: Bearer <token>
 |---|---|
 | **Endpoint** | /api/reaction/posts/{postId}/dislike` |
 | **Method** | `DELETE` |
-| **Purpose** | Removes the caller's "dis-helpful" reaction from a post |
+| **Purpose** | Removes the caller's "dislike" reaction from a post |
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 | **Dependency** | ⚠️ Requires `reaction_type` column on `reaction_table` — see schema note above |
@@ -2308,6 +2310,126 @@ Authorization: Bearer <Firebase ID Token>
 
 * Unlike `GET /api/settings/users/show-status` (self-only), this endpoint looks up an **arbitrary** `userId` from the path — the caller's own token is only used to confirm authentication, not to identify the target user.
 * Currently any authenticated user can query any `userId`'s status via this endpoint (subject to that user's own `showStatus` preference). 
+
+---
+### 8.6 GET /api/settings/users/information/{userId}
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/settings/users/information/{userId}`                              |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Retrieves settings and profile information for the specified user       |
+| **Authentication** | Firebase ID Token required                                              |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Path Parameters
+
+| Parameter | Type | Description                     |
+| --------- | ---- | -------------------------------- |
+| `userId`  | int  | ID of the user whose settings/profile info is being requested |
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "userId": 123,
+  "showStatus": true
+}
+```
+
+> ⚠️ **Note:** `UserSettingsDTO`'s full field list isn't visible in the reviewed controller snippet — only `showStatus` is confirmed elsewhere in this contract. Confirm the remaining fields (e.g. notification preferences, profile fields) against `UserSettingsDTO.java` before finalizing this response schema.
+
+#### Error Responses
+
+| Status Code        | Scenario                             | Response Body                  |
+| ------------------- | -------------------------------------- | -------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token   | `"Invalid Firebase Token"`       |
+
+#### Notes
+
+* Like 8.5, this endpoint accepts an arbitrary `userId` path parameter — the caller's own token is used only to authenticate the request, not to scope the lookup to themselves.
+* No ownership/permission check beyond authentication is currently implemented in the reviewed code — any authenticated user can look up any other user's settings/profile info. Flag this for David (UC7) as a potential access-control gap if `UserSettingsDTO` contains anything sensitive.
+
+---
+
+### 8.7 PUT /api/settings/me/phoneNumber
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/settings/me/phoneNumber`                                                 |
+| **Method**         | `PUT`                                                                    |
+| **Purpose**        | Updates phoneNumber for the specified user                                 |
+| **Authentication** | Firebase ID Token required                                              |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+Content-Type: application/json
+```
+
+#### Path Parameters
+
+| Parameter | Type | Description                    |
+| --------- | ---- | -------------------------------- |
+| `userId`  | int  | ID of the user whose settings are being updated |
+
+#### Request Body — `UpdateSettingsDTO`
+
+```json
+{
+  "phoneNumber": 0191827272
+}
+```
+#### Success Response — `200 OK`
+
+Returns the updated `UserSettingsDTO` (see 8.6 for shape).
+
+#### Error Responses
+
+| Status Code        | Scenario                             | Response Body                  |
+| ------------------- | -------------------------------------- | -------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token   | `"Invalid Firebase Token"`       |
+
+---
+
+### 8.8 DELETE /api/settings/me/user
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/settings/me/user`                                                 |
+| **Method**         | `DELETE`                                                                 |
+| **Purpose**        | Deletes the authenticated user's own account, including their Firebase Auth record, settings row, and user row |
+| **Authentication** | Firebase ID Token required                                              |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Path Parameters
+
+None — the target user is derived from the token, not the path.
+
+#### Success Response — `204 No Content`
+
+No response body.
+
+#### Error Responses
+
+| Status Code        | Scenario                                              | Response Body                  |
+| ------------------- | -------------------------------------------------------- | -------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token                      | *(exception thrown — see note)*  |
+| `404 Not Found`     | Firebase-authenticated user has no matching `User` row    | *(exception thrown — see note)*  |
 
 ---
 ## 9. HTTP Status Code Reference
