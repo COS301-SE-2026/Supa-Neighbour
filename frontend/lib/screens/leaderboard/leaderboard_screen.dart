@@ -14,7 +14,6 @@ class LeaderboardScreen extends StatefulWidget {
 }
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
-  String _selectedPeriod = 'week';
   LeaderboardData? _leaderboardData;
   bool _isLoading = true;
 
@@ -119,21 +118,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       isCurrentUser: true,
     );
 
-    setState(() {
+        setState(() {
       _leaderboardData = LeaderboardData(
-        period: _selectedPeriod,
+        period: 'week',
         entries: mockEntries,
         currentUserEntry: currentUserEntry,
       );
       _isLoading = false;
     });
-  }
-
-  void _changePeriod(String period) {
-    setState(() {
-      _selectedPeriod = period;
-    });
-    _loadLeaderboard();
   }
 
   Color _getLevelColor(String level) {
@@ -200,23 +192,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       ),
       body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              border: Border(
-                bottom: BorderSide(
-                  color: AppColors.surfaceGrey,
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                _buildPeriodTab('week', 'This Week'),
-              ],
-            ),
-          ),
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -228,10 +203,32 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     ? _buildEmptyState()
                     : Column(
                         children: [
-                          _buildTop3Circles(),
-                          const SizedBox(height: 8),
-                          Expanded(
-                            child: ListView.builder(
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8, bottom: 4),
+                              child: Text(
+                                "Last Week's Top 3",
+                                style: GoogleFonts.poppins(
+                                  color: AppColors.charcoal,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            _buildTop3Circles(),
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8, bottom: 4),
+                              child: Text(
+                                'This Week',
+                                style: GoogleFonts.poppins(
+                                  color: AppColors.charcoal,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: ListView.builder(
                               padding: const EdgeInsets.symmetric(horizontal: 16),
                               itemCount: _leaderboardData!.entries.length,
                               itemBuilder: (context, index) {
@@ -246,37 +243,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPeriodTab(String period, String label) {
-    final isSelected = _selectedPeriod == period;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => _changePeriod(period),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: isSelected ? AppColors.primaryTeal : Colors.transparent,
-                width: 3,
-              ),
-            ),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: GoogleFonts.openSans(
-                color: isSelected ? AppColors.primaryTeal : AppColors.textGrey,
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
