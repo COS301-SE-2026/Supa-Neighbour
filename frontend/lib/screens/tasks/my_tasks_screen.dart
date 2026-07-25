@@ -9,7 +9,9 @@ import 'task_awaiting_approval_screen.dart';
 import 'task_approval_screen.dart';
 
 class MyTasksScreen extends StatefulWidget {
-  const MyTasksScreen({super.key});
+  final int initialTab;
+  
+  const MyTasksScreen({super.key, this.initialTab = 0});
 
   @override
   State<MyTasksScreen> createState() => _MyTasksScreenState();
@@ -26,7 +28,11 @@ class _MyTasksScreenState extends State<MyTasksScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: widget.initialTab,
+    );
     _loadAllTasks();
   }
 
