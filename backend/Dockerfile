@@ -1,16 +1,15 @@
-FROM postgres:16
+# Stage 1 — build the JAR
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY checkstyle.xml .
+COPY src ./src
+RUN mvn clean install -Dcheckstyle.skip -DskipTests
 
-# Environment variables
-ENV POSTGRES_DB task_management
-ENV POSTGRES_USER admin
-ENV POSTGRES_PASSWORD strongpassword
 
-# Expose PostgreSQL default port
-EXPOSE 5432
-
-# Optional: Copy initialization SQL scripts
-# Any .sql or .sh files placed here will run automatically
-COPY schema.sql /docker-entrypoint-initdb.d/
-
-# Start PostgreSQL
-CMD ["postgres"]
+# Stage 2 — run the JAR
+FROM eclipse-temurin:21-jre-jammy
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
