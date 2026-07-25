@@ -203,27 +203,33 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     ? _buildEmptyState()
                     : Column(
                         children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8, bottom: 4),
-                              child: Text(
-                                "Last Week's Top 3",
-                                style: GoogleFonts.poppins(
-                                  color: AppColors.charcoal,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
+                              Padding(
+                              padding: const EdgeInsets.only(top: 16, bottom: 8, left: 16),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  "Last Week's Top 3",
+                                  style: GoogleFonts.poppins(
+                                    color: AppColors.charcoal,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
                             _buildTop3Circles(),
                             const SizedBox(height: 8),
                             Padding(
-                              padding: const EdgeInsets.only(top: 8, bottom: 4),
-                              child: Text(
-                                'This Week',
-                                style: GoogleFonts.poppins(
-                                  color: AppColors.charcoal,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
+                              padding: const EdgeInsets.only(top: 16, bottom: 8, left: 16),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'This Week',
+                                  style: GoogleFonts.poppins(
+                                    color: AppColors.charcoal,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
@@ -314,7 +320,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           entry.displayName.split(' ').first,
           style: GoogleFonts.openSans(
             color: AppColors.charcoal,
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
           overflow: TextOverflow.ellipsis,
@@ -388,7 +394,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                           color: entry.isCurrentUser
                               ? AppColors.primaryTeal
                               : AppColors.charcoal,
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: entry.isCurrentUser
                               ? FontWeight.w700
                               : FontWeight.w500,
