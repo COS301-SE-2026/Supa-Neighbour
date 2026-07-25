@@ -39,7 +39,43 @@ class Task {
   // _meansPrivate
   // w/o underscore public
 
-  
+  //Creates a new Task with updated fields
+  Task copyWith({
+    String? id,
+    String? title,
+    String? category,
+    DateTime? date,
+    TimeOfDay? time,
+    int? xpReward,
+    String? instructions,
+    String? status,
+    DateTime? createdAt,
+    String? createdBy,
+    String? helperId,
+    String? requesterName,
+    String? helperName,
+    String? completionNote,
+    List<String>? completionPhotos,
+  }) {
+    return Task(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      category: category ?? this.category,
+      date: date ?? this.date,
+      time: time ?? this.time,
+      xpReward: xpReward ?? this.xpReward,
+      instructions: instructions ?? this.instructions,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      createdBy: createdBy ?? this.createdBy,
+      helperId: helperId ?? this.helperId,
+      requesterName: requesterName ?? this.requesterName,
+      helperName: helperName ?? this.helperName,
+      completionNote: completionNote ?? this.completionNote,
+      completionPhotos: completionPhotos ?? this.completionPhotos,
+    );
+  }
+
   ////////////////////////
   /// MAP RES TO A TASK
   factory Task.fromJson(Map<String, dynamic> json){
