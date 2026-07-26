@@ -56,6 +56,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _confirmAndDeleteAccount(BuildContext context) async{
+    final TextEditingController confirmController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder:(dialogContext, setDialogState){
+          final isMatch = confirmController.text.trim().toUpperCase() == 'DELETE';
+
+          return AlertDialog(
+            title: Text('Delete Account', style: TextStyle(color: AppColors.error(context))),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'This permanently deleted your account, tasks and history. This cannot be undone.'
+                ),
+
+                const SizedBox(height: 16),
+                Text('Text DELETE to confirm: ', style: TextStyle(color: AppColors.textGrey(context))),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: confirmController,
+                  onChanged: (_) => setDialogState(() {}),
+                  decoration: const InputDecoration(border: OutlineInputBorder())
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: isMatch ? () => Navigator.pop(dialogContext, true) : null,
+                child: Text('Delete Forever',
+                style: TextStyle(
+                  color: isMatch ? AppColors.error(context) : AppColors.textGrey(context),
+                ))
+              )
+            ]
+          );
+        }
+      )
+    );
+
+   if (confirmed != true || !mounted) return;
+    try{
+      await AuthService().deleteAccount();
+      if(mounted){
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SplashScreen()),
+          (route) => false,
+        );
+      }
+    }catch(e){
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete account. Please try again')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
@@ -275,9 +340,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Delete Account',
             subtitle: 'Permanently delete your account',
             isDanger: true,
-            onTap: () {
-              // TODO: Implement delete account
-            },
+            onTap: () => _confirmAndDeleteAccount(context),
           ),
         ],
       ),
