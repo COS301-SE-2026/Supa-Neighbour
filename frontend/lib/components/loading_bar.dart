@@ -5,16 +5,16 @@ class LoadingBar extends StatefulWidget {
   final double width;
   final double height;
   final Duration duration;
-  final Color progressColor;
-  final Color backgroundColor;
+  final Color? progressColor;
+  final Color? backgroundColor;
 
   const LoadingBar({
     super.key,
     required this.width,
     this.height = 16,
     this.duration = const Duration(seconds: 3),
-    this.progressColor = AppColors.primaryTeal,
-    this.backgroundColor = AppColors.surfaceGrey,
+    this.progressColor,
+    this.backgroundColor,
   });
 
   @override
@@ -50,6 +50,8 @@ class _LoadingBarState extends State<LoadingBar>
 
   @override
   Widget build(BuildContext context) {
+  final resolvedProgressColor  = AppColors.primaryTeal(context);
+  final resolvedBackGroundColor =  AppColors.surfaceGrey(context);
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
@@ -58,7 +60,7 @@ class _LoadingBarState extends State<LoadingBar>
           height: widget.height,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            color: widget.backgroundColor,
+            color: resolvedProgressColor,
           ),
           child: Align(
             alignment: Alignment.centerLeft,
@@ -67,7 +69,7 @@ class _LoadingBarState extends State<LoadingBar>
               height: widget.height,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: widget.progressColor,
+                color: resolvedProgressColor,
               ),
             ),
           ),

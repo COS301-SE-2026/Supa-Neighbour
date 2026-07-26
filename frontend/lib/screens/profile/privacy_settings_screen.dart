@@ -22,18 +22,18 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primaryTeal),
+          icon: Icon(Icons.arrow_back, color: AppColors.primaryTeal(context)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Privacy Settings',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -147,7 +147,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       child: Text(
         title,
         style: GoogleFonts.poppins(
-          color: AppColors.primaryTeal,
+          color: AppColors.primaryTeal(context),
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),
@@ -164,11 +164,11 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.white(context),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppColors.charcoal.withValues(alpha: 0.04),
+            color: AppColors.charcoal(context).withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -178,7 +178,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         title: Text(
           title,
           style: GoogleFonts.openSans(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 15,
             fontWeight: FontWeight.w500,
           ),
@@ -186,14 +186,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         subtitle: Text(
           subtitle,
           style: GoogleFonts.openSans(
-            color: AppColors.textGrey,
+            color: AppColors.textGrey(context),
             fontSize: 13,
           ),
         ),
         value: value,
         onChanged: onChanged,
-        activeColor: AppColors.primaryTeal,
-        activeTrackColor: AppColors.primaryTeal.withValues(alpha: 0.3),
+        activeColor: AppColors.primaryTeal(context),
+        activeTrackColor: AppColors.primaryTeal(context).withValues(alpha: 0.3),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
     );
@@ -203,15 +203,15 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.white(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.error.withValues(alpha: 0.3),
+          color: AppColors.error(context).withValues(alpha: 0.3),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.charcoal.withValues(alpha: 0.04),
+            color: AppColors.charcoal(context).withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -224,14 +224,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             children: [
               Icon(
                 Icons.warning_amber_rounded,
-                color: AppColors.error,
+                color: AppColors.error(context),
                 size: 24,
               ),
               const SizedBox(width: 12),
               Text(
                 'Danger Zone',
                 style: GoogleFonts.poppins(
-                  color: AppColors.error,
+                  color: AppColors.error(context),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -242,7 +242,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           Text(
             'These actions are irreversible. Please proceed with caution.',
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 13,
             ),
           ),
@@ -254,7 +254,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 _showDeleteAccountDialog();
               },
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.error),
+                side: BorderSide(color: AppColors.error(context)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -263,7 +263,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               child: Text(
                 'Delete Account',
                 style: GoogleFonts.openSans(
-                  color: AppColors.error,
+                  color: AppColors.error(context),
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
@@ -278,7 +278,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 _showClearDataDialog();
               },
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.error),
+                side: BorderSide(color: AppColors.error(context)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -287,7 +287,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               child: Text(
                 'Clear All Data',
                 style: GoogleFonts.openSans(
-                  color: AppColors.error,
+                  color: AppColors.error(context),
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
@@ -310,14 +310,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           children: [
             Icon(
               Icons.delete_forever,
-              color: AppColors.error,
+              color: AppColors.error(context),
               size: 28,
             ),
             const SizedBox(width: 12),
             Text(
               'Delete Account',
               style: GoogleFonts.poppins(
-                color: AppColors.error,
+                color: AppColors.error(context),
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
@@ -327,7 +327,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         content: Text(
           'Are you sure you want to delete your account? This action is permanent and cannot be undone. All your data, tasks, and achievements will be lost.',
           style: GoogleFonts.openSans(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 14,
           ),
         ),
@@ -337,7 +337,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             child: Text(
               'Cancel',
               style: GoogleFonts.openSans(
-                color: AppColors.textGrey,
+                color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
             ),
@@ -346,9 +346,9 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text('Account deletion initiated'),
-                  backgroundColor: AppColors.success,
+                  backgroundColor: AppColors.success(context),
                 ),
               );
               Navigator.pushNamedAndRemoveUntil(
@@ -358,7 +358,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
+              backgroundColor: AppColors.error(context),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -366,7 +366,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             child: Text(
               'Delete Permanently',
               style: GoogleFonts.openSans(
-                color: AppColors.textLight,
+                color: AppColors.textLight(context),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -387,7 +387,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         title: Text(
           'Clear All Data?',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
@@ -395,7 +395,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         content: Text(
           'This will clear all app data including settings, cache, and preferences. This action cannot be undone.',
           style: GoogleFonts.openSans(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 14,
           ),
         ),
@@ -405,7 +405,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             child: Text(
               'Cancel',
               style: GoogleFonts.openSans(
-                color: AppColors.textGrey,
+                color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
             ),
@@ -414,14 +414,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text('Data cleared successfully'),
-                  backgroundColor: AppColors.success,
+                  backgroundColor: AppColors.success(context),
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
+              backgroundColor: AppColors.error(context),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -429,7 +429,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             child: Text(
               'Clear Data',
               style: GoogleFonts.openSans(
-                color: AppColors.textLight,
+                color: AppColors.textLight(context),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),

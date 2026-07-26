@@ -133,12 +133,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primaryTeal),
+          icon: Icon(Icons.arrow_back, color: AppColors.primaryTeal(context)),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -146,7 +146,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         title: Text(
           'Achievements',
           style: GoogleFonts.poppins(
-            color: AppColors.primaryTeal,
+            color: AppColors.primaryTeal(context),
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -154,7 +154,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: AppColors.charcoal),
+            icon: Icon(Icons.settings_outlined, color: AppColors.charcoal(context)),
             onPressed: () {
               Navigator.push(
               context,
@@ -172,9 +172,9 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryTeal),
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryTeal(context)),
         ),
       );
     }
@@ -213,7 +213,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               child: Text(
                 'Retry',
                 style: GoogleFonts.openSans(
-                  color: AppColors.primaryTeal,
+                  color: AppColors.primaryTeal(context),
                   fontWeight: FontWeight.w600,
                 ),
               ),

@@ -18,12 +18,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
 
   // Mock achievements data
-final List<Map<String, dynamic>> _achievements = [
-  {'name': 'Reliable Helper', 'icon': Icons.emoji_events, 'color': AppColors.primaryTeal},
-  {'name': 'Plant Expert', 'icon': Icons.eco, 'color': AppColors.success},
-  {'name': 'Early Bird', 'icon': Icons.wb_sunny, 'color': AppColors.citrusYellow},
-  {'name': 'Super Streak', 'icon': Icons.local_fire_department, 'color': Colors.orange},
-];
+  final List<Map<String, dynamic>> _achievements = [
+      {'name': 'Reliable Helper', 'icon': Icons.emoji_events, 'color': const Color(0xFF008080)}, // Teal color
+      {'name': 'Plant Expert', 'icon': Icons.eco, 'color': const Color(0xFF4CAF50)}, // Green color
+      {'name': 'Early Bird', 'icon': Icons.wb_sunny, 'color': const Color(0xFFFFD54F)}, // Yellow color
+      {'name': 'Super Streak', 'icon': Icons.local_fire_department, 'color': Colors.orange},
+    ];
   // Mock skills data
   // ignore: prefer_final_fields
   List<String> _skills = ['Plants', 'Pets', 'Home Check-in'];
@@ -49,7 +49,7 @@ final List<Map<String, dynamic>> _achievements = [
     return 'Rising';
   }
 
-  Color _getLevelColor(String level) {
+  Color _getLevelColor(String level, BuildContext context) {
     switch (level) {
       case 'Gold':
         return const Color(0xFFE9C46A);
@@ -58,37 +58,37 @@ final List<Map<String, dynamic>> _achievements = [
       case 'Bronze':
         return const Color(0xFFCD7F32);
       default:
-        return AppColors.primaryTeal;
+        return AppColors.primaryTeal(context);
     }
   }
 
-  List<Widget> _buildTrustStars(double score) {
+  List<Widget> _buildTrustStars(double score, BuildContext context) {
     final fullStars = score.floor();
     final hasHalfStar = score - fullStars >= 0.5;
     final stars = <Widget>[];
 
     for (int i = 0; i < fullStars; i++) {
-      stars.add(const Icon(
+      stars.add( Icon(
         Icons.star,
         size: 14,
-        color: AppColors.citrusYellow,
+        color: AppColors.citrusYellow(context),
       ));
     }
 
     if (hasHalfStar) {
-      stars.add(const Icon(
+      stars.add( Icon(
         Icons.star_half,
         size: 14,
-        color: AppColors.citrusYellow,
+        color: AppColors.citrusYellow(context),
       ));
     }
 
     final remaining = 5 - stars.length;
     for (int i = 0; i < remaining; i++) {
-      stars.add(const Icon(
+      stars.add(Icon(
         Icons.star_border,
         size: 14,
-        color: AppColors.citrusYellow,
+        color: AppColors.citrusYellow(context),
       ));
     }
 
@@ -107,7 +107,7 @@ final List<Map<String, dynamic>> _achievements = [
         title: Text(
           'Edit Skills',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
@@ -118,7 +118,7 @@ final List<Map<String, dynamic>> _achievements = [
             Text(
               'Current skills:',
               style: GoogleFonts.openSans(
-                color: AppColors.textGrey,
+                color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
             ),
@@ -131,15 +131,15 @@ final List<Map<String, dynamic>> _achievements = [
                   label: Text(
                     skill,
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 13,
                     ),
                   ),
-                  backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
-                  deleteIcon: const Icon(
+                  backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
+                  deleteIcon: Icon(
                     Icons.close,
                     size: 16,
-                    color: AppColors.charcoal,
+                    color: AppColors.charcoal(context),
                   ),
                   onDeleted: () {
                     setState(() {
@@ -158,16 +158,16 @@ final List<Map<String, dynamic>> _achievements = [
                     decoration: InputDecoration(
                       hintText: 'Add a skill...',
                       hintStyle: GoogleFonts.openSans(
-                        color: AppColors.textGrey,
+                        color: AppColors.textGrey(context),
                         fontSize: 14,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.primaryTeal),
+                        borderSide: BorderSide(color: AppColors.primaryTeal(context)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.primaryTeal, width: 2),
+                        borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
                       ),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
@@ -183,9 +183,9 @@ final List<Map<String, dynamic>> _achievements = [
                       });
                     }
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.add_circle,
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                     size: 40,
                   ),
                 ),
@@ -199,7 +199,7 @@ final List<Map<String, dynamic>> _achievements = [
             child: Text(
               'Done',
               style: GoogleFonts.openSans(
-                color: AppColors.primaryTeal,
+                color: AppColors.primaryTeal(context),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -212,30 +212,30 @@ final List<Map<String, dynamic>> _achievements = [
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
+      return  Scaffold(
+        backgroundColor: AppColors.background(context),
         body: Center(
           child: CircularProgressIndicator(
-            color: AppColors.primaryTeal,
+            color: AppColors.primaryTeal(context),
           ),
         ),
       );
     }
 
     final level = _getLevel(4.8); // Mock trust score
-    final levelColor = _getLevelColor(level);
+    final levelColor = _getLevelColor(level, context);
     const xpProgress = 0.65; // Mock progress
     const nextLevelXp = 250;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         title: Text(
           'My Profile',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -243,7 +243,7 @@ final List<Map<String, dynamic>> _achievements = [
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: AppColors.charcoal),
+            icon: Icon(Icons.settings_outlined, color: AppColors.charcoal(context)),
             onPressed: () {
               Navigator.push(
               context,
@@ -284,7 +284,9 @@ final List<Map<String, dynamic>> _achievements = [
   return Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).brightness == Brightness.dark 
+    ? AppColors.surfaceGrey(context) 
+    : Colors.white,
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
@@ -298,13 +300,13 @@ final List<Map<String, dynamic>> _achievements = [
       children: [
         CircleAvatar(
           radius: 40,
-          backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+          backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
           child: Text(
             _user.firstName[0],
             style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.w600,
-              color: AppColors.primaryTeal,
+              color: AppColors.primaryTeal(context),
             ),
           ),
         ),
@@ -316,7 +318,7 @@ final List<Map<String, dynamic>> _achievements = [
               child: Text(
                 _user.fullName,
                 style: GoogleFonts.poppins(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
                 ),
@@ -345,12 +347,12 @@ final List<Map<String, dynamic>> _achievements = [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ..._buildTrustStars(4.8),
+            ..._buildTrustStars(4.8, context),
             const SizedBox(width: 8),
             Text(
               '4.8 ★',
               style: GoogleFonts.openSans(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -361,7 +363,7 @@ final List<Map<String, dynamic>> _achievements = [
         Text(
           'Member since ${_user.createdAt.year}',
           style: GoogleFonts.openSans(
-            color: AppColors.textGrey,
+            color: AppColors.textGrey(context),
             fontSize: 12,
           ),
         ),
@@ -376,7 +378,7 @@ final List<Map<String, dynamic>> _achievements = [
             );
           },
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: AppColors.primaryTeal),
+            side: BorderSide(color: AppColors.primaryTeal(context)),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -385,7 +387,7 @@ final List<Map<String, dynamic>> _achievements = [
           child: Text(
             'Edit Profile',
             style: GoogleFonts.openSans(
-              color: AppColors.primaryTeal,
+              color: AppColors.primaryTeal(context),
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -399,7 +401,9 @@ final List<Map<String, dynamic>> _achievements = [
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark 
+    ? AppColors.surfaceGrey(context) 
+    : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -418,7 +422,7 @@ final List<Map<String, dynamic>> _achievements = [
               Text(
                 '$level Helper',
                 style: GoogleFonts.poppins(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -426,7 +430,7 @@ final List<Map<String, dynamic>> _achievements = [
               Text(
                 '1,250 XP',
                 style: GoogleFonts.openSans(
-                  color: AppColors.primaryTeal,
+                  color: AppColors.primaryTeal(context),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -438,8 +442,8 @@ final List<Map<String, dynamic>> _achievements = [
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.2),
-              color: AppColors.citrusYellow,
+              backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.2),
+              color: AppColors.primaryTeal(context),
               minHeight: 8,
             ),
           ),
@@ -447,7 +451,7 @@ final List<Map<String, dynamic>> _achievements = [
           Text(
             '$nextLevelXp XP to Platinum',
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 12,
             ),
           ),
@@ -476,7 +480,7 @@ final List<Map<String, dynamic>> _achievements = [
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceGrey,
+        color: AppColors.surfaceGrey(context),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -484,7 +488,7 @@ final List<Map<String, dynamic>> _achievements = [
           Text(
             value,
             style: GoogleFonts.poppins(
-              color: AppColors.primaryTeal,
+              color: AppColors.primaryTeal(context),
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
@@ -493,7 +497,7 @@ final List<Map<String, dynamic>> _achievements = [
           Text(
             label,
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 11,
             ),
             textAlign: TextAlign.center,
@@ -507,7 +511,9 @@ final List<Map<String, dynamic>> _achievements = [
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark 
+    ? AppColors.surfaceGrey(context) 
+    : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -526,7 +532,7 @@ final List<Map<String, dynamic>> _achievements = [
               Text(
                 'Skills & Services',
                 style: GoogleFonts.poppins(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -536,7 +542,7 @@ final List<Map<String, dynamic>> _achievements = [
                 child: Text(
                   'Edit',
                   style: GoogleFonts.openSans(
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
@@ -552,13 +558,13 @@ final List<Map<String, dynamic>> _achievements = [
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                  color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   skill,
                   style: GoogleFonts.openSans(
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
@@ -575,7 +581,9 @@ final List<Map<String, dynamic>> _achievements = [
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark 
+        ? AppColors.surfaceGrey(context) 
+        : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -594,7 +602,7 @@ final List<Map<String, dynamic>> _achievements = [
               Text(
                 'Achievements',
                 style: GoogleFonts.poppins(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -611,7 +619,7 @@ final List<Map<String, dynamic>> _achievements = [
                 child: Text(
                   'View All',
                   style: GoogleFonts.openSans(
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
@@ -649,7 +657,7 @@ final List<Map<String, dynamic>> _achievements = [
                       Text(
                         achievement['name'] as String,
                         style: GoogleFonts.openSans(
-                          color: AppColors.textGrey,
+                          color: AppColors.textGrey(context),
                           fontSize: 9,
                         ),
                         textAlign: TextAlign.center,
@@ -670,7 +678,9 @@ final List<Map<String, dynamic>> _achievements = [
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark 
+    ? AppColors.surfaceGrey(context) 
+    : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -686,7 +696,7 @@ final List<Map<String, dynamic>> _achievements = [
           Text(
             'Recent Tasks',
             style: GoogleFonts.poppins(
-              color: AppColors.charcoal,
+              color: AppColors.charcoal(context),
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -704,7 +714,7 @@ final List<Map<String, dynamic>> _achievements = [
                 title: Text(
                   tasks[index],
                   style: GoogleFonts.openSans(
-                    color: AppColors.charcoal,
+                    color: AppColors.charcoal(context),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -712,20 +722,20 @@ final List<Map<String, dynamic>> _achievements = [
                 subtitle: Text(
                   dates[index],
                   style: GoogleFonts.openSans(
-                    color: AppColors.textGrey,
+                    color: AppColors.textGrey(context),
                     fontSize: 12,
                   ),
                 ),
                 trailing: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.citrusYellow,
+                    color: AppColors.citrusYellow(context),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     '+50 XP',
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -754,7 +764,7 @@ final List<Map<String, dynamic>> _achievements = [
             );
           },
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: AppColors.textGrey),
+            side: BorderSide(color: AppColors.textGrey(context)),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -763,7 +773,7 @@ final List<Map<String, dynamic>> _achievements = [
           child: Text(
             'Privacy Settings',
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -778,7 +788,7 @@ final List<Map<String, dynamic>> _achievements = [
             _showLogoutDialog();
           },
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: AppColors.error),
+            side: BorderSide(color: AppColors.error(context)),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -787,7 +797,7 @@ final List<Map<String, dynamic>> _achievements = [
           child: Text(
             'Logout',
             style: GoogleFonts.openSans(
-              color: AppColors.error,
+              color: AppColors.error(context),
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -808,7 +818,7 @@ final List<Map<String, dynamic>> _achievements = [
         title: Text(
           'Logout?',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
@@ -816,7 +826,7 @@ final List<Map<String, dynamic>> _achievements = [
         content: Text(
           'Are you sure you want to logout?',
           style: GoogleFonts.openSans(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 14,
           ),
         ),
@@ -826,7 +836,7 @@ final List<Map<String, dynamic>> _achievements = [
             child: Text(
               'Cancel',
               style: GoogleFonts.openSans(
-                color: AppColors.textGrey,
+                color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
             ),
@@ -835,14 +845,14 @@ final List<Map<String, dynamic>> _achievements = [
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text('Logged out successfully'),
-                  backgroundColor: AppColors.success,
+                  backgroundColor: AppColors.success(context),
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
+              backgroundColor: AppColors.error(context),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -850,7 +860,9 @@ final List<Map<String, dynamic>> _achievements = [
             child: Text(
               'Logout',
               style: GoogleFonts.openSans(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark 
+              ? AppColors.surfaceGrey(context) 
+              : Colors.white,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),

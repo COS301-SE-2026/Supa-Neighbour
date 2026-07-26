@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import '../../constants/app_colors.dart'; // ADD: Import AppColors
 import 'available_helpers_screen.dart';
 import 'task_start_screen.dart';
 import 'task_detail_screen.dart';
@@ -67,36 +68,42 @@ class _MyTasksScreenState extends State<MyTasksScreen>
     }
   }
 
-  Color _getStatusColor(String status) {
+  // CHANGE: Update to use AppColors with context
+  Color _getStatusColor(String status, BuildContext context) {
     switch (status) {
       case 'open':
-        return const Color(0xFFE9C46A);
+        return AppColors.citrusYellow(context);
       case 'assigned':
-        return const Color(0xFF2A9D8F);
+        return AppColors.primaryTeal(context);
       case 'in_progress':
         return const Color(0xFF2196F3);
       case 'pending_approval':
         return const Color(0xFFFF9800);
       case 'completed':
-        return const Color(0xFF4CAF50);
+        return AppColors.success(context);
       case 'cancelled':
-        return const Color(0xFFF44336);
+        return AppColors.error(context);
       default:
-        return const Color(0xFF9CA3AF);
+        return AppColors.textGrey(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      // CHANGE: Use AppColors.background
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFFFFF),
+        // CHANGE: Use AppColors.background
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         title: Text(
           'My Tasks',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF2A9D8F),
+            // CHANGE: Use AppColors.primaryTeal
+            color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -104,9 +111,12 @@ class _MyTasksScreenState extends State<MyTasksScreen>
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFF2A9D8F),
-          unselectedLabelColor: const Color(0xFF9CA3AF),
-          indicatorColor: const Color(0xFF2A9D8F),
+          // CHANGE: Use AppColors.primaryTeal
+          labelColor: AppColors.primaryTeal(context),
+          // CHANGE: Use AppColors.textGrey
+          unselectedLabelColor: AppColors.textGrey(context),
+          // CHANGE: Use AppColors.primaryTeal
+          indicatorColor: AppColors.primaryTeal(context),
           labelStyle: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -146,13 +156,15 @@ class _MyTasksScreenState extends State<MyTasksScreen>
             Icon(
               isRequesterView ? Icons.post_add : Icons.assignment_turned_in,
               size: 80,
-              color: const Color(0xFF2A9D8F).withOpacity(0.3),
+              // CHANGE: Use AppColors.primaryTeal with opacity
+              color: AppColors.primaryTeal(context).withOpacity(0.3),
             ),
             const SizedBox(height: 16),
             Text(
               isRequesterView ? 'No tasks posted yet' : 'No accepted tasks',
               style: GoogleFonts.openSans(
-                color: const Color(0xFF264653),
+                // CHANGE: Use AppColors.charcoal
+                color: AppColors.charcoal(context),
                 fontSize: 16,
               ),
             ),
@@ -162,7 +174,8 @@ class _MyTasksScreenState extends State<MyTasksScreen>
                   ? 'Create your first task by tapping the + button'
                   : 'Browse Available Helpers and accept tasks',
               style: GoogleFonts.openSans(
-                color: const Color(0xFF9CA3AF),
+                // CHANGE: Use AppColors.textGrey
+                color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
             ),
@@ -185,6 +198,8 @@ class _MyTasksScreenState extends State<MyTasksScreen>
   }
 
   Widget _buildTaskCard(Task task, {required bool isRequesterView}) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return GestureDetector(
       onTap: () async {
         // CASE 1: HELPER VIEW (Accepted Tab)
@@ -273,7 +288,8 @@ class _MyTasksScreenState extends State<MyTasksScreen>
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          // CHANGE: Use dynamic color based on theme
+          color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -289,12 +305,14 @@ class _MyTasksScreenState extends State<MyTasksScreen>
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF2A9D8F).withOpacity(0.1),
+                // CHANGE: Use AppColors.primaryTeal with opacity
+                color: AppColors.primaryTeal(context).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 _getCategoryIcon(task.category),
-                color: const Color(0xFF2A9D8F),
+                // CHANGE: Use AppColors.primaryTeal
+                color: AppColors.primaryTeal(context),
                 size: 28,
               ),
             ),
@@ -306,7 +324,8 @@ class _MyTasksScreenState extends State<MyTasksScreen>
                   Text(
                     task.title,
                     style: GoogleFonts.poppins(
-                      color: const Color(0xFF264653),
+                      // CHANGE: Use AppColors.charcoal
+                      color: AppColors.charcoal(context),
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -314,22 +333,34 @@ class _MyTasksScreenState extends State<MyTasksScreen>
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.category, size: 14, color: Color(0xFF2A9D8F)),
+                      Icon(
+                        Icons.category,
+                        size: 14,
+                        // CHANGE: Use AppColors.primaryTeal
+                        color: AppColors.primaryTeal(context),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         task.category,
                         style: GoogleFonts.openSans(
-                          color: const Color(0xFF6B7280),
+                          // CHANGE: Use AppColors.textGrey
+                          color: AppColors.textGrey(context),
                           fontSize: 12,
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.access_time, size: 14, color: Color(0xFF2A9D8F)),
+                      Icon(
+                        Icons.access_time,
+                        size: 14,
+                        // CHANGE: Use AppColors.primaryTeal
+                        color: AppColors.primaryTeal(context),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
                         style: GoogleFonts.openSans(
-                          color: const Color(0xFF6B7280),
+                          // CHANGE: Use AppColors.textGrey
+                          color: AppColors.textGrey(context),
                           fontSize: 12,
                         ),
                       ),
@@ -339,13 +370,15 @@ class _MyTasksScreenState extends State<MyTasksScreen>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(task.status).withOpacity(0.1),
+                      // CHANGE: Use _getStatusColor with context
+                      color: _getStatusColor(task.status, context).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       _getStatusDisplay(task.status, isRequesterView: isRequesterView),
                       style: GoogleFonts.openSans(
-                        color: _getStatusColor(task.status),
+                        // CHANGE: Use _getStatusColor with context
+                        color: _getStatusColor(task.status, context),
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                       ),
@@ -360,13 +393,15 @@ class _MyTasksScreenState extends State<MyTasksScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE9C46A),
+                    // CHANGE: Use AppColors.citrusYellow
+                    color: AppColors.citrusYellow(context),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     '+${task.xpReward} XP',
                     style: GoogleFonts.openSans(
-                      color: const Color(0xFF264653),
+                      // CHANGE: Use AppColors.charcoal
+                      color: AppColors.charcoal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -378,7 +413,8 @@ class _MyTasksScreenState extends State<MyTasksScreen>
                     child: Text(
                       'Tap to complete',
                       style: GoogleFonts.openSans(
-                        color: const Color(0xFF2A9D8F),
+                        // CHANGE: Use AppColors.primaryTeal
+                        color: AppColors.primaryTeal(context),
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
                       ),

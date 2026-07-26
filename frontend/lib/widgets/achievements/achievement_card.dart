@@ -15,7 +15,7 @@ class AchievementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = isActive ? AppColors.primary : Colors.grey.shade400;
+    final themeColor = isActive ? AppColors.primary(context) : Colors.grey.shade400;
     final badgeBgColor = isActive 
         ? const Color(0xFFAFDCDA) 
         : Colors.grey.shade300;
@@ -25,13 +25,13 @@ class AchievementCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isActive ? AppColors.primary : Colors.transparent,
+          color: isActive ? AppColors.primary(context) : Colors.transparent,
           width: isActive ? 1.5 : 0,
         ),
         boxShadow: [
           BoxShadow(
             color: isActive 
-                ? AppColors.primary.withValues(alpha: 0.2) 
+                ? AppColors.primary(context).withValues(alpha: 0.2) 
                 : Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             spreadRadius: 1,
@@ -57,7 +57,7 @@ class AchievementCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isActive ? AppColors.primary : Colors.grey[500],
+                  color: isActive ? AppColors.primary(context) : Colors.grey[500],
                 ),
               ),
             ),

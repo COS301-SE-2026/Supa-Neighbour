@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supa_neighbour/constants/app_colors.dart';
 import '../../models/auth_session.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
@@ -111,15 +112,16 @@ class _HomeContentState extends State<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFFFFF),
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         title: Text(
           'Supa Neighbour',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF2A9D8F),
+            color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -127,7 +129,7 @@ class _HomeContentState extends State<HomeContent> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: Color(0xFF2A9D8F)),
+            icon: Icon(Icons.notifications_none, color: AppColors.primaryTeal(context)),
             onPressed: () {
             },
           ),
@@ -167,7 +169,7 @@ class _HomeContentState extends State<HomeContent> {
           );
           await _loadNearbyTasks();
         },
-        backgroundColor: const Color(0xFF2A9D8F),
+        backgroundColor: AppColors.primaryTeal(context),
         child: const Icon(Icons.add, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -183,8 +185,8 @@ class _HomeContentState extends State<HomeContent> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFFCCCCCC).withValues(alpha: 0.2),
-            const Color(0xFFE9C46A).withValues(alpha: 0.05),
+            AppColors.surfaceGrey(context).withValues(alpha: 0.5),
+            AppColors.citrusYellow(context).withValues(alpha: 0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -200,14 +202,14 @@ class _HomeContentState extends State<HomeContent> {
                 Text(
                   '$greeting,',
                   style: GoogleFonts.openSans(
-                    color: const Color(0xFF264653),
+                    color: AppColors.charcoal(context),
                     fontSize: 14,
                   ),
                 ),
                 Text(
                   userName,
                   style: GoogleFonts.poppins(
-                    color: const Color(0xFF2A9D8F),
+                    color: AppColors.primaryTeal(context),
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
                   ),
@@ -216,13 +218,13 @@ class _HomeContentState extends State<HomeContent> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE9C46A),
+                    color: AppColors.citrusYellow(context),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     '⭐ 4.8 Trust Score',
                     style: GoogleFonts.openSans(
-                      color: const Color(0xFF264653),
+                      color: AppColors.charcoal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -235,12 +237,12 @@ class _HomeContentState extends State<HomeContent> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: const Color(0xFF2A9D8F).withValues(alpha: 0.2),
+              color: AppColors.primaryTeal(context).withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person,
-              color: Color(0xFF2A9D8F),
+              color: AppColors.primaryTeal(context),
               size: 40,
             ),
           ),
@@ -257,13 +259,13 @@ class _HomeContentState extends State<HomeContent> {
           Icon(
             Icons.assignment_outlined,
             size: 80,
-            color: const Color(0xFF2A9D8F).withValues(alpha: 0.3),
+            color: AppColors.primaryTeal(context).withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
             'No tasks yet',
             style: GoogleFonts.poppins(
-              color: const Color(0xFF264653),
+              color: AppColors.charcoal(context),
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -272,7 +274,7 @@ class _HomeContentState extends State<HomeContent> {
           Text(
             'Create your first task by tapping the + button',
             style: GoogleFonts.openSans(
-              color: const Color(0xFF9CA3AF),
+              color: AppColors.textGrey(context),
               fontSize: 14,
             ),
             textAlign: TextAlign.center,
@@ -288,9 +290,9 @@ class _HomeContentState extends State<HomeContent> {
     
     return Row(
       children: [
-        _buildStatCard('5', 'Helps Given', const Color(0xFF2A9D8F)),
+        _buildStatCard('5', 'Helps Given', AppColors.primaryTeal(context)),
         const SizedBox(width: 12),
-        _buildStatCard(tasksCount.toString(), 'Tasks Posted', const Color(0xFFE9C46A)),
+        _buildStatCard(tasksCount.toString(), 'Tasks Posted', AppColors.citrusYellow(context)),
         const SizedBox(width: 12),
         _buildStatCard(activeCount.toString(), 'Active', const Color(0xFF69B578)),
       ],
@@ -298,11 +300,12 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildStatCard(String value, String label, Color color) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -326,7 +329,7 @@ class _HomeContentState extends State<HomeContent> {
             Text(
               label,
               style: GoogleFonts.openSans(
-                color: const Color(0xFF264653),
+                color: AppColors.charcoal(context),
                 fontSize: 12,
               ),
             ),
@@ -343,7 +346,7 @@ class _HomeContentState extends State<HomeContent> {
       Text(
         'Available Nearby', 
         style: GoogleFonts.poppins(
-          color: const Color(0xFF264653),
+          color: AppColors.charcoal(context),
           fontSize: 18,
           fontWeight: FontWeight.w600,
         ),
@@ -359,7 +362,7 @@ class _HomeContentState extends State<HomeContent> {
         child: Text(
           'See All',
           style: GoogleFonts.openSans(
-            color: const Color(0xFF2A9D8F),
+            color: AppColors.primaryTeal(context),
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -399,13 +402,14 @@ class _HomeContentState extends State<HomeContent> {
     required Task task,
     required VoidCallback onTap,
   }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -421,12 +425,12 @@ class _HomeContentState extends State<HomeContent> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF2A9D8F).withValues(alpha: 0.1),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 _getCategoryIcon(task.category),
-                color: const Color(0xFF2A9D8F),
+                color: AppColors.primaryTeal(context),
                 size: 28,
               ),
             ),
@@ -438,7 +442,7 @@ class _HomeContentState extends State<HomeContent> {
                   Text(
                     task.title,
                     style: GoogleFonts.poppins(
-                      color: const Color(0xFF264653),
+                      color: AppColors.charcoal(context),
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -446,12 +450,12 @@ class _HomeContentState extends State<HomeContent> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.access_time, size: 14, color: Color(0xFF2A9D8F)),
+                      Icon(Icons.access_time, size: 14, color: AppColors.primaryTeal(context)),
                       const SizedBox(width: 4),
                       Text(
                         '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
                         style: GoogleFonts.openSans(
-                          color: const Color(0xFF264653),
+                          color: AppColors.charcoal(context),
                           fontSize: 12,
                         ),
                       ),
@@ -463,13 +467,13 @@ class _HomeContentState extends State<HomeContent> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFE9C46A),
+                color: AppColors.citrusYellow(context),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 '+${task.xpReward} XP',
                 style: GoogleFonts.openSans(
-                  color: const Color(0xFF264653),
+                  color: AppColors.charcoal(context),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),

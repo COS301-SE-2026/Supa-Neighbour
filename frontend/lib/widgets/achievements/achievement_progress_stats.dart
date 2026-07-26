@@ -30,7 +30,7 @@ class AchievementProgressStats extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                 ),
               ),
               Text(
@@ -38,7 +38,7 @@ class AchievementProgressStats extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.primary.withValues(alpha: 0.9),
+                  color: AppColors.primary(context).withValues(alpha: 0.9),
                 ),
               ),
             ],
@@ -50,7 +50,7 @@ class AchievementProgressStats extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: AppColors.primary(context),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Stack(

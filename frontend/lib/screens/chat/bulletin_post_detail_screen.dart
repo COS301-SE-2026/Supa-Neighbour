@@ -76,7 +76,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to post comment'),
-          backgroundColor: AppColors.error,
+          backgroundColor: AppColors.error(context),
         ),
       );
     }
@@ -103,7 +103,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to update helpful status'),
-          backgroundColor: AppColors.error,
+          backgroundColor: AppColors.error(context),
         ),
       );
     }
@@ -140,7 +140,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to delete post'),
-            backgroundColor: AppColors.error,
+            backgroundColor: AppColors.error(context),
           ),
         );
       }
@@ -150,11 +150,11 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
+      return Scaffold(
+        backgroundColor: AppColors.background(context),
         body: Center(
           child: CircularProgressIndicator(
-            color: AppColors.primaryTeal,
+            color: AppColors.primaryTeal(context),
           ),
         ),
       );
@@ -162,7 +162,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
 
     if (_post == null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -170,13 +170,13 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
               Icon(
                 Icons.error_outline,
                 size: 64,
-                color: AppColors.textGrey,
+                color: AppColors.textGrey(context),
               ),
               const SizedBox(height: 16),
               Text(
                 'Post not found',
                 style: GoogleFonts.poppins(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -190,18 +190,18 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
     final post = _post!;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
+          icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
           onPressed: () => Navigator.pop(context, false),
         ),
         title: Text(
           'Post Details',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -227,13 +227,13 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+                        backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                         child: Text(
                           post.authorAvatar,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.primaryTeal,
+                            color: AppColors.primaryTeal(context),
                           ),
                         ),
                       ),
@@ -244,7 +244,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                           Text(
                             post.authorName,
                             style: GoogleFonts.openSans(
-                              color: AppColors.charcoal,
+                              color: AppColors.charcoal(context),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -252,7 +252,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                           Text(
                             _getTimeAgo(post.createdAt),
                             style: GoogleFonts.openSans(
-                              color: AppColors.textGrey,
+                              color: AppColors.textGrey(context),
                               fontSize: 12,
                             ),
                           ),
@@ -284,7 +284,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                   Text(
                     post.title,
                     style: GoogleFonts.poppins(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
                     ),
@@ -293,7 +293,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                   Text(
                     post.body,
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 16,
                       height: 1.6,
                     ),
@@ -330,8 +330,8 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             color: _isHelpful
-                                ? AppColors.primaryTeal.withValues(alpha: 0.1)
-                                : AppColors.surfaceGrey,
+                                ? AppColors.primaryTeal(context).withValues(alpha: 0.1)
+                                : AppColors.surfaceGrey(context),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
@@ -339,13 +339,13 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                               Icon(
                                 _isHelpful ? Icons.thumb_up : Icons.thumb_up_outlined,
                                 size: 20,
-                                color: _isHelpful ? AppColors.primaryTeal : AppColors.textGrey,
+                                color: _isHelpful ? AppColors.primaryTeal(context) : AppColors.textGrey(context),
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 '$_helpfulCount Helpful',
                                 style: GoogleFonts.openSans(
-                                  color: _isHelpful ? AppColors.primaryTeal : AppColors.textGrey,
+                                  color: _isHelpful ? AppColors.primaryTeal(context) : AppColors.textGrey(context),
                                   fontSize: 14,
                                   fontWeight: _isHelpful ? FontWeight.w600 : FontWeight.w400,
                                 ),
@@ -360,7 +360,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                   Text(
                     'Comments (${_comments.length})',
                     style: GoogleFonts.poppins(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -372,7 +372,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                       child: Text(
                         'No comments yet. Be the first!',
                         style: GoogleFonts.openSans(
-                          color: AppColors.textGrey,
+                          color: AppColors.textGrey(context),
                           fontSize: 14,
                         ),
                       ),
@@ -388,7 +388,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceGrey,
+                            color: AppColors.surfaceGrey(context),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -398,13 +398,13 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                                 children: [
                                   CircleAvatar(
                                     radius: 14,
-                                    backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+                                    backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                                     child: Text(
                                       comment.authorName[0],
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: AppColors.primaryTeal,
+                                        color: AppColors.primaryTeal(context),
                                       ),
                                     ),
                                   ),
@@ -412,7 +412,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                                   Text(
                                     comment.authorName,
                                     style: GoogleFonts.openSans(
-                                      color: AppColors.charcoal,
+                                      color: AppColors.charcoal(context),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -421,7 +421,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                                   Text(
                                     _getTimeAgo(comment.createdAt),
                                     style: GoogleFonts.openSans(
-                                      color: AppColors.textGrey,
+                                      color: AppColors.textGrey(context),
                                       fontSize: 10,
                                     ),
                                   ),
@@ -431,7 +431,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                               Text(
                                 comment.content,
                                 style: GoogleFonts.openSans(
-                                  color: AppColors.charcoal,
+                                  color: AppColors.charcoal(context),
                                   fontSize: 14,
                                 ),
                               ),
@@ -465,18 +465,18 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                     decoration: InputDecoration(
                       hintText: 'Write a comment...',
                       hintStyle: GoogleFonts.openSans(
-                        color: AppColors.textGrey,
+                        color: AppColors.textGrey(context),
                         fontSize: 14,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(color: AppColors.surfaceGrey),
+                        borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(color: AppColors.primaryTeal, width: 2),
+                        borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     ),
                     onSubmitted: (_) => _submitComment(),
                   ),
@@ -485,17 +485,17 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                 IconButton(
                   onPressed: _isSubmittingComment ? null : _submitComment,
                   icon: _isSubmittingComment
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: AppColors.primaryTeal,
+                            color: AppColors.primaryTeal(context),
                           ),
                         )
-                      : const Icon(
+                      : Icon(
                           Icons.send,
-                          color: AppColors.primaryTeal,
+                          color: AppColors.primaryTeal(context),
                           size: 28,
                         ),
                 ),
