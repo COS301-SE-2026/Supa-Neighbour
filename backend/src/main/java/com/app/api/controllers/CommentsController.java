@@ -1,6 +1,5 @@
 package com.app.api.controllers;
 
-import com.app.api.security.FirebaseAuthenticationFilter;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -30,7 +29,6 @@ import com.google.firebase.auth.FirebaseAuthException;
 @RequestMapping("/api/comments")
 public class CommentsController {
 
-    private final FirebaseAuthenticationFilter firebaseAuthenticationFilter;
     private final ReactionService reactionService;
     private final CommentsService commentsService;
     private final FirebaseAuthService firebaseAuthService;
@@ -39,11 +37,11 @@ public class CommentsController {
      * Basic Comments constructor
      * @param commentService service for the comments constructor
      */
-    public CommentsController(CommentsService commentsService, FirebaseAuthService firebaseAuthService,ReactionService reactionService, FirebaseAuthenticationFilter firebaseAuthenticationFilter) {
+    public CommentsController(CommentsService commentsService, FirebaseAuthService firebaseAuthService,ReactionService reactionService) {
         this.commentsService = commentsService;
         this.firebaseAuthService = firebaseAuthService;
         this.reactionService=reactionService;
-        this.firebaseAuthenticationFilter = firebaseAuthenticationFilter;
+
     }
 
     // GET /api/comments
