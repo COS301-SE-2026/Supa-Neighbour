@@ -64,6 +64,18 @@ Future<User> loginWithToken(String idToken) async {
 
 
 Future<void> logout() async {
+  try{
+    final String? idToken = await _firebaseAuth.currentUser?.getIdToken();
+
+    if(idToken != null){
+      await _dio.post(
+        '/api/auth/logout',
+        options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+      );
+    }
+    }catch(e){
+      
+    }
   final prefs = await SharedPreferences.getInstance();
   await prefs.setBool('remember_me', false);
   await _firebaseAuth.signOut();

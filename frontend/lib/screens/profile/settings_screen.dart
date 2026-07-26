@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supa_neighbour/providers/theme_mode_provider.dart';
+import 'package:supa_neighbour/screens/auth/splash_screen.dart';
 import '../../constants/app_colors.dart';
 import 'privacy_settings_screen.dart';  
-import 'package:flutter_riverpod/flutter_riverpod.dart'; 
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/auth_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -16,6 +17,44 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _locationEnabled = true;
   String _selectedLanguage = 'English';
+
+  Future<void> _confirmAndLogout(BuildContext context) async{
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) =>AlertDialog(
+        title: const Text('Sign Out'),
+        content:const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text('Sign Out', style: TextStyle(color: AppColors.error(context))),
+          )
+        ]
+      )
+    );
+
+    if(confirmed != true || !mounted) return;
+
+    try{
+      await AuthService().logout();
+      if(mounted){
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SplashScreen()),
+          (route) => false,
+        );
+      }
+    }catch(e){
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to sign you out. Please try again')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -229,9 +268,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Sign Out',
             subtitle: 'Sign out of your account',
             isDanger: true,
-            onTap: () {
-              // TODO: Implement sign out
-            },
+            onTap: () => _confirmAndLogout(context),
           ),
           _buildSettingsTile(
             icon: Icons.delete_outline,

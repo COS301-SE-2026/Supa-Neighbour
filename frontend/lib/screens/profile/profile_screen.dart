@@ -5,6 +5,8 @@ import '../../models/user_model.dart';
 import '../../models/auth_session.dart';
 import 'package:supa_neighbour/screens/profile/achievements_screen.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
+import '../../services/auth_service.dart';
+import '../auth/splash_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -842,14 +844,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Logged out successfully'),
-                  backgroundColor: AppColors.success(context),
-                ),
-              );
+              await _performLogout();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error(context),
@@ -871,5 +868,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _performLogout() async{
+    try{
+      await AuthService().logout();
+      if(mounted){
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SplashScreen()),
+          (route) => false,
+        );
+      }
+    }catch(e){
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to sign you out. Please try again')),
+        );
+      }
+    }
   }
 }
