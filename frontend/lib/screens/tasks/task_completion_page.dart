@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart'; // ADD: Import google_fonts
+import '../../services/task_service.dart';
+import '../../models/task_model.dart';
 import '../../constants/app_colors.dart'; // ADD: Import AppColors
 
 class TaskCompletionPage extends StatefulWidget {
@@ -29,7 +31,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
   bool _isSubmitting = false;
 
   final TaskService _taskService = TaskService();
-
 
   @override
   void dispose() {
@@ -124,44 +125,43 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
     }
   }
 
-Future<void> _submitCompletion() async {
-  //// semi complete
-  setState(() => _isSubmitting = true);
-  try {
-    await _taskService.updateTask(
-      taskId: int.parse(widget.taskId),
-      status: 'pending_approval',
-      adminReview: _noteController.text.isNotEmpty
-          ? _noteController.text
-          : null,
-    );
-
-    Task.updateTaskStatus(widget.taskId, 'pending_approval');
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Task submitted! Waiting for resident confirmation.'),
-          // CHANGE: Use AppColors.primaryTeal
-          backgroundColor: AppColors.primaryTeal(context),
-        ),
+  Future<void> _submitCompletion() async {
+    setState(() => _isSubmitting = true);
+    try {
+      await _taskService.updateTask(
+        taskId: int.parse(widget.taskId),
+        status: 'pending_approval',
+        adminReview: _noteController.text.isNotEmpty
+            ? _noteController.text
+            : null,
       );
-      Navigator.pop(context);
+
+      Task.updateTaskStatus(widget.taskId, 'pending_approval');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Task submitted! Waiting for resident confirmation.'),
+            // CHANGE: Use AppColors.primaryTeal
+            backgroundColor: AppColors.primaryTeal(context),
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            // CHANGE: Use AppColors.error
+            backgroundColor: AppColors.error(context),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
-  } on Exception catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  } finally {
-    if (mounted) setState(() => _isSubmitting = false);
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +203,7 @@ Future<void> _submitCompletion() async {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 // CHANGE: Use AppColors.surfaceGrey
-                color: isDarkMode ? AppColors.surfaceGrey(context) : AppColors.surfaceGrey(context),
+                color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -395,6 +395,10 @@ Future<void> _submitCompletion() async {
             TextField(
               controller: _noteController,
               maxLines: 4,
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal(context),
+                fontSize: 14,
+              ),
               decoration: InputDecoration(
                 hintText: 'Tell the resident what you did...',
                 hintStyle: GoogleFonts.openSans(
@@ -402,6 +406,13 @@ Future<void> _submitCompletion() async {
                   color: AppColors.textGrey(context),
                 ),
                 border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    // CHANGE: Use AppColors.surfaceGrey
+                    color: AppColors.surfaceGrey(context),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
                     // CHANGE: Use AppColors.surfaceGrey
@@ -418,9 +429,6 @@ Future<void> _submitCompletion() async {
                 ),
                 filled: true,
                 fillColor: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
-              ),
-              style: GoogleFonts.openSans(
-                color: AppColors.charcoal(context),
               ),
             ),
 

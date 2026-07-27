@@ -63,22 +63,22 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.citrusYellow(context).withValues(alpha: 0.1),
+                color: const Color(0xFFFF9800).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.hourglass_top,
                     size: 16,
-                    color: AppColors.citrusYellow(context),
+                    color: Color(0xFFFF9800),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(
                     'Awaiting Your Approval',
                     style: GoogleFonts.openSans(
-                      color: AppColors.citrusYellow(context),
+                      color: const Color(0xFFFF9800),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -105,7 +105,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                   Text(
                     widget.task.category,
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal(context),
+                      color: AppColors.primaryTeal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -126,12 +126,12 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.charcoal(context).withValues(alpha: 0.05),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.person, color: AppColors.charcoal(context), size: 20),
+                  Icon(Icons.person, color: AppColors.primaryTeal(context), size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'Helper: ${widget.task.helperName}',
@@ -147,12 +147,12 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.citrusYellow(context).withValues(alpha: 0.2),
+                color: const Color(0xFFE9C46A).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.stars, color: AppColors.citrusYellow(context), size: 32),
+                  const Icon(Icons.stars, color: Color(0xFFE9C46A), size: 32),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +196,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        Icon(Icons.calendar_today, color: AppColors.charcoal(context), size: 20),
+                        Icon(Icons.calendar_today, color: AppColors.primaryTeal(context), size: 20),
                         const SizedBox(width: 12),
                         Text(
                           '${widget.task.date.day}/${widget.task.date.month}/${widget.task.date.year}',
@@ -211,7 +211,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        Icon(Icons.access_time, color: AppColors.charcoal(context), size: 20),
+                        Icon(Icons.access_time, color: AppColors.primaryTeal(context), size: 20),
                         const SizedBox(width: 12),
                         Text(
                           widget.task.time.format(context),
@@ -266,7 +266,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.charcoal(context).withValues(alpha: 0.05),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -351,17 +351,17 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                   },
                   child: Icon(
                     index < _rating ? Icons.star : Icons.star_border,
-                    color: AppColors.citrusYellow(context),
+                    color: const Color(0xFFE9C46A),
                     size: 36,
                   ),
                 );
               }),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               _rating > 0 ? '${_rating.toStringAsFixed(1)} / 5.0' : 'Tap a star to rate',
               style: GoogleFonts.openSans(
-                color: _rating > 0 ? AppColors.charcoal(context) : AppColors.textGrey(context),
+                color: _rating > 0 ? AppColors.primaryTeal(context) : AppColors.textGrey(context),
                 fontSize: 14,
               ),
             ),
@@ -408,9 +408,9 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
           const SizedBox(height: 8),
           Text(
             'Rating: ${_rating.toStringAsFixed(1)} / 5.0',
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.w600,
-              color: AppColors.citrusYellow(context),
+              color: Color(0xFFE9C46A),
             ),
           ),
         ],

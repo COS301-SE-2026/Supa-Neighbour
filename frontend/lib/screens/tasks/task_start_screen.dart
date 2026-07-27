@@ -170,12 +170,12 @@ Future<void> _startTask() async {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color:  AppColors.citrusYellow(context).withValues(alpha: 0.2),
+                color: const Color(0xFFE9C46A).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.stars, color: AppColors.citrusYellow(context), size: 32),
+                  const Icon(Icons.stars, color: Color(0xFFE9C46A), size: 32),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,9 +204,7 @@ Future<void> _startTask() async {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? AppColors.surfaceGrey(context) 
-                    : Colors.white,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(

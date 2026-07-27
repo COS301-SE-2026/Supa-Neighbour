@@ -38,7 +38,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   final TaskService _taskService = TaskService();
   bool _isSubmitting = false;
 
-
   @override
   void initState() {
     super.initState();
@@ -66,6 +65,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: ColorScheme.light(
+              // CHANGE: Use AppColors.primaryTeal
               primary: AppColors.primaryTeal(context),
             ),
           ),
@@ -88,6 +88,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: ColorScheme.light(
+              // CHANGE: Use AppColors.primaryTeal
               primary: AppColors.primaryTeal(context),
             ),
           ),
@@ -102,64 +103,67 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     }
   }
 
-
   Future<void> _updateTask() async {
-  if (_titleController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please enter a task title')),
-    );
-    return;
-  }
-
-  setState(() => _isSubmitting = true);
-
-  try {
-    await _taskService.updateTask(
-      taskId: int.parse(widget.task.id),
-      taskTypeId: Task.resolveTaskTypeId(_selectedCategory),
-      startDate: _selectedDate,
-      adminReview: _instructionsController.text.isNotEmpty
-          ? _instructionsController.text
-          : 'No additional instructions',
-      status: widget.task.status,
-    );
-
-    if (mounted) {
+    if (_titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Task updated successfully!'),
-          backgroundColor: AppColors.primaryTeal(context),
-        ),
+        const SnackBar(content: Text('Please enter a task title')),
       );
-      Navigator.pop(context, true);
+      return;
     }
-  } on Exception catch (e) {
-    if (mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Task saved locally (offline mode)'),
-        backgroundColor: AppColors.citrusYellow(context),
-      ),
-    );
-    Navigator.pop(context, true);
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      await _taskService.updateTask(
+        taskId: int.parse(widget.task.id),
+        taskTypeId: Task.resolveTaskTypeId(_selectedCategory),
+        startDate: _selectedDate,
+        adminReview: _instructionsController.text.isNotEmpty
+            ? _instructionsController.text
+            : 'No additional instructions',
+        status: widget.task.status,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Task updated successfully!'),
+            // CHANGE: Use AppColors.primaryTeal
+            backgroundColor: AppColors.primaryTeal(context),
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            // CHANGE: Use AppColors.error
+            backgroundColor: AppColors.error(context),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
-  } finally {
-    if (mounted) setState(() => _isSubmitting = false);
   }
-}
 
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
+      // CHANGE: Use AppColors.background
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
+        // CHANGE: Use AppColors.background
         backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
+            // CHANGE: Use AppColors.charcoal
             color: AppColors.charcoal(context),
           ),
           onPressed: () => Navigator.pop(context, false),
@@ -167,6 +171,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         title: Text(
           'Edit Task',
           style: GoogleFonts.poppins(
+            // CHANGE: Use AppColors.charcoal
             color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
@@ -183,7 +188,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             Text(
               'Task Title',
               style: GoogleFonts.poppins(
-                //: Use AppColors.charcoal
+                // CHANGE: Use AppColors.charcoal
                 color: AppColors.charcoal(context),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -192,31 +197,35 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: _titleController,
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal(context),
+                fontSize: 14,
+              ),
               decoration: InputDecoration(
                 hintText: 'e.g., Water my plants',
                 hintStyle: GoogleFonts.openSans(
-                  //: Use AppColors.textGrey
+                  // CHANGE: Use AppColors.textGrey
                   color: AppColors.textGrey(context),
                   fontSize: 14,
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    //: Use AppColors.surfaceGrey
+                    // CHANGE: Use AppColors.surfaceGrey
                     color: AppColors.surfaceGrey(context),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    //: Use AppColors.surfaceGrey
+                    // CHANGE: Use AppColors.surfaceGrey
                     color: AppColors.surfaceGrey(context),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    //: Use AppColors.primaryTeal
+                    // CHANGE: Use AppColors.primaryTeal
                     color: AppColors.primaryTeal(context),
                     width: 2,
                   ),
@@ -231,7 +240,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             Text(
               'Category',
               style: GoogleFonts.poppins(
-                //: Use AppColors.charcoal
+                // CHANGE: Use AppColors.charcoal
                 color: AppColors.charcoal(context),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -243,7 +252,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               hint: Text(
                 'Select category',
                 style: GoogleFonts.openSans(
-                  //: Use AppColors.textGrey
+                  // CHANGE: Use AppColors.textGrey
                   color: AppColors.textGrey(context),
                   fontSize: 14,
                 ),
@@ -252,21 +261,21 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    //: Use AppColors.surfaceGrey
+                    // CHANGE: Use AppColors.surfaceGrey
                     color: AppColors.surfaceGrey(context),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    //: Use AppColors.surfaceGrey
+                    // CHANGE: Use AppColors.surfaceGrey
                     color: AppColors.surfaceGrey(context),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    //: Use AppColors.primaryTeal
+                    // CHANGE: Use AppColors.primaryTeal
                     color: AppColors.primaryTeal(context),
                     width: 2,
                   ),
@@ -280,7 +289,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   child: Text(
                     category,
                     style: GoogleFonts.openSans(
-                      //: Use AppColors.charcoal
+                      // CHANGE: Use AppColors.charcoal
                       color: AppColors.charcoal(context),
                       fontSize: 14,
                     ),
@@ -305,7 +314,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                       Text(
                         'Date',
                         style: GoogleFonts.poppins(
-                          //: Use AppColors.charcoal
+                          // CHANGE: Use AppColors.charcoal
                           color: AppColors.charcoal(context),
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -318,7 +327,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              //: Use AppColors.surfaceGrey
+                              // CHANGE: Use AppColors.surfaceGrey
                               color: AppColors.surfaceGrey(context),
                             ),
                             borderRadius: BorderRadius.circular(12),
@@ -329,14 +338,14 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                               Icon(
                                 Icons.calendar_today,
                                 size: 20,
-                                //: Use AppColors.primaryTeal
+                                // CHANGE: Use AppColors.primaryTeal
                                 color: AppColors.primaryTeal(context),
                               ),
                               const SizedBox(width: 12),
                               Text(
                                 '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                                 style: GoogleFonts.openSans(
-                                  //: Use AppColors.charcoal
+                                  // CHANGE: Use AppColors.charcoal
                                   color: AppColors.charcoal(context),
                                   fontSize: 14,
                                 ),
@@ -356,7 +365,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                       Text(
                         'Time',
                         style: GoogleFonts.poppins(
-                          //: Use AppColors.charcoal
+                          // CHANGE: Use AppColors.charcoal
                           color: AppColors.charcoal(context),
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -369,7 +378,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              //: Use AppColors.surfaceGrey
+                              // CHANGE: Use AppColors.surfaceGrey
                               color: AppColors.surfaceGrey(context),
                             ),
                             borderRadius: BorderRadius.circular(12),
@@ -380,14 +389,14 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                               Icon(
                                 Icons.access_time,
                                 size: 20,
-                                //: Use AppColors.primaryTeal
+                                // CHANGE: Use AppColors.primaryTeal
                                 color: AppColors.primaryTeal(context),
                               ),
                               const SizedBox(width: 12),
                               Text(
                                 _selectedTime.format(context),
                                 style: GoogleFonts.openSans(
-                                  //: Use AppColors.charcoal
+                                  // CHANGE: Use AppColors.charcoal
                                   color: AppColors.charcoal(context),
                                   fontSize: 14,
                                 ),
@@ -407,7 +416,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             Text(
               'Instructions',
               style: GoogleFonts.poppins(
-                //: Use AppColors.charcoal
+                // CHANGE: Use AppColors.charcoal
                 color: AppColors.charcoal(context),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -417,31 +426,35 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             TextField(
               controller: _instructionsController,
               maxLines: 4,
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal(context),
+                fontSize: 14,
+              ),
               decoration: InputDecoration(
                 hintText: 'Provide details to help the helper...',
                 hintStyle: GoogleFonts.openSans(
-                  //: Use AppColors.textGrey
+                  // CHANGE: Use AppColors.textGrey
                   color: AppColors.textGrey(context),
                   fontSize: 14,
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    //: Use AppColors.surfaceGrey
+                    // CHANGE: Use AppColors.surfaceGrey
                     color: AppColors.surfaceGrey(context),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    //: Use AppColors.surfaceGrey
+                    // CHANGE: Use AppColors.surfaceGrey
                     color: AppColors.surfaceGrey(context),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    //: Use AppColors.primaryTeal
+                    // CHANGE: Use AppColors.primaryTeal
                     color: AppColors.primaryTeal(context),
                     width: 2,
                   ),
@@ -458,7 +471,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _updateTask,
                 style: ElevatedButton.styleFrom(
-                  //: Use AppColors.primaryTeal
+                  // CHANGE: Use AppColors.primaryTeal
                   backgroundColor: AppColors.primaryTeal(context),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -481,6 +494,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                         style: GoogleFonts.openSans(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
                       ),
               ),

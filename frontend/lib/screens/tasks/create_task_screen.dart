@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import '../../services/task_service.dart';
+import '../../models/auth_session.dart';
 import '../../constants/app_colors.dart'; // ADD: Import AppColors
 
 class CreateTaskScreen extends StatefulWidget {
@@ -91,15 +92,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   final TaskService _taskService = TaskService();
   bool _isSubmit = false;
 
-  void _submitTask() async {
-    // Validate required fields
+  Future<void> _submitTask() async {
     if (_titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a task title')),
       );
       return;
     }
-
     if (_selectedCategory == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a category')),
@@ -107,18 +106,26 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       return;
     }
 
+    final userId = int.tryParse(AuthSession.instance.currentUser?.id ?? '');
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You must be logged in to create a task')),
+      );
+      return;
+    }
+
     setState(() => _isSubmit = true);
-    
+
     try {
       await _taskService.createTask(
-        dependentId: 1, // will update to auth users
+        dependentId: userId,
         taskTypeId: Task.resolveTaskTypeId(_selectedCategory!),
         startDate: _selectedDate,
         isImmediate: false,
         needsSpecialist: false,
       );
 
-      if(mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Task created successfully!'),
@@ -128,42 +135,18 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         );
         Navigator.pop(context, true);
       }
-    } catch(e) {
-      // fallback to what we mocked
-      // Create new task with all required parameters
-      final newTask = Task(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        title: _titleController.text,
-        category: _selectedCategory!,
-        date: _selectedDate,
-        time: _selectedTime,
-        xpReward: 50, // Default XP reward
-        instructions: _instructionsController.text.isNotEmpty
-            ? _instructionsController.text
-            : 'No additional instructions',
-        status: 'open',  // New task starts as 'open' (waiting for helper)
-        createdAt: DateTime.now(),
-        createdBy: 'currentUser',  // The current user is the creator
-        requesterName: 'You',       // Display name for requester
-        helperId: null,             // No helper yet
-        helperName: null,           // No helper yet
-      );
-      // Add to mock data list
-      Task.addMockTask(newTask);
-
-      if(mounted) {
+    } on Exception catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Task saved locally (offline mode)'),
-            // CHANGE: Use AppColors.citrusYellow
-            backgroundColor: AppColors.citrusYellow(context),
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            // CHANGE: Use AppColors.error
+            backgroundColor: AppColors.error(context),
           ),
         );
-        // Navigate back
-        Navigator.pop(context, true);
       }
     } finally {
-      if(mounted) setState(() => _isSubmit = false);
+      if (mounted) setState(() => _isSubmit = false);
     }
   }
 
@@ -215,6 +198,10 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: _titleController,
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal(context),
+                fontSize: 14,
+              ),
               decoration: InputDecoration(
                 hintText: 'e.g., Water my plants',
                 hintStyle: GoogleFonts.openSans(
@@ -440,6 +427,10 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             TextField(
               controller: _instructionsController,
               maxLines: 4,
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal(context),
+                fontSize: 14,
+              ),
               decoration: InputDecoration(
                 hintText: 'Provide details to help the helper...',
                 hintStyle: GoogleFonts.openSans(
@@ -485,6 +476,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     ? _submitTask
                     : null,
                 style: ElevatedButton.styleFrom(
+                  // CHANGE: Use AppColors.primaryTeal
                   backgroundColor: AppColors.primaryTeal(context),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -507,6 +499,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         style: GoogleFonts.openSans(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
                       ),
               ),

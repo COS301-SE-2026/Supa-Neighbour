@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/chat_thread.dart';
 import '../../services/chat_service.dart';
+import '../../constants/app_colors.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final ChatThread chat;
@@ -84,6 +85,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _showImagePreview() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -92,12 +94,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
+          color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Preview Image',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.charcoal(context)),
               ),
               const SizedBox(height: 16),
               ClipRRect(
@@ -119,7 +122,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         _sendImage();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1C9A89),
+                        backgroundColor: AppColors.primaryTeal(context),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -137,7 +140,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF1C9A89)),
+                        side: BorderSide(color: AppColors.primaryTeal(context)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -204,10 +207,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1C9A89),
+        backgroundColor: AppColors.primaryTeal(context),
         elevation: 0,
         title: Row(
           children: [
@@ -299,7 +303,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black..withValues(alpha: 0.05),
@@ -317,12 +321,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     width: 45,
                     height: 45,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0F2F8),
+                      color: AppColors.surfaceGrey(context),
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.attach_file,
-                      color: Color(0xFF1C9A89),
+                      color: AppColors.primaryTeal(context),
                       size: 24,
                     ),
                   ),
@@ -333,17 +337,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0F2F8),
+                      color: AppColors.surfaceGrey(context),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: TextField(
                       controller: _messageController,
-                      style: GoogleFonts.openSans(fontSize: 16),
+                      style: GoogleFonts.openSans(fontSize: 16, ),
                       decoration: InputDecoration(
                         hintText: 'Type a message...',
                         hintStyle: GoogleFonts.openSans(
                           fontSize: 14,
-                          color: const Color(0xFF9CA3AF),
+                          color: AppColors.textGrey(context),
                         ),
                         border: InputBorder.none,
                         contentPadding:
@@ -359,8 +363,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   child: Container(
                     width: 45,
                     height: 45,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1C9A89),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryTeal(context),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -424,8 +428,8 @@ class MessageBubble extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: message.isMe
-                    ? const Color(0xFF1C9A89)
-                    : const Color(0xFFF0F2F8),
+                    ? AppColors.primaryTeal(context)
+                    : AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
                   topRight: const Radius.circular(20),
@@ -453,7 +457,7 @@ class MessageBubble extends StatelessWidget {
                         fontSize: 15,
                         color: message.isMe
                             ? Colors.white
-                            : const Color(0xFF264653),
+                            : AppColors.charcoal(context),
                       ),
                     ),
             ),
@@ -465,8 +469,8 @@ class MessageBubble extends StatelessWidget {
                 style: GoogleFonts.openSans(
                   fontSize: 10,
                   color: message.isMe
-                      ? const Color(0xFF9CA3AF)
-                      : const Color(0xFF9CA3AF),
+                      ? AppColors.textGrey(context)
+                      : AppColors.textGrey(context),
                 ),
               ),
             ),
