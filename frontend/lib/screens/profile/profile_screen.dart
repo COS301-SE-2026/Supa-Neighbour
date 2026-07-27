@@ -5,6 +5,7 @@ import '../../models/user_model.dart';
 import '../../models/auth_session.dart';
 import 'package:supa_neighbour/screens/profile/achievements_screen.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
+import '../help/help_menu_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -739,7 +740,7 @@ final List<Map<String, dynamic>> _achievements = [
     );
   }
 
- Widget _buildActionButtons() {
+  Widget _buildActionButtons() {
   return Column(
     children: [
       SizedBox(
@@ -767,6 +768,46 @@ final List<Map<String, dynamic>> _achievements = [
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HelpMenuScreen(),
+              ),
+            );
+          },
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: AppColors.primaryTeal),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.help_outline,
+                color: AppColors.primaryTeal,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Help & Support',
+                style: GoogleFonts.openSans(
+                  color: AppColors.primaryTeal,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ),
       ),
