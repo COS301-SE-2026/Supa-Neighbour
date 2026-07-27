@@ -1,7 +1,6 @@
 package com.app.api.repositories;
 
 import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.app.api.models.Helper;
@@ -31,5 +30,6 @@ public interface HelperRepository extends JpaRepository<Helper, Integer> {
      *         {@code Optional}
      */
     Optional<Helper> findByUserid_Userid(int userId);
+
 }
 

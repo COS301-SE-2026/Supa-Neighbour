@@ -28,5 +28,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
      *         otherwise an empty {@code Optional}
      */
     Optional<User> findByFirebaseUid(String firebaseUid);
+        /**
+     * Finds a user by their Firebase unique identifier.
+     *
+     * @param id the Firebase UID of the user
+     * @return an {@code Optional} containing the matching user if found;
+     *         otherwise an empty {@code Optional}
+     */
 
 }

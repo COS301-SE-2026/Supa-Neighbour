@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
 import com.app.api.models.Badges;
@@ -160,4 +159,23 @@ public AuthController(
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) authentication.getPrincipal();
         return ResponseEntity.ok(authenticatedUser.getUser());
     } 
+
+    // POST /api/auth/logout
+/**
+ * Logs the authenticated user out by revoking their Firebase refresh tokens.
+ *
+ * @param authHeader the Authorization header, expected as "Bearer <token>"
+ * @return 200 OK on success, or 401 if the token is invalid
+ */
+@PostMapping("/logout")
+public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader){
+    try{
+        String token = authHeader.replace("Bearer ", "");
+        String uid = firebaseAuthService.verifyIdToken(token).getUid();
+        firebaseAuthService.revokeUserSessions(uid);
+        return ResponseEntity.ok("Logged out successfully");
+    }catch(FirebaseAuthException e) {
+        return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(null);
+    }
+}
 }

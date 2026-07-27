@@ -5,7 +5,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.app.api.repositories.UserRepository;
+import com.app.api.repositories.SettingsRepository;
 
+import java.time.Instant;
 /**
  * Service responsible for interacting with Firebase Authentication.
  * <p>
@@ -17,17 +19,21 @@ import com.app.api.repositories.UserRepository;
 public class FirebaseAuthService {
 
     
-    private  final UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final SettingsRepository settingsRepository;
+
 
     /**
     * Creates a new Firebase authentication service.
     *
     * @param userRepository repository used to retrieve application users
     */
-    public FirebaseAuthService(UserRepository userRepository) {
+    public FirebaseAuthService(UserRepository userRepository, SettingsRepository settingsRepository) {
         this.userRepository = userRepository;
+        this.settingsRepository = settingsRepository;
     }
-       /**
+
+    /**
      * Verifies a Firebase ID token.
      *
      * @param idToken the Firebase ID token to verify
@@ -36,7 +42,7 @@ public class FirebaseAuthService {
      *         or cannot be verified
      */
     public FirebaseToken verifyIdToken(String idToken) throws FirebaseAuthException {
-        return FirebaseAuth.getInstance().verifyIdToken(idToken);
+        return FirebaseAuth.getInstance().verifyIdToken(idToken, true);
     }
 
     /**
@@ -51,8 +57,28 @@ public class FirebaseAuthService {
     public int getUserIdFromToken(String idToken) throws FirebaseAuthException{
         FirebaseToken decoded = verifyIdToken(idToken);
         String firebaseUid = decoded.getUid();
-        return userRepository.findByFirebaseUid(firebaseUid)
+        
+        int userId = userRepository.findByFirebaseUid(firebaseUid)
                 .orElseThrow(() -> new RuntimeException("No user found for FirebaseUID: " + firebaseUid))
                 .getUserid();
+
+        settingsRepository.findById(userId).ifPresent(settings ->{
+            settings.setLastSeen(Instant.now());
+            settingsRepository.save(settings);
+        });
+        
+        return userId;
+    }
+
+    /**
+     * Revokes all refresh tokens for a user, effectively logging them out
+     * of all devices/sessions. Existing ID tokens remain valid until they
+     * expire naturally, unless checkRevoked is used during verification.
+     *
+     * @param uid the Firebase UID of the user to log out
+     * @throws FirebaseAuthException if the UID is invalid or revocation fails
+     */
+    public void revokeUserSessions(String uid) throws FirebaseAuthException {
+        FirebaseAuth.getInstance().revokeRefreshTokens(uid);
     }
 }   

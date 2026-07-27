@@ -14,6 +14,8 @@ import jakarta.persistence.PersistenceContext;
  */
 @Repository
 public class HelperprofileRepository {
+
+    
     @PersistenceContext
     private EntityManager em;
 
@@ -153,4 +155,6 @@ public class HelperprofileRepository {
 
         return em.createNativeQuery(sql).setParameter("helperId", helperId).getResultList();
     }
+
+    
 }

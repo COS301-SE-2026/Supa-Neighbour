@@ -2,7 +2,8 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile.api
+      dockerfile: Dockerfile
+    restart: unless-stopped
 
     container_name: supa-api-azure
 
@@ -16,4 +17,3 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
       BLOB_CONNECTION_STRING: ${BLOB_CONNECTION_STRING}
-      ENCRYPTION_KEY: yvVMg5ymmdte9Wg2XszsAHVsY72Upcqeo8DEc2pwOLU=

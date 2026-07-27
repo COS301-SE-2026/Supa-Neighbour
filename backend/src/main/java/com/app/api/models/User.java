@@ -120,7 +120,7 @@ public class User {
      * @param ratingid the rating associated with the user
      * @param userType the user's type or role
      */
-    public User(int userid,String firebaseUid, String firstName, String lastName, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
+    public User(int userid,String firebaseUid,boolean phoneVerified,boolean emailVerified, String firstName, String lastName, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
         this.userid = userid;
         this.firebaseUid = firebaseUid;
         this.emailVerified = emailVerified;
@@ -135,6 +135,14 @@ public class User {
         this.badgeid = badgeid;
         this.ratingid = ratingid;
         this.userType = userType;
+    }
+
+/**
+ * Returns the the firebase id 
+ * @return fireUid
+ */
+    public String getFirebaseUid(){
+        return firebaseUid;
     }
 
 }
