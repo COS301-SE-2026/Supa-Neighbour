@@ -187,13 +187,13 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             Icon(
               Icons.error_outline,
               size: 64,
-              color: Colors.red.withValues(alpha: 0.5),
+              color: AppColors.error(context).withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
               'Failed to load achievements',
               style: GoogleFonts.poppins(
-                color: Colors.red,
+                color: AppColors.error(context),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -202,7 +202,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             Text(
               _error!,
               style: GoogleFonts.openSans(
-                color: Colors.grey[600],
+                color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
               textAlign: TextAlign.center,
