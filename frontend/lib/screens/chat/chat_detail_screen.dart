@@ -2,15 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/chat_thread.dart';
 import '../../services/chat_service.dart';
-import '../../constants/app_colors.dart'; // ADD: Import AppColors
 
 class ChatDetailScreen extends StatefulWidget {
   final ChatThread chat;
-
   const ChatDetailScreen({super.key, required this.chat});
-
   @override
   State<ChatDetailScreen> createState() => _ChatDetailScreenState();
 }
@@ -23,48 +21,57 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   // service
   final ChatService _chatService = ChatService();
   bool _isSending = false;
-  static const int _currentUserId = 6; // auth usr update
-
+  int _currentUserId = 0;
 
   @override
   void initState() {
     super.initState();
+    _resolveUserId();
+  }
+
+  Future<void> _resolveUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getInt('current_user_id');
+    if (stored != null) {
+      setState(() => _currentUserId = stored);
+    }
     _loadMessages();
   }
 
-
-Future<void> _loadMessages() async {
-  try {
-    final data = await _chatService.getMessages(widget.chat.chatId);
-    final msgs = data['messages'] as List<dynamic>;
-    setState(() {
-      _messages.clear();
-      for (final m in msgs) {
-        _messages.add(ChatMessageWidget(
-          text: m['content'] as String,
-          isMe: (m['senderID'] as int) == _currentUserId,
-          time: _formatTimestamp(m['timestamp'] as String?),
-        ));
+  Future<void> _loadMessages() async {
+    try {
+      final data = await _chatService.getMessages(widget.chat.chatId);
+      final msgs = data['messages'] as List<dynamic>;
+      setState(() {
+        _messages.clear();
+        for (final m in msgs) {
+          _messages.add(ChatMessageWidget(
+            text: m['content'] as String,
+            isMe: (m['senderID'] as int) == _currentUserId,
+            time: _formatTimestamp(m['timestamp'] as String?),
+          ));
+        }
+      });
+      if (_currentUserId != 0) {
+        await _chatService.markAsRead(widget.chat.chatId, _currentUserId);
       }
-    });
-  } catch (e) {
-    //existing state kept on failure
+    } catch (e) {
+      //existing state kept on failure
+    }
   }
-}
 
-String _formatTimestamp(String? raw) {
-  if (raw == null) return _getCurrentTime();
-  try {
-    final dt = DateTime.parse(raw);
-    final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
-    final m = dt.minute.toString().padLeft(2, '0');
-    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-    return '$h:$m $ampm';
-  } catch (_) {
-    return _getCurrentTime();
+  String _formatTimestamp(String? raw) {
+    if (raw == null) return _getCurrentTime();
+    try {
+      final dt = DateTime.parse(raw);
+      final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+      final m = dt.minute.toString().padLeft(2, '0');
+      final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+      return '$h:$m $ampm';
+    } catch (_) {
+      return _getCurrentTime();
+    }
   }
-}
-
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -77,8 +84,6 @@ String _formatTimestamp(String? raw) {
   }
 
   void _showImagePreview() {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -87,19 +92,12 @@ String _formatTimestamp(String? raw) {
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
-          // CHANGE: Use dynamic color based on theme
-          color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 'Preview Image',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  // CHANGE: Use AppColors.charcoal
-                  color: AppColors.charcoal(context),
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               ClipRRect(
@@ -121,19 +119,12 @@ String _formatTimestamp(String? raw) {
                         _sendImage();
                       },
                       style: ElevatedButton.styleFrom(
-                        // CHANGE: Use AppColors.primaryTeal
-                        backgroundColor: AppColors.primaryTeal(context),
+                        backgroundColor: const Color(0xFF1C9A89),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: Text(
-                        'Send Image',
-                        style: GoogleFonts.openSans(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: const Text('Send Image'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -146,19 +137,12 @@ String _formatTimestamp(String? raw) {
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
-                        // CHANGE: Use AppColors.primaryTeal
-                        side: BorderSide(color: AppColors.primaryTeal(context)),
+                        side: const BorderSide(color: Color(0xFF1C9A89)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: Text(
-                        'Cancel',
-                        style: GoogleFonts.openSans(
-                          // CHANGE: Use AppColors.primaryTeal
-                          color: AppColors.primaryTeal(context),
-                        ),
-                      ),
+                      child: const Text('Cancel'),
                     ),
                   ),
                 ],
@@ -173,44 +157,41 @@ String _formatTimestamp(String? raw) {
   void _sendImage() {
     if (_selectedImage != null) {
       setState(() {
-        _messages.add(
-          ChatMessageWidget(
-            text: '📷 Image shared',
-            isMe: true,
-            time: _getCurrentTime(),
-            isImage: true,
-            imageFile: _selectedImage,
-          ),
-        );
+        _messages.add(ChatMessageWidget(
+          text: '📷 Image shared',
+          isMe: true,
+          time: _getCurrentTime(),
+          isImage: true,
+          imageFile: _selectedImage,
+        ));
         _selectedImage = null;
       });
     }
   }
 
   Future<void> _sendMessage() async {
-  final text = _messageController.text.trim();
-  if (text.isEmpty || _isSending) return;
-
-  setState(() => _isSending = true);
-  _messageController.clear();
-
-  setState(() {
-    _messages.add(ChatMessageWidget(
-      text: text,
-      isMe: true,
-      time: _getCurrentTime(),
-    ));
-  });
-
-  try {
-    await _chatService.sendMessage(widget.chat.chatId, _currentUserId, text);
-  } catch (e) {
-    // message already shown in UI — fail silently for now
-  } finally {
-    if (mounted) setState(() => _isSending = false);
+    final text = _messageController.text.trim();
+    if (text.isEmpty || _isSending) return;
+    setState(() => _isSending = true);
+    _messageController.clear();
+    setState(() {
+      _messages.add(ChatMessageWidget(
+        text: text,
+        isMe: true,
+        time: _getCurrentTime(),
+      ));
+    });
+    try {
+      await _chatService.sendMessage(widget.chat.chatId, _currentUserId, text);
+      if (_currentUserId != 0) {
+        await _chatService.markAsRead(widget.chat.chatId, _currentUserId);
+      }
+    } catch (e) {
+      // message already shown in UI — fail silently for now
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
   }
-}
-
 
   String _getCurrentTime() {
     final now = DateTime.now();
@@ -223,14 +204,10 @@ String _formatTimestamp(String? raw) {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
     return Scaffold(
-      // CHANGE: Use AppColors.background
-      backgroundColor: AppColors.background(context),
+      backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
-        // CHANGE: Use AppColors.primaryTeal
-        backgroundColor: AppColors.primaryTeal(context),
+        backgroundColor: const Color(0xFF1C9A89),
         elevation: 0,
         title: Row(
           children: [
@@ -300,7 +277,7 @@ String _formatTimestamp(String? raw) {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, true);
           },
         ),
       ),
@@ -322,11 +299,10 @@ String _formatTimestamp(String? raw) {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              // CHANGE: Use dynamic color based on theme
-              color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
+              color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black..withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),
@@ -341,14 +317,12 @@ String _formatTimestamp(String? raw) {
                     width: 45,
                     height: 45,
                     decoration: BoxDecoration(
-                      // CHANGE: Use AppColors.surfaceGrey
-                      color: AppColors.surfaceGrey(context),
+                      color: const Color(0xFFF0F2F8),
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.attach_file,
-                      // CHANGE: Use AppColors.primaryTeal
-                      color: AppColors.primaryTeal(context),
+                      color: Color(0xFF1C9A89),
                       size: 24,
                     ),
                   ),
@@ -359,26 +333,21 @@ String _formatTimestamp(String? raw) {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      // CHANGE: Use AppColors.surfaceGrey
-                      color: AppColors.surfaceGrey(context),
+                      color: const Color(0xFFF0F2F8),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: TextField(
                       controller: _messageController,
-                      style: GoogleFonts.openSans(
-                        fontSize: 16,
-                        // CHANGE: Use AppColors.charcoal
-                        color: AppColors.charcoal(context),
-                      ),
+                      style: GoogleFonts.openSans(fontSize: 16),
                       decoration: InputDecoration(
                         hintText: 'Type a message...',
                         hintStyle: GoogleFonts.openSans(
                           fontSize: 14,
-                          // CHANGE: Use AppColors.textGrey
-                          color: AppColors.textGrey(context),
+                          color: const Color(0xFF9CA3AF),
                         ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ),
@@ -390,9 +359,8 @@ String _formatTimestamp(String? raw) {
                   child: Container(
                     width: 45,
                     height: 45,
-                    decoration: BoxDecoration(
-                      // CHANGE: Use AppColors.primaryTeal
-                      color: AppColors.primaryTeal(context),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF1C9A89),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -406,8 +374,8 @@ String _formatTimestamp(String? raw) {
                               ),
                             )
                           : const Icon(Icons.send, color: Colors.white, size: 22),
-                          ),
-                        ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -438,13 +406,10 @@ class ChatMessageWidget {
 // Message Bubble Widget
 class MessageBubble extends StatelessWidget {
   final ChatMessageWidget message;
-
   const MessageBubble({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
     return Align(
       alignment: message.isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -459,10 +424,8 @@ class MessageBubble extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: message.isMe
-                    // CHANGE: Use AppColors.primaryTeal for sent messages
-                    ? AppColors.primaryTeal(context)
-                    // CHANGE: Use AppColors.surfaceGrey for received messages
-                    : AppColors.surfaceGrey(context),
+                    ? const Color(0xFF1C9A89)
+                    : const Color(0xFFF0F2F8),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
                   topRight: const Radius.circular(20),
@@ -476,24 +439,23 @@ class MessageBubble extends StatelessWidget {
               ),
               child: message.isImage && message.imageFile != null
                   ? ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  message.imageFile!,
-                  width: 200,
-                  height: 150,
-                  fit: BoxFit.cover,
-                ),
-              )
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.file(
+                        message.imageFile!,
+                        width: 200,
+                        height: 150,
+                        fit: BoxFit.cover,
+                      ),
+                    )
                   : Text(
-                message.text,
-                style: GoogleFonts.openSans(
-                  fontSize: 15,
-                  // CHANGE: Use dynamic text color based on sender
-                  color: message.isMe 
-                      ? Colors.white 
-                      : AppColors.charcoal(context),
-                ),
-              ),
+                      message.text,
+                      style: GoogleFonts.openSans(
+                        fontSize: 15,
+                        color: message.isMe
+                            ? Colors.white
+                            : const Color(0xFF264653),
+                      ),
+                    ),
             ),
             const SizedBox(height: 4),
             Padding(
@@ -502,8 +464,9 @@ class MessageBubble extends StatelessWidget {
                 message.time,
                 style: GoogleFonts.openSans(
                   fontSize: 10,
-                  // CHANGE: Use AppColors.textGrey
-                  color: AppColors.textGrey(context),
+                  color: message.isMe
+                      ? const Color(0xFF9CA3AF)
+                      : const Color(0xFF9CA3AF),
                 ),
               ),
             ),

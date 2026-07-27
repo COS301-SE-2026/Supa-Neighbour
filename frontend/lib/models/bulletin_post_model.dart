@@ -1,136 +1,73 @@
 class BulletinPost {
-  final String id;
-  final String title;
-  final String body;
+  final int id;
+  final String postContent;
+  final String? mediaUrl;
   final String category;
-  final String authorId;
-  final String authorName;
-  final String authorAvatar;
-  final List<String> imageUrls;
-  final int helpfulCount;
+  final int authorId;
+  final String authorUsername;
+  final int likeCount;
+  final int dislikeCount;
   final int commentCount;
   final DateTime createdAt;
+  final DateTime updatedAt;
   final bool isOwner;
-  final bool isReported;
   final bool isHelpfulByUser;
-  final bool isExpired;
 
   BulletinPost({
     required this.id,
-    required this.title,
-    required this.body,
+    required this.postContent,
+    this.mediaUrl,
     required this.category,
     required this.authorId,
-    required this.authorName,
-    required this.authorAvatar,
-    this.imageUrls = const [],
-    this.helpfulCount = 0,
+    required this.authorUsername,
+    this.likeCount = 0,
+    this.dislikeCount = 0,
     this.commentCount = 0,
     required this.createdAt,
+    required this.updatedAt,
     this.isOwner = false,
-    this.isReported = false,
     this.isHelpfulByUser = false,
-    this.isExpired = false,
   });
 
-  // Mock data for now
-  static List<BulletinPost> getMockPosts() {
-    return [
-      BulletinPost(
-        id: '1',
-        title: 'Lost my cat, Max',
-        body: 'Last seen near Burnette Street. Please DM if found.',
-        category: 'lost_pet',
-        authorId: 'user_1',
-        authorName: 'Sarah Johnson',
-        authorAvatar: 'S',
-        imageUrls: ['https://via.placeholder.com/150', 'https://via.placeholder.com/150'],
-        helpfulCount: 12,
-        commentCount: 5,
-        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-        isOwner: true,
-      ),
-      BulletinPost(
-        id: '2',
-        title: 'Neighbourhood Braai',
-        body: 'This Saturday at 2pm! Bring your own meat and drinks, I am hosting a Braai. Kids welcome!, Message me for my address',
-        category: 'local_event',
-        authorId: 'user_2',
-        authorName: 'Michael Jackson',
-        authorAvatar: 'M',
-        imageUrls: ['https://via.placeholder.com/150'],
-        helpfulCount: 8,
-        commentCount: 3,
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      BulletinPost(
-        id: '3',
-        title: 'Suspicious Activity Alert',
-        body: 'A suspicious vehicle has been seen circling the area, bear Hilda street. Please lock doors and report anything unusual.',
-        category: 'alert',
-        authorId: 'user_3',
-        authorName: 'Lisa Wong',
-        authorAvatar: 'L',
-        imageUrls: [],
-        helpfulCount: 15,
-        commentCount: 7,
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-      BulletinPost(
-        id: '4',
-        title: 'Community Meeting',
-        body: 'Join us this Sunday to plan the community garden. All welcome!',
-        category: 'general',
-        authorId: 'user_1',
-        authorName: 'Sarah Johnson',
-        authorAvatar: 'S',
-        imageUrls: [],
-        helpfulCount: 4,
-        commentCount: 2,
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-      ),
-    ];
+  factory BulletinPost.fromJson(Map<String, dynamic> json, int currentUserId) {
+    return BulletinPost(
+      id: json['postId'] as int,
+      postContent: json['postContent'] as String? ?? '',
+      mediaUrl: json['mediaUrl'] as String?,
+      category: json['category'] as String? ?? 'general',
+      authorId: json['userId'] as int,
+      authorUsername: json['authorUsername'] as String? ?? '',
+      likeCount: (json['likeCount'] as num?)?.toInt() ?? 0,
+      dislikeCount: (json['dislikeCount'] as num?)?.toInt() ?? 0,
+      commentCount: (json['commentCount'] as num?)?.toInt() ?? 0,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      isOwner: (json['userId'] as int) == currentUserId,
+      isHelpfulByUser: false,
+    );
   }
 
-  static String getCategoryLabel(String category) {
-    switch (category) {
-      case 'general':
-        return 'General';
-      case 'lost_pet':
-        return 'Lost Pet';
-      case 'local_event':
-        return 'Local Event';
-      case 'alert':
-        return 'Alert';
-      case 'free_items':
-        return 'Free Items';
-      case 'complaint':
-        return 'Complaint';
-      case 'admin':
-        return 'Admin Announcement';
-      default:
-        return category;
-    }
+  BulletinPost copyWith({
+    bool? isHelpfulByUser,
+    int? likeCount,
+  }) {
+    return BulletinPost(
+      id: id,
+      postContent: postContent,
+      mediaUrl: mediaUrl,
+      category: category,
+      authorId: authorId,
+      authorUsername: authorUsername,
+      likeCount: likeCount ?? this.likeCount,
+      dislikeCount: dislikeCount,
+      commentCount: commentCount,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      isOwner: isOwner,
+      isHelpfulByUser: isHelpfulByUser ?? this.isHelpfulByUser,
+    );
   }
 
-  static String getCategoryColor(String category) {
-    switch (category) {
-      case 'general':
-        return '#2A9D8F';
-      case 'lost_pet':
-        return '#F4A261';
-      case 'local_event':
-        return '#E9C46A';
-      case 'alert':
-        return '#F44336';
-      case 'free_items':
-        return '#69B578';
-      case 'complaint':
-        return '#9B59B6';
-      case 'admin':
-        return '#3498DB';
-      default:
-        return '#2A9D8F';
-    }
-  }
+  String get authorAvatar =>
+      authorUsername.isNotEmpty ? authorUsername[0].toUpperCase() : '?';
 }

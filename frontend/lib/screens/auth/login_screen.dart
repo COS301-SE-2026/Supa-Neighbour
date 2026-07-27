@@ -53,6 +53,7 @@ Future<void> _handleLogin() async {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('remember_me', _rememberMe);
+    await prefs.setInt('current_user_id', int.parse(user.id));
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(

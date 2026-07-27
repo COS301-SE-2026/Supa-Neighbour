@@ -42,30 +42,34 @@ class Task {
   
   ////////////////////////
   /// MAP RES TO A TASK
-  factory Task.fromJson(Map<String, dynamic> json){
+ factory Task.fromJson(Map<String, dynamic> json) {
+  final DateTime startDate = json['startDate'] != null
+      ? DateTime.tryParse(json['startDate'].toString()) ?? DateTime.now()
+      : DateTime.now();
 
-    final DateTime startDate = json['startDate'] != null ? DateTime.parse(json['startDate'] as String): DateTime.now();
+  final String status = json['status'] as String? ??
+      (json['helperId'] != null ? 'in_progress' : 'open');
 
-    return Task(
-      id: (json['taskId'] as int).toString(),
-      title: _resolveCategoryName(json['taskTypeId'] as int?),
-      category: _resolveCategoryName(json['taskTypeId'] as int?),
-      date: startDate,
-      time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
-      xpReward: 0 ,
-      instructions: json['adminReview'] as String? ?? 'No instructions provided',
-      status: json['helperId'] != null ? 'in_progress' : 'pending',
-      createdAt: startDate,
-      createdBy: json['createdBy'] as String? ?? 'unknown',  
-      requesterName: json['requesterName'] as String?,       
-      helperId: json['helperId'] as String?,                 
-      helperName: json['helperName'] as String?,
-      completionNote: json['completionNote'] as String?,
-      completionPhotos: json['completionPhotos'] != null
-      ? List<String>.from(json['completionPhotos'] as List)
-      : null,             
-    );
-  }
+  return Task(
+    id: (json['taskId'] as int).toString(),
+    title: _resolveCategoryName(json['taskTypeId'] as int?),
+    category: _resolveCategoryName(json['taskTypeId'] as int?),
+    date: startDate,
+    time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
+    xpReward: 0, 
+    instructions: json['adminReview'] as String? ?? '',
+    status: status,
+    createdAt: startDate,
+    createdBy: json['dependentId']?.toString() ?? 'unknown',
+    helperId: json['helperId']?.toString(),
+    requesterName: json['requesterName'] as String?,
+    helperName: json['helperName'] as String?,
+    completionNote: json['completionNote'] as String?,
+    completionPhotos: json['completionPhotos'] != null
+        ? List<String>.from(json['completionPhotos'] as List)
+        : null,
+  );
+}
 
   /// taskTypeId -> categoryName
   static String _resolveCategoryName(int? taskTypeId){

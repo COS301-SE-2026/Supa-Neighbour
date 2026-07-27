@@ -15,7 +15,7 @@ class CreateBulletinPostScreen extends StatefulWidget {
 }
 
 class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
-  final TextEditingController _titleController = TextEditingController();
+  final BulletinService _bulletinService = BulletinService();
   final TextEditingController _bodyController = TextEditingController();
   String _selectedCategory = 'general';
   final List<File> _selectedImages = [];
@@ -55,21 +55,11 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
   }
 
   Future<void> _submitPost() async {
-    if (_titleController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter a post title'),
-          backgroundColor: AppColors.error(context),
-        ),
-      );
-      return;
-    }
-
     if (_bodyController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please enter post content'),
-          backgroundColor: AppColors.error(context),
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -80,21 +70,22 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
     });
 
     try {
-      //Upload images to server first, then get URLs
-      final List<String> imageUrls = []; //actual URLs after upload
+      String? mediaUrl;
+      if (_selectedImages.isNotEmpty) {
+        mediaUrl = await _bulletinService.uploadImage(_selectedImages.first);
+      }
 
-      await BulletinService().createPost(
-        title: _titleController.text.trim(),
-        body: _bodyController.text.trim(),
+      await _bulletinService.createPost(
+        postContent: _bodyController.text.trim(),
         category: _selectedCategory,
-        imageUrls: imageUrls,
+        mediaUrl: mediaUrl,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Post created successfully!'),
-            backgroundColor: AppColors.success(context),
+            backgroundColor: AppColors.success,
           ),
         );
         Navigator.pop(context, true);
@@ -104,7 +95,7 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to create post: ${e.toString()}'),
-            backgroundColor: AppColors.error(context),
+            backgroundColor: AppColors.error,
           ),
         );
         setState(() {
@@ -117,18 +108,18 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background(context),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background(context),
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
           onPressed: () => Navigator.pop(context, false),
         ),
         title: Text(
           'Create Post',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal(context),
+            color: AppColors.charcoal,
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -141,46 +132,39 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CustomInputField(
-              label: 'Post Title',
-              hintText: 'Enter a title for your post',
-              controller: _titleController,
-              maxLines: 1,
-            ),
-            const SizedBox(height: 16),
-            CustomInputField(
-              label: 'Post Body',
+              label: 'Post Content',
               hintText: 'Write your announcement...',
               controller: _bodyController,
-              maxLines: 5,
+              maxLines: 6,
             ),
             const SizedBox(height: 16),
             Text(
               'Category',
               style: GoogleFonts.poppins(
-                color: AppColors.charcoal(context),
+                color: AppColors.charcoal,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: 8),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.primaryTeal(context), width: 1),
+                border: Border.all(color: AppColors.primaryTeal, width: 1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _selectedCategory,
                   isExpanded: true,
-                  icon:Icon(Icons.arrow_drop_down, color: AppColors.primaryTeal(context)),
+                  icon: const Icon(Icons.arrow_drop_down, color: AppColors.primaryTeal),
                   items: _categories.map((category) {
                     return DropdownMenuItem(
                       value: category['id'],
                       child: Text(
                         category['label']!,
                         style: GoogleFonts.openSans(
-                          color: AppColors.charcoal(context),
+                          color: AppColors.charcoal,
                           fontSize: 14,
                         ),
                       ),
@@ -203,7 +187,7 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
                 Text(
                   'Add Photos',
                   style: GoogleFonts.poppins(
-                    color: AppColors.charcoal(context),
+                    color: AppColors.charcoal,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -225,19 +209,19 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
                               margin: const EdgeInsets.only(right: 8),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: AppColors.primaryTeal(context),
+                                  color: AppColors.primaryTeal,
                                   width: 2,
                                   style: BorderStyle.solid,
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                                 color: Colors.white,
                               ),
-                              child: Column(
+                              child: const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
                                     Icons.add,
-                                    color: AppColors.primaryTeal(context),
+                                    color: AppColors.primaryTeal,
                                     size: 32,
                                   ),
                                   SizedBox(height: 4),
@@ -245,7 +229,7 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
                                     'Add Photo',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: AppColors.primaryTeal(context),
+                                      color: AppColors.primaryTeal,
                                     ),
                                   ),
                                 ],
@@ -299,19 +283,19 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
                       height: 100,
                       decoration: BoxDecoration(
                         border: Border.all(
-                          color: AppColors.primaryTeal(context),
+                          color: AppColors.primaryTeal,
                           width: 2,
                           style: BorderStyle.solid,
                         ),
                         borderRadius: BorderRadius.circular(12),
                         color: Colors.white,
                       ),
-                      child:  Column(
+                      child: const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             Icons.add_photo_alternate,
-                            color: AppColors.primaryTeal(context),
+                            color: AppColors.primaryTeal,
                             size: 40,
                           ),
                           SizedBox(height: 4),
@@ -319,7 +303,7 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
                             'Tap to add photos',
                             style: TextStyle(
                               fontSize: 14,
-                              color: AppColors.primaryTeal(context),
+                              color: AppColors.primaryTeal,
                             ),
                           ),
                         ],
@@ -330,7 +314,7 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
                 Text(
                   'Photos are optional',
                   style: GoogleFonts.openSans(
-                    color: AppColors.textGrey(context),
+                    color: AppColors.textGrey,
                     fontSize: 12,
                   ),
                 ),

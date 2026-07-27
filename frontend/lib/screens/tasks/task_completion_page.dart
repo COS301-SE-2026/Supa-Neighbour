@@ -28,6 +28,9 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
   final List<String> _photoPaths = [];
   bool _isSubmitting = false;
 
+  final TaskService _taskService = TaskService();
+
+
   @override
   void dispose() {
     _noteController.dispose();
@@ -121,19 +124,21 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
     }
   }
 
-  Future<void> _submitCompletion() async {
-    setState(() {
-      _isSubmitting = true;
-    });
+Future<void> _submitCompletion() async {
+  //// semi complete
+  setState(() => _isSubmitting = true);
+  try {
+    await _taskService.updateTask(
+      taskId: int.parse(widget.taskId),
+      status: 'pending_approval',
+      adminReview: _noteController.text.isNotEmpty
+          ? _noteController.text
+          : null,
+    );
 
-    // TODO: Call API to submit task completion
-    await Future.delayed(const Duration(seconds: 1)); // Simulates API call
+    Task.updateTaskStatus(widget.taskId, 'pending_approval');
 
     if (mounted) {
-      setState(() {
-        _isSubmitting = false;
-      });
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Task submitted! Waiting for resident confirmation.'),
@@ -143,7 +148,20 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
       );
       Navigator.pop(context);
     }
+  } on Exception catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => _isSubmitting = false);
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

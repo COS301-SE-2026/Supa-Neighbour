@@ -5,6 +5,8 @@ import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'task_completion_page.dart';
+import '../../services/task_service.dart';
+
 
 class TaskStartScreen extends StatefulWidget {
   final Task task;
@@ -21,28 +23,39 @@ class TaskStartScreen extends StatefulWidget {
 class _TaskStartScreenState extends State<TaskStartScreen> {
   bool _isStarting = false;
 
-  void _startTask() async {
-    setState(() {
-      _isStarting = true;
-    });
+  final TaskService _taskService = TaskService();
 
+
+
+Future<void> _startTask() async {
+  setState(() => _isStarting = true);
+
+  try {
+    await _taskService.updateTask(
+      taskId: int.parse(widget.task.id),
+      status: 'in_progress',
+    );
+  } on Exception {
     Task.updateTaskStatus(widget.task.id, 'in_progress');
-
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TaskCompletionPage(
-            taskId: widget.task.id,
-            taskTitle: widget.task.title,
-            residentName: widget.task.requesterName ?? 'Requester',
-            dueDate: '${widget.task.date.day}/${widget.task.date.month} · ${widget.task.time.format(context)}',
-            xpReward: widget.task.xpReward,
-          ),
-        ),
-      );
-    }
   }
+
+  if (!mounted) return;
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => TaskCompletionPage(
+        taskId: widget.task.id,
+        taskTitle: widget.task.title,
+        residentName: widget.task.requesterName ?? 'Requester',
+        dueDate:
+            '${widget.task.date.day}/${widget.task.date.month} · ${widget.task.time.format(context)}',
+        xpReward: widget.task.xpReward,
+      ),
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {

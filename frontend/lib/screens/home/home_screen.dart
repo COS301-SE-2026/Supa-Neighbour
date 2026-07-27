@@ -58,49 +58,39 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   List<Task> _nearbyTasks = [];
+   
   User? _currentUser;
-  //
-  static const int _currentUserId = 6;
   final TaskService _taskService = TaskService();
-  //bool _isLoadingUser = false;
 
+  int? get _currentUserId {
+    final id = AuthSession.instance.currentUser?.id;
+    return id != null ? int.tryParse(id) : null;
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadCurrentUser();
+    _currentUser = AuthSession.instance.currentUser;
     _loadNearbyTasks();
-    }
-
-
-  Future<void> _loadCurrentUser() async {
-  try {
-    final data = await _taskService.getUserById(_currentUserId);
-    final user = User.fromJson(data);
-    AuthSession.instance.login(user);
-    setState(() {
-      _currentUser = user;
-    });
-  } catch (e) {
-    // fallback to mock if API unavailable
-    setState(() {
-      _currentUser = AuthSession.instance.currentUser ?? User.getMockUser();
-    });
   }
-}
+
 
 
  Future<void> _loadNearbyTasks() async {
+  final userId = _currentUserId;
+  if (userId == null) return; 
   try {
-    final List<Task> tasks =
-        await _taskService.getTasksByUserId(_currentUserId);
-    setState(() {
-      _nearbyTasks = tasks;
-    });
-  } catch (e) {
-    // keep existing list on failure
+    final tasks = await _taskService.getTasksByUserId(userId);
+    if (mounted) {
+      setState(() {
+        _nearbyTasks = tasks;
+      });
+    }
+  } on Exception {
+    if (mounted) setState(() => _nearbyTasks = []);
   }
 }
+
 
 
   String getGreeting() {

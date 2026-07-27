@@ -8,6 +8,9 @@ import 'task_detail_screen.dart';
 import 'task_completion_page.dart';
 import 'task_awaiting_approval_screen.dart';
 import 'task_approval_screen.dart';
+import '../../models/auth_session.dart';
+import '../../services/task_service.dart';
+
 
 class MyTasksScreen extends StatefulWidget {
   const MyTasksScreen({super.key});
@@ -36,14 +39,47 @@ class _MyTasksScreenState extends State<MyTasksScreen>
     super.dispose();
   }
 
-  Future<void> _loadAllTasks() async {
-    final allTasks = Task.getMockTasks();
+  
 
-    setState(() {
-      _postedTasks = allTasks.where((task) => task.createdBy == 'currentUser').toList();
-      _acceptedTasks = allTasks.where((task) => task.helperId == 'currentUser').toList();
-    });
+final TaskService _taskService = TaskService();
+
+Future<void> _loadAllTasks() async {
+  final currentUserId = int.tryParse(
+    AuthSession.instance.currentUser?.id ?? '',
+  );
+
+  try {
+    // posted and accepted
+    final results = await Future.wait([
+      currentUserId != null
+          ? _taskService.getTasksByUserId(currentUserId)
+          : Future.value(<Task>[]),
+      _taskService.getMyHelperTasks(),
+    ]);
+
+    if (mounted) {
+      setState(() {
+        _postedTasks = results[0];
+        _acceptedTasks = results[1];
+      });
+    }
+  } on Exception {
+    //fallback
+    if (mounted) {
+      final allTasks = Task.getMockTasks();
+      final userId = AuthSession.instance.currentUser?.id ?? 'currentUser';
+      setState(() {
+        _postedTasks = allTasks
+            .where((t) => t.createdBy == userId || t.createdBy == 'currentUser')
+            .toList();
+        _acceptedTasks = allTasks
+            .where((t) => t.helperId == userId || t.helperId == 'currentUser')
+            .toList();
+      });
+    }
   }
+}
+
 
   void _refreshTasks() {
     _loadAllTasks();

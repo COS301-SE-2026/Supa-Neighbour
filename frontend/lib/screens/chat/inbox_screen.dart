@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/chat_thread.dart';
 import '../../constants/app_colors.dart'; // ADD: Import AppColors
 import 'bulletin_screen.dart';
 import 'chat_detail_screen.dart';
 import '../../services/chat_service.dart';
 
-
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
-
   @override
   State<InboxScreen> createState() => _InboxScreenState();
 }
@@ -21,12 +20,20 @@ class _InboxScreenState extends State<InboxScreen>
   List<ChatThread> _chats = [];
   bool _isLoading = false;
   String? _error;
-
-  static const int _currentUserId = 6;
+  int _currentUserId = 0;
 
   @override
   void initState() {
     super.initState();
+    _initUserId();
+  }
+
+  Future<void> _initUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getInt('current_user_id');
+    if (stored != null) {
+      setState(() => _currentUserId = stored);
+    }
    _tabController = TabController(length: 2, vsync: this);
   _loadChats();
   }
@@ -114,28 +121,27 @@ class _InboxScreenState extends State<InboxScreen>
               : RefreshIndicator(
                   onRefresh: _loadChats,
                   child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
                     itemCount: _chats.length,
                     itemBuilder: (context, index) {
                       final chat = _chats[index];
                       return ChatCard(
                         chat: chat,
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChatDetailScreen(chat: chat),
+                              builder: (context) =>
+                                  ChatDetailScreen(chat: chat),
                             ),
                           );
+                          _loadChats();
                         },
                       );
                     },
                   ),
                 ),
-      // Bulletin Tab
-      const BulletinScreen(),
-    ],
-  ),
     );
   }
 }
