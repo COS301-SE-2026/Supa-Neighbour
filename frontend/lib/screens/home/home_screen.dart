@@ -89,15 +89,13 @@ class _HomeContentState extends State<HomeContent> {
 }
 
 
- Future<void> _loadNearbyTasks() async {
-  try {
-    final List<Task> tasks =
-        await _taskService.getTasksByUserId(_currentUserId);
+Future<void> _loadNearbyTasks() async {
+  //real api should be integrated, for now this is mock data
+  await Future.delayed(const Duration(milliseconds: 300));
+  if (mounted) {
     setState(() {
-      _nearbyTasks = tasks;
+      _nearbyTasks = Task.getMockTasks();
     });
-  } catch (e) {
-    // keep existing list on failure
   }
 }
 
@@ -350,10 +348,11 @@ class _HomeContentState extends State<HomeContent> {
       ),
       TextButton(
         onPressed: () {
-          // Navigate to all available tasks (same as Home for now)
-          // Or create a dedicated AvailableTasksScreen
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('All available tasks (coming soon)')),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MyTasksScreen(initialTab: 2),
+            ),
           );
         },
         child: Text(

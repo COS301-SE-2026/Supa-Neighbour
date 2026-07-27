@@ -7,12 +7,14 @@ class TaskDetailScreen extends StatefulWidget {
   final Task task;
   final VoidCallback? onTaskUpdated;
   final bool isRequesterView;
+  final bool isAvailableTab;
 
   const TaskDetailScreen({
     super.key,
     required this.task,
     this.onTaskUpdated,
     this.isRequesterView = true,
+    this.isAvailableTab = false,
   });
 
   @override
@@ -274,6 +276,60 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   ],
                 ),
               ),
+                        const SizedBox(height: 24),
+            //Accept/Pass buttons for Available tab
+            if (widget.isAvailableTab && widget.task.status == 'open') ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context, 'pass');
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF9CA3AF),
+                        side: const BorderSide(color: Color(0xFF9CA3AF)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Pass',
+                        style: GoogleFonts.openSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context, 'accept');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2A9D8F),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Accept',
+                        style: GoogleFonts.openSans(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 32),
           ],
         ),
