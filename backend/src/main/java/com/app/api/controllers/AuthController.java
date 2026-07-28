@@ -14,6 +14,9 @@ import com.app.api.models.Address;
 import com.app.api.models.Badges;
 import com.app.api.models.Ratings;
 import com.app.api.models.User;
+import com.app.api.models.Settings;
+import com.app.api.models.Settings.ThemeMode;
+import java.time.Instant;
 import com.app.api.repositories.AddressRepository;
 import com.app.api.repositories.BadgesRepository;
 import com.app.api.repositories.RatingsRepository;
@@ -22,6 +25,7 @@ import com.app.api.security.AuthenticatedUser;
 import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.app.api.repositories.SettingsRepository;
 /**
  * REST controller responsible for user authentication and account management.
  * <p>
@@ -42,6 +46,7 @@ public class AuthController {
     private final AddressRepository addressRepository;
     private final BadgesRepository badgeRepository;
     private final RatingsRepository ratingRepository;
+    private final SettingsRepository settingsRepository;
     /**
      * Service responsible for verifying Firebase ID tokens.
      */
@@ -58,12 +63,13 @@ public class AuthController {
      * @param userRepository the repository used to manage users
      */
 public AuthController(
-        FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository,BadgesRepository badgeRepository,RatingsRepository ratingRepository) {
+        FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository,BadgesRepository badgeRepository,RatingsRepository ratingRepository, SettingsRepository settingsRepository) {
             this.firebaseAuthService = firebaseAuthService;
             this.userRepository = userRepository;
             this.addressRepository = addressRepository;
             this.badgeRepository = badgeRepository;
             this.ratingRepository = ratingRepository;
+            this.settingsRepository = settingsRepository;
         }
 
     /**
@@ -120,7 +126,16 @@ public AuthController(
         user.setBadgeid(badge);
         user.setRatingid(rating);
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        Settings defaultSettings = new Settings();
+
+        defaultSettings.setUserId(savedUser.getUserid());
+        defaultSettings.setLastSeen(Instant.now());
+        defaultSettings.setShowStatus(true);
+        defaultSettings.setShowPhoneNo(false);
+        defaultSettings.setMode(ThemeMode.LIGHT);
+
+        settingsRepository.save(defaultSettings);
 
         return ResponseEntity.ok(user);
     }
