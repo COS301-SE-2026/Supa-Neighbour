@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../auth/auth_screen.dart';
+import '../style_guide/style_guide_page.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -536,22 +537,89 @@ class LandingPage extends StatelessWidget {
   }
 
   Widget _buildFooter(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF264653),
-      ),
-      child: Column(
-        children: [
-          Text(
-            '© 2026 SupaNeighbour. All rights reserved.',
-            style: GoogleFonts.openSans(
-              color: Colors.white.withValues(alpha: 0.6),
-              fontSize: 14,
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+    decoration: BoxDecoration(
+      color: const Color(0xFF264653),
+    ),
+    child: Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const StyleGuidePage(),
+                  ),
+                );
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white.withValues(alpha: 0.7),
+              ),
+              child: Text(
+                'Style Guide',
+                style: GoogleFonts.openSans(
+                  fontSize: 14,
+                ),
+              ),
             ),
+            const SizedBox(width: 16),
+            Container(
+              width: 1,
+              height: 16,
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
+            const SizedBox(width: 16),
+            TextButton(
+              onPressed: () {
+                // Include Privacy Policy later
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white.withValues(alpha: 0.7),
+              ),
+              child: Text(
+                'Privacy',
+                style: GoogleFonts.openSans(
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Container(
+              width: 1,
+              height: 16,
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
+            const SizedBox(width: 16),
+            TextButton(
+              onPressed: () {
+                // Include Terms of service later
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white.withValues(alpha: 0.7),
+              ),
+              child: Text(
+                'Terms',
+                style: GoogleFonts.openSans(
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          '© 2026 SupaNeighbour. All rights reserved.',
+          style: GoogleFonts.openSans(
+            color: Colors.white.withValues(alpha: 0.4),
+            fontSize: 12,
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 }
