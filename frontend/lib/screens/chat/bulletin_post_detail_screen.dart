@@ -242,7 +242,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            post.authorName,
+                            post.authorUsername,
                             style: GoogleFonts.openSans(
                               color: AppColors.charcoal,
                               fontSize: 16,

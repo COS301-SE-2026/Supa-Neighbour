@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/task_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 /// responsible for all task-related API calls.
 class TaskService {
@@ -162,4 +164,40 @@ class TaskService {
       throw Exception("Couldn't load user: ${e.message}");
     }
   }
+
+  
+  Future<List<Task>> getAvailableTasks(int currentUserId) async {
+    try {
+      final token = await _getToken();
+      final Response<List<dynamic>> res = await _dio.get(
+        '/tasks',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        return res.data!
+            .map((json) => Task.fromJson(json as Map<String, dynamic>))
+            .where((t) => t.status == 'open' && t.createdBy != currentUserId.toString())
+            .toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      throw Exception("Couldn't load available tasks: ${e.message}");
+    }
+  }
+
+
+  Future<int?> getDependentIdForUser(int userId) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getInt('current_dependent_id');
+    if (stored != null) return stored;
+    return null;
+  } catch (_) {
+    return null;
+  }
+}
+
+
 }

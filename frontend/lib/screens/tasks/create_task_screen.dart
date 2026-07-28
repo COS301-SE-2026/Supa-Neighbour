@@ -108,19 +108,32 @@ Future<void> _submitTask() async {
     return;
   }
 
-  final userId = int.tryParse(AuthSession.instance.currentUser?.id ?? '');
-  if (userId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('You must be logged in to create a task')),
-    );
-    return;
-  }
+      final userId = int.tryParse(AuthSession.instance.currentUser?.id ?? '');
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You must be logged in to create a task')),
+      );
+      return;
+    }
 
-  setState(() => _isSubmit = true);
+    setState(() => _isSubmit = true);
 
-  try {
-    await _taskService.createTask(
-      dependentId: userId,
+    try {
+      final dependentId = await _taskService.getDependentIdForUser(userId);
+        if (dependentId == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Could not resolve your profile. Please log out and back in.')),
+            );
+            setState(() => _isSubmit = false);
+          }
+          return;
+        }
+
+      final createdTask = await _taskService.createTask(
+        dependentId: dependentId,
+
+
       taskTypeId: Task.resolveTaskTypeId(_selectedCategory!),
       startDate: _selectedDate,
       isImmediate: false,
@@ -134,7 +147,7 @@ Future<void> _submitTask() async {
           backgroundColor: Color(0xFF2A9D8F),
         ),
       );
-      Navigator.pop(context, true);
+      Navigator.pop(context, {'taskId': createdTask.id != null ? int.tryParse(createdTask.id) : null});
     }
   } on Exception catch (e) {
     if (mounted) {

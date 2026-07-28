@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import '../../components/loading_bar.dart';
 import '../../components/splash_title.dart';
 import 'auth_screen.dart';
@@ -38,6 +39,18 @@ void initState() {
 
         final prefs2 = await SharedPreferences.getInstance();
         await prefs2.setInt('current_user_id', int.parse(user.id));
+
+        try {
+          final dioTemp = Dio(BaseOptions(baseUrl: 'http://localhost:8080'));
+          final depRes = await dioTemp.get('/api/dependents');
+          final depList = depRes.data as List<dynamic>;
+          for (final item in depList) {
+            if (item['userId'] == int.parse(user.id) || item['userId']?['userid'] == int.parse(user.id)) {
+              await prefs2.setInt('current_dependent_id', item['dependentId'] as int);
+              break;
+            }
+          }
+        } catch (_) {}
 
         if (!mounted) return;
         Navigator.pushReplacement(
