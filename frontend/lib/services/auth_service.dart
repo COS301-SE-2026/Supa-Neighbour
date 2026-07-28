@@ -63,11 +63,23 @@ Future<User> loginWithToken(String idToken) async {
 }
 
 
-Future<void> logout() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('remember_me', false);
-  await _firebaseAuth.signOut();
-}
+  Future<void> logout() async {
+    try{
+      final String? idToken = await _firebaseAuth.currentUser?.getIdToken();
+
+      if(idToken != null){
+        await _dio.post(
+          '/api/auth/logout',
+          options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+        );
+      }
+      }catch(e){
+        // Nothing here
+      }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('remember_me', false);
+    await _firebaseAuth.signOut();
+  }
 
 
   
@@ -110,6 +122,28 @@ Future<void> logout() async {
     }
 
     throw Exception('Registration failed: unexpected response from server.');
+  }
+
+  Future<void> deleteAccount() async{
+    final String? idToken = await  _firebaseAuth.currentUser?.getIdToken(false);
+
+    if(idToken == null){
+      throw Exception('No authenticated user to delete.');
+    }
+
+    final Response response = await _dio.delete(
+      '/api/settings/me/user',
+       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+    );
+
+    if(response.statusCode != 204){
+      throw Exception('Delete account failed: unexpected respose from server');
+    }
+
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('remember_me', false);
+
   }
 
 }

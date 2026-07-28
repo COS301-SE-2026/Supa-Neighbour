@@ -25,6 +25,8 @@ public class UserProfileResponse {
     private int completedTasks;
     private List<RecentTaskDTO>  recentTasks;
     private Double trustScore;
+    private int activeTasks;
+    private int createdTasks;
 
     /**
      * Creates a user profile response.
@@ -39,7 +41,7 @@ public class UserProfileResponse {
      * @param recentTasks the helper's recently completed tasks
      * @param achievements the user's earned achievements
      */
-    public UserProfileResponse(int userId, String displayName, String neighbourhood, String level,Integer currentXp,List<String> skills,int completedTasks,List<RecentTaskDTO>  recentTasks,List<AchievementDTO> achievements,Double trustScore){
+    public UserProfileResponse(int userId, String displayName, String neighbourhood, String level,Integer currentXp,List<String> skills,int completedTasks,List<RecentTaskDTO>  recentTasks,List<AchievementDTO> achievements,Double trustScore, int activeTasks, int createdTasks){
         this.userId = userId;
         this.displayName = displayName;
         this.neighbourhood = neighbourhood;
@@ -50,6 +52,8 @@ public class UserProfileResponse {
         this.achievements = achievements;
         this.completedTasks = completedTasks;
         this.recentTasks = recentTasks;
+        this.activeTasks = activeTasks;
+        this.createdTasks = createdTasks;
     }
 
     /**
@@ -68,6 +72,24 @@ public class UserProfileResponse {
      */
     public String getDisplayName(){
         return displayName;
+    }
+
+    /**
+     * returns the user's active Tasks
+     * @return the active Tasks
+     */
+
+    public int getActiveTasks(){
+        return activeTasks;
+    }
+
+    /**
+     * returns the user's created Tasks
+     * @return the created Tasks
+     */
+
+    public int getCreatedTasks(){
+        return createdTasks;
     }
 
     /**
@@ -102,7 +124,7 @@ public class UserProfileResponse {
      *
      * @return the trust score
      */
-    public Double getTrusctScore(){
+    public Double getTrustScore(){
         return trustScore;
     }
 

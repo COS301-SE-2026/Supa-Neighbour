@@ -30,7 +30,7 @@ class AchievementProgressStats extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: AppColors.primary(context),
                 ),
               ),
               Text(
@@ -38,7 +38,7 @@ class AchievementProgressStats extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.primary.withValues(alpha: 0.9),
+                  color: AppColors.primary(context).withValues(alpha: 0.9),
                 ),
               ),
             ],
@@ -50,7 +50,7 @@ class AchievementProgressStats extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: AppColors.primary(context),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Stack(
@@ -59,7 +59,7 @@ class AchievementProgressStats extends StatelessWidget {
                   widthFactor: progressPercentage,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEBB13D),
+                      color: AppColors.citrusYellow(context),
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -70,8 +70,8 @@ class AchievementProgressStats extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 8.0),
                     child: Text(
                       '${(progressPercentage * 100).toInt()}%',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: AppColors.background(context),
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),

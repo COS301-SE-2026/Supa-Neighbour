@@ -216,10 +216,11 @@ public class SettingsServices {
         List<RecentTaskDTO> recentTaskDTOs = helperTasksService.getTasks(userId, "completed", 5, 0)
                 .getTasks()
                 .stream()
-                .map(t -> new RecentTaskDTO(t.getTaskId(), t.getTaskType(), t.getEndDate()))
+                .map(t -> new RecentTaskDTO(t.getTaskId(), t.getTaskType(), t.getEndDate(), 500))
                 .toList();
 
         List<AchievementDTO> achievementDTOs = achievementService.getAchievements(userId).getEarned();
+    
         UserProfileResponse responseProfile = new UserProfileResponse(
                 user.getUserid(),
                 user.getUsername(),
@@ -230,30 +231,9 @@ public class SettingsServices {
                 recentTaskDTOs.size(),
                 recentTaskDTOs,
                 achievementDTOs,
-                trustScore);
+                trustScore, 0, 0);
 
         return new UserSettingsDTO(responseProfile, addressDTO);
-    }
-
-    /**
-     * Retrieves user information.
-     *
-     * @param userId the user id
-     * @return the user settings
-     */
-    public List<UserProfileResponse> getAllUserProfiles(int userId) {
-        return userRepository.findAll().stream().map(user -> {
-            Address address = user.getAddressid();
-
-            String neighbourhood = address.getNeighbourhoodid().getNeighbourhoodName();
-
-            if (address != null && address.getNeighbourhoodid() != null) {
-                neighbourhood = address.getNeighbourhoodid().getNeighbourhoodName();
-            }
-
-            return new UserProfileResponse(user.getUserid(), user.getUsername(), neighbourhood, null, null, null, 0,
-                    null, null, null);
-        }).toList();
     }
 
     /**

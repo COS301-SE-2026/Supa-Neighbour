@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import '../../constants/app_colors.dart'; // ADD: Import AppColors
 import 'edit_task_screen.dart';
 
 class TaskDetailScreen extends StatefulWidget {
@@ -22,23 +23,51 @@ class TaskDetailScreen extends StatefulWidget {
 }
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
+  // CHANGE: Update to use AppColors with context
+  Color _getStatusColor(String status, BuildContext context) {
+    switch (status) {
+      case 'open':
+        return AppColors.citrusYellow(context);
+      case 'assigned':
+        return AppColors.primaryTeal(context);
+      case 'in_progress':
+        return const Color(0xFF2196F3);
+      case 'pending_approval':
+        return const Color(0xFFFF9800);
+      case 'completed':
+        return AppColors.success(context);
+      case 'cancelled':
+        return AppColors.error(context);
+      default:
+        return AppColors.textGrey(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool canEdit = widget.isRequesterView && widget.task.status == 'open';
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      // CHANGE: Use AppColors.background
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFFFFF),
+        // CHANGE: Use AppColors.background
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF264653)),
+          icon: Icon(
+            Icons.arrow_back,
+            // CHANGE: Use AppColors.charcoal
+            color: AppColors.charcoal(context),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Task Details',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF264653),
+            // CHANGE: Use AppColors.charcoal
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -47,7 +76,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         actions: [
           if (canEdit)
             IconButton(
-              icon: const Icon(Icons.edit, color: Color(0xFF2A9D8F)),
+              icon: Icon(
+                Icons.edit,
+                // CHANGE: Use AppColors.primaryTeal
+                color: AppColors.primaryTeal(context),
+              ),
               onPressed: () async {
                 final result = await Navigator.push(
                   context,
@@ -67,26 +100,32 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Status Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: _getStatusColor(widget.task.status).withValues(alpha: 0.1),
+                // CHANGE: Use _getStatusColor with context
+                color: _getStatusColor(widget.task.status, context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 _getStatusDisplay(widget.task.status),
                 style: GoogleFonts.openSans(
-                  color: _getStatusColor(widget.task.status),
+                  // CHANGE: Use _getStatusColor with context
+                  color: _getStatusColor(widget.task.status, context),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
             const SizedBox(height: 16),
+            
+            // Category Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF2A9D8F).withValues(alpha: 0.1),
+                // CHANGE: Use AppColors.primaryTeal with alpha
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -95,13 +134,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   Icon(
                     _getCategoryIcon(widget.task.category),
                     size: 16,
-                    color: const Color(0xFF2A9D8F),
+                    // CHANGE: Use AppColors.primaryTeal
+                    color: AppColors.primaryTeal(context),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     widget.task.category,
                     style: GoogleFonts.openSans(
-                      color: const Color(0xFF2A9D8F),
+                      // CHANGE: Use AppColors.primaryTeal
+                      color: AppColors.primaryTeal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -110,32 +151,44 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            
+            // Task Title
             Text(
               widget.task.title,
               style: GoogleFonts.poppins(
-                color: const Color(0xFF264653),
+                // CHANGE: Use AppColors.charcoal
+                color: AppColors.charcoal(context),
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 16),
+            
+            // Helper/Requester Info
             if (widget.task.helperName != null && widget.task.helperName != 'You')
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2A9D8F).withValues(alpha: 0.05),
+                  // CHANGE: Use AppColors.primaryTeal with alpha
+                  color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.person, color: Color(0xFF2A9D8F), size: 20),
+                    Icon(
+                      Icons.person,
+                      // CHANGE: Use AppColors.primaryTeal
+                      color: AppColors.primaryTeal(context),
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       widget.isRequesterView
                           ? 'Helper: ${widget.task.helperName}'
                           : 'Requester: ${widget.task.requesterName}',
                       style: GoogleFonts.openSans(
-                        color: const Color(0xFF264653),
+                        // CHANGE: Use AppColors.charcoal
+                        color: AppColors.charcoal(context),
                         fontSize: 14,
                       ),
                     ),
@@ -143,15 +196,23 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 ),
               ),
             const SizedBox(height: 16),
+            
+            // XP Reward Container
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFE9C46A).withValues(alpha: 0.2),
+                // CHANGE: Use AppColors.citrusYellow with alpha
+                color: AppColors.citrusYellow(context).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.stars, color: Color(0xFFE9C46A), size: 32),
+                  Icon(
+                    Icons.stars,
+                    // CHANGE: Use AppColors.citrusYellow
+                    color: AppColors.citrusYellow(context),
+                    size: 32,
+                  ),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,14 +220,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       Text(
                         'XP Reward',
                         style: GoogleFonts.openSans(
-                          color: const Color(0xFF264653),
+                          // CHANGE: Use AppColors.charcoal
+                          color: AppColors.charcoal(context),
                           fontSize: 12,
                         ),
                       ),
                       Text(
                         '+${widget.task.xpReward} XP',
                         style: GoogleFonts.poppins(
-                          color: const Color(0xFF264653),
+                          // CHANGE: Use AppColors.charcoal
+                          color: AppColors.charcoal(context),
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                         ),
@@ -177,10 +240,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            
+            // Date and Time Container
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                // CHANGE: Use dynamic color based on theme
+                color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -195,12 +261,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.calendar_today, color: Color(0xFF2A9D8F), size: 20),
+                        Icon(
+                          Icons.calendar_today,
+                          // CHANGE: Use AppColors.primaryTeal
+                          color: AppColors.primaryTeal(context),
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Text(
                           '${widget.task.date.day}/${widget.task.date.month}/${widget.task.date.year}',
                           style: GoogleFonts.openSans(
-                            color: const Color(0xFF264653),
+                            // CHANGE: Use AppColors.charcoal
+                            color: AppColors.charcoal(context),
                             fontSize: 14,
                           ),
                         ),
@@ -210,12 +282,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.access_time, color: Color(0xFF2A9D8F), size: 20),
+                        Icon(
+                          Icons.access_time,
+                          // CHANGE: Use AppColors.primaryTeal
+                          color: AppColors.primaryTeal(context),
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Text(
                           widget.task.time.format(context),
                           style: GoogleFonts.openSans(
-                            color: const Color(0xFF264653),
+                            // CHANGE: Use AppColors.charcoal
+                            color: AppColors.charcoal(context),
                             fontSize: 14,
                           ),
                         ),
@@ -226,49 +304,63 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            
+            // Instructions Section
+            Text(
               'Instructions',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF264653),
+                // CHANGE: Use AppColors.charcoal
+                color: AppColors.charcoal(context),
               ),
             ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
+                // CHANGE: Use AppColors.surfaceGrey
+                color: AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 widget.task.instructions,
                 style: GoogleFonts.openSans(
-                  color: const Color(0xFF264653),
+                  // CHANGE: Use AppColors.charcoal
+                  color: AppColors.charcoal(context),
                   fontSize: 14,
                   height: 1.5,
                 ),
               ),
             ),
             const SizedBox(height: 24),
+            
+            // Non-editable Message
             if (!canEdit && widget.isRequesterView &&
                 widget.task.status != 'completed' &&
                 widget.task.status != 'pending_approval')
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                  // CHANGE: Use AppColors.surfaceGrey
+                  color: AppColors.surfaceGrey(context),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, color: Color(0xFF9CA3AF), size: 20),
+                    Icon(
+                      Icons.info_outline,
+                      // CHANGE: Use AppColors.textGrey
+                      color: AppColors.textGrey(context),
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         _getNonEditableMessage(widget.task.status),
                         style: GoogleFonts.openSans(
-                          color: const Color(0xFF6B7280),
+                          // CHANGE: Use AppColors.textGrey
+                          color: AppColors.textGrey(context),
                           fontSize: 12,
                         ),
                       ),
@@ -353,25 +445,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         return 'Cancelled';
       default:
         return status;
-    }
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'open':
-        return const Color(0xFFE9C46A);
-      case 'assigned':
-        return const Color(0xFF2A9D8F);
-      case 'in_progress':
-        return const Color(0xFF2196F3);
-      case 'pending_approval':
-        return const Color(0xFFFF9800);
-      case 'completed':
-        return const Color(0xFF4CAF50);
-      case 'cancelled':
-        return const Color(0xFFF44336);
-      default:
-        return const Color(0xFF9CA3AF);
     }
   }
 

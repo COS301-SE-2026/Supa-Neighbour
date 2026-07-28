@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTextStyles {
-  static const TextStyle primaryHeader = TextStyle(
+  static  TextStyle primaryHeader(BuildContext context) => TextStyle(
     fontFamily: 'GoogleSansFlex',
     fontSize: 80,
     fontWeight: FontWeight.w600,
-    color: AppColors.primary,
+    color: AppColors.primary(context),
   );
 
-  static const TextStyle secondaryHeader = TextStyle(
+  static TextStyle secondaryHeader(BuildContext context) => TextStyle(
     fontFamily: 'GoogleSansFlex',
     fontSize: 40,
     fontWeight: FontWeight.w600,
-    color: AppColors.secondary,
+    color: AppColors.secondary(context),
   );
 
-  static const TextStyle bodyText = TextStyle(
+  static TextStyle bodyText(BuildContext context) => TextStyle(
     fontFamily: 'OpenSans',
     fontSize: 14,
     fontWeight: FontWeight.normal,
-    color: AppColors.white,
+    color: AppColors.white(context),
   );
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import '../tasks/task_detail_screen.dart';
+import '../../constants/app_colors.dart';
 
 class NearbyTasksScreen extends StatelessWidget {
   const NearbyTasksScreen({super.key});
@@ -11,7 +12,7 @@ class NearbyTasksScreen extends StatelessWidget {
     final tasks = Task.getMockTasks();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: AppColors.background(context),
       body: RefreshIndicator(
         onRefresh: () async {
           // TODO: Refresh data
@@ -29,6 +30,7 @@ class NearbyTasksScreen extends StatelessWidget {
   }
 
   Widget _buildTaskCard(BuildContext context, Task task) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -45,7 +47,7 @@ class NearbyTasksScreen extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -61,12 +63,12 @@ class NearbyTasksScreen extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF2A9D8F).withValues(alpha: 0.1),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 _getCategoryIcon(task.category),
-                color: const Color(0xFF2A9D8F),
+                color: AppColors.primaryTeal(context),
                 size: 28,
               ),
             ),

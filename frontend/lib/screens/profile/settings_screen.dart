@@ -1,29 +1,139 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supa_neighbour/providers/theme_mode_provider.dart';
+import 'package:supa_neighbour/screens/auth/splash_screen.dart';
 import '../../constants/app_colors.dart';
 import 'privacy_settings_screen.dart';  
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/auth_service.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _locationEnabled = true;
-  bool _darkModeEnabled = false;
   String _selectedLanguage = 'English';
+
+  Future<void> _confirmAndLogout() async{
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) =>AlertDialog(
+        title: const Text('Sign Out'),
+        content:const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text('Sign Out', style: TextStyle(color: AppColors.error(context))),
+          )
+        ]
+      )
+    );
+
+    if(confirmed != true) return;
+    if(!mounted) return;
+
+    try{
+      await AuthService().logout();
+      if(mounted){
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SplashScreen()),
+          (route) => false,
+        );
+      }
+    }catch(e){
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to sign you out. Please try again')),
+        );
+      }
+    }
+  }
+
+  Future<void> _confirmAndDeleteAccount() async{
+    final TextEditingController confirmController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder:(dialogContext, setDialogState){
+          final isMatch = confirmController.text.trim().toUpperCase() == 'DELETE';
+
+          return AlertDialog(
+            title: Text('Delete Account', style: TextStyle(color: AppColors.error(context))),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'This permanently deleted your account, tasks and history. This cannot be undone.'
+                ),
+
+                const SizedBox(height: 16),
+                Text('Text DELETE to confirm: ', style: TextStyle(color: AppColors.textGrey(context))),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: confirmController,
+                  onChanged: (_) => setDialogState(() {}),
+                  decoration: const InputDecoration(border: OutlineInputBorder())
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: isMatch ? () => Navigator.pop(dialogContext, true) : null,
+                child: Text('Delete Forever',
+                style: TextStyle(
+                  color: isMatch ? AppColors.error(context) : AppColors.textGrey(context),
+                ))
+              )
+            ]
+          );
+        }
+      )
+    );
+
+   if (confirmed != true || !mounted) return;
+    try{
+      await AuthService().deleteAccount();
+      if(mounted){
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SplashScreen()),
+          (route) => false,
+        );
+      }
+    }catch(e){
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete account. Please try again')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeModeProvider);
+    bool isDarkMode = themeMode == ThemeMode.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primaryTeal),
+          icon: Icon(Icons.arrow_back, color: AppColors.primaryTeal(context)),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -31,7 +141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text(
           'Settings',
           style: GoogleFonts.poppins(
-            color: AppColors.primaryTeal,
+            color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -42,7 +152,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           children: [
             const SizedBox(height: 16),
-            _buildPreferencesSection(),
+            _buildPreferencesSection(isDarkMode),
             const SizedBox(height: 16),
             _buildSecuritySection(),
             const SizedBox(height: 16),
@@ -56,15 +166,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildPreferencesSection() {
+  Widget _buildPreferencesSection(bool isDarkMode) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.white(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.charcoal.withValues(alpha: 0.04),
+            color: AppColors.charcoal(context).withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -89,11 +199,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.dark_mode_outlined,
             title: 'Dark Mode',
             subtitle: 'Switch to dark theme',
-            value: _darkModeEnabled,
-            onChanged: (value) {
-              setState(() {
-                _darkModeEnabled = value;
-              });
+            value: isDarkMode,
+            onChanged: (value) async{
+              try{
+                await ref.read(themeModeProvider.notifier).toggleDarkMode(value);
+              }catch(e){
+                if(mounted){
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Failed to save theme preference')),
+                  );
+                }
+              }
             },
           ),
           _buildDropdownTile(
@@ -133,11 +249,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.white(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.charcoal.withValues(alpha: 0.04),
+            color: AppColors.charcoal(context).withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -164,11 +280,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.white(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.charcoal.withValues(alpha: 0.04),
+            color: AppColors.charcoal(context).withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -195,17 +311,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.white(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.charcoal.withValues(alpha: 0.04),
+            color: AppColors.charcoal(context).withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
         border: Border.all(
-          color: AppColors.error.withValues(alpha: 0.3),
+          color: AppColors.error(context).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -218,18 +334,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Sign Out',
             subtitle: 'Sign out of your account',
             isDanger: true,
-            onTap: () {
-              // TODO: Implement sign out
-            },
+            onTap: () => _confirmAndLogout(),
           ),
           _buildSettingsTile(
             icon: Icons.delete_outline,
             title: 'Delete Account',
             subtitle: 'Permanently delete your account',
             isDanger: true,
-            onTap: () {
-              // TODO: Implement delete account
-            },
+            onTap: () => _confirmAndDeleteAccount(),
           ),
         ],
       ),
@@ -245,7 +357,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Text(
             title,
             style: GoogleFonts.poppins(
-              color: isDanger ? AppColors.error : AppColors.primaryTeal,
+              color: isDanger ? AppColors.error(context) : AppColors.primaryTeal(context),
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -254,13 +366,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.1),
+                color: AppColors.error(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 'DANGER',
                 style: GoogleFonts.poppins(
-                  color: AppColors.error,
+                  color: AppColors.error(context),
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                 ),
@@ -286,7 +398,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Icon(
               icon,
-              color: isDanger ? AppColors.error : AppColors.primaryTeal,
+              color: isDanger ? AppColors.error(context) : AppColors.primaryTeal(context),
               size: 24,
             ),
             const SizedBox(width: 16),
@@ -297,7 +409,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Text(
                     title,
                     style: GoogleFonts.poppins(
-                      color: isDanger ? AppColors.error : AppColors.charcoal,
+                      color: isDanger ? AppColors.error(context) : AppColors.charcoal(context),
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -305,7 +417,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Text(
                     subtitle,
                     style: GoogleFonts.openSans(
-                      color: AppColors.textGrey,
+                      color: AppColors.textGrey(context),
                       fontSize: 12,
                     ),
                   ),
@@ -314,7 +426,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             Icon(
               Icons.chevron_right,
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
             ),
           ],
         ),
@@ -335,7 +447,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Icon(
             icon,
-            color: AppColors.primaryTeal,
+            color: AppColors.primaryTeal(context),
             size: 24,
           ),
           const SizedBox(width: 16),
@@ -346,7 +458,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Text(
                   title,
                   style: GoogleFonts.poppins(
-                    color: AppColors.charcoal,
+                    color: AppColors.charcoal(context),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -354,7 +466,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Text(
                   subtitle,
                   style: GoogleFonts.openSans(
-                    color: AppColors.textGrey,
+                    color: AppColors.textGrey(context),
                     fontSize: 12,
                   ),
                 ),
@@ -364,7 +476,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.primaryTeal,
+            activeColor: AppColors.primaryTeal(context),
           ),
         ],
       ),
@@ -385,7 +497,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Icon(
             icon,
-            color: AppColors.primaryTeal,
+            color: AppColors.primaryTeal(context),
             size: 24,
           ),
           const SizedBox(width: 16),
@@ -396,7 +508,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Text(
                   title,
                   style: GoogleFonts.poppins(
-                    color: AppColors.charcoal,
+                    color: AppColors.charcoal(context),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -404,7 +516,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Text(
                   subtitle,
                   style: GoogleFonts.openSans(
-                    color: AppColors.textGrey,
+                    color: AppColors.textGrey(context),
                     fontSize: 12,
                   ),
                 ),
@@ -428,7 +540,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             underline: const SizedBox(),
             icon: Icon(
               Icons.arrow_drop_down,
-              color: AppColors.primaryTeal,
+              color: AppColors.primaryTeal(context),
             ),
           ),
         ],

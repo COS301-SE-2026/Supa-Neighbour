@@ -179,18 +179,53 @@ public class UserProfileRepository {
     public List<Object[]> findRecentTasks(int helperId){
         String sql = """
                 SELECT
-                    ti.task_id,
-                    tt.type_description,
-                    ti.end_date
+                ti.task_id,
+                tt.type_description,
+                ti.end_date,
+                tt.xp_worth
                 FROM task_invoice_table  ti
                 JOIN task_type_table     tt ON tt.task_type_id = ti.task_type_id
                 WHERE ti.helper_id = :helperId
-                  AND ti.status    = 'completed'
+                AND ti.status    = 'completed'
                 ORDER BY ti.end_date DESC
                 LIMIT 5
                 """;
 
         return em.createNativeQuery(sql).setParameter("helperId", helperId).getResultList();
+    }
+
+    /**
+     * Counts the number of tasks created by a user in their role as a dependent.
+     *
+     * @param userId the identifier of the user
+     * @return the number of created tasks
+     */
+    public int countCreatedTasks(int userId){
+        String sql = """
+                SELECT COUNT(*)
+                FROM task_invoice_table ti
+                JOIN dependent_table    d ON d.dependent_id = ti.dependent_id
+                WHERE d.user_id = :userId
+                """;
+
+        return ((Number) em.createNativeQuery(sql).setParameter("userId", userId).getSingleResult()).intValue();
+    }
+
+    /**
+     * Counts the number of tasks currently assigned to or in progress
+     * for a helper.
+     *
+     * @param helperId the identifier of the helper
+     * @return the number of active tasks
+     */
+    public int countActiveTasks(int helperId){
+        String sql = """
+                SELECT COUNT(*) FROM task_invoice_table
+                WHERE helper_id = :helperId
+                AND status IN ('assigned', 'in_progress')
+                """;
+
+        return((Number) em.createNativeQuery(sql).setParameter("helperId", helperId).getSingleResult()).intValue();
     }
 
     

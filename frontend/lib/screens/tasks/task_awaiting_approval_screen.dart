@@ -15,18 +15,18 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
+          icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Task Details',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -68,7 +68,7 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -77,13 +77,13 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
                   Icon(
                     _getCategoryIcon(task.category),
                     size: 16,
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     task.category,
                     style: GoogleFonts.openSans(
-                      color: AppColors.primaryTeal,
+                      color: AppColors.primaryTeal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -95,7 +95,7 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
             Text(
               task.title,
               style: GoogleFonts.poppins(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
               ),
@@ -104,17 +104,17 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.05),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.person, color: AppColors.primaryTeal, size: 20),
+                  Icon(Icons.person, color: AppColors.primaryTeal(context), size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'Requester: ${task.requesterName}',
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 14,
                     ),
                   ),
@@ -138,14 +138,14 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
                       Text(
                         'XP Reward',
                         style: GoogleFonts.openSans(
-                          color: AppColors.charcoal,
+                          color: AppColors.charcoal(context),
                           fontSize: 12,
                         ),
                       ),
                       Text(
                         '+${task.xpReward} XP',
                         style: GoogleFonts.poppins(
-                          color: AppColors.charcoal,
+                          color: AppColors.charcoal(context),
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                         ),
@@ -174,12 +174,12 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.calendar_today, color: AppColors.primaryTeal, size: 20),
+                        Icon(Icons.calendar_today, color: AppColors.primaryTeal(context), size: 20),
                         const SizedBox(width: 12),
                         Text(
                           '${task.date.day}/${task.date.month}/${task.date.year}',
                           style: GoogleFonts.openSans(
-                            color: AppColors.charcoal,
+                            color: AppColors.charcoal(context),
                             fontSize: 14,
                           ),
                         ),
@@ -189,12 +189,12 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.access_time, color: AppColors.primaryTeal, size: 20),
+                        Icon(Icons.access_time, color: AppColors.primaryTeal(context), size: 20),
                         const SizedBox(width: 12),
                         Text(
                           task.time.format(context),
                           style: GoogleFonts.openSans(
-                            color: AppColors.charcoal,
+                            color: AppColors.charcoal(context),
                             fontSize: 14,
                           ),
                         ),
@@ -205,25 +205,25 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Instructions',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
               ),
             ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surfaceGrey,
+                color: AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 task.instructions,
                 style: GoogleFonts.openSans(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 14,
                   height: 1.5,
                 ),
@@ -233,18 +233,18 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.05),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppColors.primaryTeal.withValues(alpha: 0.2),
+                  color: AppColors.primaryTeal(context).withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.hourglass_empty,
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                     size: 24,
                   ),
                   const SizedBox(width: 12),
@@ -252,7 +252,7 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
                     child: Text(
                       'Task is awaiting approval from the requester. You will be notified once they confirm completion.',
                       style: GoogleFonts.openSans(
-                        color: AppColors.charcoal,
+                        color: AppColors.charcoal(context),
                         fontSize: 14,
                       ),
                     ),
@@ -264,7 +264,7 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surfaceGrey,
+                color: AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -273,7 +273,7 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
                   Text(
                     'Your Completion Note',
                     style: GoogleFonts.poppins(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -282,7 +282,7 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
                   Text(
                     task.completionNote ?? 'No note provided',
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 14,
                     ),
                   ),
@@ -297,7 +297,7 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
                   Text(
                     'Your Completion Photos',
                     style: GoogleFonts.poppins(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -314,7 +314,7 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
                           height: 120,
                           margin: const EdgeInsets.only(right: 8),
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceGrey,
+                            color: AppColors.surfaceGrey(context),
                             borderRadius: BorderRadius.circular(8),
                             image: DecorationImage(
                               image: NetworkImage(task.completionPhotos![index]),

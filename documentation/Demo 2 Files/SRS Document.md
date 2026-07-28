@@ -1,6 +1,11 @@
 # SupaNeighbour - SRS Document
 
-# Introduction
+| **Version** | **Date** | **Author** | **Approved By** | **Change Description** |
+|-------------|----------|------------|-----------------|--------------------------|
+| 1.0         | 2026-05-20 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Initial release for SupaNeighbour |
+| 2.0         | 2026-07-25 | Blessing Gibendi | Blessing Gibendi(Team Lead)  | Made changes to ensure it meets requirements for Demo 2|
+
+# 1. Introduction
 
 ## Business Needs:
 
@@ -16,13 +21,9 @@ The system will allows residents to post assistance for short-term household tas
 
 The admin dashbord provides a platform for manages with the needed tools to monitor community activity, manage users and handle reported content and maintain the overall health and safety of the platform.
 
-# Domain Model
 
-Please refer to the file for the Domain model: [Domain Model](../backend/database-schema.png)
 
-# User stories
-
-**User Characteristics**
+# 2. User Characteristics
 The Supa-Neighbour platform serves three distinct user types. A single registered account can either be a Resident (requester) and a Helper depending on the context
 
 **1.1 Resident**
@@ -31,12 +32,12 @@ A Resident is any registered community member who uses the platform to request s
 * Characteristics
   - Lives within a defined neighbourhood zone
   - May have varying levels of technical literacy
-  - Motivated by convenience, truct, and community connection
+  - Motivated by convenience, trust, and community connection
   - Interacts primarily in the mobile app
 
 * Primary Goals
   - Post tasks easily and quickly
-  - Find a trustworthy, nearyby helper
+  - Find a trustworthy, nearby helper
   - Communicate securly without exposing personal contact details
   - Track the status of their requests in real time
 
@@ -72,7 +73,7 @@ An Administrator is a platform manager who oversees the health, safety, and inte
   - View platform-wide analytics and activity logs
 
 
-## User Stories
+## 3. User Stories
 
 **1. Account Management & Authentication**
 | ID | User Story | Requirement |
@@ -102,258 +103,102 @@ An Administrator is a platform manager who oversees the health, safety, and inte
 | US-R17 | As a Resident, I want to receive a notification when my task has been marked complete so that I can confirm and rate the helper. | R3.2.1 |
 | US-R18 | As a Resident, I want all communication with helpers to stay within the app so that my personal contact details are never exposed. | R4.1.2 |
 
-# Use cases
+# 4. Use cases
 
-Please refer to this image for the use case Diagram: [Use Case Diagram](/documentation/Wireframe%20images/Use%20Case%20Diagram.jpg)
+## 4.1 Use Cases
 
-# Functional requirements
+## 4.2 Use Case Diagram
 
-**Use Case 1 - Authentication**
+Please refer to this image for the use case Diagram: [Use Case Diagram](Images/Use%20Case%20Diagram%20V2.jpeg)
 
-R1: User Account Management
+# 5. Functional requirements
+
+## R1: User Account Management
 The system shall allow users to create and manage secure accounts with verified neighbourhood information.
 
-* R1.1: The system shall allow new users to register using their email address or mobile phone number.
+### R1.1: The system shall allow new users to register using their email address.
+- **R1.1.1** — The system must verify the user's email address via a verification link sent to their email.
+- **R1.1.2** — The system must require users to provide their residential address (street name, suburb, and/or complex name) to determine neighbourhood zone membership.
 
-* R1.1.1: The system must verify the user's email address or phone number via a one-time password (OTP) before account activation.
+### R1.2: The system shall allow users to securely log in and manage their profile.
+- **R1.2.1** — The system must support password-based authentication with password strength validation (minimum 8 characters, mixed case, number, and special character).
+- **R1.2.3** — The system must allow users to view their trust score, skills/tags, and availability preferences.
 
-* R1.1.2: The system must require users to provide their residential address (street name, suburb, and/or complex name) to determine neighbourhood zone membership.
+---
 
-* R1.2: The system shall allow users to securely log in and manage their profile.
-
-* R1.2.1: The system must support password-based authentication with password strength validation (minimum 8 characters, mixed case, number, and special character).
-
-* R1.2.2: The system must lock the account after a specified number of failed login attempts and provide a password reset mechanism.
-
-* R1.2.3: The system must allow users to view and edit their trust score, skills/tags, and availability preferences.
-
-**Use Case 2 - Task Management**
-* R2: Task Request and Matching Engine
+## R2: Task Request and Matching Engine
 The system shall allow residents to request household task assistance and match requests with suitable helpers.
 
-* R2.1: The system shall allow users to create and publish task requests.
+### R2.1: The system shall allow users to create and publish task requests.
+- **R2.1.1** — The system must support task types including plant care, pet feeding, bin collection, package collection, and home check-ins.
+- **R2.1.2** — The system must require the user to specify task date, time window, and any special instructions.
 
-* R2.1.1: The system must support task types including plant care, pet feeding, bin collection, package collection, and home check-ins.
+### R2.2: The system shall match task requests with suitable helpers based on multiple criteria.
+- **R2.2.1** — The system must prioritize helpers based on proximity (same complex, street, or neighbourhood zone).
+- **R2.2.2** — The system must consider helper trust score, availability, and skills/tags when recommending helpers.
 
-* R2.1.2: The system must require the user to specify task date, time window, and any special instructions.
+---
 
-* R2.2: The system shall match task requests with suitable helpers based on multiple criteria.
-
-* R2.2.1: The system must prioritize helpers based on proximity (same complex, street, or neighbourhood zone).
-
-* R2.2.2: The system must consider helper trust score, availability, and skills/tags when recommending helpers.
-
-* R2.2.3: The system must allow task requesters to filter helpers by preferences (e.g., "verified only").
-
-**Use Case 3 - In-App Communication**
-* R3: In-App Communication
+## R3: In-App Communication
 The system shall allow users to communicate in real time for task coordination.
 
-* R3.1: The system shall provide real-time chat messaging between task requesters and accepted helpers.
+### R3.1: The system shall provide real-time chat messaging between task requesters and accepted helpers.
+- **R3.1.1** — The system must support text-based messaging for task-related communication.
+- **R3.1.2** — The system must allow users to share photo updates (e.g., "Plants watered!").
 
-* R3.1.1: The system must support text-based messaging for task-related communication.
-
-* R3.1.2: The system must allow users to share photo updates (e.g., "Plants watered!").
-
-* R3.2: The system shall provide task status updates and reminders.
-
-* R3.2.1: The system must send push notifications for task confirmations, upcoming commitments, and task completion.
-
-* R3.2.2: The system must allow helpers to mark tasks as complete with optional photo evidence
-
-**Subsystem Overview**
-
-The Supa-Neighbour platform is divided into the following subsystems, each responsible for a distinct area of functionality:
- 
-| Subsystem | Responsibility | Related Requirements |
-|---|---|---|
-| **Authentication & User Management** | Account creation, login, password management | R1, NFR2, NFR8 |
-| **Task Management** | Creating, editing, viewing, and completing tasks | R2, NFR1, NFR4 |
-| **Matching Engine** | Connecting requesters with suitable helpers | R2.2, NFR1.1.1 |
-| **In-App Communication** | Real-time chat between users | R3, NFR1.1.2, NFR2.2.2 |
-| **Notification Service** | Push notifications and task reminders | R3.2, NFR3.1.2 |
-| **Trust & Gamification** | Scoring, XP, levels, leaderboards | R5 |
-| **Neighbourhood & Mapping** | Zone management, map views | R6 |
-| **Admin Dashboard** | Platform oversight and moderation | R4.2, NFR6 |
-
-
-
-# API Service Contracts
-
-Please refer to this document for the API Contracts: [API Service Contract](/documentation/API_Service_Contractc.md)
-
-# Architectural Requirements
-
-## Quality Requirements
-
-Quality requirements define the system's non-functional characteristics. Each requirement is traced to specific NFRs.
-
-### QR1: Performance
-
-QR1.1: Matching engine response time should be  ≤ 3 seconds based on NFR1.1.1
-
-QR1.2: Chat message delivery latency should be ≤ 2 seconds based on NFR1.1.2
-
-QR1.3: Concurrent user support should be be ≥ 1,000 users based on NFR1.2.1
-
-QR1.4: Concurrent chat sessions roughly ≥ 500 sessions based on NFR1.2.2
+### R3.2: The system shall provide task status updates and reminders.
+- **R3.2.1** — The system must send push notifications for task confirmations, upcoming commitments, and task completion.
+- **R3.2.2** — The system must allow helpers to mark tasks as complete with optional photo evidence.
 
 ---
-### QR2: Security & Privacy
+## R4: Gamification and Trust Scoring
+The system shall encourage ongoing participation through gamification and build trust through a scoring system.
 
-QR2.1: Password storage ,Hashed + salted (bcrypt/Argon2) based on NFR2.1.1
+### R4.1: The system shall award points and progression levels for completed tasks.
+- **R4.1.1** — The system must award XP points to helpers upon successful task completion.
+- **R4.1.2** — The system must support helper progression levels (Bronze → Silver → Gold) based on accumulated XP.
 
-QR2.4: Authentication via JWT via Microsoft Entra ID B2C based on AR3.1
+### R4.2: The system shall provide community recognition features.
+- **R5.2.1** — The system must display a neighbourhood leaderboard showing helper rankings.
 
-QR2.5: API rate limiting of roughly 50 requests/min/per user based on NFR2.2.1
-
-QR2.6: Spam detection for Automated flagging + admin review queue based on NFR2.2.2
-
-QR2.7: Address privacy which Revealed only post-task-acceptance based on R4.1.1
-
-QR2.8: Contact privacy,no exposure to any 3rd party; all communication in-app based on R4.1.2
-
-QR2.9: Security audit logging, All failed logins + suspicious activities logged for admin tech-team review based on NFR2.2.3
-
----
-### QR3: Reliability & Availability
-
-QR3.1: System uptime, 99.5% based on NFR3.1.1
-
-QR3.2: Critical service failover which is Automated, < 30 seconds detection + recovery based on NFR3.1.2
-
-QR3.3: Matching engine failure recovery, User-friendly error + auto-retry within 10 seconds based on NFR3.2.1
-
-QR3.4: Chat message queuing, Messages persisted if service down; delivered on restore based on NFR3.2.2
-
-QR3.5: Data backup frequency | Daily (Cosmos DB), hourly transaction logs (Azure SQL)
-
----
-### QR4: Usability
-
-QR4.1: First task posting time of ≤ 3 minutes from registration based on NFR4.1.1
-
-QR4.2: Mobile accessibility should allow for Adjustable text size based on NFR4.1.2 & R7.1.2
-
-QR4.3: Icon clarity, All icons include text labels based on NFR4.1.3
-
-QR4.4: Error messaging, Plain language + resolution suggestions based on NFR4.2.1
-
-QR4.5: Task workflow guidance, Step-by-step with progress indicators based on NFR4.2.2
-
-QR4.6: Age group support Intuitive for users 18-80+ based on R7.1.1
-
----
-### QR5: Scalability
-
-QR5.1: Horizontal scaling with Zero-downtime instance addition based on NFR5.1.1 & AR6.1
-
-QR5.2: Database partitioning trigger for ≥ 100,000 users based on NFR5.1.2
-
-QR5.3: Neighbourhood zone configurability, No code changes for new regions based on NFR5.2.1
-
-QR5.4: Proximity algorithm efficiency, prefferably O(log n) or better for zone lookup based on NFR5.2.2
-
----
-### QR6: Maintainability
-
-
-QR6.1: Module coupling, Loosely coupled based on NFR6.1.1 & AR7
-
-QR6.2: Layer separation with Clear boundaries: Presentation → API → Service → Data based on NFR6.1.2 & AR1
-
-QR6.3: API documentation, OpenAPI/Swagger for all REST + GraphQL endpoints based on NFR6.2.1
-
-QR6.4: Logging completeness on Errors, warnings, key user actions with timestamps based on NFR6.2.2
-
----
-### QR7: Portability
-
-QR7.1: Azure compatibility, All components deployable to Azure based on NFR7.1.1 & AR4
-
-QR7.2: CI/CD support via the GitHub Actions pipelines based on NFR7.1.2 & AR5
-
-QR7.3: Android minimum version | API level 30 (Android 11) based on NFR7.2.1
-
-QR7.4: Screen size adaptation, Phones + tablets, portrait + landscape based on NFR7.2.2
-
----
-### QR8: Compliance
-
-QR8.1: POPIA compliance with Explicit consent for location data based on NFR8.1.1
-
-QR8.2: Right to deletion, User data deletion request supported based on NFR8.1.2
-
-QR8.4: Privacy policy which is Accessible during registration based on NFR8.2.2
+### R4.3: The system shall maintain a trust score for each user.
+- **R5.3.1** — The system must allow users to rate helpers after task completion.
+- **R5.3.2** — The system must calculate and display trust scores based on completed tasks and ratings received.
 
 ---
 
+## R5: Security and Privacy
+The system shall protect user privacy and ensure safe task exchanges.
 
-## Architectural Patterns
+### R5.1: The system shall protect sensitive location and contact information.
+- **R5.1.1** — The system must reveal the requester's exact address to a helper ONLY after the task has been accepted.
+- **R5.1.2** — The system must never expose personal contact numbers (phone, email) between users; all communication must occur through in-app chat.
 
-
-The Architectural Diagram can be viewed here: [Architectural diagram](../documentation/Images/Architecture%20diagram.drawio.png)
-
----
-
-## Contraints
-
-### C1: Platform & Deployment Constraints
-
-C1.1: Android app required (iOS optional), Flutter must support Android API 30+
-
-C1.2: Web dashboard for admins
-
-C1.3: Backend must deploy to Azure
-
-C1.4: CI/CD via GitHub Actions
-
-C1.5: Matching engine uses GraphQL
-
----
-### C2: Privacy & Security Constraints
-
-C2.1: Exact address revealed ONLY after task acceptance
-
-C2.2: Personal contact numbers never exposed, All communication via in-app chat only
-
-C2.3: Location data requires explicit consent, Consent screen + preference storage
-
-C2.4: POPIA compliance, Users must havd Right to deletion & data processing records
-
-C2.5: Secrets in Azure Key Vault, No hardcoded secrets in code/config
-
----
-### C3: Usability Constraints
-
-C3.1: Verification must remain simple, OTP only; no complex document uploads initially
-
-C3.2: Large fonts + accessible design, Flutter text scaling must work
-
-C3.3: First task within 3 minutes of registration,Onboarding must be minimal
-
----
-### C4: Domain Constraints
-
-C4.1: Neighbourhood boundaries differ per region, Configuration-driven, not hardcoded
-
-C4.2: Messaging must prevent harassment/spam, Content filtering + rate limiting + reporting
-
-C4.3: Animal tasks require disclaimers, Safety guidance before accepting pet tasks
+### R5.2: The system shall enforce strict permission controls.
+- **R5.2.1** — The system must request and respect location permissions with clear user consent.
+- **R5.2.2** — The system must implement role-based access control (resident, helper, admin).
 
 ---
 
-### C6: Budget & Resource Constraints
+## R6: User Interface and Accessibility
+The system shall provide a friendly, warm, and accessible user interface.
 
-C6.1: Approval needed from Gendac for expenses,Any paid Azure service requires sign-off
+### R6.1: The system shall follow design best practices for usability.
+- **R6.1.1** — The system must provide a simple interface for posting and accepting tasks, suitable for all age groups.
+- **R6.1.2** — The system must support large fonts and intuitive navigation for accessibility.
 
-C6.2: Team size = 5, limited to 5 tech memmbers
+### R6.2: The system shall provide visual feedback and guidance.
+- **R6.2.1** — The system must display ratings and badges clearly on helper profiles.
+- **R6.2.2** — The system must include easy scheduling workflows with reminder confirmations.
 
 ---
-### C7: Timeline Constraints
 
-C7.1: Delivery within Project deadlines which we  Prioritise core (R1-R7) over wow factor (R8-R10)
+# 6. Non-Function Requirements
 
----
+Below are the Non-fuctional requirements that were focused on for Demo 2:
 
+
+# 7. Domain Model
+
+Please refer to the file for the Domain model: [Domain Model](Images/SNR-Domain-Model.drawio.png)
 
