@@ -25,37 +25,43 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
 
   final TaskService _taskService = TaskService();
 
+  Future<void> _startTask() async {
+    setState(() => _isStarting = true);
 
+    try {
+      await _taskService.updateTask(
+        taskId: int.parse(widget.task.id),
+        status: 'in_progress',
+      );
 
-Future<void> _startTask() async {
-  setState(() => _isStarting = true);
+      if (!mounted) return;
 
-  try {
-    await _taskService.updateTask(
-      taskId: int.parse(widget.task.id),
-      status: 'in_progress',
-    );
-  } on Exception {
-    Task.updateTaskStatus(widget.task.id, 'in_progress');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TaskCompletionPage(
+            taskId: widget.task.id,
+            taskTitle: widget.task.title,
+            residentName: widget.task.requesterName ?? 'Requester',
+            dueDate:
+                '${widget.task.date.day}/${widget.task.date.month} · ${widget.task.time.format(context)}',
+            xpReward: widget.task.xpReward,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isStarting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
-
-  if (!mounted) return;
-
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (context) => TaskCompletionPage(
-        taskId: widget.task.id,
-        taskTitle: widget.task.title,
-        residentName: widget.task.requesterName ?? 'Requester',
-        dueDate:
-            '${widget.task.date.day}/${widget.task.date.month} · ${widget.task.time.format(context)}',
-        xpReward: widget.task.xpReward,
-      ),
-    ),
-  );
-}
-
 
   @override
   Widget build(BuildContext context) {

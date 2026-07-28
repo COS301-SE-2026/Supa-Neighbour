@@ -13,8 +13,8 @@ class AuthService {
             Dio(BaseOptions(
              // baseUrl: 'http://10.0.2.2:8080',
               baseUrl: 'http://localhost:8080',
-              connectTimeout: const Duration(seconds: 10),
-              receiveTimeout: const Duration(seconds: 10),
+              connectTimeout: const Duration(seconds: 19),
+              receiveTimeout: const Duration(seconds: 19),
             )),
         _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
 
