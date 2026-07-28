@@ -292,9 +292,9 @@ class StyleGuidePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              Container(
-                width: 300,
-                child: TextField(
+             SizedBox(
+              width: 300,
+              child: TextField(
                   decoration: InputDecoration(
                     hintText: 'Enter your email',
                     border: OutlineInputBorder(
