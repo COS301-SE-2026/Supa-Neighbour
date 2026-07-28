@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
-import '../../constants/app_colors.dart'; // ADD: Import AppColors
+import '../../constants/app_colors.dart';
+import '../help/help_menu_screen.dart';
 import 'available_helpers_screen.dart';
 import 'task_start_screen.dart';
 import 'task_detail_screen.dart';
@@ -76,7 +77,7 @@ class _MyTasksScreenState extends State<MyTasksScreen>
     }
   }
 
-  // CHANGE: Update to use AppColors with context
+
   Color _getStatusColor(String status, BuildContext context) {
     switch (status) {
       case 'open':
@@ -100,16 +101,19 @@ class _MyTasksScreenState extends State<MyTasksScreen>
   Widget build(BuildContext context) {
     
     return Scaffold(
-      // CHANGE: Use AppColors.background
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        // CHANGE: Use AppColors.background
         backgroundColor: AppColors.background(context),
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
+          onPressed: () {
+            HelpMenuScreen.showHelpModal(context, 'tasks');
+          },
+        ),
         title: Text(
           'My Tasks',
           style: GoogleFonts.poppins(
-            // CHANGE: Use AppColors.primaryTeal
             color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
@@ -118,11 +122,11 @@ class _MyTasksScreenState extends State<MyTasksScreen>
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          // CHANGE: Use AppColors.primaryTeal
+        
           labelColor: AppColors.primaryTeal(context),
-          // CHANGE: Use AppColors.textGrey
+      
           unselectedLabelColor: AppColors.textGrey(context),
-          // CHANGE: Use AppColors.primaryTeal
+
           indicatorColor: AppColors.primaryTeal(context),
           labelStyle: GoogleFonts.poppins(
             fontSize: 14,

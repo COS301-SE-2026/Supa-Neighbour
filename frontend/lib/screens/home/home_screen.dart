@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supa_neighbour/constants/app_colors.dart';
+import '../help/help_menu_screen.dart';
 import '../../models/auth_session.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
@@ -115,6 +116,12 @@ Future<void> _loadNearbyTasks() async {
       appBar: AppBar(
         backgroundColor: AppColors.background(context),
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
+          onPressed: () {
+            HelpMenuScreen.showHelpModal(context, 'home');
+          },
+        ),
         title: Text(
           'Supa Neighbour',
           style: GoogleFonts.poppins(
@@ -127,8 +134,7 @@ Future<void> _loadNearbyTasks() async {
         actions: [
           IconButton(
             icon: Icon(Icons.notifications_none, color: AppColors.primaryTeal(context)),
-            onPressed: () {
-            },
+            onPressed: () {},
           ),
         ],
       ),
