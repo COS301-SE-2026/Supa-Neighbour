@@ -64,6 +64,15 @@ public class Settings {
         return userId;
     }
 
+    /**
+     * Returns the ID of the user associated with these settings.
+     *
+     * @return the user's unique identifier
+     */
+    public void setUserId(Integer userId){
+        this.userId = userId;
+    }
+
      /**
      * Returns the user associated with these settings.
      *
