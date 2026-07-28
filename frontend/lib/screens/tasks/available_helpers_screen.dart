@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
 import '../leaderboard/helper_profile_preview_screen.dart';
@@ -189,19 +188,6 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
             ),
           ],
         ),
-      ),
-     bottomNavigationBar: BottomNavBar(
-        currentIndex: 1, 
-        onTap: (index) {
-          if (index != 1) {
-            ScaffoldMessenger.of(context).showSnackBar(
-               SnackBar(
-                content: Text('Navigate to tab $index'),
-                duration: Duration(seconds: 1),
-              ),
-            );
-          }
-        },
       ),
     );
   }

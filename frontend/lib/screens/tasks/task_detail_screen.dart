@@ -45,7 +45,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool canEdit = widget.isRequesterView && widget.task.status == 'open';
+    final bool canEdit = widget.task.createdBy == 'currentUser' && widget.task.status == 'open';
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(

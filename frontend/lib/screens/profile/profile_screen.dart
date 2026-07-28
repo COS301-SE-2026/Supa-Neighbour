@@ -5,15 +5,12 @@ import '../../constants/skill_options.dart';
 import '../../constants/badge_visuals.dart';
 import 'package:supa_neighbour/screens/profile/achievements_screen.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
-<<<<<<< HEAD
 import '../../services/auth_service.dart';
 import '../auth/splash_screen.dart';
 import '../../services/profile_service.dart';
 import '../../models/user_profile_response.dart';
 import '../profile/privacy_settings_screen.dart';
-=======
 import '../help/help_menu_screen.dart';
->>>>>>> feature/help-menu
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -236,7 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: Text(
           'My Profile',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal(context),
+            color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -806,7 +803,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           },
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: AppColors.primaryTeal),
+            side: BorderSide(color: AppColors.primaryTeal(context)),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -817,14 +814,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Icon(
                 Icons.help_outline,
-                color: AppColors.primaryTeal,
+                color: AppColors.primaryTeal(context),
                 size: 20,
               ),
               const SizedBox(width: 8),
               Text(
                 'Help & Support',
                 style: GoogleFonts.openSans(
-                  color: AppColors.primaryTeal,
+                  color: AppColors.primaryTeal(context),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),

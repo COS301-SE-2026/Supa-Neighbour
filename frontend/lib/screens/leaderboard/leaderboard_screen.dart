@@ -175,7 +175,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         title: Text(
           'Leaderboard',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal(context),
+            color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),

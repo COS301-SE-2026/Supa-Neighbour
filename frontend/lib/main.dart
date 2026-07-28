@@ -3,11 +3,9 @@ import 'screens/auth/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import 'firebase_options.dart';
-<<<<<<< HEAD
 import 'providers/theme_mode_provider.dart'; 
-=======
 import 'screens/style_guide/style_guide_page.dart';
->>>>>>> feature/brand-style-guide
+import 'screens/landing/landing_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,13 +29,13 @@ class MyApp extends ConsumerWidget {
         useMaterial3: true,
         fontFamily: 'Google Sans Flex',
       ),
-      darkTheme: ThemeData(                                   // ADD THIS BLOCK
+      darkTheme: ThemeData(                         
         useMaterial3: true,
         fontFamily: 'Google Sans Flex',
         brightness: Brightness.dark,
       ),
-      home: const SplashScreen(),
-      //home: const StyleGuidePage(), //temp for testing purposes
+      //home: const SplashScreen(),
+      home: LandingPage(),
     );
   }
 }
