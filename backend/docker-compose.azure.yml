@@ -1,0 +1,19 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+
+    container_name: supa-api-azure
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: azure
+      SPRING_DATASOURCE_URL: jdbc:postgresql://parseandco-sqlserver.postgres.database.azure.com:5432/parseandco-database?sslmode=require
+      SPRING_DATASOURCE_USERNAME: parseandcosqlserveradmin20261206
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      BLOB_CONNECTION_STRING: ${BLOB_CONNECTION_STRING}

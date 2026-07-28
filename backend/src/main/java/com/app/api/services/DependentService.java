@@ -2,7 +2,6 @@ package com.app.api.services;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Dependent;
@@ -15,8 +14,16 @@ import com.app.api.repositories.DependentRepository;
 @Service
 public class DependentService {
 
-    @Autowired
-    private DependentRepository dependentRepository;
+    private final DependentRepository dependentRepository;
+
+    /**
+     * Constructs the services with its required repository dependency.
+     *
+     * @param dependentRepository repository providing analytics data for posts
+     */
+    public DependentService(DependentRepository dependentRepository) {
+        this.dependentRepository = dependentRepository;
+    }
 
     // Get all
     /**
@@ -68,8 +75,8 @@ public class DependentService {
             return null;
         }
         
-        existing.setUserid(updated.getUserid());
-        existing.setTaskTypeid(updated.getTaskTypeid());
+        existing.setUserId(updated.getUserId());
+        existing.setTaskTypeId(updated.getTaskTypeId());
 
         return dependentRepository.save(existing);
     }

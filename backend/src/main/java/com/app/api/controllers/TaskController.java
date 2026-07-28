@@ -1,8 +1,9 @@
 package com.app.api.controllers;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.app.api.models.Task;
+import com.app.api.services.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,13 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.app.api.models.Task;
-import com.app.api.services.TaskService;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-
+import java.util.List;
 /**
  * REST controller for task-related endpoints.
  */
@@ -27,13 +22,14 @@ public class TaskController {
     /** The task service. */
     private final TaskService taskService;
 
+
     /**
      * Constructs a TaskController with the given TaskService.
      * @param taskService the task service
      */
-    @Autowired
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
+   
     }
 
     /**
@@ -115,13 +111,14 @@ public class TaskController {
     @ApiResponse(responseCode = "200", description = "Tasks retrieved")
     @ApiResponse(responseCode = "404", description = "No dependent profile found for user")
     @GetMapping("/users/{userId}/tasks")
-    public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable int userId) {
+    public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable int userId, Integer helperId) {
         List<Task> tasks = taskService.getTasksByUserId(userId);
 
         if (tasks == null) {
             return ResponseEntity.notFound().build();
         }
 
+        //tasks.setHelperId(tasks.getHelperId());
         return ResponseEntity.ok(tasks);
     }
 
@@ -138,5 +135,4 @@ public class TaskController {
         Task newTask = taskService.createTask(task);
         return ResponseEntity.status(201).body(newTask);
     }
-    
 }

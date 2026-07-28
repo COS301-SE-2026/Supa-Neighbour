@@ -1,32 +1,33 @@
 package com.app.api.unit.services;
 
-import com.app.api.models.Task;
-import com.app.api.repositories.AnalyticsRepository;
-import com.app.api.repositories.TaskRepository;
-import com.app.api.repositories.DependentRepository;
-import com.app.api.repositories.ChatRepository;
-import com.app.api.repositories.MessageRepository;
-import com.app.api.services.TaskService;
-import com.app.api.models.Dependent;
+import java.util.List;
+import java.util.Optional;
 
-
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
 
-
-import java.util.Optional;
-import java.util.List;
-import java.sql.Date;
-
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import com.app.api.models.Dependent;
+import com.app.api.models.Task;
+import com.app.api.repositories.AnalyticsRepository;
+import com.app.api.repositories.ChatRepository;
+import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.MessageRepository;
+import com.app.api.repositories.TaskRepository;
+import com.app.api.services.TaskService;
 
 public class TaskServiceTest
 {
@@ -222,19 +223,19 @@ public class TaskServiceTest
 
         Dependent dependent = new com.app.api.models.Dependent();
         dependent.setDependentId(1);
-        dependent.setUserid(new com.app.api.models.User());   
+        dependent.setUserId(new com.app.api.models.User());   
 
         Task task = new Task();
         task.setTaskId(1001);
         task.setDependentId(1);
 
-        when(dependentRepo.findByUserid_Userid(userId)).thenReturn(dependent);
+        when(dependentRepo.findByUserId_Userid(userId)).thenReturn(dependent);
         when(taskRepo.findByDependentId(1)).thenReturn(List.of(task));
         
         List<Task> userTasks = taskService.getTasksByUserId(userId);
  
         assertNotNull(userTasks);
-        verify(dependentRepo, times(1)).findByUserid_Userid(userId);
+        verify(dependentRepo, times(1)).findByUserId_Userid(userId);
         verify(taskRepo, times(1)).findByDependentId(1);
     }
 
@@ -242,7 +243,7 @@ public class TaskServiceTest
     @Test
     void getTasksByUserId_noDependentProfile()
     {
-        when(dependentRepo.findByUserid_Userid(999)).thenReturn(null);
+        when(dependentRepo.findByUserId_Userid(999)).thenReturn(null);
     
         List<Task> userTasks = taskService.getTasksByUserId(999);
     
@@ -272,4 +273,3 @@ public class TaskServiceTest
         verify(taskRepo, times(1)).deleteById(id);
     }
 }
-
