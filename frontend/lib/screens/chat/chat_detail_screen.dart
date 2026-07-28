@@ -235,31 +235,15 @@ String _formatTimestamp(String? raw) {
         title: Row(
           children: [
             // Avatar
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: widget.chat.avatarColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      widget.chat.name[0],
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+           CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.white,
+              child: Text(
+                widget.chat.name[0],
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primaryTeal(context),
                 ),
               ),
             ),

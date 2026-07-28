@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/chat_thread.dart';
-import '../../constants/app_colors.dart'; // ADD: Import AppColors
+import '../../constants/app_colors.dart';
 import 'bulletin_screen.dart';
 import 'chat_detail_screen.dart';
 import '../../services/chat_service.dart';
@@ -60,38 +60,37 @@ class _InboxScreenState extends State<InboxScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // CHANGE: Use AppColors.background
       backgroundColor: AppColors.background(context),
-      appBar: AppBar(
-        // CHANGE: Use AppColors.primaryTeal
-        backgroundColor: AppColors.primaryTeal(context),
+    appBar: AppBar(
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         title: Text(
-          'Inbox',
+          'Chat',
           style: GoogleFonts.poppins(
-            color: Colors.white,
+            color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: AppColors.primaryTeal(context)),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-          bottom: TabBar(
+        bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
+          labelColor: AppColors.primaryTeal(context),
+          unselectedLabelColor: AppColors.textGrey(context),
+          indicatorColor: AppColors.primaryTeal(context),
           tabs: const [
             Tab(text: 'Inbox'),
-            Tab(text: 'Bulletin'),
+            Tab(text: 'Community Bulletin'),
           ],
         ),
-      ),
+      ),  
+    
       body: TabBarView(
   controller: _tabController,
   children: [
@@ -99,7 +98,6 @@ class _InboxScreenState extends State<InboxScreen>
       _isLoading
           ? Center(
               child: CircularProgressIndicator(
-                // CHANGE: Use AppColors.primaryTeal
                 color: AppColors.primaryTeal(context),
               ),
             )
@@ -107,7 +105,6 @@ class _InboxScreenState extends State<InboxScreen>
               ? Center(
                   child: Text(
                     _error!,
-                    // CHANGE: Use AppColors.error
                     style: TextStyle(color: AppColors.error(context)),
                   ),
                 )
@@ -158,37 +155,25 @@ class ChatCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          // CHANGE: Use AppColors.primaryTeal with alpha
           color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 55,
-              height: 55,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: chat.avatarColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      chat.name[0],
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+            // Avatar
+            CircleAvatar(
+              radius: 27,
+              backgroundColor: Colors.white,
+              child: CircleAvatar(
+                radius: 24,
+                backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
+                child: Text(
+                  chat.name[0],
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryTeal(context),
                   ),
                 ),
               ),
@@ -206,7 +191,6 @@ class ChatCard extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            // CHANGE: Use AppColors.charcoal
                             color: AppColors.charcoal(context),
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -219,7 +203,6 @@ class ChatCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            // CHANGE: Use AppColors.citrusYellow
                             color: AppColors.citrusYellow(context),
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -228,7 +211,6 @@ class ChatCard extends StatelessWidget {
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              // CHANGE: Use AppColors.charcoal
                               color: AppColors.charcoal(context),
                             ),
                           ),
@@ -241,7 +223,6 @@ class ChatCard extends StatelessWidget {
                       Icon(
                         Icons.location_on,
                         size: 12,
-                        // CHANGE: Use AppColors.primaryTeal
                         color: AppColors.primaryTeal(context),
                       ),
                       const SizedBox(width: 2),
@@ -251,7 +232,6 @@ class ChatCard extends StatelessWidget {
                           style: GoogleFonts.openSans(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            // CHANGE: Use AppColors.textGrey
                             color: AppColors.textGrey(context),
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -266,9 +246,7 @@ class ChatCard extends StatelessWidget {
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
                       color: chat.unreadCount > 0
-                          // CHANGE: Use AppColors.charcoal for unread
                           ? AppColors.charcoal(context)
-                          // CHANGE: Use AppColors.textGrey for read
                           : AppColors.textGrey(context),
                     ),
                     maxLines: 1,
@@ -284,7 +262,6 @@ class ChatCard extends StatelessWidget {
                 vertical: 4,
               ),
               decoration: BoxDecoration(
-                // CHANGE: Use AppColors.primaryTeal
                 color: AppColors.primaryTeal(context),
                 borderRadius: BorderRadius.circular(16),
               ),
