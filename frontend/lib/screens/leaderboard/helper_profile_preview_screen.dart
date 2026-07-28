@@ -83,7 +83,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
       case 'Bronze':
         return const Color(0xFFCD7F32);
       default:
-        return AppColors.primaryTeal;
+        return AppColors.primaryTeal(context);
     }
   }
 
@@ -144,7 +144,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${widget.helper.fullName} has been invited!'),
-          backgroundColor: AppColors.success,
+          backgroundColor: AppColors.success(context),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -157,18 +157,18 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
     final levelColor = _getLevelColor(level);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
+          icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Helper Profile',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -176,7 +176,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_vert, color: AppColors.charcoal),
+            icon: Icon(Icons.more_vert, color: AppColors.charcoal(context)),
             onPressed: () {
             },
           ),
@@ -226,13 +226,13 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
       children: [
         CircleAvatar(
           radius: 50,
-          backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+          backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
           child: Text(
             widget.helper.firstName[0],
             style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.w600,
-              color: AppColors.primaryTeal,
+              color: AppColors.primaryTeal(context),
             ),
           ),
         ),
@@ -246,7 +246,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
                   Text(
                     widget.helper.fullName,
                     style: GoogleFonts.poppins(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
                     ),
@@ -277,7 +277,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
                   Text(
                     '4.8 ★',
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -288,7 +288,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
               Text(
                 'Member since May 2026',
                 style: GoogleFonts.openSans(
-                  color: AppColors.textGrey,
+                  color: AppColors.textGrey(context),
                   fontSize: 12,
                 ),
               ),
@@ -299,7 +299,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
                     width: 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: _isAvailable ? AppColors.success : AppColors.error,
+                      color: _isAvailable ? AppColors.success(context) : AppColors.error(context),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -307,7 +307,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
                   Text(
                     _isAvailable ? 'Available for tasks' : 'Currently unavailable',
                     style: GoogleFonts.openSans(
-                      color: _isAvailable ? AppColors.success : AppColors.error,
+                      color: _isAvailable ? AppColors.success(context) : AppColors.error(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -341,7 +341,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceGrey,
+        color: AppColors.surfaceGrey(context),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -349,7 +349,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           Text(
             value,
             style: GoogleFonts.poppins(
-              color: AppColors.primaryTeal,
+              color: AppColors.primaryTeal(context),
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
@@ -358,7 +358,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           Text(
             label,
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 11,
             ),
             textAlign: TextAlign.center,
@@ -377,7 +377,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
         Text(
           'Skills & Services',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -390,13 +390,13 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 skill,
                 style: GoogleFonts.openSans(
-                  color: AppColors.primaryTeal,
+                  color: AppColors.primaryTeal(context),
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
@@ -415,7 +415,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
         Text(
           'About',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -424,7 +424,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
         Text(
           'Neighbour for 5 years. Love helping out with plants and pets!',
           style: GoogleFonts.openSans(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 14,
             height: 1.5,
           ),
@@ -443,7 +443,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
             Text(
               'Recent Reviews',
               style: GoogleFonts.poppins(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -454,7 +454,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
               child: Text(
                 'See All',
                 style: GoogleFonts.openSans(
-                  color: AppColors.primaryTeal,
+                  color: AppColors.primaryTeal(context),
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
@@ -467,7 +467,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           Text(
             'No reviews yet',
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 14,
             ),
           )
@@ -486,7 +486,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceGrey,
+        color: AppColors.surfaceGrey(context),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -499,7 +499,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
               Text(
                 review.userName,
                 style: GoogleFonts.openSans(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -510,7 +510,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           Text(
             review.comment,
             style: GoogleFonts.openSans(
-              color: AppColors.charcoal,
+              color: AppColors.charcoal(context),
               fontSize: 13,
             ),
           ),
@@ -518,7 +518,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           Text(
             _formatDate(review.date),
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 11,
             ),
           ),

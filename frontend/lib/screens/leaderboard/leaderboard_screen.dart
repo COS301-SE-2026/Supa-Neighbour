@@ -15,7 +15,6 @@ class LeaderboardScreen extends StatefulWidget {
 }
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
-  String _selectedPeriod = 'week';
   LeaderboardData? _leaderboardData;
   bool _isLoading = true;
   String? _errorMessage;
@@ -53,13 +52,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     }
   }
 
-  void _changePeriod(String period) {
-    setState(() {
-      _selectedPeriod = period;
-    });
-    _loadLeaderboard();
-  }
-
   Color _getLevelColor(String level) {
     switch (level) {
       case 'Gold':
@@ -69,7 +61,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       case 'Bronze':
         return const Color(0xFFCD7F32);
       default:
-        return AppColors.primaryTeal;
+        return AppColors.primaryTeal(context);
     }
   }
 
@@ -88,7 +80,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         child: Text(
           '$rank',
           style: GoogleFonts.openSans(
-            color: AppColors.textGrey,
+            color: AppColors.textGrey(context),
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -100,14 +92,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         title: Text(
           'Leaderboard',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -115,7 +107,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline, color: AppColors.primaryTeal),
+            icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
             onPressed: () {
               _showInfoDialog();
             },
@@ -360,7 +352,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   Widget _buildLeaderboardItem(LeaderboardEntry entry) {
     final bgColor = entry.isCurrentUser
-        ? AppColors.primaryTeal.withValues(alpha: 0.05)
+        ? AppColors.primaryTeal(context).withValues(alpha: 0.05)
         : Colors.transparent;
 
     return GestureDetector(
@@ -383,13 +375,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             ),
             CircleAvatar(
               radius: 18,
-              backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+              backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
               child: Text(
                 entry.displayName[0],
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primaryTeal,
+                  color: AppColors.primaryTeal(context),
                 ),
               ),
             ),
@@ -405,8 +397,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         entry.displayName,
                         style: GoogleFonts.poppins(
                           color: entry.isCurrentUser
-                              ? AppColors.primaryTeal
-                              : AppColors.charcoal,
+                              ? AppColors.primaryTeal(context)
+                              : AppColors.charcoal(context),
                           fontSize: 14,
                           fontWeight: entry.isCurrentUser
                               ? FontWeight.w700
@@ -439,13 +431,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                             vertical: 1,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                            color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             'You',
                             style: GoogleFonts.openSans(
-                              color: AppColors.primaryTeal,
+                              color: AppColors.primaryTeal(context),
                               fontSize: 9,
                               fontWeight: FontWeight.w600,
                             ),
@@ -461,7 +453,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       Text(
                         '${entry.trustScore.toStringAsFixed(1)} ★',
                         style: GoogleFonts.openSans(
-                          color: AppColors.textGrey,
+                          color: AppColors.textGrey(context),
                           fontSize: 11,
                         ),
                       ),
@@ -469,7 +461,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       Text(
                         '${entry.xp} XP',
                         style: GoogleFonts.openSans(
-                          color: AppColors.primaryTeal,
+                          color: AppColors.primaryTeal(context),
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
@@ -599,7 +591,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   Text(
                     '$xpNeeded XP to reach Top $nextRank',
                     style: GoogleFonts.openSans(
-                      color: AppColors.textGrey,
+                      color: AppColors.textGrey(context),
                       fontSize: 11,
                     ),
                   ),
@@ -608,7 +600,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: progress,
-                      backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.2),
+                      backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.2),
                       color: const Color(0xFFE9C46A),
                       minHeight: 6,
                     ),
@@ -629,13 +621,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           Icon(
             Icons.leaderboard,
             size: 64,
-            color: AppColors.textGrey.withValues(alpha: 0.5),
+            color: AppColors.textGrey(context).withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
             'No Leaderboard Data',
             style: GoogleFonts.poppins(
-              color: AppColors.charcoal,
+              color: AppColors.charcoal(context),
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -644,7 +636,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           Text(
             'Helpers will appear here as they complete tasks',
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 14,
             ),
             textAlign: TextAlign.center,
@@ -753,7 +745,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         title: Text(
           'How Rankings Work',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -765,7 +757,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             Text(
               '• Ranked by trust score',
               style: GoogleFonts.openSans(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 14,
               ),
             ),
@@ -773,7 +765,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             Text(
               '• Trust score is calculated from completed tasks and ratings',
               style: GoogleFonts.openSans(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 14,
               ),
             ),
@@ -781,7 +773,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             Text(
               '• Leaderboard resets monthly',
               style: GoogleFonts.openSans(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 14,
               ),
             ),
@@ -789,21 +781,21 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             Text(
               '• Gold = Trust ≥ 4.8',
               style: GoogleFonts.openSans(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 14,
               ),
             ),
             Text(
               '• Silver = Trust ≥ 4.5',
               style: GoogleFonts.openSans(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 14,
               ),
             ),
             Text(
               '• Bronze = Trust ≥ 4.0',
               style: GoogleFonts.openSans(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 14,
               ),
             ),
@@ -815,7 +807,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             child: Text(
               'Got it',
               style: GoogleFonts.openSans(
-                color: AppColors.primaryTeal,
+                color: AppColors.primaryTeal(context),
                 fontWeight: FontWeight.w600,
               ),
             ),

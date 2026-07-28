@@ -6,7 +6,7 @@ class CheckboxWithLabel extends StatelessWidget {
   final bool value;
   final ValueChanged<bool?> onChanged;
   final double fontSize;
-  final Color activeColor;
+  final Color? activeColor;
 
   const CheckboxWithLabel({
     super.key,
@@ -14,11 +14,12 @@ class CheckboxWithLabel extends StatelessWidget {
     required this.value,
     required this.onChanged,
     this.fontSize = 14,
-    this.activeColor = AppColors.primaryTeal,
+    this.activeColor ,
   });
 
   @override
   Widget build(BuildContext context) {
+    final resolvedActiveColor = activeColor ?? AppColors.primaryTeal(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -28,10 +29,10 @@ class CheckboxWithLabel extends StatelessWidget {
           child: Checkbox(
             value: value,
             onChanged: onChanged,
-            activeColor: activeColor,
+            activeColor: resolvedActiveColor,
             checkColor: Colors.white,
             side: BorderSide(
-              color: activeColor,
+              color: resolvedActiveColor,
               width: 2,
             ),
             shape: RoundedRectangleBorder(
@@ -46,7 +47,7 @@ class CheckboxWithLabel extends StatelessWidget {
             fontSize: fontSize,
             fontWeight: FontWeight.w400,
             fontFamily: 'Open Sans',
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
           ),
         ),
       ],

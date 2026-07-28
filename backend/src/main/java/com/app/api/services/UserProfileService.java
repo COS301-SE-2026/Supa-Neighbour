@@ -91,6 +91,7 @@ public class UserProfileService {
         String level = null;
         List<String> skills = null;
         int completedTasks = 0;
+        int activeTasks = 0;
         List<RecentTaskDTO> recentTasks = List.of();
 
         if(helperData != null){
@@ -108,16 +109,20 @@ public class UserProfileService {
 
             skills = userProfileRepository.findSkills(helperId);
             completedTasks = userProfileRepository.countCompletedTasks(helperId);
+            activeTasks = userProfileRepository.countActiveTasks(helperId);
+            
 
 
             recentTasks = userProfileRepository.findRecentTasks(helperId).stream()
             .map(row -> new RecentTaskDTO(
                 ((Number) row[0]).intValue(),
                 (String) row[1],
-                row[2] != null ? row[2].toString() : null
+                row[2] != null ? row[2].toString() : null, 
+                row[3] != null ? ((Number) row[3]).intValue() : null
             )).toList();
         }
 
+        int createdTasks = userProfileRepository.countCreatedTasks(userId);
         
         List<AchievementDTO> achievements = userProfileRepository.findEarnedAchievements(userId).stream()
         .map(row -> new AchievementDTO(
@@ -128,7 +133,7 @@ public class UserProfileService {
 
         )).toList();
 
-        return new UserProfileResponse(resolvedUserId, displayName, neighbourhood, level, currentXp, skills, completedTasks, recentTasks, achievements,trustScore);
+        return new UserProfileResponse(resolvedUserId, displayName, neighbourhood, level, currentXp, skills, completedTasks, recentTasks, achievements,trustScore, activeTasks, createdTasks);
     }
 
     /**
@@ -177,14 +182,12 @@ public class UserProfileService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                             "User is not registered as helper"));
             List<TaskType> matchedTypes = taskTypeRepository.findByDescriptionIn(request.getSkills());
-            System.out.println("DEBUG: entering updateProfile, userId=" + matchedTypes.toString());
             if(matchedTypes.size() != request.getSkills().size()){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more requested skills are invalid");
             }
              
             
             helperSkillRepository.deleteHelperId(helper.getHelperid());
-            System.out.println("DEBUG: delete done");
             List<HelperSkill> newSkills = matchedTypes.stream()
                     .map(taskType -> {
                         HelperSkill hs = new HelperSkill();

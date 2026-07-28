@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/chat_thread.dart';
 import '../../services/chat_service.dart';
-
+import '../../constants/app_colors.dart'; // ADD: Import AppColors
 
 class ChatDetailScreen extends StatefulWidget {
   final ChatThread chat;
@@ -77,6 +77,8 @@ String _formatTimestamp(String? raw) {
   }
 
   void _showImagePreview() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -85,12 +87,19 @@ String _formatTimestamp(String? raw) {
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
+          // CHANGE: Use dynamic color based on theme
+          color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Preview Image',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  // CHANGE: Use AppColors.charcoal
+                  color: AppColors.charcoal(context),
+                ),
               ),
               const SizedBox(height: 16),
               ClipRRect(
@@ -112,12 +121,19 @@ String _formatTimestamp(String? raw) {
                         _sendImage();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1C9A89),
+                        // CHANGE: Use AppColors.primaryTeal
+                        backgroundColor: AppColors.primaryTeal(context),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: const Text('Send Image'),
+                      child: Text(
+                        'Send Image',
+                        style: GoogleFonts.openSans(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -130,12 +146,19 @@ String _formatTimestamp(String? raw) {
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF1C9A89)),
+                        // CHANGE: Use AppColors.primaryTeal
+                        side: BorderSide(color: AppColors.primaryTeal(context)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: const Text('Cancel'),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.openSans(
+                          // CHANGE: Use AppColors.primaryTeal
+                          color: AppColors.primaryTeal(context),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -200,10 +223,14 @@ String _formatTimestamp(String? raw) {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      // CHANGE: Use AppColors.background
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1C9A89),
+        // CHANGE: Use AppColors.primaryTeal
+        backgroundColor: AppColors.primaryTeal(context),
         elevation: 0,
         title: Row(
           children: [
@@ -295,10 +322,11 @@ String _formatTimestamp(String? raw) {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              // CHANGE: Use dynamic color based on theme
+              color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black..withValues(alpha: 0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),
@@ -313,12 +341,14 @@ String _formatTimestamp(String? raw) {
                     width: 45,
                     height: 45,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0F2F8),
+                      // CHANGE: Use AppColors.surfaceGrey
+                      color: AppColors.surfaceGrey(context),
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.attach_file,
-                      color: Color(0xFF1C9A89),
+                      // CHANGE: Use AppColors.primaryTeal
+                      color: AppColors.primaryTeal(context),
                       size: 24,
                     ),
                   ),
@@ -329,17 +359,23 @@ String _formatTimestamp(String? raw) {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0F2F8),
+                      // CHANGE: Use AppColors.surfaceGrey
+                      color: AppColors.surfaceGrey(context),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: TextField(
                       controller: _messageController,
-                      style: GoogleFonts.openSans(fontSize: 16),
+                      style: GoogleFonts.openSans(
+                        fontSize: 16,
+                        // CHANGE: Use AppColors.charcoal
+                        color: AppColors.charcoal(context),
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Type a message...',
                         hintStyle: GoogleFonts.openSans(
                           fontSize: 14,
-                          color: const Color(0xFF9CA3AF),
+                          // CHANGE: Use AppColors.textGrey
+                          color: AppColors.textGrey(context),
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -354,8 +390,9 @@ String _formatTimestamp(String? raw) {
                   child: Container(
                     width: 45,
                     height: 45,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1C9A89),
+                    decoration: BoxDecoration(
+                      // CHANGE: Use AppColors.primaryTeal
+                      color: AppColors.primaryTeal(context),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -420,8 +457,10 @@ class MessageBubble extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: message.isMe
-                    ? const Color(0xFF1C9A89)
-                    : const Color(0xFFF0F2F8),
+                    // CHANGE: Use AppColors.primaryTeal for sent messages
+                    ? AppColors.primaryTeal(context)
+                    // CHANGE: Use AppColors.surfaceGrey for received messages
+                    : AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
                   topRight: const Radius.circular(20),
@@ -447,7 +486,10 @@ class MessageBubble extends StatelessWidget {
                 message.text,
                 style: GoogleFonts.openSans(
                   fontSize: 15,
-                  color: message.isMe ? Colors.white : const Color(0xFF264653),
+                  // CHANGE: Use dynamic text color based on sender
+                  color: message.isMe 
+                      ? Colors.white 
+                      : AppColors.charcoal(context),
                 ),
               ),
             ),
@@ -458,9 +500,8 @@ class MessageBubble extends StatelessWidget {
                 message.time,
                 style: GoogleFonts.openSans(
                   fontSize: 10,
-                  color: message.isMe
-                      ? const Color(0xFF9CA3AF)
-                      : const Color(0xFF9CA3AF),
+                  // CHANGE: Use AppColors.textGrey
+                  color: AppColors.textGrey(context),
                 ),
               ),
             ),

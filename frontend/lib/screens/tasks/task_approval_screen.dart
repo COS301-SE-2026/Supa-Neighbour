@@ -32,18 +32,18 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
+          icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Approve Task',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -58,22 +58,22 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                color: AppColors.citrusYellow(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.hourglass_top,
                     size: 16,
-                    color: Color(0xFFFF9800),
+                    color: AppColors.citrusYellow(context),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     'Awaiting Your Approval',
                     style: GoogleFonts.openSans(
-                      color: const Color(0xFFFF9800),
+                      color: AppColors.citrusYellow(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -85,7 +85,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -94,13 +94,13 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                   Icon(
                     _getCategoryIcon(widget.task.category),
                     size: 16,
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     widget.task.category,
                     style: GoogleFonts.openSans(
-                      color: AppColors.primaryTeal,
+                      color: AppColors.charcoal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -112,7 +112,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
             Text(
               widget.task.title,
               style: GoogleFonts.poppins(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
               ),
@@ -121,17 +121,17 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.05),
+                color: AppColors.charcoal(context).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.person, color: AppColors.primaryTeal, size: 20),
+                  Icon(Icons.person, color: AppColors.charcoal(context), size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'Helper: ${widget.task.helperName}',
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 14,
                     ),
                   ),
@@ -142,12 +142,12 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFE9C46A).withValues(alpha: 0.2),
+                color: AppColors.citrusYellow(context).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.stars, color: Color(0xFFE9C46A), size: 32),
+                  Icon(Icons.stars, color: AppColors.citrusYellow(context), size: 32),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,14 +155,14 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                       Text(
                         'XP Reward',
                         style: GoogleFonts.openSans(
-                          color: AppColors.charcoal,
+                          color: AppColors.charcoal(context),
                           fontSize: 12,
                         ),
                       ),
                       Text(
                         '+${widget.task.xpReward} XP',
                         style: GoogleFonts.poppins(
-                          color: AppColors.charcoal,
+                          color: AppColors.charcoal(context),
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                         ),
@@ -191,12 +191,12 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.calendar_today, color: AppColors.primaryTeal, size: 20),
+                        Icon(Icons.calendar_today, color: AppColors.charcoal(context), size: 20),
                         const SizedBox(width: 12),
                         Text(
                           '${widget.task.date.day}/${widget.task.date.month}/${widget.task.date.year}',
                           style: GoogleFonts.openSans(
-                            color: AppColors.charcoal,
+                            color: AppColors.charcoal(context),
                             fontSize: 14,
                           ),
                         ),
@@ -206,12 +206,12 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.access_time, color: AppColors.primaryTeal, size: 20),
+                        Icon(Icons.access_time, color: AppColors.charcoal(context), size: 20),
                         const SizedBox(width: 12),
                         Text(
                           widget.task.time.format(context),
                           style: GoogleFonts.openSans(
-                            color: AppColors.charcoal,
+                            color: AppColors.charcoal(context),
                             fontSize: 14,
                           ),
                         ),
@@ -222,37 +222,37 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Instructions',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
               ),
             ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surfaceGrey,
+                color: AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 widget.task.instructions,
                 style: GoogleFonts.openSans(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 14,
                   height: 1.5,
                 ),
               ),
             ),
             const SizedBox(height: 24),
-            const Divider(color: AppColors.surfaceGrey),
+            Divider(color: AppColors.surfaceGrey(context)),
             const SizedBox(height: 16),
             Text(
               'Completion Details',
               style: GoogleFonts.poppins(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -261,7 +261,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.05),
+                color: AppColors.charcoal(context).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -270,7 +270,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                   Text(
                     'Helper\'s Note',
                     style: GoogleFonts.poppins(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -279,7 +279,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                   Text(
                     widget.task.completionNote ?? 'No note provided',
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 14,
                     ),
                   ),
@@ -294,7 +294,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                   Text(
                     'Completion Photos',
                     style: GoogleFonts.poppins(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -311,7 +311,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                           height: 120,
                           margin: const EdgeInsets.only(right: 8),
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceGrey,
+                            color: AppColors.surfaceGrey(context),
                             borderRadius: BorderRadius.circular(8),
                             image: DecorationImage(
                               image: NetworkImage(widget.task.completionPhotos![index]),
@@ -325,12 +325,12 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                 ],
               ),
             const SizedBox(height: 24),
-            const Divider(color: AppColors.surfaceGrey),
+            Divider(color: AppColors.surfaceGrey(context)),
             const SizedBox(height: 16),
             Text(
               'Rate Helper',
               style: GoogleFonts.poppins(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -346,17 +346,17 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
                   },
                   child: Icon(
                     index < _rating ? Icons.star : Icons.star_border,
-                    color: const Color(0xFFE9C46A),
+                    color: AppColors.citrusYellow(context),
                     size: 36,
                   ),
                 );
               }),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               _rating > 0 ? '${_rating.toStringAsFixed(1)} / 5.0' : 'Tap a star to rate',
               style: GoogleFonts.openSans(
-                color: _rating > 0 ? AppColors.primaryTeal : AppColors.textGrey,
+                color: _rating > 0 ? AppColors.charcoal(context) : AppColors.textGrey(context),
                 fontSize: 14,
               ),
             ),
@@ -402,9 +402,9 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
           const SizedBox(height: 8),
           Text(
             'Rating: ${_rating.toStringAsFixed(1)} / 5.0',
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w600,
-              color: Color(0xFFE9C46A),
+              color: AppColors.citrusYellow(context),
             ),
           ),
         ],

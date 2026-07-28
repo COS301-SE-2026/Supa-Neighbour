@@ -40,17 +40,17 @@ class CustomInputField extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.w500,
             fontFamily: 'Open Sans',
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
           ),
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           obscureText: obscureText,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontFamily: 'Open Sans',
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
           ),
           keyboardType: keyboardType,
           maxLines: maxLines,
@@ -69,23 +69,23 @@ class CustomInputField extends StatelessWidget {
             fillColor: Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primaryTeal, width: 1),
+              borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 1),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primaryTeal, width: 1),
+              borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 1),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primaryTeal, width: 2),
+              borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
+              borderSide: BorderSide(color: AppColors.error(context), width: 2),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
+              borderSide: BorderSide(color: AppColors.error(context), width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           ),

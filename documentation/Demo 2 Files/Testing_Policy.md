@@ -225,16 +225,4 @@ All test data must **never** contain real personal information – synthetic or 
 
 ---
 
-## 14. Related Documents
-
-| **Document** | **Location** |
-|--------------|--------------|
-| Test Plan (Sprint-specific) | `/docs/test-plans/` |
-| Functional Requirements | [Google Docs Link](https://docs.google.com/document/d/1PVcbys8ZG97wmAtsVa-1X8_czOlywJprGr-_2dYto4w/edit) |
-| Database Domain Model | [Google Docs Link](https://docs.google.com/document/d/1nC0Un50nfuOG_E8rg6VxcGCwM4UnnsT5mpWU7TS6gRs/edit) |
-| CI/CD Pipeline Docs | `/.github/workflows/` |
-| Project Board | [GitHub Project](https://github.com/orgs/COS301-SE-2026/projects/34) |
-
----
-
 *This policy is effective as of **2026-07-14** and supersedes all previous testing guidelines for SupaNeighbour.*
