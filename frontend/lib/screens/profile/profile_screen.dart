@@ -45,9 +45,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _localSkillEdits = List.from(profile.skills);
         _isLoading = false;
       });
-    }catch(e, stackTrace){
-      print('Profile load error: $e'); // ADDED — temporary debug line
-      print('Stack trace: $stackTrace'); // ADDED — temporary debug line
+    }catch(e){
       setState((){
         _errorMessage = 'Failed to load profile. Please try again.';
         _isLoading = false;
@@ -423,7 +421,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${profile.level ?? "Helper"}',
+                '${profile.level}',
                 style: GoogleFonts.poppins(
                   color: AppColors.charcoal(context),
                   fontSize: 16,

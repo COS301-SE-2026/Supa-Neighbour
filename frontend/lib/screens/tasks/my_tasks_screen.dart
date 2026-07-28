@@ -98,7 +98,6 @@ class _MyTasksScreenState extends State<MyTasksScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
       // CHANGE: Use AppColors.background
@@ -434,13 +433,13 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(task.status).withOpacity(0.1),
+                  color: _getStatusColor(task.status, context).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   _getStatusDisplay(task.status, isRequesterView: isRequesterView),
                   style: GoogleFonts.openSans(
-                    color: _getStatusColor(task.status),
+                    color: _getStatusColor(task.status, context),
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),

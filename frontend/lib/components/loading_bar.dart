@@ -51,7 +51,6 @@ class _LoadingBarState extends State<LoadingBar>
   @override
   Widget build(BuildContext context) {
   final resolvedProgressColor  = AppColors.primaryTeal(context);
-  final resolvedBackGroundColor =  AppColors.surfaceGrey(context);
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {

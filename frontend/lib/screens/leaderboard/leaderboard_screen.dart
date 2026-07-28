@@ -210,7 +210,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 child: Text(
                                   "Last Week's Top 3",
                                   style: GoogleFonts.poppins(
-                                    color: AppColors.charcoal,
+                                    color: AppColors.charcoal(context),
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -226,7 +226,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 child: Text(
                                   'This Week',
                                   style: GoogleFonts.poppins(
-                                    color: AppColors.charcoal,
+                                    color: AppColors.charcoal(context),
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
                                   ),

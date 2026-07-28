@@ -37,7 +37,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       )
     );
 
-    if(confirmed != true || !mounted) return;
+    if(!mounted) return;
+    if(confirmed != true) return;
 
     try{
       await AuthService().logout();
