@@ -48,19 +48,16 @@ class LeaderboardService {
         },
       );
 
-      print('Response status: ${response.statusCode}');
-
       if (response.statusCode == 200 && response.data != null) {
-      print('Data received: ${response.data}');
+      
         final leaderboardResponse = LeaderboardResponse.fromJson(response.data);
-      print('Neighbourhood: ${leaderboardResponse.neighbourhood}');
-      print('Entries: ${leaderboardResponse.leaderboard.length}');
+      
         return leaderboardResponse.toLeaderboardData(period: period);
       }
 
       throw Exception('Failed to load leaderboard');
     } on DioException catch (e) {
-      print(' Error: ${e.message}');
+
       throw Exception('Connection error: ${e.message}');
     }
   }

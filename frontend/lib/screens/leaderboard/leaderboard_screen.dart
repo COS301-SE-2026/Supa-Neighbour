@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'helper_profile_preview_screen.dart';
 import '../../constants/app_colors.dart';
 import '../../models/leaderboard_model.dart';
-import '../../models/user_model.dart';
 import '../../services/leaderboard_service.dart';
 
 
@@ -15,6 +13,7 @@ class LeaderboardScreen extends StatefulWidget {
 }
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
+  String _selectedPeriod = 'week';
   LeaderboardData? _leaderboardData;
   bool _isLoading = true;
   String? _errorMessage;
@@ -52,7 +51,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     }
   }
 
-  Color _getLevelColor(String level) {
+  void _changePeriod(String period) {
+    setState(() {
+      _selectedPeriod = period;
+    });
+    _loadLeaderboard();
+  }
+
+  Color _getLevelColor(BuildContext context, String level) {
     switch (level) {
       case 'Gold':
         return const Color(0xFFE9C46A);
@@ -65,7 +71,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     }
   }
 
-  Widget _buildMedalIcon(int rank) {
+  Widget _buildMedalIcon(BuildContext context, int rank) {
     if (rank == 1) {
       return const Icon(Icons.emoji_events, color: Color(0xFFE9C46A), size: 24);
     } else if (rank == 2) {
@@ -108,46 +114,44 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
-            onPressed: () {
-              _showInfoDialog();
-            },
+            onPressed: () => _showInfoDialog(context),
           ),
         ],
       ),
       body: Column(
         children: [
-          _buildPeriodTabs(),
+          _buildPeriodTabs(context),
           Expanded(
-            child: _buildBody(),
+            child: _buildBody(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPeriodTabs() {
+  Widget _buildPeriodTabs(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: AppColors.background(context),
         border: Border(
           bottom: BorderSide(
-            color: AppColors.surfaceGrey,
+            color: AppColors.surfaceGrey(context),
             width: 1,
           ),
         ),
       ),
       child: Row(
         children: [
-          _buildPeriodTab('week', 'This Week'),
-          _buildPeriodTab('month', 'This Month'),
-          _buildPeriodTab('all', 'All Time'),
+          _buildPeriodTab(context, 'week', 'This Week'),
+          _buildPeriodTab(context, 'month', 'This Month'),
+          _buildPeriodTab(context, 'all', 'All Time'),
         ],
       ),
     );
   }
 
-  Widget _buildPeriodTab(String period, String label) {
+  Widget _buildPeriodTab(BuildContext context, String period, String label) {
     final isSelected = _selectedPeriod == period;
 
     return Expanded(
@@ -158,7 +162,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: isSelected ? AppColors.primaryTeal : Colors.transparent,
+                color: isSelected ? AppColors.primaryTeal(context) : Colors.transparent,
                 width: 3,
               ),
             ),
@@ -167,7 +171,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             child: Text(
               label,
               style: GoogleFonts.openSans(
-                color: isSelected ? AppColors.primaryTeal : AppColors.textGrey,
+                color: isSelected ? AppColors.primaryTeal(context) : AppColors.textGrey(context),
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
@@ -178,11 +182,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context) {
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-          color: AppColors.primaryTeal,
+          color: AppColors.primaryTeal(context),
         ),
       );
     }
@@ -197,13 +201,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               Icon(
                 Icons.error_outline,
                 size: 64,
-                color: Colors.red.withValues(alpha: 0.5),
+                color: Colors.red.withOpacity(0.5),
               ),
               const SizedBox(height: 16),
               Text(
                 'Failed to load leaderboard',
                 style: GoogleFonts.poppins(
-                  color: AppColors.error,
+                  color: AppColors.error(context),
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -212,7 +216,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               Text(
                 _errorMessage!,
                 style: GoogleFonts.openSans(
-                  color: AppColors.textGrey,
+                  color: AppColors.textGrey(context),
                   fontSize: 14,
                 ),
                 textAlign: TextAlign.center,
@@ -221,7 +225,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               ElevatedButton(
                 onPressed: _loadLeaderboard,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryTeal,
+                  backgroundColor: AppColors.primaryTeal(context),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -245,7 +249,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     }
 
     if (_leaderboardData == null || _leaderboardData!.entries.isEmpty) {
-      return _buildEmptyState();
+      return _buildEmptyState(context);
     }
 
     final entries = _leaderboardData!.entries;
@@ -253,7 +257,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
     return Column(
       children: [
-        _buildTop3Circles(),
+        _buildTop3Circles(context),
         const SizedBox(height: 8),
         Expanded(
           child: ListView.builder(
@@ -261,18 +265,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             itemCount: entries.length,
             itemBuilder: (context, index) {
               final entry = entries[index];
-              return _buildLeaderboardItem(entry);
+              return _buildLeaderboardItem(context, entry);
             },
           ),
         ),
         if (currentUserEntry != null &&
             !entries.any((e) => e.isCurrentUser))
-          _buildYourRankCard(currentUserEntry),
+          _buildYourRankCard(context, currentUserEntry),
       ],
     );
   }
 
-  Widget _buildTop3Circles() {
+  Widget _buildTop3Circles(BuildContext context) {
     final entries = _leaderboardData!.entries;
     final top3 = entries.take(3).toList();
 
@@ -285,15 +289,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildTopCircle(top3[1]),
-          _buildTopCircle(top3[0], isFirst: true),
-          _buildTopCircle(top3[2]),
+          _buildTopCircle(context, top3[1]),
+          _buildTopCircle(context, top3[0], isFirst: true),
+          _buildTopCircle(context, top3[2]),
         ],
       ),
     );
   }
 
-  Widget _buildTopCircle(LeaderboardEntry entry, {bool isFirst = false}) {
+  Widget _buildTopCircle(BuildContext context, LeaderboardEntry entry, {bool isFirst = false}) {
     final size = isFirst ? 56.0 : 44.0;
     final fontSize = isFirst ? 22.0 : 16.0;
 
@@ -306,13 +310,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             children: [
               CircleAvatar(
                 radius: size / 2,
-                backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+                backgroundColor: AppColors.primaryTeal(context).withOpacity(0.1),
                 child: Text(
                   entry.displayName[0],
                   style: TextStyle(
                     fontSize: fontSize,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                   ),
                 ),
               ),
@@ -339,7 +343,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           Text(
             entry.displayName.split(' ').first,
             style: GoogleFonts.openSans(
-              color: AppColors.charcoal,
+              color: AppColors.charcoal(context),
               fontSize: 10,
               fontWeight: FontWeight.w500,
             ),
@@ -350,15 +354,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
-  Widget _buildLeaderboardItem(LeaderboardEntry entry) {
+  Widget _buildLeaderboardItem(BuildContext context, LeaderboardEntry entry) {
     final bgColor = entry.isCurrentUser
-        ? AppColors.primaryTeal(context).withValues(alpha: 0.05)
+        ? AppColors.primaryTeal(context).withOpacity(0.05)
         : Colors.transparent;
 
     return GestureDetector(
       onTap: () {
-        // Show helper details in a dialog or snackbar instead of navigating
-        _showHelperDetails(entry);
+        _showHelperDetails(context, entry);
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 2),
@@ -371,11 +374,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           children: [
             SizedBox(
               width: 36,
-              child: _buildMedalIcon(entry.rank),
+              child: _buildMedalIcon(context, entry.rank),
             ),
             CircleAvatar(
               radius: 18,
-              backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
+              backgroundColor: AppColors.primaryTeal(context).withOpacity(0.1),
               child: Text(
                 entry.displayName[0],
                 style: TextStyle(
@@ -385,7 +388,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 ),
               ),
             ),
-
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -412,13 +414,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                           vertical: 1,
                         ),
                         decoration: BoxDecoration(
-                          color: _getLevelColor(entry.level).withValues(alpha: 0.2),
+                          color: _getLevelColor(context, entry.level).withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           entry.level,
                           style: GoogleFonts.openSans(
-                            color: _getLevelColor(entry.level),
+                            color: _getLevelColor(context, entry.level),
                             fontSize: 9,
                             fontWeight: FontWeight.w600,
                           ),
@@ -431,7 +433,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                             vertical: 1,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
+                            color: AppColors.primaryTeal(context).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -510,19 +512,19 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     return stars;
   }
 
-  Widget _buildYourRankCard(LeaderboardEntry entry) {
-  final nextRank = entry.rank - 1;
-  const xpNeeded = 100; // Mocks
-  const progress = 0.65;
+  Widget _buildYourRankCard(BuildContext context, LeaderboardEntry entry) {
+    final nextRank = entry.rank - 1;
+    const xpNeeded = 100;
+    const progress = 0.65;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.primaryTeal.withValues(alpha: 0.05),
+        color: AppColors.primaryTeal(context).withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.primaryTeal,
+          color: AppColors.primaryTeal(context),
           width: 1,
         ),
       ),
@@ -534,7 +536,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryTeal,
+                  color: AppColors.primaryTeal(context),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -550,7 +552,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               Text(
                 'You',
                 style: GoogleFonts.poppins(
-                  color: AppColors.primaryTeal,
+                  color: AppColors.primaryTeal(context),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -563,7 +565,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   Text(
                     entry.trustScore.toStringAsFixed(1),
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -572,7 +574,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   Text(
                     '${entry.xp} XP',
                     style: GoogleFonts.openSans(
-                      color: AppColors.primaryTeal,
+                      color: AppColors.primaryTeal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -586,34 +588,36 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             children: [
               Expanded(
                 child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '$xpNeeded XP to reach Top $nextRank',
-                    style: GoogleFonts.openSans(
-                      color: AppColors.textGrey(context),
-                      fontSize: 11,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$xpNeeded XP to reach Top $nextRank',
+                      style: GoogleFonts.openSans(
+                        color: AppColors.textGrey(context),
+                        fontSize: 11,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.2),
-                      color: const Color(0xFFE9C46A),
-                      minHeight: 6,
+                    const SizedBox(height: 2),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: AppColors.primaryTeal(context).withOpacity(0.2),
+                        color: const Color(0xFFE9C46A),
+                        minHeight: 6,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}  Widget _buildEmptyState() {
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -621,7 +625,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           Icon(
             Icons.leaderboard,
             size: 64,
-            color: AppColors.textGrey(context).withValues(alpha: 0.5),
+            color: AppColors.textGrey(context).withOpacity(0.5),
           ),
           const SizedBox(height: 16),
           Text(
@@ -646,7 +650,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
-  void _showHelperDetails(LeaderboardEntry entry) {
+  void _showHelperDetails(BuildContext context, LeaderboardEntry entry) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -656,11 +660,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+              backgroundColor: AppColors.primaryTeal(context).withOpacity(0.1),
               child: Text(
                 entry.displayName[0],
                 style: TextStyle(
-                  color: AppColors.primaryTeal,
+                  color: AppColors.primaryTeal(context),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -670,7 +674,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               child: Text(
                 entry.displayName,
                 style: GoogleFonts.poppins(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -689,7 +693,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 Text(
                   '${entry.trustScore.toStringAsFixed(1)} ★',
                   style: GoogleFonts.openSans(
-                    color: AppColors.charcoal,
+                    color: AppColors.charcoal(context),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -699,21 +703,21 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             Text(
               'Level: ${entry.level}',
               style: GoogleFonts.openSans(
-                color: AppColors.textGrey,
+                color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
             ),
             Text(
               'XP: ${entry.xp}',
               style: GoogleFonts.openSans(
-                color: AppColors.textGrey,
+                color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
             ),
             Text(
               'Tasks Completed: ${entry.completedTasks}',
               style: GoogleFonts.openSans(
-                color: AppColors.textGrey,
+                color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
             ),
@@ -725,7 +729,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             child: Text(
               'Close',
               style: GoogleFonts.openSans(
-                color: AppColors.primaryTeal,
+                color: AppColors.primaryTeal(context),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -735,7 +739,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
-  void _showInfoDialog() {
+  void _showInfoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -771,7 +775,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              '• Leaderboard resets monthly',
+              '• Leaderboard shows top helpers in your neighbourhood',
               style: GoogleFonts.openSans(
                 color: AppColors.charcoal(context),
                 fontSize: 14,
@@ -779,21 +783,21 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              '• Gold = Trust ≥ 4.8',
+              '🏅 Gold = Trust ≥ 4.8',
               style: GoogleFonts.openSans(
                 color: AppColors.charcoal(context),
                 fontSize: 14,
               ),
             ),
             Text(
-              '• Silver = Trust ≥ 4.5',
+              '🥈 Silver = Trust ≥ 4.5',
               style: GoogleFonts.openSans(
                 color: AppColors.charcoal(context),
                 fontSize: 14,
               ),
             ),
             Text(
-              '• Bronze = Trust ≥ 4.0',
+              '🥉 Bronze = Trust ≥ 4.0',
               style: GoogleFonts.openSans(
                 color: AppColors.charcoal(context),
                 fontSize: 14,
