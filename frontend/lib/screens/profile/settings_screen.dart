@@ -18,7 +18,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _locationEnabled = true;
   String _selectedLanguage = 'English';
 
-  Future<void> _confirmAndLogout(BuildContext context) async{
+  Future<void> _confirmAndLogout() async{
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) =>AlertDialog(
@@ -37,8 +37,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       )
     );
 
-    if(!mounted) return;
     if(confirmed != true) return;
+    if(!mounted) return;
 
     try{
       await AuthService().logout();
@@ -57,7 +57,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _confirmAndDeleteAccount(BuildContext context) async{
+  Future<void> _confirmAndDeleteAccount() async{
     final TextEditingController confirmController = TextEditingController();
 
     final confirmed = await showDialog<bool>(
@@ -334,14 +334,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Sign Out',
             subtitle: 'Sign out of your account',
             isDanger: true,
-            onTap: () => _confirmAndLogout(context),
+            onTap: () => _confirmAndLogout(),
           ),
           _buildSettingsTile(
             icon: Icons.delete_outline,
             title: 'Delete Account',
             subtitle: 'Permanently delete your account',
             isDanger: true,
-            onTap: () => _confirmAndDeleteAccount(context),
+            onTap: () => _confirmAndDeleteAccount(),
           ),
         ],
       ),

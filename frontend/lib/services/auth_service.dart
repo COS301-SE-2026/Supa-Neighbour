@@ -74,7 +74,7 @@ Future<User> loginWithToken(String idToken) async {
         );
       }
       }catch(e){
-        
+        // Nothing here
       }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('remember_me', false);
