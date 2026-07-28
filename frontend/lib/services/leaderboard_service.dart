@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/leaderboard_model.dart';
-import '../config/api_config.dart';
 
 class LeaderboardService {
   final Dio _dio;
@@ -10,7 +9,7 @@ class LeaderboardService {
   LeaderboardService({Dio? dio, fb.FirebaseAuth? firebaseAuth})
       : _dio = dio ??
             Dio(BaseOptions(
-              baseUrl: ApiConfig.baseUrl,
+              baseUrl: 'http://localhost:8080',
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
               headers: {
