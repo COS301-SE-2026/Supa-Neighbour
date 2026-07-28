@@ -343,10 +343,11 @@ class _HomeContentState extends State<HomeContent> {
       ),
       TextButton(
         onPressed: () {
-          // Navigate to all available tasks (same as Home for now)
-          // Or create a dedicated AvailableTasksScreen
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('All available tasks (coming soon)')),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MyTasksScreen(initialTab: 2),
+            ),
           );
         },
         child: Text(
