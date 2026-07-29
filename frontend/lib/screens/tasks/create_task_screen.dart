@@ -145,7 +145,7 @@ Future<void> _submitTask() async {
           backgroundColor: Color(0xFF2A9D8F),
         ),
       );
-      Navigator.pop(context, {'taskId': createdTask.id != null ? int.tryParse(createdTask.id) : null});
+      Navigator.pop(context, {'taskId': int.tryParse(createdTask.id)});
     }
   } on Exception catch (e) {
     if (mounted) {

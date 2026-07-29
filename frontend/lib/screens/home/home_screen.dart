@@ -35,8 +35,6 @@ class _HomeScreenState extends State<HomeScreen> {
     const ProfileScreen(),
   ];
 
-  List<Task> _availableTasks = [];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,7 +68,6 @@ class _HomeContentState extends State<HomeContent> {
   double _trustScore = 0.0;
   bool _isLoadingStats = true;
   int _helpsGiven = 0;
-  int _tasksCompleted = 0;
 
   int? get _currentUserId {
     final id = AuthSession.instance.currentUser?.id;
@@ -102,7 +99,6 @@ class _HomeContentState extends State<HomeContent> {
       setState(() {
         _nearbyTasks = tasks;
         _helpsGiven = tasks.where((t) => t.status == 'completed').length;
-        _tasksCompleted = tasks.where((t) => t.status == 'completed').length;
         final ratingData = userMap['rating'];
         if (ratingData != null && ratingData is Map) {
           final score = ratingData['averageRating'];
@@ -110,10 +106,8 @@ class _HomeContentState extends State<HomeContent> {
         }
         _isLoadingStats = false;
       });
-      if (userId != null) {
-        final available = await _taskService.getAvailableTasks(userId);
-        if (mounted) setState(() => _availableTasks = available);
-      }
+      final available = await _taskService.getAvailableTasks(userId);
+      if (mounted) setState(() => _availableTasks = available);
     } catch (_) {
       if (!mounted) return;
       setState(() {

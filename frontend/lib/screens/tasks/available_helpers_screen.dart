@@ -6,9 +6,6 @@ import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../models/task_model.dart';
-import '../../models/user_model.dart';
-import '../leaderboard/helper_profile_preview_screen.dart';
-import '../../services/task_service.dart';
 
 
 
@@ -25,9 +22,7 @@ class AvailableHelpersScreen extends StatefulWidget {
 }
 
 class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
-  List<User> _helpers = [];
   bool _isLoading = true;
-  String? _selectedHelperId;
   bool _showVerifiedOnly = false;
 
   @override
@@ -36,7 +31,6 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
     _loadHelpers();
   }
 
-final TaskService _taskService = TaskService();
 List<Map<String, dynamic>> _matchedHelpers = [];
 
 Future<void> _loadHelpers() async {
@@ -376,7 +370,6 @@ Future<void> _loadHelpers() async {
   final lastName = user?['lastName'] as String? ?? '';
   final fullName = '$firstName $lastName'.trim();
   final status = invitation['status'] as String? ?? 'Invited';
-  final helperId = invitation['taskInvitationId']?.toString() ?? '';
   final isInvited = status == 'Accepted';
 
   return Container(
@@ -461,27 +454,27 @@ Future<void> _loadHelpers() async {
     final stars = <Widget>[];
 
     for (int i = 0; i < fullStars; i++) {
-      stars.add( Icon(
+      stars.add(const Icon(
         Icons.star,
         size: 14,
-        color: AppColors.citrusYellow(context),
+        color: Color(0xFFE9C46A),
       ));
     }
 
     if (hasHalfStar) {
-      stars.add( Icon(
+      stars.add(const Icon(
         Icons.star_half,
         size: 14,
-        color: AppColors.citrusYellow(context),
+        color: Color(0xFFE9C46A),
       ));
     }
 
     final remaining = 5 - stars.length;
     for (int i = 0; i < remaining; i++) {
-      stars.add(Icon(
+      stars.add(const Icon(
         Icons.star_border,
         size: 14,
-        color: AppColors.citrusYellow(context),
+        color: Color(0xFFE9C46A),
       ));
     }
 
