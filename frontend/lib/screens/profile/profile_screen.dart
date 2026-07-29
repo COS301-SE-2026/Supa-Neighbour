@@ -11,7 +11,6 @@ import '../../services/profile_service.dart';
 import '../../models/user_profile_response.dart';
 import '../profile/privacy_settings_screen.dart';
 import '../help/help_menu_screen.dart';
-import '../help/help_menu_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -231,6 +230,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background(context),
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
+          onPressed: () {
+            HelpMenuScreen.showHelpModal(context, 'profile');
+          },
+        ),
         title: Text(
           'My Profile',
           style: GoogleFonts.poppins(
@@ -245,9 +250,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icon(Icons.settings_outlined, color: AppColors.charcoal(context)),
             onPressed: () =>
               Navigator.push(
-              context,
-              MaterialPageRoute(
-              builder: (context) => const SettingsScreen())),
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen()
+                )
+              ),
           ),
         ],
       ),
@@ -259,8 +266,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildProfileHeader(profile, levelColor),
-              const SizedBox(height: 20),
+            _buildProfileHeader(profile, levelColor),
+            const SizedBox(height: 20),
               if(profile.currentXp != null) ...[
                 _buildXpCard(profile),
                 const SizedBox(height: 20),

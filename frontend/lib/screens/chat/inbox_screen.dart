@@ -5,7 +5,7 @@ import '../../constants/app_colors.dart';
 import 'bulletin_screen.dart';
 import 'chat_detail_screen.dart';
 import '../../services/chat_service.dart';
-import '../help/help_menu_screen.dart';
+//import '../help/help_menu_screen.dart';
 
 
 class InboxScreen extends StatefulWidget {
@@ -63,14 +63,14 @@ class _InboxScreenState extends State<InboxScreen>
     return Scaffold(
       backgroundColor: AppColors.background(context),
     appBar: AppBar(
-        backgroundColor: AppColors.background(context),
-        elevation: 0,
-        title: Text(
-          'Chat',
-          style: GoogleFonts.poppins(
-            color: AppColors.primaryTeal(context),
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
+      backgroundColor: AppColors.background(context),
+      elevation: 0,
+      title: Text(
+        'Chat',
+        style: GoogleFonts.poppins(
+          color: AppColors.primaryTeal(context),
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
