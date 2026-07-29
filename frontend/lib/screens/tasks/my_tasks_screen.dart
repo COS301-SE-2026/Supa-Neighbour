@@ -55,7 +55,6 @@ Future<void> _loadAllTasks() async {
   );
 
   try {
-    // posted and accepted
     final results = await Future.wait([
       currentUserId != null
           ? _taskService.getTasksByUserId(currentUserId)
@@ -69,8 +68,14 @@ Future<void> _loadAllTasks() async {
         _acceptedTasks = results[1];
       });
     }
+
+    if (currentUserId != null) {
+      final available = await _taskService.getAvailableTasks(currentUserId);
+      if (mounted) {
+        setState(() => _availableTasks = available);
+      }
+    }
   } on Exception {
-    //fallback
     if (mounted) {
       final allTasks = Task.getMockTasks();
       final userId = AuthSession.instance.currentUser?.id ?? 'currentUser';
@@ -511,18 +516,19 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
   );
 }
 
-  void _acceptTask(Task task) {
-  final updatedTask = task.copyWith(
-    status: 'assigned',
-    helperId: 'currentUser',
-  );
-  
-  setState(() {
-    _availableTasks.removeWhere((t) => t.id == task.id);
-    _acceptedTasks.add(updatedTask);
-  });
-    
-    
+void _acceptTask(Task task) async {
+  try {
+      await _taskService.updateTask(
+        taskId: int.parse(task.id),
+        status: 'assigned',
+      );
+    } catch (_) {
+    }
+    final updatedTask = task.copyWith(status: 'assigned', helperId: 'currentUser');
+    setState(() {
+      _availableTasks.removeWhere((t) => t.id == task.id);
+      _acceptedTasks.add(updatedTask);
+    });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('You accepted "${task.title}"!'),
@@ -531,6 +537,7 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
       ),
     );
   }
+
 
   void _passTask(Task task) {
   setState(() {
