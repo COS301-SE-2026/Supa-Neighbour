@@ -62,49 +62,6 @@ Future<void> _loadHelpers() async {
 }
 
 
-  String _getLevel(int index) {
-    //mock level assignment based on index
-    if (index == 0) return 'Gold';
-    if (index == 1) return 'Silver';
-    return 'Bronze';
-  }
-
-  Color _getLevelColor(String level, BuildContext context) {
-    switch (level) {
-      case 'Gold':
-        return const Color(0xFFE9C46A);
-      case 'Silver':
-        return const Color(0xFFC0C0C0);
-      case 'Bronze':
-        return const Color(0xFFCD7F32);
-      default:
-        return AppColors.primaryTeal(context);
-    }
-  }
-
-  double _getTrustScore(int index) {
-    // Mock trust scores
-    if (index == 0) return 4.8;
-    if (index == 1) return 4.5;
-    return 4.2;
-  }
-
-  List<String> _getSkills(int index) {
-    // Mock skills
-    if (index == 0) return ['Plants', 'Pets', 'Bins'];
-    if (index == 1) return ['Plants', 'Home Check-in'];
-    return ['Pets', 'Packages'];
-  }
-
-  String _getDistance(int index) {
-    // Mock distances
-    if (index == 0) return '50m';
-    if (index == 1) return '120m';
-    return '80m';
-  }
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -447,39 +404,6 @@ Future<void> _loadHelpers() async {
 }
 
 
-
-  List<Widget> _buildTrustStars(double score) {
-    final fullStars = score.floor();
-    final hasHalfStar = score - fullStars >= 0.5;
-    final stars = <Widget>[];
-
-    for (int i = 0; i < fullStars; i++) {
-      stars.add(const Icon(
-        Icons.star,
-        size: 14,
-        color: Color(0xFFE9C46A),
-      ));
-    }
-
-    if (hasHalfStar) {
-      stars.add(const Icon(
-        Icons.star_half,
-        size: 14,
-        color: Color(0xFFE9C46A),
-      ));
-    }
-
-    final remaining = 5 - stars.length;
-    for (int i = 0; i < remaining; i++) {
-      stars.add(const Icon(
-        Icons.star_border,
-        size: 14,
-        color: Color(0xFFE9C46A),
-      ));
-    }
-
-    return stars;
-  }
 
   Widget _buildEmptyState() {
     return Center(

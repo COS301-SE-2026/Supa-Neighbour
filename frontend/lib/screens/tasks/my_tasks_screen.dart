@@ -113,6 +113,7 @@ void _passTask(Task task) async {
     await _taskService.declineTaskInvitation(int.parse(task.id));
   } catch (_) {
   }
+  if (!mounted) return;
   setState(() {
     _availableTasks.removeWhere((t) => t.id == task.id);
   });
@@ -560,6 +561,7 @@ void _acceptTask(Task task) async {
     await _taskService.acceptTaskInvitation(int.parse(task.id));
   } catch (_) {
   }
+  if (!mounted) return;
   final updatedTask = task.copyWith(status: 'assigned', helperId: 'currentUser');
   setState(() {
     _availableTasks.removeWhere((t) => t.id == task.id);

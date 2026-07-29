@@ -446,7 +446,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
 
     Task.updateTaskStatus(widget.task.id, 'completed');
 
-    if (mounted) {
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Task approved! XP awarded to helper.'),
@@ -456,7 +456,7 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
       Navigator.pop(context);
     }
   } on Exception catch (e) {
-    if (mounted) {
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString().replaceAll('Exception: ', '')),
