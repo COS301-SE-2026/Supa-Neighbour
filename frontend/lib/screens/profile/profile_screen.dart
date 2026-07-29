@@ -10,6 +10,7 @@ import '../auth/splash_screen.dart';
 import '../../services/profile_service.dart';
 import '../../models/user_profile_response.dart';
 import '../profile/privacy_settings_screen.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -39,7 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try{
-      final profile = await UserProfileService().getMyProfile();
+      final profile = await ProfileService().getMyProfile();
       setState(() {
         _profile = profile;
         _localSkillEdits = List.from(profile.skills);
@@ -152,8 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 setDialogState (() => isSaving = true);
 
                 try{
-                  final response = await UserProfileService().updateSkills(selectedSkills.toList());
-
+                  final response = await ProfileService().updateSkills(selectedSkills.toList());
                   setState (() {
                     _localSkillEdits = response.skills ?? selectedSkills.toList();
                     _profile = UserProfileResponse(
@@ -363,13 +363,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(height: 12),
         OutlinedButton(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Edit Profile coming soon'),
-                duration: Duration(seconds: 1),
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EditProfileScreen(profile: profile),
               ),
             );
+            if (result == true) {
+              _loadProfile(); // Refresh profile data
+            }
           },
           style: OutlinedButton.styleFrom(
             side: BorderSide(color: AppColors.primaryTeal(context)),
