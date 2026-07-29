@@ -1,6 +1,7 @@
 package com.app.api.services;
 
 import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.Badges;
@@ -77,7 +78,6 @@ public class BadgesService {
         }
 
         existing.setXpReward(updated.getXpReward());
-        existing.setBadge_description(updated.getBadge_description());
         existing.setBadgeDescription(updated.getBadgeDescription());
         existing.setBadgeName(updated.getBadgeName());
         existing.setRatingid(updated.getRatingid());
