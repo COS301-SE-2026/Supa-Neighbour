@@ -85,40 +85,60 @@ class _InboxScreenState extends State<InboxScreen>
             Navigator.pop(context);
           },
         ),
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
+          tabs: const [
+            Tab(text: 'Inbox'),
+            Tab(text: 'Bulletin'),
+          ],
+        ),
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF1C9A89)))
-          : _error != null
-              ? Center(
-                  child: Text(_error!, style: const TextStyle(color: Colors.red)))
-              : RefreshIndicator(
-                  onRefresh: _loadChats,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
-                    itemCount: _chats.length,
-                    itemBuilder: (context, index) {
-                      final chat = _chats[index];
-                      return ChatCard(
-                        chat: chat,
-                        onTap: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ChatDetailScreen(chat: chat),
-                            ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // Inbox Tab
+          _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF1C9A89)))
+              : _error != null
+                  ? Center(
+                      child: Text(_error!,
+                          style: const TextStyle(color: Colors.red)))
+                  : RefreshIndicator(
+                      onRefresh: _loadChats,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        itemCount: _chats.length,
+                        itemBuilder: (context, index) {
+                          final chat = _chats[index];
+                          return ChatCard(
+                            chat: chat,
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ChatDetailScreen(chat: chat),
+                                ),
+                              );
+                              _loadChats();
+                            },
                           );
-                          _loadChats();
                         },
-                      );
-                    },
-                  ),
-                ),
+                      ),
+                    ),
+          // Bulletin Tab
+          const BulletinScreen(),
+        ],
+      ),
     );
   }
 }
+
 class ChatCard extends StatelessWidget {
   final ChatThread chat;
   final VoidCallback onTap;

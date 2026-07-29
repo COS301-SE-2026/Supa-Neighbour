@@ -5,10 +5,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/chat_thread.dart';
 import '../../services/chat_service.dart';
+import '../../constants/app_colors.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final ChatThread chat;
+
   const ChatDetailScreen({super.key, required this.chat});
+
   @override
   State<ChatDetailScreen> createState() => _ChatDetailScreenState();
 }
@@ -23,13 +26,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   bool _isSending = false;
   int _currentUserId = 0;
 
+
   @override
   void initState() {
     super.initState();
-    _resolveUserId();
+    _initUserId();
   }
 
-  Future<void> _resolveUserId() async {
+  Future<void> _initUserId() async {
     final prefs = await SharedPreferences.getInstance();
     final stored = prefs.getInt('current_user_id');
     if (stored != null) {
@@ -38,40 +42,39 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _loadMessages();
   }
 
-  Future<void> _loadMessages() async {
-    try {
-      final data = await _chatService.getMessages(widget.chat.chatId);
-      final msgs = data['messages'] as List<dynamic>;
-      setState(() {
-        _messages.clear();
-        for (final m in msgs) {
-          _messages.add(ChatMessageWidget(
-            text: m['content'] as String,
-            isMe: (m['senderID'] as int) == _currentUserId,
-            time: _formatTimestamp(m['timestamp'] as String?),
-          ));
-        }
-      });
-      if (_currentUserId != 0) {
-        await _chatService.markAsRead(widget.chat.chatId, _currentUserId);
-      }
-    } catch (e) {
-      //existing state kept on failure
-    }
-  }
 
-  String _formatTimestamp(String? raw) {
-    if (raw == null) return _getCurrentTime();
-    try {
-      final dt = DateTime.parse(raw);
-      final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
-      final m = dt.minute.toString().padLeft(2, '0');
-      final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-      return '$h:$m $ampm';
-    } catch (_) {
-      return _getCurrentTime();
-    }
+Future<void> _loadMessages() async {
+  try {
+    final data = await _chatService.getMessages(widget.chat.chatId);
+    final msgs = data['messages'] as List<dynamic>;
+    setState(() {
+      _messages.clear();
+      for (final m in msgs) {
+        _messages.add(ChatMessageWidget(
+          text: m['content'] as String,
+          isMe: (m['senderID'] as int) == _currentUserId,
+          time: _formatTimestamp(m['timestamp'] as String?),
+        ));
+      }
+    });
+  } catch (e) {
+    //existing state kept on failure
   }
+}
+
+String _formatTimestamp(String? raw) {
+  if (raw == null) return _getCurrentTime();
+  try {
+    final dt = DateTime.parse(raw);
+    final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+    final m = dt.minute.toString().padLeft(2, '0');
+    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+    return '$h:$m $ampm';
+  } catch (_) {
+    return _getCurrentTime();
+  }
+}
+
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -84,6 +87,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _showImagePreview() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -92,12 +97,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
+          color: isDarkMode ? AppColors.surfaceGrey : Colors.white,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Preview Image',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.charcoal,
+                ),
               ),
               const SizedBox(height: 16),
               ClipRRect(
@@ -119,12 +129,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         _sendImage();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1C9A89),
+                        backgroundColor: AppColors.primaryTeal,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: const Text('Send Image'),
+                      child: Text(
+                        'Send Image',
+                        style: GoogleFonts.openSans(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -137,12 +153,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF1C9A89)),
+                        side: BorderSide(color: AppColors.primaryTeal),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: const Text('Cancel'),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.primaryTeal,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -157,41 +178,44 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _sendImage() {
     if (_selectedImage != null) {
       setState(() {
-        _messages.add(ChatMessageWidget(
-          text: '📷 Image shared',
-          isMe: true,
-          time: _getCurrentTime(),
-          isImage: true,
-          imageFile: _selectedImage,
-        ));
+        _messages.add(
+          ChatMessageWidget(
+            text: '📷 Image shared',
+            isMe: true,
+            time: _getCurrentTime(),
+            isImage: true,
+            imageFile: _selectedImage,
+          ),
+        );
         _selectedImage = null;
       });
     }
   }
 
   Future<void> _sendMessage() async {
-    final text = _messageController.text.trim();
-    if (text.isEmpty || _isSending) return;
-    setState(() => _isSending = true);
-    _messageController.clear();
-    setState(() {
-      _messages.add(ChatMessageWidget(
-        text: text,
-        isMe: true,
-        time: _getCurrentTime(),
-      ));
-    });
-    try {
-      await _chatService.sendMessage(widget.chat.chatId, _currentUserId, text);
-      if (_currentUserId != 0) {
-        await _chatService.markAsRead(widget.chat.chatId, _currentUserId);
-      }
-    } catch (e) {
-      // message already shown in UI — fail silently for now
-    } finally {
-      if (mounted) setState(() => _isSending = false);
-    }
+  final text = _messageController.text.trim();
+  if (text.isEmpty || _isSending) return;
+
+  setState(() => _isSending = true);
+  _messageController.clear();
+
+  setState(() {
+    _messages.add(ChatMessageWidget(
+      text: text,
+      isMe: true,
+      time: _getCurrentTime(),
+    ));
+  });
+
+  try {
+    await _chatService.sendMessage(widget.chat.chatId, _currentUserId, text);
+  } catch (e) {
+    // message already shown in UI — fail silently for now
+  } finally {
+    if (mounted) setState(() => _isSending = false);
   }
+}
+
 
   String _getCurrentTime() {
     final now = DateTime.now();
@@ -204,10 +228,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1C9A89),
+        backgroundColor: AppColors.primaryTeal,
         elevation: 0,
         title: Row(
           children: [
@@ -277,7 +303,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context, true);
+            Navigator.pop(context);
           },
         ),
       ),
@@ -299,10 +325,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDarkMode ? AppColors.surfaceGrey : Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black..withValues(alpha: 0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),
@@ -317,12 +343,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     width: 45,
                     height: 45,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0F2F8),
+                      color: AppColors.surfaceGrey,
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.attach_file,
-                      color: Color(0xFF1C9A89),
+                      color: AppColors.primaryTeal,
                       size: 24,
                     ),
                   ),
@@ -333,21 +359,23 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0F2F8),
+                      color: AppColors.surfaceGrey,
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: TextField(
                       controller: _messageController,
-                      style: GoogleFonts.openSans(fontSize: 16),
+                      style: GoogleFonts.openSans(
+                        fontSize: 16,
+                        color: AppColors.charcoal,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Type a message...',
                         hintStyle: GoogleFonts.openSans(
                           fontSize: 14,
-                          color: const Color(0xFF9CA3AF),
+                          color: AppColors.textGrey,
                         ),
                         border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ),
@@ -359,8 +387,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   child: Container(
                     width: 45,
                     height: 45,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1C9A89),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryTeal,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -374,8 +402,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                               ),
                             )
                           : const Icon(Icons.send, color: Colors.white, size: 22),
-                    ),
-                  ),
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -406,6 +434,7 @@ class ChatMessageWidget {
 // Message Bubble Widget
 class MessageBubble extends StatelessWidget {
   final ChatMessageWidget message;
+
   const MessageBubble({super.key, required this.message});
 
   @override
@@ -424,8 +453,8 @@ class MessageBubble extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: message.isMe
-                    ? const Color(0xFF1C9A89)
-                    : const Color(0xFFF0F2F8),
+                    ? AppColors.primaryTeal
+                    : AppColors.surfaceGrey,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
                   topRight: const Radius.circular(20),
@@ -439,23 +468,23 @@ class MessageBubble extends StatelessWidget {
               ),
               child: message.isImage && message.imageFile != null
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        message.imageFile!,
-                        width: 200,
-                        height: 150,
-                        fit: BoxFit.cover,
-                      ),
-                    )
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  message.imageFile!,
+                  width: 200,
+                  height: 150,
+                  fit: BoxFit.cover,
+                ),
+              )
                   : Text(
-                      message.text,
-                      style: GoogleFonts.openSans(
-                        fontSize: 15,
-                        color: message.isMe
-                            ? Colors.white
-                            : const Color(0xFF264653),
-                      ),
-                    ),
+                message.text,
+                style: GoogleFonts.openSans(
+                  fontSize: 15,
+                  color: message.isMe 
+                      ? Colors.white 
+                      : AppColors.charcoal,
+                ),
+              ),
             ),
             const SizedBox(height: 4),
             Padding(
@@ -464,9 +493,7 @@ class MessageBubble extends StatelessWidget {
                 message.time,
                 style: GoogleFonts.openSans(
                   fontSize: 10,
-                  color: message.isMe
-                      ? const Color(0xFF9CA3AF)
-                      : const Color(0xFF9CA3AF),
+                  color: AppColors.textGrey,
                 ),
               ),
             ),

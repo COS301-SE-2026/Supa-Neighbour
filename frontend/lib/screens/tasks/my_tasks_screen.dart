@@ -70,31 +70,61 @@ Future<void> _loadAllTasks() async {
     }
 
     if (currentUserId != null) {
-      final available = await _taskService.getAvailableTasks(currentUserId);
-      if (mounted) {
-        setState(() => _availableTasks = available);
+      final helperId = await _taskService.getHelperIdForUser(currentUserId);
+      if (helperId != null) {
+        final invitations = await _taskService.getInvitationsForHelper(helperId);
+        final availableTasks = invitations.map((inv) {
+          final taskData = inv['taskId'] as Map<String, dynamic>?;
+          if (taskData == null) return null;
+          final normalised = Map<String, dynamic>.from(taskData);
+          if (!normalised.containsKey('taskId') && normalised.containsKey('taskid')) {
+            normalised['taskId'] = normalised['taskid'];
+          }
+          try {
+            return Task.fromJson(normalised);
+          } catch (_) {
+            return null;
+          }
+        }).whereType<Task>().toList();
+
+
+        if (mounted) {
+          setState(() => _availableTasks = availableTasks);
+        }
       }
     }
-  } on Exception {
-    if (mounted) {
-      final allTasks = Task.getMockTasks();
-      final userId = AuthSession.instance.currentUser?.id ?? 'currentUser';
-      setState(() {
-        _postedTasks = allTasks
-            .where((t) => t.createdBy == userId || t.createdBy == 'currentUser')
-            .toList();
-        _acceptedTasks = allTasks
-            .where((t) => t.helperId == userId || t.helperId == 'currentUser')
-            .toList();
-      });
+    } on Exception catch (e) {
+      debugPrint('_loadAllTasks error: $e');
+      if (mounted) {
+        setState(() {});
+      }
     }
-  }
+
 }
 
 
   void _refreshTasks() {
     _loadAllTasks();
   }
+
+void _passTask(Task task) async {
+  try {
+    await _taskService.declineTaskInvitation(int.parse(task.id));
+  } catch (_) {
+  }
+  setState(() {
+    _availableTasks.removeWhere((t) => t.id == task.id);
+  });
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('You passed on "${task.title}"'),
+      backgroundColor: const Color(0xFF9CA3AF),
+      duration: const Duration(seconds: 2),
+    ),
+  );
+}
+
+
 
   String _getStatusDisplay(String status, {bool isRequesterView = false}) {
     switch (status) {
@@ -518,39 +548,22 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
 
 void _acceptTask(Task task) async {
   try {
-      await _taskService.updateTask(
-        taskId: int.parse(task.id),
-        status: 'assigned',
-      );
-    } catch (_) {
-    }
-    final updatedTask = task.copyWith(status: 'assigned', helperId: 'currentUser');
-    setState(() {
-      _availableTasks.removeWhere((t) => t.id == task.id);
-      _acceptedTasks.add(updatedTask);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('You accepted "${task.title}"!'),
-        backgroundColor: const Color(0xFF2A9D8F),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    await _taskService.acceptTaskInvitation(int.parse(task.id));
+  } catch (_) {
   }
-
-
-  void _passTask(Task task) {
+  final updatedTask = task.copyWith(status: 'assigned', helperId: 'currentUser');
   setState(() {
     _availableTasks.removeWhere((t) => t.id == task.id);
+    _acceptedTasks.add(updatedTask);
   });
-  
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text('You passed on "${task.title}"'),
-      backgroundColor: const Color(0xFF9CA3AF),
+      content: Text('You accepted "${task.title}"!'),
+      backgroundColor: const Color(0xFF2A9D8F),
       duration: const Duration(seconds: 2),
     ),
   );
+  _loadAllTasks();
 }
 
   IconData _getCategoryIcon(String category) {

@@ -188,16 +188,95 @@ class TaskService {
   }
 
 
-  Future<int?> getDependentIdForUser(int userId) async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final stored = prefs.getInt('current_dependent_id');
-    if (stored != null) return stored;
-    return null;
-  } catch (_) {
-    return null;
+Future<int?> getDependentIdForUser(int userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stored = prefs.getInt('current_dependent_id');
+      if (stored != null) return stored;
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
-}
+
+  Future<int?> getHelperIdForUser(int userId) async {
+    try {
+      final token = await _getToken();
+      final Response<List<dynamic>> res = await _dio.get(
+        '/api/helpers',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        for (final h in res.data!) {
+          final user = h['userid'];
+          final uid = user is Map ? user['userid'] ?? user['userId'] : null;
+          if (uid == userId) {
+            return h['helperid'] as int?;
+          }
+        }
+      }
+      return null;
+    } on DioException {
+      return null;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getInvitationsForHelper(int helperId) async {
+    try {
+      final token = await _getToken();
+     final Response<dynamic> res = await _dio.get(
+        '/api/task-invitations',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+      final list = res.data as List<dynamic>;
+        return list
+            .where((inv) {
+              final h = inv['helperId'];
+              final hId = h is Map ? (h['helperid'] ?? h['helperId']) : null;
+              return hId == helperId && inv['status'] == 'Invited';
+            })
+            .map((inv) => inv as Map<String, dynamic>)
+            .toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      throw Exception("Couldn't load invitations: ${e.message}");
+    }
+  }
+
+  Future<void> acceptTaskInvitation(int taskId) async {
+    try {
+      final token = await _getToken();
+      await _dio.post(
+        '/api/task-invitations/$taskId/accept',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+    } on DioException catch (e) {
+      throw Exception("Couldn't accept task: ${e.message}");
+    }
+  }
+
+  
+Future<void> declineTaskInvitation(int taskId) async {
+   try {
+      final token = await _getToken();
+      await _dio.post(
+        '/api/task-invitations/$taskId/decline',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+    } on DioException catch (e) {
+      throw Exception("Couldn't decline task: ${e.message}");
+    }
+  }
 
 
 }
