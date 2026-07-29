@@ -521,7 +521,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
                   height: 160,
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceGrey,
+                    color: AppColors.surfaceGrey(context),
                     borderRadius: BorderRadius.circular(8),
                     image: DecorationImage(
                       image: NetworkImage(post.mediaUrl!),
@@ -578,10 +578,10 @@ class _BulletinScreenState extends State<BulletinScreen> {
                   onTap: () {
                     _showReportDialog(post);
                   },
-                  child: const Icon(
+                  child: Icon(
                     Icons.flag_outlined,
                     size: 16,
-                    color: AppColors.textGrey,
+                    color: AppColors.textGrey(context),
                   ),
                 ),
               ],
@@ -619,10 +619,10 @@ Future<void> _toggleHelpful(BulletinPost post) async {
   } catch (e) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Failed to update helpful status'),
-        backgroundColor: AppColors.error,
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: const Text('Failed to update helpful status'),
+        backgroundColor: AppColors.error(context),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -703,10 +703,10 @@ Future<void> _toggleHelpful(BulletinPost post) async {
             if (reasonController.text.isNotEmpty) {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Post reported successfully'),
-                  backgroundColor: AppColors.success,
-                  duration: Duration(seconds: 2),
+                SnackBar(
+                  content: const Text('Post reported successfully'),
+                  backgroundColor: AppColors.success(context),
+                  duration: const Duration(seconds: 2),
                 ),
               );
             }

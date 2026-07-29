@@ -97,7 +97,7 @@ String _formatTimestamp(String? raw) {
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
-          color: isDarkMode ? AppColors.surfaceGrey : Colors.white,
+          color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -106,7 +106,7 @@ String _formatTimestamp(String? raw) {
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                 ),
               ),
               const SizedBox(height: 16),
@@ -129,7 +129,7 @@ String _formatTimestamp(String? raw) {
                         _sendImage();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryTeal,
+                        backgroundColor: AppColors.primaryTeal(context),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -153,7 +153,7 @@ String _formatTimestamp(String? raw) {
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppColors.primaryTeal),
+                        side: BorderSide(color: AppColors.primaryTeal(context)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -161,7 +161,7 @@ String _formatTimestamp(String? raw) {
                       child: Text(
                         'Cancel',
                         style: GoogleFonts.openSans(
-                          color: AppColors.primaryTeal,
+                          color: AppColors.primaryTeal(context),
                         ),
                       ),
                     ),
@@ -231,9 +231,9 @@ String _formatTimestamp(String? raw) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.primaryTeal,
+        backgroundColor: AppColors.primaryTeal(context),
         elevation: 0,
         title: Row(
           children: [
@@ -325,7 +325,7 @@ String _formatTimestamp(String? raw) {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: isDarkMode ? AppColors.surfaceGrey : Colors.white,
+              color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
@@ -343,12 +343,12 @@ String _formatTimestamp(String? raw) {
                     width: 45,
                     height: 45,
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceGrey,
+                      color: AppColors.surfaceGrey(context),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Icon(
                       Icons.attach_file,
-                      color: AppColors.primaryTeal,
+                      color: AppColors.primaryTeal(context),
                       size: 24,
                     ),
                   ),
@@ -359,20 +359,20 @@ String _formatTimestamp(String? raw) {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceGrey,
+                      color: AppColors.surfaceGrey(context),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: TextField(
                       controller: _messageController,
                       style: GoogleFonts.openSans(
                         fontSize: 16,
-                        color: AppColors.charcoal,
+                        color: AppColors.charcoal(context),
                       ),
                       decoration: InputDecoration(
                         hintText: 'Type a message...',
                         hintStyle: GoogleFonts.openSans(
                           fontSize: 14,
-                          color: AppColors.textGrey,
+                          color: AppColors.textGrey(context),
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -388,7 +388,7 @@ String _formatTimestamp(String? raw) {
                     width: 45,
                     height: 45,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryTeal,
+                      color: AppColors.primaryTeal(context),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -453,8 +453,8 @@ class MessageBubble extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: message.isMe
-                    ? AppColors.primaryTeal
-                    : AppColors.surfaceGrey,
+                    ? AppColors.primaryTeal(context)
+                    : AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
                   topRight: const Radius.circular(20),
@@ -482,7 +482,7 @@ class MessageBubble extends StatelessWidget {
                   fontSize: 15,
                   color: message.isMe 
                       ? Colors.white 
-                      : AppColors.charcoal,
+                      : AppColors.charcoal(context),
                 ),
               ),
             ),
@@ -493,7 +493,7 @@ class MessageBubble extends StatelessWidget {
                 message.time,
                 style: GoogleFonts.openSans(
                   fontSize: 10,
-                  color: AppColors.textGrey,
+                  color: AppColors.textGrey(context),
                 ),
               ),
             ),

@@ -384,19 +384,19 @@ Future<void> _loadHelpers() async {
           offset: const Offset(0, 2),
         ),
       ],
-      border: isInvited ? Border.all(color: AppColors.success, width: 2) : null,
+      border: isInvited ? Border.all(color: AppColors.success(context), width: 2) : null,
     ),
     child: Row(
       children: [
         CircleAvatar(
           radius: 28,
-          backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+          backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
           child: Text(
             firstName.isNotEmpty ? firstName[0] : '?',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w600,
-              color: AppColors.primaryTeal,
+              color: AppColors.primaryTeal(context),
             ),
           ),
         ),
@@ -408,7 +408,7 @@ Future<void> _loadHelpers() async {
               Text(
                 fullName,
                 style: GoogleFonts.poppins(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -418,10 +418,10 @@ Future<void> _loadHelpers() async {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: (status == 'Accepted'
-                          ? AppColors.success
+                          ? AppColors.success(context)
                           : status == 'Declined'
                               ? Colors.red
-                              : AppColors.primaryTeal)
+                              : AppColors.primaryTeal(context))
                       .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -429,10 +429,10 @@ Future<void> _loadHelpers() async {
                   status,
                   style: GoogleFonts.openSans(
                     color: status == 'Accepted'
-                        ? AppColors.success
+                        ? AppColors.success(context)
                         : status == 'Declined'
                             ? Colors.red
-                            : AppColors.primaryTeal,
+                            : AppColors.primaryTeal(context),
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
