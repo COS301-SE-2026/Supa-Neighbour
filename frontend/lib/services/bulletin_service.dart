@@ -1,98 +1,164 @@
+import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 import '../models/bulletin_post_model.dart';
 import '../models/bulletin_comment_model.dart';
 
 class BulletinService {
-  //actual API calls willbe here but this is mock for now
+  final Dio _dio;
 
+  BulletinService({Dio? dio})
+      : _dio = dio ??
+            Dio(BaseOptions(
+              baseUrl: 'http://localhost:8080',
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 10),
+            ));
+
+  
+  Future<String> _getToken() async {
+    final fbUser = fb.FirebaseAuth.instance.currentUser;
+    if (fbUser == null) throw Exception('Not authenticated');
+    final token = await fbUser.getIdToken();
+    return token!;
+  }
+
+  Future<int> _getCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('current_user_id') ?? 0;
+  }
+
+  // Get post from /api/bulletin/posts with optional category and search params
   Future<List<BulletinPost>> getPosts({
     String? category,
+    String? search,
     int page = 1,
     int limit = 20,
   }) async {
-    // simulating API delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    final token = await _getToken();
+    final currentUserId = await _getCurrentUserId();
+    final params = <String, dynamic>{'page': page, 'limit': limit};
+    if (category != null) params['category'] = category;
+    if (search != null && search.isNotEmpty) params['search'] = search;
 
-    var posts = BulletinPost.getMockPosts();
+    final res = await _dio.get(
+      '/api/bulletin/posts',
+      queryParameters: params,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
 
-    // Filter by category
-    if (category != null && category != 'all') {
-      posts = posts.where((post) => post.category == category).toList();
-    }
-
-    //Sort
-    posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-  
-    final start = (page - 1) * limit;
-    final end = start + limit;
-    return posts.length > start ? posts.sublist(start, end > posts.length ? posts.length : end) : [];
+    final data = res.data as Map<String, dynamic>;
+    final posts = data['posts'] as List<dynamic>;
+    return posts
+        .map((p) => BulletinPost.fromJson(p as Map<String, dynamic>, currentUserId))
+        .toList();
   }
 
-  Future<BulletinPost> getPost(String postId) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    final posts = BulletinPost.getMockPosts();
-    return posts.firstWhere((post) => post.id == postId);
+  // Get a single post by id from /api/bulletin/posts/{postId}
+  Future<BulletinPost> getPost(int postId) async {
+    final token = await _getToken();
+    final currentUserId = await _getCurrentUserId();
+    final res = await _dio.get(
+      '/api/bulletin/posts/$postId',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+    return BulletinPost.fromJson(res.data as Map<String, dynamic>, currentUserId);
   }
 
-  Future<List<BulletinComment>> getComments(String postId) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return BulletinComment.getMockComments(postId);
+  // Get comments for a post from /api/bulletin/posts/{postId}
+  Future<List<BulletinComment>> getComments(int postId) async {
+    final token = await _getToken();
+    final res = await _dio.get(
+      '/api/bulletin/posts/$postId',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+    final data = res.data as Map<String, dynamic>;
+    final comments = data['comments'] as List<dynamic>? ?? [];
+    return comments
+        .map((c) => BulletinComment.fromJson(c as Map<String, dynamic>))
+        .toList();
   }
 
-  Future<BulletinPost> createPost({
-    required String title,
-    required String body,
+  // Upload an image to /api/upload/image and return the image URL
+  Future<String?> uploadImage(File imageFile) async {
+    final token = await _getToken();
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(
+        imageFile.path,
+        filename: imageFile.path.split('/').last,
+      ),
+    });
+    final res = await _dio.post(
+      '/api/upload/image',
+      data: formData,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+    return (res.data as Map<String, dynamic>)['imageUrl'] as String?;
+  }
+
+  // Create a new post to /api/bulletin/posts
+  Future<void> createPost({
+    required String postContent,
     required String category,
-    List<String> imageUrls = const [],
+    String? mediaUrl,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    //Replace with actual API call
-    return BulletinPost(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: title,
-      body: body,
-      category: category,
-      authorId: 'currentUser',
-      authorName: 'You',
-      authorAvatar: 'Y',
-      imageUrls: imageUrls,
-      createdAt: DateTime.now(),
-      isOwner: true,
+    final token = await _getToken();
+    await _dio.post(
+      '/api/bulletin/posts',
+      data: {
+        'postContent': postContent,
+        'category': category,
+        if (mediaUrl != null) 'mediaUrl': mediaUrl,
+      },
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
   }
 
-  Future<void> addHelpful(String postId) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    // Replace with actual API call
+  // Delete a post by id from /api/bulletin/posts/{postId}
+  Future<void> deletePost(int postId) async {
+    final token = await _getToken();
+    await _dio.delete(
+      '/api/bulletin/posts/$postId',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
   }
 
-  Future<void> removeHelpful(String postId) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    // Replace with actual API call
-  }
-
-  Future<void> reportPost(String postId, String reason) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    //Replace with actual API call
-  }
-
-  Future<void> deletePost(String postId) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    //Replace with actual API call
-  }
-
-  Future<BulletinComment> addComment(String postId, String content) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    //Replace with actual API call
+  // Add a comment to a post by id from /api/comments/bulletin/{postId}
+  Future<BulletinComment> addComment(int postId, String content) async {
+    final token = await _getToken();
+    final res = await _dio.post(
+      '/api/comments/bulletin/$postId',
+      data: {'commentContent': content},
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+    final data = res.data as Map<String, dynamic>;
     return BulletinComment(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      content: content,
-      authorId: 'currentUser',
-      authorName: 'You',
-      createdAt: DateTime.now(),
+      id: data['commentId'] as int,
+      content: data['commentContent'] as String? ?? content,
+      authorId: data['userId'] as int? ?? 0,
+      authorName: data['authorUsername'] as String? ?? 'You',
+      createdAt: data['createdAt'] != null
+          ? DateTime.parse(data['createdAt'] as String)
+          : DateTime.now(),
+    );
+  }
+
+  // Add a helpful (like) to a post by id from /api/comments/bulletin/posts/{postId}/like
+  Future<void> addHelpful(int postId) async {
+    final token = await _getToken();
+    await _dio.post(
+      '/api/comments/bulletin/posts/$postId/like',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+  }
+
+  // Delete a comment by id from /api/comments/bulletin/{commentId}
+  Future<void> removeHelpful(int postId) async {
+    final token = await _getToken();
+    await _dio.delete(
+      '/api/comments/bulletin/posts/$postId/like',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
   }
 }

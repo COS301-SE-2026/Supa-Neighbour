@@ -81,6 +81,11 @@ public class Task {
     @Column(name = "compatibility_id")
     private Integer compatibilityId;
 
+    /** The task status. */
+    @Column(name = "status")
+    private String status;
+
+
     /**
      * Default constructor required by JPA.
      */
@@ -327,4 +332,21 @@ public class Task {
     public void setCompatibilityId(Integer compatibilityId) {
         this.compatibilityId = compatibilityId;
     }
+
+    /**
+     * Gets the task status.
+     * @return the status
+     */
+    public String getStatus() {
+        return status;
+    }
+
+    /**
+     * Sets the task status.
+     * @param status the status
+     */
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
 }

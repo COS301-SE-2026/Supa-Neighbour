@@ -8,6 +8,9 @@ import 'task_detail_screen.dart';
 import 'task_completion_page.dart';
 import 'task_awaiting_approval_screen.dart';
 import 'task_approval_screen.dart';
+import '../../models/auth_session.dart';
+import '../../services/task_service.dart';
+
 
 class MyTasksScreen extends StatefulWidget {
   final int initialTab;
@@ -43,19 +46,87 @@ class _MyTasksScreenState extends State<MyTasksScreen>
     super.dispose();
   }
 
-  Future<void> _loadAllTasks() async {
-    final allTasks = Task.getMockTasks();
+  
 
-    setState(() {
-      _postedTasks = allTasks.where((task) => task.createdBy == 'currentUser').toList();
-      _acceptedTasks = allTasks.where((task) => task.helperId == 'currentUser').toList();
-      _availableTasks = allTasks.where((task) => task.createdBy != 'currentUser' && task.status == 'open').toList();
-    });
-  }
+final TaskService _taskService = TaskService();
+
+Future<void> _loadAllTasks() async {
+  final currentUserId = int.tryParse(
+    AuthSession.instance.currentUser?.id ?? '',
+  );
+
+  try {
+    final results = await Future.wait([
+      currentUserId != null
+          ? _taskService.getTasksByUserId(currentUserId)
+          : Future.value(<Task>[]),
+      _taskService.getMyHelperTasks(),
+    ]);
+
+    if (mounted) {
+      setState(() {
+        _postedTasks = results[0];
+        _acceptedTasks = results[1];
+      });
+    }
+
+    if (currentUserId != null) {
+      final helperId = await _taskService.getHelperIdForUser(currentUserId);
+      if (helperId != null) {
+        final invitations = await _taskService.getInvitationsForHelper(helperId);
+        final availableTasks = invitations.map((inv) {
+          final taskData = inv['taskId'] as Map<String, dynamic>?;
+          if (taskData == null) return null;
+          final normalised = Map<String, dynamic>.from(taskData);
+          if (!normalised.containsKey('taskId') && normalised.containsKey('taskid')) {
+            normalised['taskId'] = normalised['taskid'];
+          }
+          try {
+            return Task.fromJson(normalised);
+          } catch (_) {
+            return null;
+          }
+        }).whereType<Task>().toList();
+
+
+        if (mounted) {
+          setState(() => _availableTasks = availableTasks);
+        }
+      }
+    }
+    } on Exception catch (e) {
+      debugPrint('_loadAllTasks error: $e');
+      if (mounted) {
+        setState(() {});
+      }
+    }
+
+}
+
 
   void _refreshTasks() {
     _loadAllTasks();
   }
+
+void _passTask(Task task) async {
+  try {
+    await _taskService.declineTaskInvitation(int.parse(task.id));
+  } catch (_) {
+  }
+  if (!mounted) return;
+  setState(() {
+    _availableTasks.removeWhere((t) => t.id == task.id);
+  });
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('You passed on "${task.title}"'),
+      backgroundColor: const Color(0xFF9CA3AF),
+      duration: const Duration(seconds: 2),
+    ),
+  );
+}
+
+
 
   String _getStatusDisplay(String status, {bool isRequesterView = false}) {
     switch (status) {
@@ -485,39 +556,25 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
   );
 }
 
-  void _acceptTask(Task task) {
-  final updatedTask = task.copyWith(
-    status: 'assigned',
-    helperId: 'currentUser',
-  );
-  
+void _acceptTask(Task task) async {
+  try {
+    await _taskService.acceptTaskInvitation(int.parse(task.id));
+  } catch (_) {
+  }
+  if (!mounted) return;
+  final updatedTask = task.copyWith(status: 'assigned', helperId: 'currentUser');
   setState(() {
     _availableTasks.removeWhere((t) => t.id == task.id);
     _acceptedTasks.add(updatedTask);
   });
-    
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('You accepted "${task.title}"!'),
-        backgroundColor: const Color(0xFF2A9D8F),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _passTask(Task task) {
-  setState(() {
-    _availableTasks.removeWhere((t) => t.id == task.id);
-  });
-  
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text('You passed on "${task.title}"'),
-      backgroundColor: const Color(0xFF9CA3AF),
+      content: Text('You accepted "${task.title}"!'),
+      backgroundColor: const Color(0xFF2A9D8F),
       duration: const Duration(seconds: 2),
     ),
   );
+  _loadAllTasks();
 }
 
   IconData _getCategoryIcon(String category) {

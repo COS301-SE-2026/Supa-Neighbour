@@ -226,6 +226,16 @@ public class ChatService {
         return res;
     }
 
+    /**
+     * Marks all messages in a chat as read, excluding messages sent by the given user.
+     * @param chatId the chat ID
+     * @param userId the user ID whose messages should not be marked as read
+     */
+    public void markAsRead(int chatId, int userId) {
+        msgRepo.markMessagesAsRead(chatId, userId);
+    }
+
+
 
 }
   

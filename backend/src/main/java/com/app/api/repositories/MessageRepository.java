@@ -51,4 +51,15 @@ public interface MessageRepository extends JpaRepository<Message, Integer> {
     @Transactional
     @Query("delete from Message m where m.chat.chatId = :chatId")
     void deleteByChatId(@Param("chatId") int chatId);
+
+    /**
+     * Marks all messages in a chat as read, excluding messages sent by the given user.
+     * @param chatId the chat ID
+     * @param userId the user ID whose messages should not be marked as read
+     */
+    @Modifying
+    @Transactional
+    @Query("update Message m set m.isRead = true where m.chat.chatId = :chatId and m.sender.userid != :userId")
+    void markMessagesAsRead(@Param("chatId") int chatId, @Param("userId") int userId);
+
 }
