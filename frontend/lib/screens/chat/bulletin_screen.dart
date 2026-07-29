@@ -92,7 +92,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
             Text(
               'Filter by Category',
               style: GoogleFonts.poppins(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -114,13 +114,13 @@ class _BulletinScreenState extends State<BulletinScreen> {
                 title: Text(
                   label,
                   style: GoogleFonts.openSans(
-                    color: isSelected ? AppColors.primaryTeal : AppColors.charcoal,
+                    color: isSelected ? AppColors.primaryTeal(context): AppColors.charcoal(context),
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
                 trailing: isSelected
-                    ? const Icon(Icons.check, color: AppColors.primaryTeal)
+                    ? Icon(Icons.check, color: AppColors.primaryTeal(context))
                     : null,
                 onTap: () {
                   _changeCategory(category);
@@ -206,15 +206,17 @@ class _BulletinScreenState extends State<BulletinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         title: Text(
           'Community Bulletin',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -233,25 +235,30 @@ class _BulletinScreenState extends State<BulletinScreen> {
                     decoration: InputDecoration(
                       hintText: 'Search posts...',
                       hintStyle: GoogleFonts.openSans(
-                        color: AppColors.textGrey,
+                        color: AppColors.textGrey(context),
                         fontSize: 14,
                       ),
-                      prefixIcon: const Icon(Icons.search, color: AppColors.textGrey),
+                      prefixIcon:  Icon(Icons.search, color: AppColors.textGrey(context)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.surfaceGrey),
+                        borderSide:  BorderSide(color: AppColors.surfaceGrey(context)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.surfaceGrey),
+                        borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.primaryTeal, width: 2),
+                        borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      // CHANGE: Use dynamic fill color
+                      fillColor: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
                       contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                    ),
+                    style: GoogleFonts.openSans(
+                      color: AppColors.charcoal(context),
+                      fontSize: 14,
                     ),
                     onSubmitted: (value) {
                       //Need to Implement search
@@ -266,13 +273,13 @@ class _BulletinScreenState extends State<BulletinScreen> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: _selectedCategory != 'all'
-                          ? AppColors.primaryTeal
-                          : AppColors.surfaceGrey,
+                          ? AppColors.primaryTeal(context)
+                          : AppColors.surfaceGrey(context),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: _selectedCategory != 'all'
-                            ? AppColors.primaryTeal
-                            : AppColors.surfaceGrey,
+                            ? AppColors.primaryTeal(context)
+                            : AppColors.surfaceGrey(context),
                         width: 1,
                       ),
                     ),
@@ -283,7 +290,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
                           size: 20,
                           color: _selectedCategory != 'all'
                               ? Colors.white
-                              : AppColors.textGrey,
+                              : AppColors.textGrey(context),
                         ),
                         if (_selectedCategory != 'all') ...[
                           const SizedBox(width: 4),
@@ -306,9 +313,9 @@ class _BulletinScreenState extends State<BulletinScreen> {
           const SizedBox(height: 8),
           Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
-                      color: AppColors.primaryTeal,
+                      color: AppColors.primaryTeal(context),
                     ),
                   )
                 : _posts.isEmpty
@@ -327,11 +334,11 @@ class _BulletinScreenState extends State<BulletinScreen> {
                           itemBuilder: (context, index) {
                             if (index == _posts.length) {
                               return _isLoadingMore
-                                  ? const Padding(
+                                  ? Padding(
                                       padding: EdgeInsets.all(16),
                                       child: Center(
                                         child: CircularProgressIndicator(
-                                          color: AppColors.primaryTeal,
+                                          color: AppColors.primaryTeal(context),
                                           strokeWidth: 2,
                                         ),
                                       ),
@@ -345,7 +352,8 @@ class _BulletinScreenState extends State<BulletinScreen> {
           ),
         ],
       ),
-        floatingActionButton: FloatingActionButton(
+      // FAB stays in original position
+      floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push(
             context,
@@ -357,7 +365,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
             _loadPosts(refresh: true);
           }
         },
-        backgroundColor: AppColors.primaryTeal,
+        backgroundColor: AppColors.primaryTeal(context),
         child: const Icon(Icons.add, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -372,13 +380,13 @@ class _BulletinScreenState extends State<BulletinScreen> {
           Icon(
             Icons.forum_outlined,
             size: 64,
-            color: AppColors.textGrey.withValues(alpha: 0.5),
+            color: AppColors.textGrey(context).withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
             'No posts yet',
             style: GoogleFonts.poppins(
-              color: AppColors.charcoal,
+              color: AppColors.charcoal(context),
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -387,7 +395,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
           Text(
             'Be the first to share an announcement!',
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 14,
             ),
           ),
@@ -413,6 +421,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
   }
 
   Widget _buildPostCard(BulletinPost post) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final categoryColor = _getCategoryColor(post.category);
 
     return GestureDetector(
@@ -433,7 +442,8 @@ class _BulletinScreenState extends State<BulletinScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          // CHANGE: Use dynamic color based on theme
+          color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -450,13 +460,13 @@ class _BulletinScreenState extends State<BulletinScreen> {
               children: [
                 CircleAvatar(
                   radius: 16,
-                  backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.1),
+                  backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                   child: Text(
                     post.authorAvatar,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primaryTeal,
+                      color: AppColors.primaryTeal(context),
                     ),
                   ),
                 ),
@@ -464,7 +474,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
                 Text(
                   post.authorUsername,
                   style: GoogleFonts.openSans(
-                    color: AppColors.charcoal,
+                    color: AppColors.charcoal(context),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -489,7 +499,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
                 Text(
                   _getTimeAgo(post.createdAt),
                   style: GoogleFonts.openSans(
-                    color: AppColors.textGrey,
+                    color: AppColors.textGrey(context),
                     fontSize: 11,
                   ),
                 ),
@@ -499,7 +509,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
            Text(
               post.postContent,
               style: GoogleFonts.poppins(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -531,13 +541,13 @@ class _BulletinScreenState extends State<BulletinScreen> {
                       Icon(
                         post.isHelpfulByUser ? Icons.thumb_up : Icons.thumb_up_outlined,
                         size: 16,
-                        color: post.isHelpfulByUser ? AppColors.primaryTeal : AppColors.textGrey,
+                        color: post.isHelpfulByUser ? AppColors.primaryTeal(context): AppColors.textGrey(context),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         post.likeCount.toString(),
                         style: GoogleFonts.openSans(
-                          color: post.isHelpfulByUser ? AppColors.primaryTeal : AppColors.textGrey,
+                          color: post.isHelpfulByUser ? AppColors.primaryTeal(context): AppColors.textGrey(context),
                           fontSize: 12,
                           fontWeight: post.isHelpfulByUser ? FontWeight.w600 : FontWeight.w400,
                         ),
@@ -548,16 +558,16 @@ class _BulletinScreenState extends State<BulletinScreen> {
                 const SizedBox(width: 16),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.comment_outlined,
                       size: 16,
-                      color: AppColors.textGrey,
+                      color: AppColors.textGrey(context),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       post.commentCount.toString(),
                       style: GoogleFonts.openSans(
-                        color: AppColors.textGrey,
+                        color: AppColors.textGrey(context),
                         fontSize: 12,
                       ),
                     ),
@@ -631,7 +641,7 @@ Future<void> _toggleHelpful(BulletinPost post) async {
       title: Text(
         'Report Post',
         style: GoogleFonts.poppins(
-          color: AppColors.charcoal,
+          color: AppColors.charcoal(context),
           fontSize: 18,
           fontWeight: FontWeight.w600,
         ),
@@ -642,7 +652,7 @@ Future<void> _toggleHelpful(BulletinPost post) async {
           Text(
             'Why are you reporting this post?',
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 14,
             ),
           ),
@@ -650,18 +660,27 @@ Future<void> _toggleHelpful(BulletinPost post) async {
           TextField(
             controller: reasonController,
             maxLines: 3,
+            style: GoogleFonts.openSans(
+              color: AppColors.charcoal(context),
+              fontSize: 14,
+            ),
             decoration: InputDecoration(
               hintText: 'Enter reason...',
               hintStyle: GoogleFonts.openSans(
-                color: AppColors.textGrey,
+                color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.primaryTeal, width: 2),
+                borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
               ),
               contentPadding: const EdgeInsets.all(12),
             ),
@@ -674,7 +693,7 @@ Future<void> _toggleHelpful(BulletinPost post) async {
           child: Text(
             'Cancel',
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 14,
             ),
           ),

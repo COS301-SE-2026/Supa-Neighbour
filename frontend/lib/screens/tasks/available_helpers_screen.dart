@@ -75,7 +75,7 @@ Future<void> _loadHelpers() async {
     return 'Bronze';
   }
 
-  Color _getLevelColor(String level) {
+  Color _getLevelColor(String level, BuildContext context) {
     switch (level) {
       case 'Gold':
         return const Color(0xFFE9C46A);
@@ -84,7 +84,7 @@ Future<void> _loadHelpers() async {
       case 'Bronze':
         return const Color(0xFFCD7F32);
       default:
-        return AppColors.primaryTeal;
+        return AppColors.primaryTeal(context);
     }
   }
 
@@ -114,18 +114,18 @@ Future<void> _loadHelpers() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
+          icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Available Helpers',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -133,7 +133,7 @@ Future<void> _loadHelpers() async {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list, color: AppColors.primaryTeal),
+            icon: Icon(Icons.filter_list, color: AppColors.primaryTeal(context)),
             onPressed: () {
               _showFilterOptions();
             },
@@ -153,9 +153,9 @@ Future<void> _loadHelpers() async {
             const SizedBox(height: 12),
             Expanded(
               child: _isLoading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.primaryTeal,
+                        color: AppColors.primaryTeal(context),
                       ),
                     )
                   : _matchedHelpers.isEmpty
@@ -196,10 +196,10 @@ Future<void> _loadHelpers() async {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryTeal.withValues(alpha: 0.05),
+        color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.primaryTeal.withValues(alpha: 0.1),
+          color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -209,7 +209,7 @@ Future<void> _loadHelpers() async {
           Text(
             'Task: ${widget.task.title}',
             style: GoogleFonts.poppins(
-              color: AppColors.charcoal,
+              color: AppColors.charcoal(context),
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -220,13 +220,13 @@ Future<void> _loadHelpers() async {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                  color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   widget.task.category,
                   style: GoogleFonts.openSans(
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -236,7 +236,7 @@ Future<void> _loadHelpers() async {
               Text(
                 '${widget.task.date.day}/${widget.task.date.month} · ${widget.task.time.format(context)}',
                 style: GoogleFonts.openSans(
-                  color: AppColors.textGrey,
+                  color: AppColors.textGrey(context),
                   fontSize: 12,
                 ),
               ),
@@ -246,7 +246,7 @@ Future<void> _loadHelpers() async {
           Text(
             '${_matchedHelpers.length} helpers matched to this task',
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 12,
             ),
           ),
@@ -266,21 +266,21 @@ Future<void> _loadHelpers() async {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.surfaceGrey,
+                color: AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.filter_list,
                     size: 16,
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     'Filter: All',
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 12,
                     ),
                   ),
@@ -298,21 +298,21 @@ Future<void> _loadHelpers() async {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.surfaceGrey,
+                color: AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.sort,
                     size: 16,
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     'Sort: Trust',
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 12,
                     ),
                   ),
@@ -332,11 +332,11 @@ Future<void> _loadHelpers() async {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: _showVerifiedOnly
-                  ? AppColors.primaryTeal.withValues(alpha: 0.1)
-                  : AppColors.surfaceGrey,
+                  ? AppColors.primaryTeal(context).withValues(alpha: 0.1)
+                  : AppColors.surfaceGrey(context),
               borderRadius: BorderRadius.circular(8),
               border: _showVerifiedOnly
-                  ? Border.all(color: AppColors.primaryTeal, width: 1)
+                  ? Border.all(color: AppColors.primaryTeal(context), width: 1)
                   : null,
             ),
             child: Row(
@@ -347,16 +347,16 @@ Future<void> _loadHelpers() async {
                       : Icons.verified_outlined,
                   size: 16,
                   color: _showVerifiedOnly
-                      ? AppColors.primaryTeal
-                      : AppColors.textGrey,
+                      ? AppColors.primaryTeal(context)
+                      : AppColors.textGrey(context),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   'Verified',
                   style: GoogleFonts.openSans(
                     color: _showVerifiedOnly
-                        ? AppColors.primaryTeal
-                        : AppColors.textGrey,
+                        ? AppColors.primaryTeal(context)
+                        : AppColors.textGrey(context),
                     fontSize: 12,
                   ),
                 ),
@@ -461,27 +461,27 @@ Future<void> _loadHelpers() async {
     final stars = <Widget>[];
 
     for (int i = 0; i < fullStars; i++) {
-      stars.add(const Icon(
+      stars.add( Icon(
         Icons.star,
         size: 14,
-        color: Color(0xFFE9C46A),
+        color: AppColors.citrusYellow(context),
       ));
     }
 
     if (hasHalfStar) {
-      stars.add(const Icon(
+      stars.add( Icon(
         Icons.star_half,
         size: 14,
-        color: Color(0xFFE9C46A),
+        color: AppColors.citrusYellow(context),
       ));
     }
 
     final remaining = 5 - stars.length;
     for (int i = 0; i < remaining; i++) {
-      stars.add(const Icon(
+      stars.add(Icon(
         Icons.star_border,
         size: 14,
-        color: Color(0xFFE9C46A),
+        color: AppColors.citrusYellow(context),
       ));
     }
 
@@ -496,13 +496,13 @@ Future<void> _loadHelpers() async {
           Icon(
             Icons.person_off,
             size: 64,
-            color: AppColors.textGrey.withValues(alpha: 0.5),
+            color: AppColors.textGrey(context).withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
             'No helpers available',
             style: GoogleFonts.poppins(
-              color: AppColors.charcoal,
+              color: AppColors.charcoal(context),
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -511,7 +511,7 @@ Future<void> _loadHelpers() async {
           Text(
             'No helpers have accepted this task yet. Check back later!',
             style: GoogleFonts.openSans(
-              color: AppColors.textGrey,
+              color: AppColors.textGrey(context),
               fontSize: 14,
             ),
             textAlign: TextAlign.center,
@@ -536,7 +536,7 @@ Future<void> _loadHelpers() async {
               Text(
                 'Filter Helpers',
                 style: GoogleFonts.poppins(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -570,7 +570,7 @@ Future<void> _loadHelpers() async {
               Text(
                 'Sort Helpers',
                 style: GoogleFonts.poppins(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),

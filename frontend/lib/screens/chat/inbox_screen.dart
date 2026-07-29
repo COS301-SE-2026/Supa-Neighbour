@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/chat_thread.dart';
+import '../../constants/app_colors.dart'; // ADD: Import AppColors
 import 'bulletin_screen.dart';
 import 'chat_detail_screen.dart';
 import '../../services/chat_service.dart';
@@ -66,9 +67,11 @@ class _InboxScreenState extends State<InboxScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      // CHANGE: Use AppColors.background
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1C9A89),
+        // CHANGE: Use AppColors.primaryTeal
+        backgroundColor: AppColors.primaryTeal(context),
         elevation: 0,
         title: Text(
           'Inbox',
@@ -158,7 +161,8 @@ class ChatCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0x331C9A89).withValues(alpha: 0.15),
+          // CHANGE: Use AppColors.primaryTeal with alpha
+          color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -205,7 +209,8 @@ class ChatCard extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF264653),
+                            // CHANGE: Use AppColors.charcoal
+                            color: AppColors.charcoal(context),
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -217,7 +222,8 @@ class ChatCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEAC059),
+                            // CHANGE: Use AppColors.citrusYellow
+                            color: AppColors.citrusYellow(context),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -225,7 +231,8 @@ class ChatCard extends StatelessWidget {
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF264653),
+                              // CHANGE: Use AppColors.charcoal
+                              color: AppColors.charcoal(context),
                             ),
                           ),
                         ),
@@ -234,10 +241,11 @@ class ChatCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.location_on,
                         size: 12,
-                        color: Color(0xFF2A9D8F),
+                        // CHANGE: Use AppColors.primaryTeal
+                        color: AppColors.primaryTeal(context),
                       ),
                       const SizedBox(width: 2),
                       Expanded(
@@ -246,7 +254,8 @@ class ChatCard extends StatelessWidget {
                           style: GoogleFonts.openSans(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF6B7280),
+                            // CHANGE: Use AppColors.textGrey
+                            color: AppColors.textGrey(context),
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -260,8 +269,10 @@ class ChatCard extends StatelessWidget {
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
                       color: chat.unreadCount > 0
-                          ? const Color(0xFF1A1A2E)
-                          : const Color(0xFF9CA3AF),
+                          // CHANGE: Use AppColors.charcoal for unread
+                          ? AppColors.charcoal(context)
+                          // CHANGE: Use AppColors.textGrey for read
+                          : AppColors.textGrey(context),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -276,7 +287,8 @@ class ChatCard extends StatelessWidget {
                 vertical: 4,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF1C9A89),
+                // CHANGE: Use AppColors.primaryTeal
+                color: AppColors.primaryTeal(context),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(

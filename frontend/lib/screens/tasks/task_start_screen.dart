@@ -66,18 +66,18 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.charcoal),
+          icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Task Details',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal,
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -92,22 +92,22 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.person_add_alt_1,
                     size: 16,
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'Ready to Start',
                     style: GoogleFonts.openSans(
-                      color: AppColors.primaryTeal,
+                      color: AppColors.primaryTeal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -119,7 +119,7 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -128,13 +128,13 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
                   Icon(
                     _getCategoryIcon(widget.task.category),
                     size: 16,
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     widget.task.category,
                     style: GoogleFonts.openSans(
-                      color: AppColors.primaryTeal,
+                      color: AppColors.primaryTeal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -146,7 +146,7 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
             Text(
               widget.task.title,
               style: GoogleFonts.poppins(
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
               ),
@@ -155,17 +155,17 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.05),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.person, color: AppColors.primaryTeal, size: 20),
+                  Icon(Icons.person, color: AppColors.primaryTeal(context), size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'Requester: ${widget.task.requesterName}',
                     style: GoogleFonts.openSans(
-                      color: AppColors.charcoal,
+                      color: AppColors.charcoal(context),
                       fontSize: 14,
                     ),
                   ),
@@ -176,12 +176,12 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFE9C46A).withValues(alpha: 0.2),
+                color:  AppColors.citrusYellow(context).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.stars, color: Color(0xFFE9C46A), size: 32),
+                  Icon(Icons.stars, color: AppColors.citrusYellow(context), size: 32),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,14 +189,14 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
                       Text(
                         'XP Reward',
                         style: GoogleFonts.openSans(
-                          color: AppColors.charcoal,
+                          color: AppColors.charcoal(context),
                           fontSize: 12,
                         ),
                       ),
                       Text(
                         '+${widget.task.xpReward} XP',
                         style: GoogleFonts.poppins(
-                          color: AppColors.charcoal,
+                          color: AppColors.charcoal(context),
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                         ),
@@ -210,7 +210,9 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? AppColors.surfaceGrey(context) 
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -225,12 +227,12 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.calendar_today, color: AppColors.primaryTeal, size: 20),
+                        Icon(Icons.calendar_today, color: AppColors.primaryTeal(context), size: 20),
                         const SizedBox(width: 12),
                         Text(
                           '${widget.task.date.day}/${widget.task.date.month}/${widget.task.date.year}',
                           style: GoogleFonts.openSans(
-                            color: AppColors.charcoal,
+                            color: AppColors.charcoal(context),
                             fontSize: 14,
                           ),
                         ),
@@ -240,12 +242,12 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.access_time, color: AppColors.primaryTeal, size: 20),
+                        Icon(Icons.access_time, color: AppColors.primaryTeal(context), size: 20),
                         const SizedBox(width: 12),
                         Text(
                           widget.task.time.format(context),
                           style: GoogleFonts.openSans(
-                            color: AppColors.charcoal,
+                            color: AppColors.charcoal(context),
                             fontSize: 14,
                           ),
                         ),
@@ -256,25 +258,25 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Instructions',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: AppColors.charcoal,
+                color: AppColors.charcoal(context),
               ),
             ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surfaceGrey,
+                color: AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 widget.task.instructions,
                 style: GoogleFonts.openSans(
-                  color: AppColors.charcoal,
+                  color: AppColors.charcoal(context),
                   fontSize: 14,
                   height: 1.5,
                 ),

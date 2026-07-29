@@ -1071,7 +1071,7 @@ GET /api/helpers/5/profile?taskId=12
 | **Authentication** | JWT Bearer Token required |
 | **Content-Type** | `application/json` |
 
-
+                             
 #### Path Parameters
 
 

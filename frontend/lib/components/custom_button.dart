@@ -37,27 +37,27 @@ class CustomButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: isOutlined
               ? Colors.transparent
-              : AppColors.primaryTeal,
+              : AppColors.primaryTeal(context),
           foregroundColor: isOutlined
-              ? AppColors.primaryTeal
-              : AppColors.textLight,
+              ? AppColors.primaryTeal(context)
+              : AppColors.textLight(context),
           elevation: 0,
           padding: padding,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
             side: isOutlined
                 ? BorderSide(
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal(context),
                     width: 2,
                   )
                 : BorderSide.none,
           ),
           disabledBackgroundColor: isOutlined
               ? Colors.transparent
-              : AppColors.primaryTeal.withValues(alpha: 0.4),
+              : AppColors.primaryTeal(context).withValues(alpha: 0.4),
           disabledForegroundColor: isOutlined
-              ? AppColors.primaryTeal.withValues(alpha: 0.4)
-              : AppColors.textLight.withValues(alpha: 0.6),
+              ? AppColors.primaryTeal(context).withValues(alpha: 0.4)
+              : AppColors.textLight(context).withValues(alpha: 0.6),
         ),
         child: isLoading
             ? const SizedBox(

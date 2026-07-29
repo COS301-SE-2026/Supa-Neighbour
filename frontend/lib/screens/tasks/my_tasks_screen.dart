@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import '../../constants/app_colors.dart'; // ADD: Import AppColors
 import 'available_helpers_screen.dart';
 import 'task_start_screen.dart';
 import 'task_detail_screen.dart';
@@ -145,36 +146,41 @@ void _passTask(Task task) async {
     }
   }
 
-  Color _getStatusColor(String status) {
+  // CHANGE: Update to use AppColors with context
+  Color _getStatusColor(String status, BuildContext context) {
     switch (status) {
       case 'open':
-        return const Color(0xFFE9C46A);
+        return AppColors.citrusYellow(context);
       case 'assigned':
-        return const Color(0xFF2A9D8F);
+        return AppColors.primaryTeal(context);
       case 'in_progress':
         return const Color(0xFF2196F3);
       case 'pending_approval':
         return const Color(0xFFFF9800);
       case 'completed':
-        return const Color(0xFF4CAF50);
+        return AppColors.success(context);
       case 'cancelled':
-        return const Color(0xFFF44336);
+        return AppColors.error(context);
       default:
-        return const Color(0xFF9CA3AF);
+        return AppColors.textGrey(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      // CHANGE: Use AppColors.background
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFFFFF),
+        // CHANGE: Use AppColors.background
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         title: Text(
           'My Tasks',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF2A9D8F),
+            // CHANGE: Use AppColors.primaryTeal
+            color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -182,9 +188,12 @@ void _passTask(Task task) async {
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFF2A9D8F),
-          unselectedLabelColor: const Color(0xFF9CA3AF),
-          indicatorColor: const Color(0xFF2A9D8F),
+          // CHANGE: Use AppColors.primaryTeal
+          labelColor: AppColors.primaryTeal(context),
+          // CHANGE: Use AppColors.textGrey
+          unselectedLabelColor: AppColors.textGrey(context),
+          // CHANGE: Use AppColors.primaryTeal
+          indicatorColor: AppColors.primaryTeal(context),
           labelStyle: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -494,13 +503,13 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(task.status).withOpacity(0.1),
+                  color: _getStatusColor(task.status, context).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   _getStatusDisplay(task.status, isRequesterView: isRequesterView),
                   style: GoogleFonts.openSans(
-                    color: _getStatusColor(task.status),
+                    color: _getStatusColor(task.status, context),
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),

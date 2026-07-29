@@ -13,6 +13,8 @@ public class RecentTaskDTO {
     private int taskId;
     private String type;
     private String endDate;
+    private int xpWorth;
+    
 
     /**
      * Creates a recent task data transfer object.
@@ -21,10 +23,11 @@ public class RecentTaskDTO {
      * @param type the type of the completed task
      * @param endDate the date on which the task was completed
      */
-    public RecentTaskDTO(int taskId, String type, String endDate){
+    public RecentTaskDTO(int taskId, String type, String endDate, int xp_worth){
         this.taskId = taskId;
         this.type = type;
         this.endDate = endDate;
+        this.xpWorth = xp_worth;
     }
 
     /**
@@ -35,6 +38,16 @@ public class RecentTaskDTO {
     public int gettaskId(){
         return taskId;
     }
+
+    /**
+     * returns tasks' xp worth
+     * @return xp worth
+     */
+
+    public int getXpWorth(){
+        return xpWorth;
+    }
+
     /**
      * Returns the task type.
      *

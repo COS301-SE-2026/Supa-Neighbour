@@ -15,23 +15,28 @@ class AchievementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = isActive ? AppColors.primary : Colors.grey.shade400;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final themeColor = isActive ? AppColors.primaryTeal(context) : AppColors.textGrey(context);
     final badgeBgColor = isActive 
-        ? const Color(0xFFAFDCDA) 
-        : Colors.grey.shade300;
+        ? AppColors.primaryTeal(context).withValues(alpha: 0.15)
+        : AppColors.textGrey(context);
+
+    final cardBgColor = isDarkMode 
+        ? AppColors.surfaceGrey(context) 
+        : Colors.white;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBgColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isActive ? AppColors.primary : Colors.transparent,
+          color: isActive ? AppColors.primaryTeal(context) : isDarkMode ? AppColors.surfaceGrey(context): Colors.transparent,
           width: isActive ? 1.5 : 0,
         ),
         boxShadow: [
           BoxShadow(
             color: isActive 
-                ? AppColors.primary.withValues(alpha: 0.2) 
+                ? AppColors.primaryTeal(context).withValues(alpha: 0.2) 
                 : Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             spreadRadius: 1,
@@ -57,7 +62,7 @@ class AchievementCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isActive ? AppColors.primary : Colors.grey[500],
+                  color: isActive ? AppColors.primaryTeal(context) : AppColors.textGrey(context),
                 ),
               ),
             ),
@@ -89,15 +94,15 @@ class AchievementCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFEBB13D).withValues(alpha: 0.2),
+                color: AppColors.citrusYellow(context).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 'Earned',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 8,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFD99116),
+                  color: AppColors.citrusYellow(context),
                 ),
               ),
             ),
@@ -105,7 +110,7 @@ class AchievementCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: AppColors.textGrey(context),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -113,7 +118,7 @@ class AchievementCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 8,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey[600],
+                  color: AppColors.textGrey(context),
                 ),
               ),
             ),
