@@ -803,46 +803,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         width: double.infinity,
         child: OutlinedButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const HelpMenuScreen(),
-              ),
-            );
-          },
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: AppColors.primaryTeal(context)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.help_outline,
-                color: AppColors.primaryTeal(context),
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Help & Support',
-                style: GoogleFonts.openSans(
-                  color: AppColors.primaryTeal(context),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(height: 12),
-      SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(
-          onPressed: () {
             _showLogoutDialog();
           },
           style: OutlinedButton.styleFrom(

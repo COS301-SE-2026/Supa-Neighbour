@@ -87,6 +87,19 @@ class _HelpModalContent extends StatelessWidget {
           'Manage your privacy settings',
         ],
       },
+
+      'bulletin': {
+      'title': 'How to Use Bulletin',
+      'icon': Icons.announcement,
+      'items': [
+        'View community announcements from neighbours',
+        'Create posts to share news or ask for help',
+        'Filter posts by category',
+        'Search for specific posts',
+        'Tap "Helpful" to show appreciation',
+        'Report inappropriate content',
+      ],
+     },
     };
 
     final data = helpData[section] ?? helpData['home']!;
@@ -239,6 +252,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
             const SizedBox(height: 16),
             ..._faqs.map((faq) => _buildFaqItem(faq)),
             const SizedBox(height: 24),
+            _buildUserManualSection(),
             _buildSupportSection(),
           ],
         ),
@@ -284,6 +298,83 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
       ),
     );
   }
+
+  Widget _buildUserManualSection() {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: const Color(0xFF2A9D8F).withValues(alpha: 0.05),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: const Color(0xFF2A9D8F),
+        width: 1,
+      ),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.book,
+              color: AppColors.primaryTeal(context),
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'User Manual',
+              style: GoogleFonts.poppins(
+                color: AppColors.charcoal(context),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Learn how to use all the features of SupaNeighbour with our comprehensive user guide.',
+          style: GoogleFonts.openSans(
+            color: AppColors.textGrey(context),
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () {
+              // TODO: Open User Manual (PDF or web page)
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('User Manual coming soon'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: AppColors.primaryTeal(context)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Read User Manual',
+              style: GoogleFonts.openSans(
+                color: AppColors.primaryTeal(context),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildSupportSection() {
     return Container(
