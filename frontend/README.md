@@ -157,10 +157,27 @@ For now,you should see the Supa-Neighbour test screen. If the button and counter
 
 ```
 frontend/
-└── lib/
-    ├── main.dart        ← entry point — loads admin or mobile app based on platform
-    ├── app/             ← mobile app screens and widgets (normal users)
-    └── admin/           ← web dashboard screens and widgets (admin users)
+├── lib/
+│   ├── main.dart
+│   ├── screens/
+│   │   ├── auth/
+│   │   ├── home/
+│   │   ├── tasks/
+│   │   ├── chat/
+│   │   ├── leaderboard/
+│   │   └── profile/
+│   ├── widgets/
+│   │   └── achievements/
+│   ├── services/
+│   ├── models/
+│   ├── providers/
+│   ├── constants/
+│   └── components/
+├── assets/
+│   └── screenshots/
+├── test/
+├── pubspec.yaml
+└── README.md
 ```
 
 ---

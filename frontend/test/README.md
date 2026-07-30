@@ -9,22 +9,18 @@ This project uses Flutter's built-in testing framework to ensure code correctnes
 
 ```
 test/
-├── unit/                        # Unit tests: pure Dart logic, no UI
-│   ├── models/                  # Tests for data models (Task, User, etc.)
-│   └── services/                # Tests for services (TaskService, ChatService)
-│
-├── widget/                      # Widget tests: UI rendering and interaction
-│   ├── auth/                    # Auth screens (login, register, etc.)
-│   ├── home/                    # Home tab screens
-│   ├── tasks/                   # Tasks tab screens
-│   ├── chat/                    # Chat tab screens
-│   ├── leaderboard/             # Leaderboard tab screens
-│   ├── profile/                 # Profile tab screens
-│   └── components/              # Reusable components (buttons, inputs, etc.)
-│
-├── integration/                 # Integration tests: multiple components working together
-├── e2e/                         # End-to-End tests: full user journeys
-└── README.md
+├── unit/
+│   └── models/
+├── widget/
+│   ├── auth/
+│   ├── home/
+│   ├── tasks/
+│   ├── chat/
+│   ├── leaderboard/
+│   ├── profile/
+│   └── components/
+├── integration/
+└── e2e/
 ```
 
 ---
