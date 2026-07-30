@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../models/task_model.dart';
 
 
@@ -125,19 +124,6 @@ Future<void> _loadHelpers() async {
             ),
           ],
         ),
-      ),
-     bottomNavigationBar: BottomNavBar(
-        currentIndex: 1, 
-        onTap: (index) {
-          if (index != 1) {
-            ScaffoldMessenger.of(context).showSnackBar(
-               SnackBar(
-                content: Text('Navigate to tab $index'),
-                duration: Duration(seconds: 1),
-              ),
-            );
-          }
-        },
       ),
     );
   }

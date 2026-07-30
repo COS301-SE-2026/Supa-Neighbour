@@ -210,20 +210,6 @@ class _BulletinScreenState extends State<BulletinScreen> {
     
     return Scaffold(
       backgroundColor: AppColors.background(context),
-      appBar: AppBar(
-        backgroundColor: AppColors.background(context),
-        elevation: 0,
-        title: Text(
-          'Community Bulletin',
-          style: GoogleFonts.poppins(
-            color: AppColors.charcoal(context),
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-        actions: const [],
-      ),
       body: Column(
         children: [
           Padding(

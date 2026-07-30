@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supa_neighbour/constants/app_colors.dart';
+import '../help/help_menu_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 
 import '../../models/auth_session.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
-import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../tasks/create_task_screen.dart';
 import '../leaderboard/leaderboard_screen.dart';
@@ -151,6 +152,12 @@ class _HomeContentState extends State<HomeContent> {
       appBar: AppBar(
         backgroundColor: AppColors.background(context),
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
+          onPressed: () {
+            HelpMenuScreen.showHelpModal(context, 'home');
+          },
+        ),
         title: Text(
           'Supa Neighbour',
           style: GoogleFonts.poppins(
@@ -163,8 +170,7 @@ class _HomeContentState extends State<HomeContent> {
         actions: [
           IconButton(
             icon: Icon(Icons.notifications_none, color: AppColors.primaryTeal(context)),
-            onPressed: () {
-            },
+            onPressed: () {},
           ),
         ],
       ),

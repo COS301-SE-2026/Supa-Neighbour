@@ -6,6 +6,7 @@ import '../../constants/app_colors.dart';
 import 'privacy_settings_screen.dart';  
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/auth_service.dart';
+import '../help/help_menu_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -277,35 +278,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildSupportSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.white(context),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.charcoal(context).withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildSectionHeader('Support'),
-          const Divider(height: 1),
-          _buildSettingsTile(
-            icon: Icons.help_outline,
-            title: 'Help Center',
-            subtitle: 'Get help and FAQs',
-            onTap: () {
-              // TODO: Navigate to help center
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: AppColors.white(context),
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.charcoal(context).withValues(alpha: 0.04),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        _buildSectionHeader('Support'),
+        const Divider(height: 1),
+        _buildSettingsTile(
+          icon: Icons.help_outline,
+          title: 'Help Center',
+          subtitle: 'Get help and FAQs',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HelpMenuScreen(),
+              ),
+            );
+          },
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildDangerSection() {
     return Container(

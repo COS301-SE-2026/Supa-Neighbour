@@ -4,7 +4,7 @@ import 'helper_profile_preview_screen.dart';
 import '../../constants/app_colors.dart';
 import '../../models/leaderboard_model.dart';
 import '../../models/user_model.dart';
-
+import '../help/help_menu_screen.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -28,10 +28,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       _isLoading = true;
     });
 
-    //Replace with actual API call later
     await Future.delayed(const Duration(seconds: 1));
 
-    //Mock data
     final mockEntries = [
       LeaderboardEntry(
         rank: 1,
@@ -118,7 +116,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       isCurrentUser: true,
     );
 
-        setState(() {
+    setState(() {
       _leaderboardData = LeaderboardData(
         period: 'week',
         entries: mockEntries,
@@ -172,23 +170,21 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background(context),
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
+          onPressed: () {
+            HelpMenuScreen.showHelpModal(context, 'leaderboard');
+          },
+        ),
         title: Text(
           'Leaderboard',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal(context),
+            color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
-            onPressed: () {
-              _showInfoDialog();
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -203,38 +199,38 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     ? _buildEmptyState()
                     : Column(
                         children: [
-                              Padding(
-                              padding: const EdgeInsets.only(top: 16, bottom: 8, left: 16),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  "Last Week's Top 3",
-                                  style: GoogleFonts.poppins(
-                                    color: AppColors.charcoal(context),
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16, bottom: 8, left: 16),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Last Week's Top 3",
+                                style: GoogleFonts.poppins(
+                                  color: AppColors.charcoal(context),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
-                            _buildTop3Circles(),
-                            const SizedBox(height: 8),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 16, bottom: 8, left: 16),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  'This Week',
-                                  style: GoogleFonts.poppins(
-                                    color: AppColors.charcoal(context),
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          ),
+                          _buildTop3Circles(),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16, bottom: 8, left: 16),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'This Week',
+                                style: GoogleFonts.poppins(
+                                  color: AppColors.charcoal(context),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
-                            Expanded(
-                              child: ListView.builder(
+                          ),
+                          Expanded(
+                            child: ListView.builder(
                               padding: const EdgeInsets.symmetric(horizontal: 16),
                               itemCount: _leaderboardData!.entries.length,
                               itemBuilder: (context, index) {
@@ -254,81 +250,81 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   Widget _buildTop3Circles() {
-  final top3 = _leaderboardData!.entries.take(3).toList();
+    final top3 = _leaderboardData!.entries.take(3).toList();
 
-  if (top3.length < 3) {
-    return const SizedBox.shrink();
+    if (top3.length < 3) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildTopCircle(top3[1]),
+          _buildTopCircle(top3[0], isFirst: true),
+          _buildTopCircle(top3[2]),
+        ],
+      ),
+    );
   }
 
-  return Container(
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildTopCircle(top3[1]),
-        _buildTopCircle(top3[0], isFirst: true),
-        _buildTopCircle(top3[2]),
-      ],
-    ),
-  );
-}
+  Widget _buildTopCircle(LeaderboardEntry entry, {bool isFirst = false}) {
+    final size = isFirst ? 56.0 : 44.0;
+    final fontSize = isFirst ? 22.0 : 16.0;
 
- Widget _buildTopCircle(LeaderboardEntry entry, {bool isFirst = false}) {
-  final size = isFirst ? 56.0 : 44.0; 
-  final fontSize = isFirst ? 22.0 : 16.0;
-
-  return Container(
-    margin: EdgeInsets.symmetric(horizontal: isFirst ? 12 : 6),
-    child: Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            CircleAvatar(
-              radius: size / 2,
-              backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
-              child: Text(
-                entry.displayName[0],
-                style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primaryTeal(context),
-                ),
-              ),
-            ),
-            if (isFirst)
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE9C46A),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.star,
-                    color: Colors.white,
-                    size: 14, 
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: isFirst ? 12 : 6),
+      child: Column(
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              CircleAvatar(
+                radius: size / 2,
+                backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
+                child: Text(
+                  entry.displayName[0],
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryTeal(context),
                   ),
                 ),
               ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          entry.displayName.split(' ').first,
-          style: GoogleFonts.openSans(
-            color: AppColors.charcoal(context),
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
+              if (isFirst)
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE9C46A),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.star,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                  ),
+                ),
+            ],
           ),
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    ),
-  );
-}
+          const SizedBox(height: 4),
+          Text(
+            entry.displayName.split(' ').first,
+            style: GoogleFonts.openSans(
+              color: AppColors.charcoal(context),
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildLeaderboardItem(LeaderboardEntry entry) {
     final bgColor = entry.isCurrentUser
@@ -337,7 +333,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
     return GestureDetector(
       onTap: () {
-        // Get actual user data from API
         final mockHelper = User(
           id: entry.userId,
           email: '${entry.displayName.toLowerCase().replaceAll(' ', '.')}@example.com',
@@ -380,7 +375,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 ),
               ),
             ),
-
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -506,109 +500,111 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   Widget _buildYourRankCard(LeaderboardEntry entry) {
-  final nextRank = entry.rank - 1;
-  const xpNeeded = 100; // Mocks
-  const progress = 0.65;
+    final nextRank = entry.rank - 1;
+    const xpNeeded = 100;
+    const progress = 0.65;
 
-  return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    decoration: BoxDecoration(
-      color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(
-        color: AppColors.primaryTeal(context),
-        width: 1,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.primaryTeal(context),
+          width: 1,
+        ),
       ),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.primaryTeal(context),
-                borderRadius: BorderRadius.circular(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryTeal(context),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '#${entry.rank}',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              child: Text(
-                '#${entry.rank}',
+              const SizedBox(width: 8),
+              Text(
+                'You',
                 style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 12,
+                  color: AppColors.primaryTeal(context),
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'You',
-              style: GoogleFonts.poppins(
-                color: AppColors.primaryTeal(context),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Spacer(),
-            Row(
-              children: [
-                ..._buildTrustStars(entry.trustScore),
-                const SizedBox(width: 4),
-                Text(
-                  entry.trustScore.toStringAsFixed(1),
-                  style: GoogleFonts.openSans(
-                    color: AppColors.charcoal(context),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  '${entry.xp} XP',
-                  style: GoogleFonts.openSans(
-                    color: AppColors.primaryTeal(context),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const Spacer(),
+              Row(
                 children: [
+                  ..._buildTrustStars(entry.trustScore),
+                  const SizedBox(width: 4),
                   Text(
-                    '$xpNeeded XP to reach Top $nextRank',
+                    entry.trustScore.toStringAsFixed(1),
                     style: GoogleFonts.openSans(
-                      color: AppColors.textGrey(context),
-                      fontSize: 11,
+                      color: AppColors.charcoal(context),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.2),
-                      color: const Color(0xFFE9C46A),
-                      minHeight: 6,
+                  const SizedBox(width: 12),
+                  Text(
+                    '${entry.xp} XP',
+                    style: GoogleFonts.openSans(
+                      color: AppColors.primaryTeal(context),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}  Widget _buildEmptyState() {
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$xpNeeded XP to reach Top $nextRank',
+                      style: GoogleFonts.openSans(
+                        color: AppColors.textGrey(context),
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.2),
+                        color: const Color(0xFFE9C46A),
+                        minHeight: 6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -633,88 +629,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             style: GoogleFonts.openSans(
               color: AppColors.textGrey(context),
               fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showInfoDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'How Rankings Work',
-          style: GoogleFonts.poppins(
-            color: AppColors.charcoal(context),
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '• Ranked by trust score',
-              style: GoogleFonts.openSans(
-                color: AppColors.charcoal(context),
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '• Trust score is calculated from completed tasks and ratings',
-              style: GoogleFonts.openSans(
-                color: AppColors.charcoal(context),
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '• Leaderboard resets monthly',
-              style: GoogleFonts.openSans(
-                color: AppColors.charcoal(context),
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '• Gold = Trust ≥ 4.8',
-              style: GoogleFonts.openSans(
-                color: AppColors.charcoal(context),
-                fontSize: 14,
-              ),
-            ),
-            Text(
-              '• Silver = Trust ≥ 4.5',
-              style: GoogleFonts.openSans(
-                color: AppColors.charcoal(context),
-                fontSize: 14,
-              ),
-            ),
-            Text(
-              '• Bronze = Trust ≥ 4.0',
-              style: GoogleFonts.openSans(
-                color: AppColors.charcoal(context),
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Got it',
-              style: GoogleFonts.openSans(
-                color: AppColors.primaryTeal(context),
-                fontWeight: FontWeight.w600,
-              ),
             ),
           ),
         ],
