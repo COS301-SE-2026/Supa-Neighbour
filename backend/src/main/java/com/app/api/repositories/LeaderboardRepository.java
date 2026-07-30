@@ -27,11 +27,12 @@ public class LeaderboardRepository {
         String sql = """
                 SELECT 
                 u.user_id,
-                    u.user_name || ' ' || LEFT(u.user_surname, 1) || '.' AS display_name,
-                    COALESCE(ha.average_rating, 0.0)                     AS score
-                FROM helper_table          h
-                JOIN user_table            u  ON u.user_id      = h.user_id
-                JOIN address_table         a  ON a.address_id   = u.user_address_id
+                u.user_name || ' ' || LEFT(u.user_surname, 1) || '.' AS display_name,
+                COALESCE(ha.average_rating, 0.0) AS score,
+                h.helper_id
+                FROM helper_table h
+                JOIN user_table u ON u.user_id = h.user_id
+                JOIN address_table a ON a.address_id = u.user_address_id
                 LEFT JOIN helper_analytics_table ha ON ha.user_id = u.user_id
                 WHERE a.neighbourhood_id = :neighbourhoodId
                 ORDER BY score DESC
@@ -43,9 +44,11 @@ public class LeaderboardRepository {
         int rank = 1;
         for(Object[] row : rows){
             int userId = ((Number) row[0]).intValue();
+            Integer helperId = row[3] != null ? ((Number) row[3]).intValue() : null;
             String name = (String) row[1];
             double score = ((Number) row[2]).doubleValue();
-            ranked.add(new LeaderboardEntry(rank++, userId, name, score));
+            System.out.println("User ID: " + userId + ", Helper ID: " + helperId + ", Name: " + name);
+            ranked.add(new LeaderboardEntry(rank++, userId, name, score, helperId));
         }
         return ranked;
     }

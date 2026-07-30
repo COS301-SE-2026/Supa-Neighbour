@@ -4,15 +4,19 @@ import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../models/user_model.dart';
 import '../../models/review_model.dart';
+import '../../models/helper_profile_response.dart';
+import '../../services/helper_profile_service.dart';
 
 class HelperProfilePreviewScreen extends StatefulWidget {
-  final User helper;
+  final User? helper;
+  final int? helperId;
   final String? taskId;
   final bool showRequestButton;
 
   const HelperProfilePreviewScreen({
     super.key,
-    required this.helper,
+    this.helper,
+    this.helperId,
     this.taskId,
     this.showRequestButton = true,
   });
@@ -22,21 +26,33 @@ class HelperProfilePreviewScreen extends StatefulWidget {
 }
 
 class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen> {
+  bool _isLoading = false;
   bool _isInviting = false;
   bool _isInvited = false;
-
-  // Mock data, replace with actual API call later
+  String? _errorMessage;
+  
+  HelperProfileResponse? _profileData;
+  
   List<Review> _reviews = [];
   bool _isAvailable = true;
+  User? _helperUser;
+
+  final HelperProfileService _helperProfileService = HelperProfileService();
 
   @override
   void initState() {
     super.initState();
-    _loadHelperData();
+    if (widget.helperId != null) {
+      _loadHelperDataFromId();
+    } else if (widget.helper != null) {
+      _loadHelperDataFromUser();
+    } else {
+      _isLoading = false;
+    }
   }
 
-  void _loadHelperData() {
-    //Replace with actual API call
+  void _loadHelperDataFromUser() {
+    _helperUser = widget.helper;
     _reviews = [
       Review(
         id: '1',
@@ -63,8 +79,28 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
         date: DateTime.now().subtract(const Duration(days: 10)),
       ),
     ];
-
     _isAvailable = true;
+    _isLoading = false;
+  }
+
+  Future<void> _loadHelperDataFromId() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final data = await _helperProfileService.getHelperProfile(widget.helperId!);
+      setState(() {
+        _profileData = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   String _getLevel(double trustScore) {
@@ -88,7 +124,9 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
   }
 
   List<String> _getSkills() {
-    // Mock skills, replace this with actual data
+    if (_profileData != null) {
+      return _profileData!.skills;
+    }
     return ['Plants', 'Pets', 'Home Check-in', 'Bins'];
   }
 
@@ -141,9 +179,10 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
         _isInvited = true;
       });
 
+      final name = _helperUser?.fullName ?? _profileData?.displayName ?? 'Helper';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${widget.helper.fullName} has been invited!'),
+          content: Text('$name has been invited!'),
           backgroundColor: AppColors.success(context),
           duration: const Duration(seconds: 2),
         ),
@@ -153,7 +192,111 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
 
   @override
   Widget build(BuildContext context) {
-    final level = _getLevel(4.8); // Mock trust score
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.background(context),
+        appBar: AppBar(
+          backgroundColor: AppColors.background(context),
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            'Helper Profile',
+            style: GoogleFonts.poppins(
+              color: AppColors.charcoal(context),
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primaryTeal(context),
+          ),
+        ),
+      );
+    }
+
+    if (_errorMessage != null && widget.helperId != null) {
+      return Scaffold(
+        backgroundColor: AppColors.background(context),
+        appBar: AppBar(
+          backgroundColor: AppColors.background(context),
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            'Helper Profile',
+            style: GoogleFonts.poppins(
+              color: AppColors.charcoal(context),
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.red.withOpacity(0.5),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Failed to load profile',
+                style: GoogleFonts.poppins(
+                  color: AppColors.error(context),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _errorMessage!,
+                style: GoogleFonts.openSans(
+                  color: AppColors.textGrey(context),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _loadHelperDataFromId,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryTeal(context),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                ),
+                child: Text(
+                  'Retry',
+                  style: GoogleFonts.openSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final displayName = _profileData?.displayName ?? _helperUser?.fullName ?? 'Unknown';
+    final trustScore = _profileData?.trustScore ?? 4.8;
+    final level = _getLevel(trustScore);
     final levelColor = _getLevelColor(level);
 
     return Scaffold(
@@ -178,6 +321,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           IconButton(
             icon: Icon(Icons.more_vert, color: AppColors.charcoal(context)),
             onPressed: () {
+
             },
           ),
         ],
@@ -187,20 +331,15 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildProfileHeader(level, levelColor),
-
+            _buildProfileHeader(displayName, trustScore, level, levelColor),
             const SizedBox(height: 24),
             _buildStatsRow(),
-
             const SizedBox(height: 24),
             _buildSkillsSection(),
-
             const SizedBox(height: 24),
             _buildAboutSection(),
-
             const SizedBox(height: 24),
             _buildReviewsSection(),
-
             const SizedBox(height: 24),
             // Request Help Button only shows in Available helpers screen, not leaderboard
           if (widget.showRequestButton)
@@ -221,14 +360,14 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
     );
   }
 
-  Widget _buildProfileHeader(String level, Color levelColor) {
+  Widget _buildProfileHeader(String displayName, double trustScore, String level, Color levelColor) {
     return Row(
       children: [
         CircleAvatar(
           radius: 50,
-          backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
+          backgroundColor: AppColors.primaryTeal(context).withOpacity(0.1),
           child: Text(
-            widget.helper.firstName[0],
+            displayName[0],
             style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.w600,
@@ -244,7 +383,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
               Row(
                 children: [
                   Text(
-                    widget.helper.fullName,
+                    displayName,
                     style: GoogleFonts.poppins(
                       color: AppColors.charcoal(context),
                       fontSize: 20,
@@ -255,7 +394,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                     decoration: BoxDecoration(
-                      color: levelColor.withValues(alpha: 0.2),
+                      color: levelColor.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -272,10 +411,10 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
               const SizedBox(height: 6),
               Row(
                 children: [
-                  ..._buildTrustStars(4.8),
+                  ..._buildTrustStars(trustScore),
                   const SizedBox(width: 8),
                   Text(
-                    '4.8 ★',
+                    '${trustScore.toStringAsFixed(1)} ★',
                     style: GoogleFonts.openSans(
                       color: AppColors.charcoal(context),
                       fontSize: 14,
@@ -322,13 +461,16 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
   }
 
   Widget _buildStatsRow() {
+    final completedTasks = _profileData?.completedTasks ?? 47;
+    final neighboursHelped = _profileData?.neighboursHelped ?? 32;
+
     return Row(
       children: [
         Expanded(
-          child: _buildStatItem('47', 'Tasks Completed'),
+          child: _buildStatItem(completedTasks.toString(), 'Tasks Completed'),
         ),
         Expanded(
-          child: _buildStatItem('32', 'Neighbours Helped'),
+          child: _buildStatItem(neighboursHelped.toString(), 'Neighbours Helped'),
         ),
         Expanded(
           child: _buildStatItem('98%', 'Response Rate'),
@@ -390,7 +532,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
+                color: AppColors.primaryTeal(context).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -409,6 +551,8 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
   }
 
   Widget _buildAboutSection() {
+    const about = 'Neighbour for 5 years. Love helping out with plants and pets!';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -422,7 +566,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
         ),
         const SizedBox(height: 8),
         Text(
-          'Neighbour for 5 years. Love helping out with plants and pets!',
+          about,
           style: GoogleFonts.openSans(
             color: AppColors.charcoal(context),
             fontSize: 14,
@@ -434,6 +578,10 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
   }
 
   Widget _buildReviewsSection() {
+    final reviews = _profileData?.reviews.isNotEmpty == true
+        ? _profileData!.reviews
+        : _reviews;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -449,8 +597,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
               ),
             ),
             GestureDetector(
-              onTap: () {
-              },
+              onTap: () {},
               child: Text(
                 'See All',
                 style: GoogleFonts.openSans(
@@ -463,7 +610,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           ],
         ),
         const SizedBox(height: 12),
-        if (_reviews.isEmpty)
+        if (reviews.isEmpty)
           Text(
             'No reviews yet',
             style: GoogleFonts.openSans(
@@ -473,7 +620,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           )
         else
           Column(
-            children: _reviews.take(2).map((review) {
+            children: reviews.take(2).map((review) {
               return _buildReviewItem(review);
             }).toList(),
           ),
@@ -481,7 +628,21 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
     );
   }
 
-  Widget _buildReviewItem(Review review) {
+  Widget _buildReviewItem(dynamic review) {
+    final String reviewerName;
+    final String comment;
+    final double rating;
+
+    if (review is Review) {
+      reviewerName = review.userName;
+      comment = review.comment;
+      rating = review.rating;
+    } else {
+      reviewerName = review.reviewerName;
+      comment = review.comment;
+      rating = 5.0;
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
@@ -494,10 +655,10 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
         children: [
           Row(
             children: [
-              ..._buildTrustStars(review.rating),
+              ..._buildTrustStars(rating),
               const SizedBox(width: 8),
               Text(
-                review.userName,
+                reviewerName,
                 style: GoogleFonts.openSans(
                   color: AppColors.charcoal(context),
                   fontSize: 13,
@@ -508,40 +669,14 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           ),
           const SizedBox(height: 4),
           Text(
-            review.comment,
+            comment,
             style: GoogleFonts.openSans(
               color: AppColors.charcoal(context),
               fontSize: 13,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            _formatDate(review.date),
-            style: GoogleFonts.openSans(
-              color: AppColors.textGrey(context),
-              fontSize: 11,
-            ),
-          ),
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else if (difference.inDays < 30) {
-      final weeks = (difference.inDays / 7).floor();
-      return '$weeks week${weeks > 1 ? 's' : ''} ago';
-    } else {
-      return '${date.day}/${date.month}/${date.year}';
-    }
   }
 }
