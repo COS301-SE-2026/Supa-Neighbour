@@ -1,4 +1,4 @@
-# Supa-Neighbour — API Service Contract
+# Supa-Neighbour - API Service Contract
 
 
 > All endpoints require a valid JWT Bearer Token unless stated otherwise.
