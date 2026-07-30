@@ -9,7 +9,7 @@
   - [2. Architectural Requirements](#2-architectural-requirements)
     - [2.1 Architectural Pattern](#21-architectural-pattern)
       - [2.1.1 Reasons for Choosing This Architecture](#211-reasons-for-choosing-this-architecture)
-  - [2.2Architectural Diagram](#22architectural-diagram)
+  - [2.2 Architectural Diagram](#22architectural-diagram)
     - [2.3 Constraints on the Architecture](#23-constraints-on-the-architecture)
   - [3. Technology Requirements](#3-technology-requirements)
   - [4. API Contract](#4-api-contract)
@@ -46,13 +46,13 @@ d) **Database (Azure Database for PostgreSQL)** — a centralised database used 
 
 a) **Separation of concerns.** Splitting the system into a client and a server keeps presentation, business logic, and data access cleanly isolated from one another.
 
-b) **Multiple, independent clients need to hit the same backend (admin and user).** The platform supports two distinct kinds of clientsover its lifetime:
+b) **Multiple, independent clients need to hit the same backend (admin and user).** The platform supports two distinct kinds of clients over its lifetime:
    - The **Flutter user app**, used by residents and helpers.
    - The **admin web interface**, used for moderation, verification oversight, and platform management.
   
 ---
 
-## 2.2Architectural Diagram
+## 2.2 Architectural Diagram
 
 Please refer to this for the Architectural Diagram: [Architectural Diagram](Images/Architecture%20diagram%20V2.png)
 
@@ -63,11 +63,200 @@ a) **Azure compatibility requirement.** All chosen technologies had to be compat
 
 b) **Security and compliance standards.**
    - **POPIA compliance**: the system must protect personally identifiable information in line with South Africa's data protection law, driving decisions such as AES-256 column-level encryption for sensitive fields.
-   - **Verified-user access only** :the platform must ensure only authenticated, verified users can access the app, enforced through Firebase Authentication and the Admin SDK, rather than a custom-built authentication system.
+   - **Verified-user access only:** the platform must ensure only authenticated, verified users can access the app, enforced through Firebase Authentication and the Admin SDK, rather than a custom-built authentication system.
 
 c) **Mandatory cloud deployment target.** The application is required to be deployed to Azure specifically (rather than any general cloud provider), constraining infrastructure decisions to Azure's available services, deployment models (App Service, ACR-based CI/CD), and regional availability.
 
 d) **Mandated authentication provider**: Firebase Authentication is fixed as the identity provider, meaning the backend cannot own credential storage and must integrate via the Admin SDK.
+
+### 2.4 Design Patterns
+
+Design patterns are reusable solutions to common software design problems at the code or component level. They improve flexibility, maintainability, and code reuse.
+
+The SupaNeighbour system employs the following design patterns across both the frontend (Flutter/Dart) and backend (Spring Boot/Java):
+
+#### 2.4.1 Singleton Pattern (Creational)
+
+**Problem Solved:**  
+The application requires a single, globally accessible source of truth for the user's authentication session. Multiple instances would lead to inconsistent state and potential bugs.
+
+**Where It's Used:**
+- **File:** `frontend/lib/models/auth_session.dart`
+- **Class:** `AuthSession`
+- **Method:** `AuthSession.instance` (static getter)
+
+**Implementation Details:**  
+The `AuthSession` class uses a private constructor and a static instance to ensure only one instance exists throughout the application lifecycle.
+
+**Why This Pattern Was Chosen:**
+- Ensures consistent authentication state across all screens
+- Prevents duplicate instances that could cause state conflicts
+- Simple and widely understood pattern
+
+**Code Snippet:**
+```dart
+class AuthSession {
+  static final AuthSession _instance = AuthSession._internal();
+  factory AuthSession() => _instance;
+  static AuthSession get instance => _instance;
+
+  User? _currentUser;
+  bool get isLoggedIn => _currentUser != null;
+
+  void login(User user) {
+    _currentUser = user;
+  }
+
+  void logout() {
+    _currentUser = null;
+  }
+}
+```
+
+#### 2.4.2 Factory Pattern (Creational)
+
+**Problem Solved:**  
+The application receives JSON data from the backend API and needs to convert it into Dart objects. The creation logic is complex and should be encapsulated in a single place.
+
+**Where It's Used:**
+- **File:** `frontend/lib/models/task_model.dart`
+- **Class:** `Task`
+- **Method:** `Task.fromJson()`
+
+- **File:** `frontend/lib/models/user_model.dart`
+- **Class:** `User`
+- **Method:** `User.fromJson()`
+
+**Why This Pattern Was Chosen:**
+- Encapsulates complex object creation logic
+- Makes the code more maintainable when the API contract changes
+- Separates creation logic from the rest of the class
+- Allows for validation and transformation during creation
+
+**Code Snippet:**
+```dart
+class Task {
+  factory Task.fromJson(Map<String, dynamic> json) {
+    final DateTime startDate = json['startDate'] != null 
+        ? DateTime.parse(json['startDate'] as String) 
+        : DateTime.now();
+
+    return Task(
+      id: (json['taskId'] as int).toString(),
+      title: _resolveCategoryName(json['taskTypeId'] as int?),
+      category: _resolveCategoryName(json['taskTypeId'] as int?),
+      date: startDate,
+      time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
+      xpReward: 0,
+      instructions: json['adminReview'] as String? ?? 'No instructions provided',
+      status: json['helperId'] != null ? 'in_progress' : 'pending',
+      createdAt: startDate,
+      createdBy: json['createdBy'] as String? ?? 'unknown',
+      requesterName: json['requesterName'] as String?,
+      helperId: json['helperId'] as String?,
+      helperName: json['helperName'] as String?,
+      completionNote: json['completionNote'] as String?,
+      completionPhotos: json['completionPhotos'] != null
+          ? List<String>.from(json['completionPhotos'] as List)
+          : null,
+    );
+  }
+}
+```
+#### 2.4.3 Repository Pattern (Structural)
+
+**Problem Solved:**  
+The backend needs to separate data access logic from business logic. This makes the code more maintainable and allows for easier switching between data sources.
+
+**Where It's Used:**
+- **Files:** `backend/src/main/java/com/app/api/repositories/*Repository.java`
+- **Examples:** `TaskRepository.java`, `UserRepository.java`, `RatingRepository.java`
+
+**Implementation Details:**  
+Spring Data JPA repositories handle all database operations. Each repository interface extends `JpaRepository`, providing built-in CRUD operations and custom query methods.
+
+**Why This Pattern Was Chosen:**
+- Separates data access from business logic
+- Makes testing easier (can mock repositories)
+- Allows for switching data sources without changing business logic
+- Provides a consistent API for data access
+- Spring Data JPA reduces boilerplate code
+
+**Code Snippet:**
+```java
+@Repository
+public interface TaskRepository extends JpaRepository<Task, Integer> {
+    List<Task> findByCreatedBy(String userId);
+    List<Task> findByHelperId(String helperId);
+    List<Task> findByStatus(String status);
+}
+```
+
+#### 2.4.4 Observer Pattern (Behavioral)
+
+**Problem Solved:**  
+The UI needs to react to changes in application state. When data changes, the UI should automatically rebuild to reflect the new state.
+
+**Where It's Used:**
+- **File:** Throughout the frontend
+- **Library:** Riverpod (`ref.watch()`, `ref.read()`)
+- **Examples:** `home_screen.dart`, `profile_screen.dart`, `my_tasks_screen.dart`
+
+**Why This Pattern Was Chosen:**
+- Decouples state management from the UI
+- Automatically updates UI when state changes
+- Makes testing easier (providers can be overridden)
+- Prevents unnecessary rebuilds
+- Clean, declarative code
+
+**Code Snippet:**
+```dart
+final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
+  return FirebaseAuth.instance;
+});
+
+class MyWidget extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(firebaseAuthProvider);
+    // Widget automatically rebuilds when auth changes
+    // ...
+  }
+}
+```
+
+#### 2.4.5 Dependency Injection Pattern (Structural)
+
+**Problem Solved:**  
+Classes should not create their own dependencies. This makes the code more testable and flexible, as dependencies can be swapped without changing the class.
+
+**Where It's Used:**
+- **File:** `frontend/lib/providers/theme_mode_provider.dart`
+- **Library:** Riverpod
+
+**Why This Pattern Was Chosen:**
+- Makes code highly testable (mocks can be injected)
+- Reduces coupling between classes
+- Follows the "inversion of control" principle
+- Dependencies are explicit and visible
+- Easy to swap implementations
+
+**Code Snippet:**
+```dart
+final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
+  return FirebaseAuth.instance;
+});
+
+// In tests, the provider can be overridden:
+final testProvider = ProviderScope(
+  overrides: [
+    firebaseAuthProvider.overrideWithValue(mockAuth),
+  ],
+  child: const MaterialApp(home: MyScreen()),
+);
+```
+These five design patterns work together to create a clean, maintainable, and testable codebase that supports current requirements and can easily accommodate future changes. The creational patterns (Singleton and Factory) manage object creation, structural patterns (Repository and Dependency Injection) organise code structure, and the behavioral pattern (Observer) handles reactive state updates in the UI.
+---
 
 ## 3. Technology Requirements
 
