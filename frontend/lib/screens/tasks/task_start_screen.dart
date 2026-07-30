@@ -5,6 +5,8 @@ import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'task_completion_page.dart';
+import '../../services/task_service.dart';
+
 
 class TaskStartScreen extends StatefulWidget {
   final Task task;
@@ -21,14 +23,19 @@ class TaskStartScreen extends StatefulWidget {
 class _TaskStartScreenState extends State<TaskStartScreen> {
   bool _isStarting = false;
 
-  void _startTask() async {
-    setState(() {
-      _isStarting = true;
-    });
+  final TaskService _taskService = TaskService();
 
-    Task.updateTaskStatus(widget.task.id, 'in_progress');
+  Future<void> _startTask() async {
+    setState(() => _isStarting = true);
 
-    if (mounted) {
+    try {
+      await _taskService.updateTask(
+        taskId: int.parse(widget.task.id),
+        status: 'in_progress',
+      );
+
+      if (!mounted) return;
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -36,9 +43,21 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
             taskId: widget.task.id,
             taskTitle: widget.task.title,
             residentName: widget.task.requesterName ?? 'Requester',
-            dueDate: '${widget.task.date.day}/${widget.task.date.month} · ${widget.task.time.format(context)}',
+            dueDate:
+                '${widget.task.date.day}/${widget.task.date.month} · ${widget.task.time.format(context)}',
             xpReward: widget.task.xpReward,
           ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isStarting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+          backgroundColor: Colors.redAccent,
         ),
       );
     }

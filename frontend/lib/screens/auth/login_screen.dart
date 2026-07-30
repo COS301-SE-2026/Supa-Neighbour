@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import '../../components/logo_placeholder.dart';
 import '../../models/auth_session.dart';
@@ -53,6 +54,11 @@ Future<void> _handleLogin() async {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('remember_me', _rememberMe);
+    await prefs.setInt('current_user_id', int.parse(user.id));
+    final dependentId = await _fetchDependentId(int.parse(user.id));
+    if (dependentId != null) {
+      await prefs.setInt('current_dependent_id', dependentId);
+    }
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -88,6 +94,22 @@ Future<void> _handleLogin() async {
     );
   } finally {
     if (mounted) setState(() => _isLoading = false);
+  }
+}
+
+Future<int?> _fetchDependentId(int userId) async {
+  try {
+    final dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080'));
+    final res = await dio.get('/api/dependents');
+    final list = res.data as List<dynamic>;
+    for (final item in list) {
+      if (item['userId'] == userId || item['userId']?['userid'] == userId) {
+        return item['dependentId'] as int?;
+      }
+    }
+    return null;
+  } catch (_) {
+    return null;
   }
 }
 

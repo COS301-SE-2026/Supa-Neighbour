@@ -1,5 +1,6 @@
 package com.app.api.controllers;
 
+import com.app.api.dtos.TaskDetailDTO;
 import com.app.api.models.Task;
 import com.app.api.services.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +34,7 @@ public class TaskController {
     }
 
     /**
-     * Get a task by its ID.
+     * Get a task by its ID, including resolved requester and helper names.
      * @param taskId the ID of the task
      * @return the task if found, 404 otherwise
      */
@@ -41,8 +42,8 @@ public class TaskController {
     @ApiResponse(responseCode = "200", description = "Task found")
     @ApiResponse(responseCode = "404", description = "Task not found")
     @GetMapping("/tasks/{taskId}")
-    public ResponseEntity<Task> getTaskById(@PathVariable int taskId) {
-        Task task = taskService.getTaskById(taskId);
+    public ResponseEntity<TaskDetailDTO> getTaskById(@PathVariable int taskId) {
+        TaskDetailDTO task = taskService.getTaskDetailById(taskId);
 
         if (task == null) {
             return ResponseEntity.notFound().build();
@@ -52,15 +53,15 @@ public class TaskController {
     }
 
     /**
-     * Get all tasks.
+     * Get all tasks, including resolved requester and helper names.
      * @return all tasks
      */
     @Operation(summary = "Get all tasks")
     @ApiResponse(responseCode = "200", description = "Tasks retrieved")
     @ApiResponse(responseCode = "404", description = "Unauthorised")
     @GetMapping("/tasks")
-    public ResponseEntity<List<Task>> getAllTasks() {
-        return ResponseEntity.ok(taskService.getAllTasks());
+    public ResponseEntity<List<TaskDetailDTO>> getAllTasks() {
+        return ResponseEntity.ok(taskService.getAllTaskDetails());
     }
 
     /**
@@ -103,7 +104,7 @@ public class TaskController {
     }
 
     /**
-     * Get all tasks for a specific user.
+     * Get all tasks for a specific user, including resolved requester and helper names.
      * @param userId the ID of the user
      * @return tasks linked to the user's dependent profile, or 404 if not found
      */
@@ -111,14 +112,13 @@ public class TaskController {
     @ApiResponse(responseCode = "200", description = "Tasks retrieved")
     @ApiResponse(responseCode = "404", description = "No dependent profile found for user")
     @GetMapping("/users/{userId}/tasks")
-    public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable int userId, Integer helperId) {
-        List<Task> tasks = taskService.getTasksByUserId(userId);
+    public ResponseEntity<List<TaskDetailDTO>> getTasksByUserId(@PathVariable int userId, Integer helperId) {
+        List<TaskDetailDTO> tasks = taskService.getTaskDetailsByUserId(userId);
 
         if (tasks == null) {
             return ResponseEntity.notFound().build();
         }
 
-        //tasks.setHelperId(tasks.getHelperId());
         return ResponseEntity.ok(tasks);
     }
 

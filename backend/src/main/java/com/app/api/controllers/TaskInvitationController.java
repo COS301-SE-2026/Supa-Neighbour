@@ -1,7 +1,5 @@
 package com.app.api.controllers;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
 import com.app.api.models.TaskInvitation;
 import com.app.api.models.TaskInvoice;
 import com.app.api.models.Helper;
@@ -22,7 +21,15 @@ import com.app.api.repositories.HelperRepository;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.TaskInvitationService;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.app.api.dtos.MatchedHelperDTO;
+import com.app.api.services.MatchingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+
 import java.util.Map;
+import java.util.List;
+
+
 /**
  * TaskInvitation controller.
  * REST controller for TaskInvitation.
@@ -35,6 +42,8 @@ public class TaskInvitationController {
     private final TaskInvoiceRepository taskInvoiceRepository;
     private final HelperRepository helperRepository;
     private final FirebaseAuthService firebaseAuthService;
+    private final MatchingService matchingService;
+
 
     /**
      * Constructs the controller with its required collaborators.
@@ -43,12 +52,14 @@ public class TaskInvitationController {
      * @param helperRepository      repository for looking up {@link Helper} records
      * @param firebaseAuthService   service for validating Firebase tokens and resolving user IDs
      * @param taskInvoiceRepository repository for looking up {@link TaskInvoice} records
+     * @param matchingService       service for matching helpers to tasks
      */
-    public TaskInvitationController(TaskInvitationService taskInvitationService, HelperRepository helperRepository, FirebaseAuthService firebaseAuthService, TaskInvoiceRepository taskInvoiceRepository) {
+    public TaskInvitationController(TaskInvitationService taskInvitationService, HelperRepository helperRepository, FirebaseAuthService firebaseAuthService, TaskInvoiceRepository taskInvoiceRepository, MatchingService matchingService) {
         this.taskInvitationService = taskInvitationService;
         this.taskInvoiceRepository = taskInvoiceRepository;
         this.helperRepository = helperRepository;
         this.firebaseAuthService = firebaseAuthService;
+        this.matchingService = matchingService;
     }
     // GET /api/task-invitations
     /**
@@ -178,7 +189,7 @@ public class TaskInvitationController {
 
         Helper helper = helperRepository.findById(helperId).orElse(null);
         if(helper == null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Task not found"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Helper not found"));
         }
 
         TaskInvitation invitation = taskInvitationService.inviteHelper(taskId, helperId, taskInvoice, helper);
@@ -330,5 +341,33 @@ public class TaskInvitationController {
                 .body(Map.of("error", "Task is not available for declining"));
         }
 
+    }
+
+     /**
+     * Matches and invites helpers for a task.
+     * <p>
+     * The caller must be a registered helper, and the target task must be
+     * in "open" status. On success, the underlying invitation/task record
+     * transitions to "Invited".
+     *
+     * @param taskId     the ID of the task for which to find matching helpers
+     * @param authHeader the Firebase Authorization header ("Bearer &lt;token&gt;")
+     * @return 200 OK with match details on success;
+     *         404 if the task does not exist;
+     */
+    @Operation(summary = "Match and invite helpers for a task")
+    @ApiResponse(responseCode = "200", description = "Helpers matched and invited")
+    @ApiResponse(responseCode = "404", description = "Task not found")
+     @PostMapping("/{taskId}/match")
+    public ResponseEntity<?> matchHelpers(@PathVariable int taskId) {
+        List<MatchedHelperDTO> matched = matchingService.matchHelpersForTask(taskId);
+        if (matched == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "Task not found"));
+        }
+        return ResponseEntity.ok(Map.of(
+                "taskId", taskId,
+                "matchedCount", matched.size(),
+                "helpers", matched
+        ));
     }
 }
