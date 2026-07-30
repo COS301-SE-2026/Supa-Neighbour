@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 import '../../components/custom_button.dart';
 import '../../components/custom_field_input.dart';
@@ -18,7 +19,7 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
   final BulletinService _bulletinService = BulletinService();
   final TextEditingController _bodyController = TextEditingController();
   String _selectedCategory = 'general';
-  final List<File> _selectedImages = [];
+  final List<XFile> _selectedImages = [];
   bool _isSubmitting = false;
 
   final List<Map<String, String>> _categories = [
@@ -43,7 +44,7 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
 
     if (image != null && mounted) {
       setState(() {
-        _selectedImages.add(File(image.path));
+        _selectedImages.add(image);
       });
     }
   }
@@ -247,7 +248,9 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
                                 image: DecorationImage(
-                                  image: FileImage(_selectedImages[index]),
+                                  image: kIsWeb
+                                      ? NetworkImage(_selectedImages[index].path) as ImageProvider
+                                      : FileImage(File(_selectedImages[index].path)) as ImageProvider,
                                   fit: BoxFit.cover,
                                 ),
                               ),
