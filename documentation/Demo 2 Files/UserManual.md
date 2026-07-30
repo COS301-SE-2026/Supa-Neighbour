@@ -222,6 +222,12 @@ The Profile screen displays your community standing and allows you to manage you
 - Manage your privacy preferences
 - Control location and data sharing
 
+***Screenshots:***
+
+- [View  rivacy settings Page](/frontend/assets/screenshots/privact-settings.png)
+
+- [View Serttings Page](/frontend/assets/screenshots/settings.png)
+
 ### 7.8 Logout
 - Tap "Logout" to sign out of your account
 
