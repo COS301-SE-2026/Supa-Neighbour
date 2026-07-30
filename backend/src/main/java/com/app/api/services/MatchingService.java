@@ -74,7 +74,7 @@ public class MatchingService {
 
         List<MatchedHelperDTO> matched = new ArrayList<>();
 
-        for (Helper helper : availableHelpers) {
+        for(Helper helper : availableHelpers) {
 
             String helperZone = getZoneFromHelper(helper);
             if (helperZone == null) {
@@ -97,19 +97,24 @@ public class MatchingService {
                 }
             }
 
-            boolean alreadyInvited = taskInvitationRepo
-                    .findByTaskId_TaskidAndHelperId_Helperid(taskId, helper.getHelperid())
-                    .isPresent();
+            if (!skillMatched) {
+                continue;
+            }
 
-            if (!alreadyInvited) {
+            boolean alreadyExist =  taskInvitationRepo
+                .findByTaskId_TaskidAndHelperId_Helperid(taskId, helper.getHelperid())
+                .isPresent();
+
+            if(!alreadyExist){
                 TaskInvitation invitation = TaskInvitation.builder()
-                        .taskId(task)
-                        .helperId(helper)
-                        .status("Invited")
-                        .invitedAt(new Date())
-                        .build();
+                            .taskId(task)
+                            .helperId(helper)
+                            .status(null)
+                            .invitedAt(new Date())
+                            .build();
                 taskInvitationRepo.save(invitation);
             }
+            
 
             String helperName = helper.getUserid() != null
                     ? helper.getUserid().getFirstName() + " " + helper.getUserid().getLastName()
@@ -121,7 +126,7 @@ public class MatchingService {
                     helperZone,
                     skillMatched,
                     helper.getHelperXp(),
-                    "Invited"
+                    "Helper Added"
             ));
         }
 

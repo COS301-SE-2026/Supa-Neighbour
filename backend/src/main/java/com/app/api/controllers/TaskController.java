@@ -3,6 +3,8 @@ package com.app.api.controllers;
 import com.app.api.dtos.TaskDetailDTO;
 import com.app.api.models.Task;
 import com.app.api.services.TaskService;
+import com.google.firebase.auth.FirebaseAuthException;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +14,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.app.api.services.FirebaseAuthService;
 import java.util.List;
 /**
  * REST controller for task-related endpoints.
@@ -22,14 +27,16 @@ public class TaskController {
 
     /** The task service. */
     private final TaskService taskService;
+    private final FirebaseAuthService firebaseAuthService;
 
 
     /**
      * Constructs a TaskController with the given TaskService.
      * @param taskService the task service
      */
-    public TaskController(TaskService taskService) {
+    public TaskController(TaskService taskService, FirebaseAuthService firebaseAuthService) {
         this.taskService = taskService;
+        this.firebaseAuthService = firebaseAuthService;
    
     }
 
@@ -60,8 +67,17 @@ public class TaskController {
     @ApiResponse(responseCode = "200", description = "Tasks retrieved")
     @ApiResponse(responseCode = "404", description = "Unauthorised")
     @GetMapping("/tasks")
-    public ResponseEntity<List<TaskDetailDTO>> getAllTasks() {
-        return ResponseEntity.ok(taskService.getAllTaskDetails());
+    public ResponseEntity<?> getAllTasks(
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        try{
+            
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            return ResponseEntity.ok(taskService.getAllTaskDetailsByUserId(userId));
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+        }
     }
 
     /**

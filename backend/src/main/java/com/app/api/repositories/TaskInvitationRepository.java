@@ -29,4 +29,14 @@ public interface TaskInvitationRepository extends JpaRepository<TaskInvitation, 
      */
     List<TaskInvitation>findByTaskId_Taskid(int taskId);
     
+
+    /**
+     * Finds task invitations for a given helper filtered by status.
+     *
+     * @param helperId the helper's id
+     * @param status the invitation status to filter by
+     * @return matching task invitations
+     */
+    List<TaskInvitation> findByHelperId_HelperidAndStatus(int helperId, String status);
+
 }

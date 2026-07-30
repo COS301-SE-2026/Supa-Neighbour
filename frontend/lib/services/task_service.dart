@@ -65,8 +65,8 @@ class TaskService {
       if (res.statusCode == 200 && res.data != null) {
         final taskList = res.data!['tasks'] as List<dynamic>? ?? [];
         return taskList
-            .map((json) => Task.fromJson(json as Map<String, dynamic>))
-            .toList();
+          .map((json) => Task.fromHelperTaskJson(json as Map<String, dynamic>))
+          .toList();
       }
       return [];
     } on DioException catch (e) {
@@ -166,26 +166,7 @@ class TaskService {
   }
 
   
-  Future<List<Task>> getAvailableTasks(int currentUserId) async {
-    try {
-      final token = await _getToken();
-      final Response<List<dynamic>> res = await _dio.get(
-        '/tasks',
-        options: token != null
-            ? Options(headers: {'Authorization': 'Bearer $token'})
-            : null,
-      );
-      if (res.statusCode == 200 && res.data != null) {
-        return res.data!
-            .map((json) => Task.fromJson(json as Map<String, dynamic>))
-            .where((t) => t.status == 'open' && t.createdBy != currentUserId.toString())
-            .toList();
-      }
-      return [];
-    } on DioException catch (e) {
-      throw Exception("Couldn't load available tasks: ${e.message}");
-    }
-  }
+  
 
 
 Future<int?> getDependentIdForUser(int userId) async {
@@ -227,7 +208,7 @@ Future<int?> getDependentIdForUser(int userId) async {
     try {
       final token = await _getToken();
      final Response<dynamic> res = await _dio.get(
-        '/api/task-invitations',
+        '/api/task-invitations', 
         options: token != null
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
@@ -236,9 +217,9 @@ Future<int?> getDependentIdForUser(int userId) async {
       final list = res.data as List<dynamic>;
         return list
             .where((inv) {
-              final h = inv['helperId'];
+              final h = inv['helperid'];
               final hId = h is Map ? (h['helperid'] ?? h['helperId']) : null;
-              return hId == helperId && inv['status'] == 'Invited';
+              return hId == helperId && inv['status'] == null;
             })
             .map((inv) => inv as Map<String, dynamic>)
             .toList();
@@ -275,6 +256,26 @@ Future<void> declineTaskInvitation(int taskId) async {
       );
     } on DioException catch (e) {
       throw Exception("Couldn't decline task: ${e.message}");
+    }
+  }
+
+  Future<List<Task>> getAvailableTasks(int currentUserId) async {
+    try {
+      final token = await _getToken();
+      final Response<List<dynamic>> res = await _dio.get(
+        '/tasks',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        return res.data!
+            .map((json) => Task.fromJson(json as Map<String, dynamic>))
+          .toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      throw Exception("Couldn't load available tasks: ${e.message}");
     }
   }
 

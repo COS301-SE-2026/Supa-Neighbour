@@ -105,6 +105,32 @@ class Task {
         ? List<String>.from(json['completionPhotos'] as List)
         : null,
   );
+  }
+  factory Task.fromHelperTaskJson(Map<String, dynamic> json) {
+    DateTime parsedDate;
+    try {
+      parsedDate = DateTime.parse(json['startDate'] as String);
+    } catch (_) {
+      parsedDate = DateTime.now();
+    }
+
+    return Task(
+      id: json['taskId'].toString(),
+      title: json['taskType'] as String? ?? 'Untitled Task',
+      category: json['taskType'] as String? ?? 'General',
+      date: parsedDate,
+      time: TimeOfDay(hour: parsedDate.hour, minute: parsedDate.minute),
+      xpReward: json['xpAwarded'] as int? ?? 0,
+      instructions: '', // not returned by this endpoint
+      status: json['status'] as String? ?? 'open',
+      createdAt: parsedDate,
+      createdBy: '', // dependentId not returned - see below
+      helperId: null, // this IS the helper's own task list; not relevant here
+      requesterName: null, // not returned by this endpoint - see below
+      helperName: null,
+      completionNote: null,
+      completionPhotos: null,
+    );
 }
 
   /// taskTypeId -> categoryName
