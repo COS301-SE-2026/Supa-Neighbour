@@ -139,15 +139,19 @@ Future<void> _submitTask() async {
       needsSpecialist: false,
     );
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Task created successfully!'),
-          backgroundColor: Color(0xFF2A9D8F),
-        ),
-      );
-      Navigator.pop(context, {'taskId': int.tryParse(createdTask.id)});
-    }
+      final taskId = int.tryParse(createdTask.id);
+      if (taskId != null) {
+        _taskService.matchHelpersForTask(taskId);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Task created successfully!'),
+            backgroundColor: Color(0xFF2A9D8F),
+          ),
+        );
+        Navigator.pop(context, {'taskId': taskId});
+      }
   } on Exception catch (e) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
