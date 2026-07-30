@@ -279,5 +279,20 @@ Future<void> declineTaskInvitation(int taskId) async {
     }
   }
 
+  Future<void> matchHelpersForTask(int taskId) async {
+    try {
+      final token = await _getToken();
+      await _dio.post(
+        '/api/task-invitations/$taskId/match',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+    } on DioException catch (e) {
+      throw Exception("Couldn't match helpers for task: ${e.message}");
+    }
+  }
+
+
 
 }

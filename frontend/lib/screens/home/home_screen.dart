@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supa_neighbour/constants/app_colors.dart';
 import '../help/help_menu_screen.dart';
-import 'package:dio/dio.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fb;
-
 import '../../models/auth_session.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
@@ -132,18 +129,6 @@ class _HomeContentState extends State<HomeContent> {
     return 'Good evening';
   }
 
-  Future<void> _callMatchHelpers(int taskId) async {
-    try {
-      final token = await fb.FirebaseAuth.instance.currentUser?.getIdToken();
-      if (token == null) return;
-      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080'));
-      await dio.post(
-        '/api/task-invitations/$taskId/match',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-    } catch (_) {
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -207,12 +192,6 @@ class _HomeContentState extends State<HomeContent> {
           if (!mounted) return;
           if (result != null) {
             _loadNearbyTasks();
-            final taskId = result is int
-                ? result
-                : (result is Map ? result['taskId'] as int? : null);
-            if (taskId != null) {
-              _callMatchHelpers(taskId);
-            }
           }
         },
         backgroundColor: AppColors.primaryTeal(context),

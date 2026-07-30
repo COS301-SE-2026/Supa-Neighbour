@@ -417,6 +417,8 @@ The system shall calculate a user's trust score as the average rating they have 
 
 ## 4.1 Use Cases
 
+Please find the Use Cases Listed on the following Link: [Use Cases](documentation/Demo%202%20Files/High%20Level%20Use%20Case%20V2.md)
+
 
 
 ## 4.2 Use Case Diagram
