@@ -1,24 +1,27 @@
 # Software Architecture Specifications - Supa-Neighbour
 
-
 ## Table of Contents
 
-- [Software Architecture Specifications - Supa-Neighbour](#software-architecture-specifications---supa-neighbour)
-  - [Table of Contents](#table-of-contents)
-  - [1. Introduction](#1-introduction)
-  - [2. Architectural Requirements](#2-architectural-requirements)
-    - [2.1 Architectural Pattern](#21-architectural-pattern)
-      - [2.1.1 Reasons for Choosing This Architecture](#211-reasons-for-choosing-this-architecture)
+- [1. Introduction](#1-introduction)
+- [2. Architectural Requirements](#2-architectural-requirements)
+  - [2.1 Architectural Pattern](#21-architectural-pattern)
+    - [2.1.1 Reasons for Choosing This Architecture](#211-reasons-for-choosing-this-architecture)
   - [2.2 Architectural Diagram](#22architectural-diagram)
-    - [2.3 Constraints on the Architecture](#23-constraints-on-the-architecture)
-  - [3. Technology Requirements](#3-technology-requirements)
-  - [4. API Contract](#4-api-contract)
-  - [5. Deployment Requirements](#5-deployment-requirements)
-    - [Environment Parity](#environment-parity)
-    - [Secrets Management](#secrets-management)
-    - [Rollback Strategy](#rollback-strategy)
-    - [Deployment Diagram](#deployment-diagram)
-
+  - [2.3 Constraints on the Architecture](#23-constraints-on-the-architecture)
+  - [2.4 Design Patterns](#24-design-patterns)
+    - [2.4.1 Singleton Pattern (Creational)](#241-singleton-pattern-creational)
+    - [2.4.2 Factory Pattern (Creational)](#242-factory-pattern-creational)
+    - [2.4.3 Repository Pattern (Structural)](#243-repository-pattern-structural)
+    - [2.4.4 Observer Pattern (Behavioral)](#244-observer-pattern-behavioral)
+    - [2.4.5 Dependency Injection Pattern (Structural)](#245-dependency-injection-pattern-structural)
+- [3. Technology Requirements](#3-technology-requirements)
+- [4. API Contract](#4-api-contract)
+- [5. Deployment Requirements](#5-deployment-requirements)
+  - [Environment Parity](#environment-parity)
+  - [Secrets Management](#secrets-management)
+  - [Rollback Strategy](#rollback-strategy)
+  - [Deployment Diagram](#deployment-diagram)
+- [6. Quality Requirements to Architectural Decisions Mapping](#6-quality-requirements-to-architectural-decisions-mapping)
 
 ## 1. Introduction
 
@@ -31,13 +34,13 @@ This document covers all things related to the architecture and deployment of th
 
 Supa-Neighbour employs a **Client-Server Architecture** with the following components:
 
-a) **Frontend (Flutter)** — the mobile client used by residents and helpers to interact with the platform (post tasks, browse helpers, chat, view trust scores and gamification progress).
+a) **Frontend (Flutter)** - the mobile client used by residents and helpers to interact with the platform (post tasks, browse helpers, chat, view trust scores and gamification progress).
 
-b) **Backend (Spring Boot)** — the central server, which internally follows a **Layered Architecture** (Controller → Service → Repository → DTO) to separate request handling, business logic, and data access.
+b) **Backend (Spring Boot)** - the central server, which internally follows a **Layered Architecture** (Controller → Service → Repository → DTO) to separate request handling, business logic, and data access.
 
-c) **Communication** — the frontend and backend communicate via **REST APIs**, keeping the client and server decoupled and independently deployable.
+c) **Communication** - the frontend and backend communicate via **REST APIs**, keeping the client and server decoupled and independently deployable.
 
-d) **Database (Azure Database for PostgreSQL)** — a centralised database used for both read and write operations, acting as the single source of truth for tasks, users, ratings, and chat data.
+d) **Database (Azure Database for PostgreSQL)** - a centralised database used for both read and write operations, acting as the single source of truth for tasks, users, ratings, and chat data.
 
 ---
 
@@ -261,28 +264,28 @@ These five design patterns work together to create a clean, maintainable, and te
 ## 3. Technology Requirements
 
 
-**Flutter — Frontend (Mobile Application)**
+**Flutter - Frontend (Mobile Application)**
 
 - Single codebase targets both iOS and Android, saving development time for a small team on a fixed timeline
 - Widget-based architecture supports the accessible, large-font, intuitive UI required by R6
 - Built-in testing framework supports the unit/widget test coverage tracked under the Maintainability NFR
   
-**Spring Boot + Docker — Backend**
+**Spring Boot + Docker - Backend**
 
 - Mature ecosystem for building secure, RESTful, role-based APIs, supporting R5.2.2 (role-based access control for resident, helper, admin)
 - Docker packaging decouples the backend from the host environment, ensuring consistent behaviour between WSL2 development and production
 - Supports the automatic-restart recovery strategy described under the Reliability NFR
   
-**Firebase — Authentication (Login & Registration)**
+**Firebase - Authentication (Login & Registration)**
 - Provides email verification, password strength enforcement, and account lockout out of the box
 - Satisfies R1.1.1 (email verification) and R1.2.1 (password strength validation)
 - Removes the need to build and maintain custom authentication/credential-storage logic, reducing security risk
   
-**Azure Database for PostgreSQL (Flexible Server) — Database**
+**Azure Database for PostgreSQL (Flexible Server) - Database**
 - Chosen over Cosmos DB because the data (users, tasks, ratings, trust scores) is inherently relational, with clear foreign-key relationships
 - Provides automated backups with a seven-day retention period, supporting the Reliability NFR's recovery targets
   
-**Azure Blob Storage — Media Storage**
+**Azure Blob Storage - Media Storage**
 - Stores all user-uploaded images, including task completion photo evidence and in-app chat photo updates.
 - Configured with Locally Redundant Storage (LRS), keeping multiple copies of files within the Azure region
 - Supports the Reliability NFR's protection against hardware failure
@@ -330,15 +333,14 @@ The `main` branch deploys automatically to the production environment via GitHub
 
 Please refer to this for the Deployment Diagram: [Deployment Diagram](../Demo%202%20Files/Images/DeploymentDiagram_.drawio.svg)
 
-### Maping the Quality Requirements to Architectural Requiremnts
-## 6.4 Quality Requirements to Architectural Decisions Mapping
+## 6. Quality Requirements to Architectural Decisions Mapping
 
 | Quality Requirement | Architectural Decision | Rationale |
 |---|---|---|
 | **Reliability** (99.9% uptime, recover from critical failures within 5 min) | Docker container with automatic restart policy on failure | Container orchestration detects crashed processes and restarts them without manual intervention, keeping recovery time low |
-| | Azure Database for PostgreSQL with automated backups (7-day retention) | Data loss from a critical failure is bounded and recoverable — restore point available within the retention window |
+| | Azure Database for PostgreSQL with automated backups (7-day retention) | Data loss from a critical failure is bounded and recoverable - restore point available within the retention window |
 | | Azure Blob Storage with Locally Redundant Storage (LRS) | Media files survive single-hardware-node failures via automatic in-region replication |
-| **Maintainability** (deployable within 2 hrs, 80% test coverage) | CI/CD pipeline: GitHub Actions → Azure Container Registry → App Service | Automates build/test/deploy so a merged change requires no manual environment setup — collapses deploy lead time |
+| **Maintainability** (deployable within 2 hrs, 80% test coverage) | CI/CD pipeline: GitHub Actions → Azure Container Registry → App Service | Automates build/test/deploy so a merged change requires no manual environment setup - collapses deploy lead time |
 | | Environment-specific config (`application-azure.yml`) separated from local config | Prevents environment drift/manual reconfiguration at deploy time, a common source of deploy delay |
 | | Azure Key Vault for runtime secrets, GitHub Secrets for CI/CD-time secrets | Removes manual credential handling as a deployment bottleneck |
 | | SonarQube continuous coverage tracking | Coverage regressions are caught per-scan rather than only at release, keeping the 80% floor enforceable over time |
