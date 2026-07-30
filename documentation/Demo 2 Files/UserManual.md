@@ -31,10 +31,21 @@ SupaNeighbour connects residents within the same neighbourhood by enabling them 
 6. Check your email/phone for the **OTP verification code**
 7. Enter the code to activate your account
 
-<p align="center">
-<img src="documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20Screen.png" alt="..." width="400">
-</p>
+***Sign Up Screenshots:***
+- [View Sign Up Page a](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20Screen.png)
 
+- [View Sign Up Page b](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20Confirm%20OTP%20Screen.png)
+
+- [View Sign Up Page c](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Identity%20Screen.png)
+
+- [View Sign Up Page d](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Residential%20Address%20Screen.png)
+
+- [Vire Sign Up page e](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Other%20Details%20Screen.png)
+
+***Forgot password screenshots:***
+- [View Sign Up Page a](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Forgot%20Password%20Screen.png)
+
+- [View Sign Up Page b](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Forgot%20Password%20-%20Set%20Password%20Screen.png)
 
 ### 2.2 Logging In
 
@@ -42,6 +53,11 @@ SupaNeighbour connects residents within the same neighbourhood by enabling them 
 2. Enter your **Email** and **Password**
 3. Tap **"Login"**
 4. If you've forgotten your password, tap **"Forgot Password"** and follow the reset instructions
+
+***Screenshots:***
+- [View Login Page a](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Spash%20Screen.png)
+- [View Login Page b](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Splash%20-%20LoginSignup%20Screen.png)
+- [View Login Page c](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Login%20Screen.png)
 
 ---
 
@@ -61,6 +77,12 @@ The Home screen is your dashboard for everything happening in your neighbourhood
 
 **To refresh the list:** Pull down from the top of the screen.
 
+***Screenshots:***
+
+- [View Home Page a](/frontend/assets/screenshots/home-screen.png)
+- [View Home Page b](/frontend/assets/screenshots/create-task.png)
+
+
 ---
 
 ## 4. Tasks Screen
@@ -74,6 +96,14 @@ Shows tasks you have created. From here you can:
 - **Find helpers** — For open tasks, tap the task to view and invite available helpers
 - **Approve completion** — For tasks marked as complete, review and approve
 
+***Screenshots:***
+
+- [View Posted Page a](/frontend/assets/screenshots/tasks-posted.png)
+
+- [View Posted Page b](/frontend/assets/screenshots/rating.png)
+
+- [View Posted Page c](/frontend/assets/screenshots/available-helpers.png)
+
 ### 4.2 Accepted Tab
 Shows tasks you have accepted to help with. From here you can:
 - **Start a task** — Tap "Start" when you begin working on the task
@@ -81,11 +111,20 @@ Shows tasks you have accepted to help with. From here you can:
 - **Submit for approval** — After completion, the requester will review your work
 - **View task details** — Tap any task to see full information
 
+***Screenshots:***
+
+- [View Accepted Tab a](/frontend/assets/screenshots/tasks-accepted.png)
+
+
 ### 4.3 Available Tab
 Shows tasks from neighbours that you can help with. From here you can:
 - **Accept a task** — Swipe right on a task card or tap and select "Accept"
 - **Pass on a task** — Swipe left on a task card or tap and select "Pass"
 - **View task details** — Tap any task to see full information before deciding
+
+- [View Available Tab a](/frontend/assets/screenshots/tasks-available.png)
+
+- [View Available Tab b](/frontend/assets/screenshots/task-detail.png)
 
 ---
 
@@ -100,6 +139,11 @@ Shows your direct messages with neighbours.
 - **Share images** — Tap the attachment icon to send photos
 - **Real-time updates** — Messages appear instantly
 
+***Screenshots:***
+
+- [View Chat Page a](/frontend/assets/screenshots/chat-inbox.png)
+
+
 ### 5.2 Community Bulletin Tab
 Shows community announcements and updates.
 - **View posts** — Browse announcements from neighbours
@@ -108,6 +152,12 @@ Shows community announcements and updates.
 - **Search posts** — Use the search bar to find specific content
 - **React to posts** — Tap "Helpful" to show appreciation for a post
 - **Report inappropriate content** — Tap the flag icon to report a post
+
+***Screenshots:***
+
+- [View Bulletin Board Page a](/frontend/assets/screenshots/bulletin-feed.png)
+
+- [View Bulletin Board Page b](/frontend/assets/screenshots/create-bulletin.png)
 
 ---
 
@@ -127,6 +177,12 @@ The Leaderboard shows the top helpers in your neighbourhood.
 - **Gold** — Trust score ≥ 4.8
 - **Silver** — Trust score ≥ 4.5
 - **Bronze** — Trust score ≥ 4.0
+
+***Screenshots:***
+
+- [View Leaderboard Page a](/frontend/assets/screenshots/leaderboard.png)
+
+- [View Leaderboard Page b](/frontend/assets/screenshots/helper-profile.png)
 
 ---
 
@@ -169,6 +225,10 @@ The Profile screen displays your community standing and allows you to manage you
 ### 7.8 Logout
 - Tap "Logout" to sign out of your account
 
+***Screenshots:***
+
+- [View Profile Page](/frontend/assets/screenshots/profile.png)
+
 ---
 
 ## 8. Help & Support
@@ -181,6 +241,10 @@ The Help Menu includes:
 - **Frequently Asked Questions** — Common questions and answers
 - **User Manual** — This document
 - **Contact Support** — Reach out to our support team
+
+***Screenshots***
+
+- [View Help and Support Page a](/frontend/assets/screenshots/help-and-support.png)
 
 ---
 
