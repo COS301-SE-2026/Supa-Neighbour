@@ -58,6 +58,8 @@
 | Testing Policy | Team's testing standards and coverage requirements | [View Testing Policy](/documentation/Demo%202%20Files/Testing_Policy.md) |
 | Coding Standards Doc | Team's coding conventions and style guide | [View Coding Standards](/documentation/Demo%202%20Files/Coding_Standards_Document.md) |
 | Architecture Diagram | Architectural Diagram of the system | [View Diagram](/documentation/Demo%202%20Files/Images/Architecture%20diagram%20V2.png)
+| Landing Page | SupaNeighbour's Landing Page | https://green-beach-06bbfcd03.7.azurestaticapps.net/ |
+| Style Guide | SupaNeighbour's style Guide | https://red-pebble-0a5f86903.7.azurestaticapps.net/ |
 
 ---
 
