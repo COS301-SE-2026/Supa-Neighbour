@@ -2,8 +2,10 @@ package com.app.api.services;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
+import com.app.api.models.Dependent;
 
 import com.app.api.models.TaskInvoice;
+import com.app.api.repositories.DependentRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 
 /**
@@ -14,14 +16,16 @@ import com.app.api.repositories.TaskInvoiceRepository;
 public class TaskInvoiceService {
 
     private final TaskInvoiceRepository taskInvoiceRepository;
+    private final DependentRepository dependentRepository;
 
     /**
      * Constructs the service with its required repository dependency.
      *
      * @param taskInvoiceRepository repository providing analytics data for taskInvoice
      */
-    public TaskInvoiceService(TaskInvoiceRepository taskInvoiceRepository) {
+    public TaskInvoiceService(TaskInvoiceRepository taskInvoiceRepository, DependentRepository dependentRepository) {
         this.taskInvoiceRepository = taskInvoiceRepository;
+        this.dependentRepository = dependentRepository;
     }
 
     // Get all
@@ -51,11 +55,18 @@ public class TaskInvoiceService {
      * @param taskInvoice the task invoice to save
      * @return the saved task invoice, or null if the provided task invoice is null
      */
-    public TaskInvoice saveTaskInvoice(TaskInvoice taskInvoice) {
+    public TaskInvoice saveTaskInvoice(int userId, TaskInvoice taskInvoice) {
         if(taskInvoice == null) {
             return null;
         }
 
+        Dependent dependent = dependentRepository.findByUserId_Userid(userId);
+
+        if(dependent == null){
+            return null;
+        }
+
+        taskInvoice.setDependentid(dependent);
         return taskInvoiceRepository.save(taskInvoice);
     }
 

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.sql.Date;
 
 import com.app.api.dtos.TaskDetailDTO;
 import com.app.api.models.Analytics;
@@ -11,6 +12,8 @@ import com.app.api.models.Chat;
 import com.app.api.models.Dependent;
 import com.app.api.models.Helper;
 import com.app.api.models.Task;
+import com.app.api.models.TaskInvitation;
+import com.app.api.models.TaskInvoice;
 import com.app.api.models.User;
 import com.app.api.repositories.AnalyticsRepository;
 import com.app.api.repositories.ChatRepository;
@@ -18,6 +21,8 @@ import com.app.api.repositories.DependentRepository;
 import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.MessageRepository;
 import com.app.api.repositories.TaskRepository;
+import com.app.api.repositories.TaskInvitationRepository;
+import java.util.Optional;
 
 /**
  * Service layer for task-related business logic.
@@ -43,6 +48,8 @@ public class TaskService {
     /** The helper repository. */
     private final HelperRepository helperRepo;
 
+    private final TaskInvitationRepository taskInvitationRepo;
+
     /**
      * Constructs a TaskService with the required repositories.
      * @param taskRepo the task repository
@@ -54,13 +61,14 @@ public class TaskService {
      */
     public TaskService(TaskRepository taskRepo, AnalyticsRepository analyticsRepo,
             DependentRepository dependentRepo, ChatRepository chatRepo,
-            MessageRepository messageRepo, HelperRepository helperRepo) {
+            MessageRepository messageRepo, HelperRepository helperRepo, TaskInvitationRepository taskInvitationRepo) {
         this.taskRepo = taskRepo;
         this.analyticsRepo = analyticsRepo;
         this.dependentRepo = dependentRepo;
         this.chatRepo = chatRepo;
         this.messageRepo = messageRepo;
         this.helperRepo = helperRepo;
+        this.taskInvitationRepo = taskInvitationRepo;
     }
 
     /**
@@ -249,12 +257,49 @@ public class TaskService {
      * Get all tasks, with requester and helper names resolved.
      * @return all task details
      */
-    public List<TaskDetailDTO> getAllTaskDetails() {
+    public List<TaskDetailDTO> getAllTaskDetailsByUserId(int userId) {
         List<TaskDetailDTO> details = new ArrayList<>();
-        for (Task task : taskRepo.findAll()) {
-            details.add(toDetailDTO(task));
+        Optional<Helper> helperOptional = helperRepo.findByUserid_Userid(userId);
+
+        if(helperOptional.isEmpty()){
+            return new ArrayList<>();
+        }
+
+        Helper helper = helperOptional.get();
+        
+        List<TaskInvitation> pending = taskInvitationRepo.findByHelperId_HelperidAndStatus(helper.getHelperid(), null);
+        List<Integer> taskIds = new ArrayList<>();
+        for(TaskInvitation invitation: pending){
+            TaskInvoice taskInvoice = invitation.getTaskId();
+            if(taskInvoice != null){
+                Task task = convertToTask(taskInvoice);
+                details.add(toDetailDTO(task));
+            }
         }
         return details;
+    }
+    /**
+     * 
+     */
+    private Task convertToTask(TaskInvoice invoice) {
+        Task task = new Task();
+        task.setTaskId(invoice.getTaskid());
+        task.setHelperId(invoice.getHelperid() != null ? invoice.getHelperid().getHelperid() : null);
+        task.setDependentId(invoice.getDependentid() != null ? invoice.getDependentid().getUserId().getUserid() : null);
+        task.setImmediate(invoice.getImmediate());
+        task.setLocationId(invoice.getLocationid() != null ? invoice.getLocationid().getLocationid() : null);
+        task.setTaskTypeId(invoice.getTasktypeid() != null ? invoice.getTasktypeid().getTasktypeid() : null);
+        task.setNeedsSpecialist(invoice.isNeedsspecialist());
+        task.setSignedAdminId(invoice.getSignedadminid() != null ? invoice.getSignedadminid().getAdminid() : null);
+        task.setStartDate(invoice.getStartdate() != null ? Date.valueOf(invoice.getStartdate()) : null);
+        task.setEndDate(invoice.getEnddate() != null ? Date.valueOf(invoice.getEnddate()) : null);
+        task.setHelperBadgeId(invoice.getHelperbadgeid() != null ? invoice.getHelperbadgeid().getBadgeid() : null);
+        task.setDependentRatingId(invoice.getDependentRatingreview());
+        task.setHelperRatingId(invoice.getHelperRatingreview());
+        task.setAdminReview(invoice.getAdminReview());
+        task.setStatus(invoice.getStatus());
+        task.setCompatibilityId(invoice.getCompatibilityid() != null ? invoice.getCompatibilityid().getCompatibilityid() : null);
+        return task;
     }
 
     /**

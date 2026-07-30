@@ -60,6 +60,12 @@
 | Architecture Diagram | Architectural Diagram of the system | [View Diagram](/documentation/Demo%202%20Files/Images/Architecture%20diagram%20V2.png)
 | Landing Page | SupaNeighbour's Landing Page | https://green-beach-06bbfcd03.7.azurestaticapps.net/ |
 | Style Guide | SupaNeighbour's style Guide | https://red-pebble-0a5f86903.7.azurestaticapps.net/ |
+| Live Backend | The deployed backend to Azure | https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net/ |
+
+> Please note that the above link to the live backend will lead you to meet with a white label error page. If you would like to confirm that the backend is live, please use the following api to test:
+https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net/api/users
+
+> You will be met with a list of all users in json/xml format
 
 ---
 

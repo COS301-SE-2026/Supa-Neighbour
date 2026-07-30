@@ -22,7 +22,7 @@
 
 ## 1. Introduction
 
-FILL THIS IN
+This document covers all things related to the architecture and deployment of the system.
 
 ## 2. Architectural Requirements
 
@@ -321,11 +321,28 @@ The `main` branch deploys automatically to the production environment via GitHub
 
 
 ### Rollback Strategy
-//FILL THIS
+
+- **Backend:** Every image pushed to Azure Container Registry is tagged uniquely by branch name and commit SHA, so no previous version is ever overwritten. In the event of a failed deployment, rollback is performed by re-pointing the Azure Web App's container configuration to the last known-good image tag and restarting the app.
+- **Frontend (static pages):** Deployments are tied to Git commits via GitHub Actions. Rollback is performed by checking out the last known-good commit, rebuilding, and redeploying via the Static Web Apps CLI.
 
 
 ### Deployment Diagram
 
-//FILL THIS AS WELL
+Please refer to this for the Deployment Diagram: [Deployment Diagram](../Demo%202%20Files/Images/DeploymentDiagram_.drawio.svg)
 
+### Maping the Quality Requirements to Architectural Requiremnts
+## 6.4 Quality Requirements to Architectural Decisions Mapping
 
+| Quality Requirement | Architectural Decision | Rationale |
+|---|---|---|
+| **Reliability** (99.9% uptime, recover from critical failures within 5 min) | Docker container with automatic restart policy on failure | Container orchestration detects crashed processes and restarts them without manual intervention, keeping recovery time low |
+| | Azure Database for PostgreSQL with automated backups (7-day retention) | Data loss from a critical failure is bounded and recoverable — restore point available within the retention window |
+| | Azure Blob Storage with Locally Redundant Storage (LRS) | Media files survive single-hardware-node failures via automatic in-region replication |
+| **Maintainability** (deployable within 2 hrs, 80% test coverage) | CI/CD pipeline: GitHub Actions → Azure Container Registry → App Service | Automates build/test/deploy so a merged change requires no manual environment setup — collapses deploy lead time |
+| | Environment-specific config (`application-azure.yml`) separated from local config | Prevents environment drift/manual reconfiguration at deploy time, a common source of deploy delay |
+| | Azure Key Vault for runtime secrets, GitHub Secrets for CI/CD-time secrets | Removes manual credential handling as a deployment bottleneck |
+| | SonarQube continuous coverage tracking | Coverage regressions are caught per-scan rather than only at release, keeping the 80% floor enforceable over time |
+| | Layered Controller → Service → Repository → DTO pattern | Isolates change impact to a single layer, reducing the blast radius (and testing effort) of new features/fixes |
+| **Availability** (24/7, ≤2 hrs/month scheduled maintenance) | Azure App Service (PaaS) for backend hosting | Managed platform with built-in uptime SLA, patching, and health monitoring, rather than self-managed VM uptime |
+| | Azure Postgres Flexible Server (managed DB service) | Managed service uptime SLA + built-in failover handling, removing single-point-of-failure risk from self-hosted DB |
+| | Stateless backend design (no server-side session state) | Any instance can serve any request, so scheduled maintenance or instance restarts don't require app-wide downtime |

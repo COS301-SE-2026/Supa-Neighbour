@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,10 +14,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.google.firebase.auth.FirebaseAuthException;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.app.api.models.TaskInvoice;
+import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.TaskInvoiceService;
+import com.google.firebase.auth.FirebaseAuthException;
 
 /**
  * REST controller for task invoice.
@@ -28,13 +32,16 @@ public class TaskInvoiceController {
     
     private final TaskInvoiceService taskInvoiceService;
 
+    private final FirebaseAuthService firebaseAuthService;
+
     /**
      * Constructs the controller with its required service dependency.
      *
      * @param taskInvoiceService service providing analytics data for taskInvoice
      */
-    public TaskInvoiceController(TaskInvoiceService taskInvoiceService) {
+    public TaskInvoiceController(TaskInvoiceService taskInvoiceService, FirebaseAuthService firebaseAuthService) {
         this.taskInvoiceService = taskInvoiceService;
+        this.firebaseAuthService = firebaseAuthService;
     }
     // GET /api/taskinvoices    
     /**
@@ -71,12 +78,23 @@ public class TaskInvoiceController {
      * @return the created task invoice with HTTP 201 status
      */
     @PostMapping
-    public ResponseEntity<TaskInvoice> createTaskInvoice(@RequestBody(required = false) TaskInvoice taskInvoice) {
+    public ResponseEntity<?> createTaskInvoice(
+        @RequestHeader("Authorization") String authHeader,
+        @RequestBody(required = false) TaskInvoice taskInvoice) {
         if(taskInvoice == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        TaskInvoice saved = taskInvoiceService.saveTaskInvoice(taskInvoice);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            TaskInvoice saved = taskInvoiceService.saveTaskInvoice(userId, taskInvoice);
+            if (saved == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            }
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+        }
     }
 
      /**
@@ -96,13 +114,24 @@ public class TaskInvoiceController {
      * @return the updated task invoice if found, otherwise 404 Not Found
      */
     @PutMapping("/{id}")
-    public ResponseEntity<TaskInvoice> updateTaskInvoice(@PathVariable int id, @RequestBody TaskInvoice taskInvoice) {
-        TaskInvoice existing = taskInvoiceService.getTaskInvoiceById(id);
-        if (existing == null) {
-            return ResponseEntity.notFound().build();
-        }
-        TaskInvoice updated = taskInvoiceService.updateTaskInvoice(id, taskInvoice);
+    public ResponseEntity<?> updateTaskInvoice(
+        @PathVariable int id, 
+        @RequestBody TaskInvoice taskInvoice,
+        @RequestHeader("Authorization") String authHeader) {
+        try{
+            String token = authHeader.replace("Bearer, ", "");
+            firebaseAuthService.getUserIdFromToken(token);
+
+            TaskInvoice existing = taskInvoiceService.getTaskInvoiceById(id);
+            if (existing == null) {
+                return ResponseEntity.notFound().build();
+            }
+            TaskInvoice updated = taskInvoiceService.updateTaskInvoice(id, taskInvoice);
         return ResponseEntity.ok(updated);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+        }
+        
     }
 
     // DELETE /api/taskinvoices/1

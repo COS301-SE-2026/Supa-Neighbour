@@ -2,10 +2,12 @@ package com.app.api.unit.controllers;
 
 import java.util.List;
 import com.app.api.dtos.CommentPostResponseDTO;
+import com.app.api.dtos.CommentReactionResponseDTO;
 import com.app.api.dtos.CommentRequestDTO;
 import com.app.api.dtos.CommentResponseDTO;
 import com.app.api.dtos.ReactionRemovedResponseDTO;
 import com.app.api.dtos.ReactionResponseDTO;
+import com.app.api.models.Reaction;
 import com.app.api.repositories.UserRepository;
 import com.app.api.security.FirebaseAuthenticationFilter;
 import com.app.api.services.CommentsService;
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuthException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -24,7 +27,8 @@ import org.springframework.http.MediaType;
 import com.app.api.controllers.CommentsController;
 import com.app.api.controllers.PostsController;
 import com.app.api.controllers.ReactionController;
-
+import com.app.api.repositories.ReactionRepository;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -41,6 +45,9 @@ public class BulletinControllerTest {
     private ObjectMapper objectMapper;
     @MockitoBean
     private FirebaseAuthService firebaseAuthService;
+
+    @MockitoBean
+    private ReactionRepository reactionRepository;
 
     @MockitoBean
     private UserRepository userRepository;
@@ -164,9 +171,46 @@ public class BulletinControllerTest {
                 .header("Authorization", "Bearer bad-token"))
                 .andExpect(status().isUnauthorized());
     }
+
+    //Reactions table API's
+//     @Test
+//     void createLike_withValidToken_return401()throws Exception {
+//         ReactionResponseDTO response = mock(ReactionResponseDTO.class);
+//         User user = mock(User.class);
+
+//         when(firebaseAuthService.getUserIdFromToken(anyString())).thenReturn(1);
+//                 when(reactionRepository.countByUserAndPost(1, 1))
+//                 .thenReturn(0L)
+//                 .thenReturn(1L);
+//         when(userRepository.getReferenceById(1)).thenReturn(user);
+//         when(reactionRepository.save(any(Reaction.class))).thenAnswer(inv -> inv.getArgument(0));
+ 
+//         CommentReactionResponseDTO response =
+//                 reactionService.addHelpfulReactionToPost(1, 1);
+ 
+//         assertNotNull(response);
+//         assertEquals(1, response.getPostId());
+//         assertEquals("like", response.getReactionType());
+//         assertEquals(1L, response.getHelpfulCount());
+//         assertEquals("Reaction added", response.getMessage());
+ 
+//         verify(reactionRepository, times(1)).save(any(Reaction.class));
+//         verify(userRepository, times(1)).getReferenceById(1);
+
+//         mockMvc.perform(post("/api/reaction/posts/1/dislike")
+//                 .header("Authorization", VALID_TOKEN))
+//                 .andExpect(status().isCreated());
+//     }
 }
 
 // GET /api/bulletin/posts/{postId}/comments
 // POST /api/comments/bulletin/{postId}
 // POST /api/bulletin/posts/{postId}/dis-helpful
 // DELETE /api/bulletin/posts/{postId}/dis-helpful
+
+// GET /api/bulletin/posts/{postId}
+// POST /api/bulletin/posts
+// POST /api/upload/image
+// DELETE /api/bulletin/posts/{postId}
+// POST /api/bulletin/posts/{postId}/like
+// DELETE /api/bulletin/posts/{postId}/like
