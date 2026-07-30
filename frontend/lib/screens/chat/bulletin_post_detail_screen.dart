@@ -6,13 +6,12 @@ import '../../models/bulletin_comment_model.dart';
 import '../../services/bulletin_service.dart';
 
 class BulletinPostDetailScreen extends StatefulWidget {
-  final String postId;
+   final int postId;
 
   const BulletinPostDetailScreen({
     super.key,
     required this.postId,
   });
-
   @override
   State<BulletinPostDetailScreen> createState() => _BulletinPostDetailScreenState();
 }
@@ -42,7 +41,8 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
         _post = post;
         _comments = comments;
         _isHelpful = post.isHelpfulByUser;
-        _helpfulCount = post.helpfulCount;
+        _helpfulCount = post.likeCount;
+
         _isLoading = false;
       });
     } catch (e) {
@@ -242,7 +242,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            post.authorName,
+                            post.authorUsername,
                             style: GoogleFonts.openSans(
                               color: AppColors.charcoal(context),
                               fontSize: 16,
@@ -282,45 +282,26 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    post.title,
+                    post.postContent,
                     style: GoogleFonts.poppins(
                       color: AppColors.charcoal(context),
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    post.body,
-                    style: GoogleFonts.openSans(
-                      color: AppColors.charcoal(context),
-                      fontSize: 16,
-                      height: 1.6,
-                    ),
-                  ),
                   const SizedBox(height: 16),
-                  if (post.imageUrls.isNotEmpty)
-                    SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: post.imageUrls.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            width: 200,
-                            height: 200,
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              image: DecorationImage(
-                                image: NetworkImage(post.imageUrls[index]),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          );
-                        },
+                  if (post.mediaUrl != null)
+                  Container(
+                    width: double.infinity,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      image: DecorationImage(
+                        image: NetworkImage(post.mediaUrl!),
+                        fit: BoxFit.cover,
                       ),
                     ),
+                  ),
                   const SizedBox(height: 16),
                   Row(
                     children: [

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import '../../services/task_service.dart';
-import '../../constants/app_colors.dart'; // ADD: Import AppColors
+import '../../models/auth_session.dart';
+import '../../constants/app_colors.dart';
+
 
 class CreateTaskScreen extends StatefulWidget {
   const CreateTaskScreen({super.key});
@@ -91,81 +93,75 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   final TaskService _taskService = TaskService();
   bool _isSubmit = false;
 
-  void _submitTask() async {
-    // Validate required fields
-    if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a task title')),
-      );
-      return;
-    }
+Future<void> _submitTask() async {
+  if (_titleController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter a task title')),
+    );
+    return;
+  }
+  if (_selectedCategory == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select a category')),
+    );
+    return;
+  }
 
-    if (_selectedCategory == null) {
+      final userId = int.tryParse(AuthSession.instance.currentUser?.id ?? '');
+    if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')),
+        const SnackBar(content: Text('You must be logged in to create a task')),
       );
       return;
     }
 
     setState(() => _isSubmit = true);
-    
+
     try {
-      await _taskService.createTask(
-        dependentId: 1, // will update to auth users
-        taskTypeId: Task.resolveTaskTypeId(_selectedCategory!),
-        startDate: _selectedDate,
-        isImmediate: false,
-        needsSpecialist: false,
-      );
+      final dependentId = await _taskService.getDependentIdForUser(userId);
+        if (dependentId == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Could not resolve your profile. Please log out and back in.')),
+            );
+            setState(() => _isSubmit = false);
+          }
+          return;
+        }
 
-      if(mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Task created successfully!'),
-            // CHANGE: Use AppColors.primaryTeal
-            backgroundColor: AppColors.primaryTeal(context),
-          ),
-        );
-        Navigator.pop(context, true);
-      }
-    } catch(e) {
-      // fallback to what we mocked
-      // Create new task with all required parameters
-      final newTask = Task(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        title: _titleController.text,
-        category: _selectedCategory!,
-        date: _selectedDate,
-        time: _selectedTime,
-        xpReward: 50, // Default XP reward
-        instructions: _instructionsController.text.isNotEmpty
-            ? _instructionsController.text
-            : 'No additional instructions',
-        status: 'open',  // New task starts as 'open' (waiting for helper)
-        createdAt: DateTime.now(),
-        createdBy: 'currentUser',  // The current user is the creator
-        requesterName: 'You',       // Display name for requester
-        helperId: null,             // No helper yet
-        helperName: null,           // No helper yet
-      );
-      // Add to mock data list
-      Task.addMockTask(newTask);
+      final createdTask = await _taskService.createTask(
+        dependentId: dependentId,
 
-      if(mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Task saved locally (offline mode)'),
-            // CHANGE: Use AppColors.citrusYellow
-            backgroundColor: AppColors.citrusYellow(context),
-          ),
-        );
-        // Navigate back
-        Navigator.pop(context, true);
-      }
-    } finally {
-      if(mounted) setState(() => _isSubmit = false);
+
+      taskTypeId: Task.resolveTaskTypeId(_selectedCategory!),
+      startDate: _selectedDate,
+      isImmediate: false,
+      needsSpecialist: false,
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Task created successfully!'),
+          backgroundColor: Color(0xFF2A9D8F),
+        ),
+      );
+      Navigator.pop(context, {'taskId': int.tryParse(createdTask.id)});
     }
+  } on Exception catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => _isSubmit = false);
   }
+  }
+
 
   @override
   Widget build(BuildContext context) {

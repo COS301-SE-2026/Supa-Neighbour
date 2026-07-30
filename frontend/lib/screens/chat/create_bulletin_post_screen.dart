@@ -15,7 +15,7 @@ class CreateBulletinPostScreen extends StatefulWidget {
 }
 
 class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
-  final TextEditingController _titleController = TextEditingController();
+  final BulletinService _bulletinService = BulletinService();
   final TextEditingController _bodyController = TextEditingController();
   String _selectedCategory = 'general';
   final List<File> _selectedImages = [];
@@ -55,16 +55,6 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
   }
 
   Future<void> _submitPost() async {
-    if (_titleController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter a post title'),
-          backgroundColor: AppColors.error(context),
-        ),
-      );
-      return;
-    }
-
     if (_bodyController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -80,14 +70,15 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
     });
 
     try {
-      //Upload images to server first, then get URLs
-      final List<String> imageUrls = []; //actual URLs after upload
+      String? mediaUrl;
+      if (_selectedImages.isNotEmpty) {
+        mediaUrl = await _bulletinService.uploadImage(_selectedImages.first);
+      }
 
-      await BulletinService().createPost(
-        title: _titleController.text.trim(),
-        body: _bodyController.text.trim(),
+      await _bulletinService.createPost(
+        postContent: _bodyController.text.trim(),
         category: _selectedCategory,
-        imageUrls: imageUrls,
+        mediaUrl: mediaUrl,
       );
 
       if (mounted) {
@@ -141,17 +132,10 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CustomInputField(
-              label: 'Post Title',
-              hintText: 'Enter a title for your post',
-              controller: _titleController,
-              maxLines: 1,
-            ),
-            const SizedBox(height: 16),
-            CustomInputField(
-              label: 'Post Body',
+              label: 'Post Content',
               hintText: 'Write your announcement...',
               controller: _bodyController,
-              maxLines: 5,
+              maxLines: 6,
             ),
             const SizedBox(height: 16),
             Text(

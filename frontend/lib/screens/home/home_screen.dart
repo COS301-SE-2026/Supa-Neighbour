@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supa_neighbour/constants/app_colors.dart';
 import '../help/help_menu_screen.dart';
+import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+
 import '../../models/auth_session.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
+import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../tasks/create_task_screen.dart';
 import '../leaderboard/leaderboard_screen.dart';
@@ -13,6 +17,7 @@ import '../tasks/my_tasks_screen.dart';
 import '../profile/profile_screen.dart';
 import '../tasks/task_detail_screen.dart';
 import '../../services/task_service.dart';
+
 
 
 class HomeScreen extends StatefulWidget {
@@ -59,47 +64,66 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   List<Task> _nearbyTasks = [];
+  List<Task> _availableTasks = [];
+   
   User? _currentUser;
-  //
-  static const int _currentUserId = 6;
   final TaskService _taskService = TaskService();
-  //bool _isLoadingUser = false;
+  double _trustScore = 0.0;
+  bool _isLoadingStats = true;
+  int _helpsGiven = 0;
 
+  int? get _currentUserId {
+    final id = AuthSession.instance.currentUser?.id;
+    return id != null ? int.tryParse(id) : null;
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadCurrentUser();
-    _loadNearbyTasks();
+    _currentUser = AuthSession.instance.currentUser;
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoadingStats = true);
+    final userId = _currentUserId;
+    if (userId == null) {
+      setState(() => _isLoadingStats = false);
+      return;
     }
-
-
-  Future<void> _loadCurrentUser() async {
-  try {
-    final data = await _taskService.getUserById(_currentUserId);
-    final user = User.fromJson(data);
-    AuthSession.instance.login(user);
-    setState(() {
-      _currentUser = user;
-    });
-  } catch (e) {
-    // fallback to mock if API unavailable
-    setState(() {
-      _currentUser = AuthSession.instance.currentUser ?? User.getMockUser();
-    });
+    try {
+      final results = await Future.wait([
+        _taskService.getTasksByUserId(userId),
+        _taskService.getUserById(userId),
+      ]);
+      final tasks = results[0] as List<Task>;
+      final userMap = results[1] as Map<String, dynamic>;
+      if (!mounted) return;
+      setState(() {
+        _nearbyTasks = tasks;
+        _helpsGiven = tasks.where((t) => t.status == 'completed').length;
+        final ratingData = userMap['rating'];
+        if (ratingData != null && ratingData is Map) {
+          final score = ratingData['averageRating'];
+          _trustScore = score != null ? (score as num).toDouble() : 0.0;
+        }
+        _isLoadingStats = false;
+      });
+      final available = await _taskService.getAvailableTasks(userId);
+      if (mounted) setState(() => _availableTasks = available);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _nearbyTasks = [];
+        _isLoadingStats = false;
+      });
+    }
   }
+
+ Future<void> _loadNearbyTasks() async {
+  await _loadData();
 }
 
-
-Future<void> _loadNearbyTasks() async {
-  //real api should be integrated, for now this is mock data
-  await Future.delayed(const Duration(milliseconds: 300));
-  if (mounted) {
-    setState(() {
-      _nearbyTasks = Task.getMockTasks();
-    });
-  }
-}
 
 
   String getGreeting() {
@@ -107,6 +131,19 @@ Future<void> _loadNearbyTasks() async {
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
+  }
+
+  Future<void> _callMatchHelpers(int taskId) async {
+    try {
+      final token = await fb.FirebaseAuth.instance.currentUser?.getIdToken();
+      if (token == null) return;
+      final dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080'));
+      await dio.post(
+        '/api/task-invitations/$taskId/match',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+    } catch (_) {
+    }
   }
 
   @override
@@ -154,7 +191,7 @@ Future<void> _loadNearbyTasks() async {
               const SizedBox(height: 24),
               _buildNearbyTasksSection(context),
               const SizedBox(height: 12),
-              _nearbyTasks.isEmpty
+              _nearbyTasks.isEmpty && _availableTasks.isEmpty
                   ? _buildEmptyState()
                   : _buildNearbyTaskList(context),
               const SizedBox(height: 80),
@@ -164,13 +201,20 @@ Future<void> _loadNearbyTasks() async {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.push(
+          final result = await Navigator.push<dynamic>(
             context,
-            MaterialPageRoute(
-              builder: (_) => const CreateTaskScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const CreateTaskScreen()),
           );
-          await _loadNearbyTasks();
+          if (!mounted) return;
+          if (result != null) {
+            _loadNearbyTasks();
+            final taskId = result is int
+                ? result
+                : (result is Map ? result['taskId'] as int? : null);
+            if (taskId != null) {
+              _callMatchHelpers(taskId);
+            }
+          }
         },
         backgroundColor: AppColors.primaryTeal(context),
         child: const Icon(Icons.add, color: Colors.white),
@@ -225,7 +269,9 @@ Future<void> _loadNearbyTasks() async {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '⭐ 4.8 Trust Score',
+                    _isLoadingStats
+                        ? '⭐ -- Trust Score'
+                        : '⭐ ${_trustScore.toStringAsFixed(1)} Trust Score',
                     style: GoogleFonts.openSans(
                       color: AppColors.charcoal(context),
                       fontSize: 12,
@@ -288,14 +334,16 @@ Future<void> _loadNearbyTasks() async {
   }
 
   Widget _buildStatsRow() {
-    final tasksCount = _nearbyTasks.length;
-    final activeCount = _nearbyTasks.where((t) => t.status == 'pending').length;
-    
+    final tasksPosted = _nearbyTasks.length;
+    final activeCount = _nearbyTasks
+        .where((t) => t.status == 'open' || t.status == 'assigned' || t.status == 'in_progress')
+        .length;
+
     return Row(
       children: [
-        _buildStatCard('5', 'Helps Given', AppColors.primaryTeal(context)),
+        _buildStatCard(_helpsGiven.toString(), 'Completed', const Color(0xFF2A9D8F)),
         const SizedBox(width: 12),
-        _buildStatCard(tasksCount.toString(), 'Tasks Posted', AppColors.citrusYellow(context)),
+        _buildStatCard(tasksPosted.toString(), 'Tasks Posted', const Color(0xFFE9C46A)),
         const SizedBox(width: 12),
         _buildStatCard(activeCount.toString(), 'Active', const Color(0xFF69B578)),
       ],
@@ -359,7 +407,7 @@ Future<void> _loadNearbyTasks() async {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const MyTasksScreen(initialTab: 2),
+              builder: (context) => const MyTasksScreen(initialTab: 0),
             ),
           );
         },
@@ -377,8 +425,9 @@ Future<void> _loadNearbyTasks() async {
 }
 
   Widget _buildNearbyTaskList(BuildContext context) {
+    final displayTasks = _availableTasks.isNotEmpty ? _availableTasks : _nearbyTasks;
     return Column(
-      children: _nearbyTasks.map((task) {
+      children: displayTasks.take(5).map((task) {
         return _buildTaskCard(
           context: context,
           task: task,

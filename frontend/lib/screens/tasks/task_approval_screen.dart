@@ -5,6 +5,9 @@ import '../../components/custom_button.dart';
 import '../../components/custom_field_input.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../services/task_service.dart';
+
+
 
 class TaskApprovalScreen extends StatefulWidget {
   final Task task;
@@ -22,6 +25,8 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
   double _rating = 0;
   final TextEditingController _reviewController = TextEditingController();
   bool _isSubmitting = false;
+
+  final TaskService _taskService = TaskService();
 
   @override
   void dispose() {
@@ -387,9 +392,9 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
     );
   }
 
-  void _approveCompletion(BuildContext context) async {
-  final scaffoldContext = context;
+ 
 
+ Future<void> _approveCompletion(BuildContext context) async {
   final confirmed = await showDialog<bool>(
     context: context,
     barrierDismissible: false,
@@ -398,7 +403,8 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Confirming will award XP to the helper and mark this task as complete.'),
+          const Text(
+              'Confirming...will award XP to the helper and mark this task as complete.'),
           const SizedBox(height: 8),
           Text(
             'Rating: ${_rating.toStringAsFixed(1)} / 5.0',
@@ -425,29 +431,44 @@ class _TaskApprovalScreenState extends State<TaskApprovalScreen> {
     ),
   );
 
-  if (confirmed == true) {
-    setState(() => _isSubmitting = true);
+  if (confirmed != true) return;
 
-    //Call API to approve task with rating and review
-    //await taskService.approveTask(widget.task.id, _rating, _reviewController.text);
+  setState(() => _isSubmitting = true);
+
+  try {
+    await _taskService.updateTask(
+      taskId: int.parse(widget.task.id),
+      status: 'completed',
+      adminReview: _reviewController.text.isNotEmpty
+          ? '${_rating.toStringAsFixed(1)}/5 — ${_reviewController.text}'
+          : '${_rating.toStringAsFixed(1)}/5',
+    );
 
     Task.updateTaskStatus(widget.task.id, 'completed');
 
-    //Save rating and review to database
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ScaffoldMessenger.of(scaffoldContext).showSnackBar(
-          const SnackBar(
-            content: Text('Task approved! XP awarded to helper.'),
-            backgroundColor: Color(0xFF4CAF50),
-          ),
-        );
-        Navigator.pop(scaffoldContext);
-      }
-    });
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Task approved! XP awarded to helper.'),
+          backgroundColor: Color(0xFF4CAF50),
+        ),
+      );
+      Navigator.pop(context);
+    }
+  } on Exception catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => _isSubmitting = false);
   }
 }
+
 
   IconData _getCategoryIcon(String category) {
     switch (category) {

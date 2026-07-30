@@ -1,16 +1,21 @@
 package com.app.api.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.app.api.dtos.TaskDetailDTO;
 import com.app.api.models.Analytics;
 import com.app.api.models.Chat;
 import com.app.api.models.Dependent;
+import com.app.api.models.Helper;
 import com.app.api.models.Task;
+import com.app.api.models.User;
 import com.app.api.repositories.AnalyticsRepository;
 import com.app.api.repositories.ChatRepository;
 import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.MessageRepository;
 import com.app.api.repositories.TaskRepository;
 
@@ -35,6 +40,9 @@ public class TaskService {
     /** The message repository. */
     private final MessageRepository messageRepo;
 
+    /** The helper repository. */
+    private final HelperRepository helperRepo;
+
     /**
      * Constructs a TaskService with the required repositories.
      * @param taskRepo the task repository
@@ -42,16 +50,17 @@ public class TaskService {
      * @param dependentRepo the dependent repository
      * @param chatRepo the chat repository
      * @param messageRepo the message repository
+     * @param helperRepo the helper repository
      */
-
     public TaskService(TaskRepository taskRepo, AnalyticsRepository analyticsRepo,
             DependentRepository dependentRepo, ChatRepository chatRepo,
-            MessageRepository messageRepo) {
+            MessageRepository messageRepo, HelperRepository helperRepo) {
         this.taskRepo = taskRepo;
         this.analyticsRepo = analyticsRepo;
         this.dependentRepo = dependentRepo;
         this.chatRepo = chatRepo;
         this.messageRepo = messageRepo;
+        this.helperRepo = helperRepo;
     }
 
     /**
@@ -139,6 +148,10 @@ public class TaskService {
             targetTask.setAdminReview(updates.getAdminReview());
         }
 
+        if (updates.getStatus() != null) {
+            targetTask.setStatus(updates.getStatus());
+        }
+
         return taskRepo.save(targetTask);
     }
 
@@ -165,4 +178,101 @@ public class TaskService {
         return taskRepo.save(task);
     }
 
+    /**
+     * Combines a user's first and last name into a single display name.
+     * @param user the user to build a display name for
+     * @return the combined name, or null if the user has no usable name
+     */
+    private String fullName(User user) {
+        String first = user.getFirstName() != null ? user.getFirstName() : "";
+        String last = user.getLastName() != null ? user.getLastName() : "";
+        String combined = (first + " " + last).trim();
+        return combined.isEmpty() ? null : combined;
+    }
+
+    /**
+     * Converts a Task into a TaskDetailDTO, resolving the requester and
+     * helper display names via their Dependent/Helper -> User relations.
+     * @param task the task to convert
+     * @return the enriched task detail
+     */
+    private TaskDetailDTO toDetailDTO(Task task) {
+        TaskDetailDTO dto = new TaskDetailDTO();
+        dto.setTaskId(task.getTaskId());
+        dto.setHelperId(task.getHelperId());
+        dto.setDependentId(task.getDependentId());
+        dto.setImmediate(task.isImmediate());
+        dto.setLocationId(task.getLocationId());
+        dto.setTaskTypeId(task.getTaskTypeId());
+        dto.setNeedsSpecialist(task.isNeedsSpecialist());
+        dto.setSignedAdminId(task.getSignedAdminId());
+        dto.setStartDate(task.getStartDate());
+        dto.setEndDate(task.getEndDate());
+        dto.setHelperBadgeId(task.getHelperBadgeId());
+        dto.setDependentRatingId(task.getDependentRatingId());
+        dto.setHelperRatingId(task.getHelperRatingId());
+        dto.setAdminReview(task.getAdminReview());
+        dto.setCompatibilityId(task.getCompatibilityId());
+        dto.setStatus(task.getStatus());
+
+        if (task.getDependentId() != null) {
+            Dependent dependent = dependentRepo.findById(task.getDependentId()).orElse(null);
+            if (dependent != null && dependent.getUserId() != null) {
+                dto.setRequesterName(fullName(dependent.getUserId()));
+            }
+        }
+
+        if (task.getHelperId() != null) {
+            Helper helper = helperRepo.findById(task.getHelperId()).orElse(null);
+            if (helper != null && helper.getUserid() != null) {
+                dto.setHelperName(fullName(helper.getUserid()));
+            }
+        }
+
+        return dto;
+    }
+
+    /**
+     * Get a task by its ID, with requester and helper names resolved.
+     * @param taskId the ID of the task
+     * @return the task detail if found, else null
+     */
+    public TaskDetailDTO getTaskDetailById(int taskId) {
+        Task task = taskRepo.findById(taskId).orElse(null);
+        if (task == null) {
+            return null;
+        }
+        return toDetailDTO(task);
+    }
+
+    /**
+     * Get all tasks, with requester and helper names resolved.
+     * @return all task details
+     */
+    public List<TaskDetailDTO> getAllTaskDetails() {
+        List<TaskDetailDTO> details = new ArrayList<>();
+        for (Task task : taskRepo.findAll()) {
+            details.add(toDetailDTO(task));
+        }
+        return details;
+    }
+
+    /**
+     * Get tasks for a user using their dependent profile, with names resolved.
+     * @param userId the user ID to look up
+     * @return task details linked to the user's dependent ID, or null if profile not found
+     */
+    public List<TaskDetailDTO> getTaskDetailsByUserId(int userId) {
+        Dependent dependent = dependentRepo.findByUserId_Userid(userId);
+        if (dependent == null) {
+            return null;
+        }
+
+        List<Task> tasks = taskRepo.findByDependentId(dependent.getDependentId());
+        List<TaskDetailDTO> details = new ArrayList<>();
+        for (Task task : tasks) {
+            details.add(toDetailDTO(task));
+        }
+        return details;
+    }
 }
