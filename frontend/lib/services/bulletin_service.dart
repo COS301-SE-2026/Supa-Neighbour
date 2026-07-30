@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import '../models/bulletin_post_model.dart';
 import '../models/bulletin_comment_model.dart';
 
@@ -12,8 +12,8 @@ class BulletinService {
       : _dio = dio ??
             Dio(BaseOptions(
               baseUrl: 'http://localhost:8080',
-              connectTimeout: const Duration(seconds: 10),
-              receiveTimeout: const Duration(seconds: 10),
+              connectTimeout: const Duration(seconds: 30),
+              receiveTimeout: const Duration(seconds: 30),
             ));
 
   
@@ -81,12 +81,13 @@ class BulletinService {
   }
 
   // Upload an image to /api/upload/image and return the image URL
-  Future<String?> uploadImage(File imageFile) async {
+  Future<String?> uploadImage(XFile imageFile) async {
     final token = await _getToken();
+    final bytes = await imageFile.readAsBytes();
     final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(
-        imageFile.path,
-        filename: imageFile.path.split('/').last,
+      'file': MultipartFile.fromBytes(
+        bytes,
+        filename: imageFile.name,
       ),
     });
     final res = await _dio.post(
