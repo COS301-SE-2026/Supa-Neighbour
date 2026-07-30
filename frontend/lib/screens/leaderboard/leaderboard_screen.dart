@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'helper_profile_preview_screen.dart';
 import '../../constants/app_colors.dart';
 import '../../models/leaderboard_model.dart';
-import '../../models/user_model.dart';
+import '../../services/leaderboard_service.dart';
 import '../help/help_menu_screen.dart';
 
 class LeaderboardScreen extends StatefulWidget {
@@ -16,6 +16,9 @@ class LeaderboardScreen extends StatefulWidget {
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
   LeaderboardData? _leaderboardData;
   bool _isLoading = true;
+  String? _errorMessage;
+
+  final LeaderboardService _leaderboardService = LeaderboardService();
 
   @override
   void initState() {
@@ -26,104 +29,26 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   Future<void> _loadLeaderboard() async {
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
 
-    await Future.delayed(const Duration(seconds: 1));
-
-    final mockEntries = [
-      LeaderboardEntry(
-        rank: 1,
-        userId: 'helper_1',
-        displayName: 'Sarah Johnson',
-        trustScore: 4.9,
-        level: 'Gold',
-        xp: 1250,
-        completedTasks: 47,
-      ),
-      LeaderboardEntry(
-        rank: 2,
-        userId: 'helper_2',
-        displayName: 'Mike Johnson',
-        trustScore: 4.7,
-        level: 'Silver',
-        xp: 980,
-        completedTasks: 32,
-      ),
-      LeaderboardEntry(
-        rank: 3,
-        userId: 'helper_3',
-        displayName: 'Lisa Wong',
-        trustScore: 4.8,
-        level: 'Bronze',
-        xp: 850,
-        completedTasks: 28,
-      ),
-      LeaderboardEntry(
-        rank: 4,
-        userId: 'helper_4',
-        displayName: 'Tom Brown',
-        trustScore: 4.6,
-        level: 'Silver',
-        xp: 720,
-        completedTasks: 21,
-      ),
-      LeaderboardEntry(
-        rank: 5,
-        userId: 'helper_5',
-        displayName: 'Sarah Adams',
-        trustScore: 4.5,
-        level: 'Bronze',
-        xp: 650,
-        completedTasks: 18,
-      ),
-      LeaderboardEntry(
-        rank: 6,
-        userId: 'helper_6',
-        displayName: 'James Wilson',
-        trustScore: 4.4,
-        level: 'Bronze',
-        xp: 580,
-        completedTasks: 15,
-      ),
-      LeaderboardEntry(
-        rank: 7,
-        userId: 'helper_7',
-        displayName: 'Emily Davis',
-        trustScore: 4.3,
-        level: 'Bronze',
-        xp: 520,
-        completedTasks: 12,
-      ),
-      LeaderboardEntry(
-        rank: 8,
-        userId: 'helper_8',
-        displayName: 'David Miller',
-        trustScore: 4.2,
-        level: 'Bronze',
-        xp: 480,
-        completedTasks: 10,
-      ),
-    ];
-
-    final currentUserEntry = LeaderboardEntry(
-      rank: 12,
-      userId: 'currentUser',
-      displayName: 'You',
-      trustScore: 4.2,
-      level: 'Bronze',
-      xp: 450,
-      completedTasks: 9,
-      isCurrentUser: true,
-    );
-
-    setState(() {
-      _leaderboardData = LeaderboardData(
+    try {
+      final data = await _leaderboardService.getLeaderboard(
         period: 'week',
-        entries: mockEntries,
-        currentUserEntry: currentUserEntry,
+        rankBy: 'averageRating',
+        limit: 20,
       );
-      _isLoading = false;
-    });
+
+      setState(() {
+        _leaderboardData = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   Color _getLevelColor(String level) {
@@ -186,65 +111,130 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         ),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primaryTeal(context),
-                    ),
-                  )
-                : _leaderboardData == null
-                    ? _buildEmptyState()
-                    : Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16, bottom: 8, left: 16),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                "Last Week's Top 3",
-                                style: GoogleFonts.poppins(
-                                  color: AppColors.charcoal(context),
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                          _buildTop3Circles(),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16, bottom: 8, left: 16),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                'This Week',
-                                style: GoogleFonts.poppins(
-                                  color: AppColors.charcoal(context),
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: _leaderboardData!.entries.length,
-                              itemBuilder: (context, index) {
-                                final entry = _leaderboardData!.entries[index];
-                                return _buildLeaderboardItem(entry);
-                              },
-                            ),
-                          ),
-                          if (_leaderboardData!.currentUserEntry != null)
-                            _buildYourRankCard(_leaderboardData!.currentUserEntry!),
-                        ],
-                      ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primaryTeal(context),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return _buildErrorState();
+    }
+
+    if (_leaderboardData == null || _leaderboardData!.entries.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 16, bottom: 8, left: 16),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Last Week's Top 3",
+              style: GoogleFonts.poppins(
+                color: AppColors.charcoal(context),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
-        ],
+        ),
+        _buildTop3Circles(),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.only(top: 16, bottom: 8, left: 16),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'This Week',
+              style: GoogleFonts.poppins(
+                color: AppColors.charcoal(context),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _leaderboardData!.entries.length,
+            itemBuilder: (context, index) {
+              final entry = _leaderboardData!.entries[index];
+              return _buildLeaderboardItem(entry);
+            },
+          ),
+        ),
+        if (_leaderboardData!.currentUserEntry != null &&
+            !_leaderboardData!.entries.any((e) => e.isCurrentUser))
+          _buildYourRankCard(_leaderboardData!.currentUserEntry!),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load leaderboard',
+              style: GoogleFonts.poppins(
+                color: AppColors.error(context),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage!,
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _loadLeaderboard,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryTeal(context),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
+              ),
+              child: Text(
+                'Retry',
+                style: GoogleFonts.openSans(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -328,27 +318,30 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   Widget _buildLeaderboardItem(LeaderboardEntry entry) {
     final bgColor = entry.isCurrentUser
-        ? AppColors.primaryTeal(context).withValues(alpha: 0.05)
+        ? AppColors.primaryTeal(context).withOpacity(0.05)
         : Colors.transparent;
 
     return GestureDetector(
       onTap: () {
-        final mockHelper = User(
-          id: entry.userId,
-          email: '${entry.displayName.toLowerCase().replaceAll(' ', '.')}@example.com',
-          firstName: entry.displayName.split(' ').first,
-          lastName: entry.displayName.split(' ').last,
-          createdAt: DateTime.now(),
-        );
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HelperProfilePreviewScreen(
-              helper: mockHelper,
-              showRequestButton: false,
+        final helperId = entry.helperId;
+        if (helperId > 0) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HelperProfilePreviewScreen(
+                helperId: helperId,
+                showRequestButton: false,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Unable to load helper profile'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 2),
@@ -630,6 +623,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               color: AppColors.textGrey(context),
               fontSize: 14,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

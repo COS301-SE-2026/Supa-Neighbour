@@ -15,6 +15,7 @@ public class LeaderboardEntry {
     private String displayName;
     private String level;
     private double score;
+    private Integer helperId;
 
     /**
      * Creates a leaderboard entry.
@@ -23,8 +24,9 @@ public class LeaderboardEntry {
      * @param userId the unique identifier of the user
      * @param displayName the user's display name
      * @param score the score used to determine the ranking
+     * @param helperId the unique identifier of the helper, or {@code null} if not applicable
      */
-    public LeaderboardEntry(int rank, int userId, String displayName, double score){
+    public LeaderboardEntry(int rank, int userId, String displayName, double score, Integer helperId) {
         this.rank = rank;
         this.userId = userId;
         this.displayName = displayName;
@@ -35,6 +37,7 @@ public class LeaderboardEntry {
             case 3 -> "Bronze";
             default -> null;
         };
+        this.helperId = helperId;
     }
 
     /**
@@ -79,5 +82,12 @@ public class LeaderboardEntry {
      */
     public double getScore(){
         return score;
+    }
+    /**
+     * returns helperID
+     * @return
+     */
+    public Integer getHelperId() {
+        return helperId;
     }
 }

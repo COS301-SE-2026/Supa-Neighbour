@@ -1,0 +1,52 @@
+import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+import '../models/helper_profile_response.dart';
+
+class HelperProfileService {
+  final Dio _dio;
+  final fb.FirebaseAuth _firebaseAuth;
+
+  HelperProfileService({Dio? dio, fb.FirebaseAuth? firebaseAuth})
+      : _dio = dio ??
+            Dio(BaseOptions(
+              baseUrl: 'http://localhost:8080',
+              connectTimeout: const Duration(seconds: 30),
+              receiveTimeout: const Duration(seconds: 30),
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+            )),
+        _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
+
+  Future<HelperProfileResponse> getHelperProfile(int helperId) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final idToken = await user.getIdToken();
+      if (idToken == null) {
+        throw Exception('Failed to get Firebase token');
+      }
+
+      final response = await _dio.get(
+        '/api/helpers/$helperId/profile',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $idToken',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        return HelperProfileResponse.fromJson(response.data);
+      }
+
+      throw Exception('Failed to load helper profile');
+    } on DioException catch (e) {
+      throw Exception('Connection error: ${e.message}');
+    }
+  }
+}
