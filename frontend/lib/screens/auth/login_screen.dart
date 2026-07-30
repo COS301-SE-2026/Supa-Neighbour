@@ -7,6 +7,7 @@ import '../../services/auth_service.dart';
 import '../home/home_screen.dart';
 import 'forgot_password_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
 
 
 
@@ -24,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _rememberMe = false;
+  String? _errorMessage;
   
   final AuthService _authService = AuthService();
 
@@ -42,7 +44,10 @@ Future<void> _handleLogin() async {
     return;
   }
 
-  setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
   try {
     final User user = await _authService.login(
@@ -76,21 +81,36 @@ Future<void> _handleLogin() async {
       default:
         message = 'Login failed. Please try again.';
     }
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red));
-  } on Exception catch (e) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: Colors.red),
-    );
-  } finally {
-    if (mounted) setState(() => _isLoading = false);
+      setState(() {
+        _errorMessage = message;
+      });
+    } on DioException catch (e) {
+      String message;
+      if (e.type == DioExceptionType.connectionTimeout) {
+        message = 'Connection timeout. Please check your internet.';
+      } else if (e.type == DioExceptionType.connectionError) {
+        message =
+          'Cannot connect to server\n\n'
+          'Please check:\n'
+          '✓ Backend is running (cd backend && ./mvnw spring-boot:run)\n'
+          '✓ ADB reverse is set (adb reverse tcp:8080 tcp:8080)\n'
+          '✓ Phone is connected via USB with debugging enabled';
+      } else if (e.response?.statusCode == 401) {
+        message = 'Invalid email or password.';
+      } else {
+        message = e.message ?? 'Connection error. Please try again.';
+      }
+      setState(() {
+        _errorMessage = message;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+      });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -178,8 +198,31 @@ Future<void> _handleLogin() async {
                           ),
 
                           SizedBox(height: screenHeight * 0.03),
-
-                          // Email Field
+                          if (_errorMessage != null)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.red.shade200),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _errorMessage!,
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -207,6 +250,7 @@ Future<void> _handleLogin() async {
                                   controller: _emailController,
                                   style: TextStyle(fontSize: fontSize * 0.7),
                                   keyboardType: TextInputType.emailAddress,
+                                  enabled: !_isLoading,
                                   decoration: InputDecoration(
                                     hintText: 'Enter your email',
                                     hintStyle: TextStyle(
@@ -254,6 +298,8 @@ Future<void> _handleLogin() async {
                                   controller: _passwordController,
                                   obscureText: true,
                                   style: TextStyle(fontSize: fontSize * 0.7),
+                                  enabled: !_isLoading,
+                                  onSubmitted: (_) => _handleLogin(),
                                   decoration: InputDecoration(
                                     hintText: 'Enter your password',
                                     hintStyle: TextStyle(
