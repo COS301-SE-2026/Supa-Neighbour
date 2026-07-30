@@ -50,7 +50,7 @@
 
 ## Business Needs
 
-Many urban and sub-urban communities are increasingly characterised by social disconnection. Despite living in close proximity, neighbours rarely interact in meaningful ways, leaving individuals without a reliable support network for small but important day-to-day tasks. When residents travel, work long hours, or face unexpected circumstances, simple household responsibilities — collecting packages, caring for plants, feeding pets, managing bin days, home check-ins — can become significant sources of stress.
+Many urban and sub-urban communities are increasingly characterised by social disconnection. Despite living in close proximity, neighbours rarely interact in meaningful ways, leaving individuals without a reliable support network for small but important day-to-day tasks. When residents travel, work long hours, or face unexpected circumstances, simple household responsibilities; collecting packages, caring for plants, feeding pets, managing bin days, home check-ins can become significant sources of stress.
 
 Existing solutions tend to exacerbate this problem rather than solve it. Supa-Neighbour addresses this gap: a dedicated, secure, community-driven platform that connects residents within the same neighbourhood, enabling someone to request and provide short-term assistance for small household tasks. By embedding trust, transparency, and community collaboration at its core, Supa-Neighbour transforms neighbours from strangers into a dependable local support network.
 
