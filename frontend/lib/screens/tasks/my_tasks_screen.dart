@@ -62,38 +62,17 @@ Future<void> _loadAllTasks() async {
           ? _taskService.getTasksByUserId(currentUserId)
           : Future.value(<Task>[]),
       _taskService.getMyHelperTasks(),
+      currentUserId != null
+          ? _taskService.getAvailableTasks(currentUserId)
+          : Future.value(<Task>[])
     ]);
 
     if (mounted) {
       setState(() {
         _postedTasks = results[0];
         _acceptedTasks = results[1];
+        _availableTasks = results[2];
       });
-    }
-
-    if (currentUserId != null) {
-      final helperId = await _taskService.getHelperIdForUser(currentUserId);
-      if (helperId != null) {
-        final invitations = await _taskService.getInvitationsForHelper(helperId);
-        final availableTasks = invitations.map((inv) {
-          final taskData = inv['taskId'] as Map<String, dynamic>?;
-          if (taskData == null) return null;
-          final normalised = Map<String, dynamic>.from(taskData);
-          if (!normalised.containsKey('taskId') && normalised.containsKey('taskid')) {
-            normalised['taskId'] = normalised['taskid'];
-          }
-          try {
-            return Task.fromJson(normalised);
-          } catch (_) {
-            return null;
-          }
-        }).whereType<Task>().toList();
-
-
-        if (mounted) {
-          setState(() => _availableTasks = availableTasks);
-        }
-      }
     }
     } on Exception catch (e) {
       debugPrint('_loadAllTasks error: $e');

@@ -67,8 +67,17 @@ public class TaskInvitationController {
      *     * @return a list of all task invitations
      */
     @GetMapping
-    public ResponseEntity<List<TaskInvitation>> getAllTaskInvitations() {
-        return ResponseEntity.ok(taskInvitationService.getTaskInvitations());
+    public ResponseEntity<?> getAllTaskInvitations(
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            List<TaskInvoice> tasks = taskInvitationService.getAllTasksBasedOnUserId(userId);
+            return ResponseEntity.ok(tasks);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+        }
     }
 
     // GET /api/task-invitations/1
