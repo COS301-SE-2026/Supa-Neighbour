@@ -1,24 +1,14 @@
 package com.app.api.unit.controllers;
 import com.app.api.controllers.AdminController;
-import com.app.api.dtos.ModeResponse;
-import com.app.api.dtos.ShowStatusRequest;
-import com.app.api.dtos.ShowStatusResponse;
-import com.app.api.dtos.UserStatusResponse;
-import com.app.api.repositories.SettingsRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.services.FirebaseAuthService;
-import com.app.api.services.SettingsServices;
-import com.app.api.controllers.SettingsController;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.firebase.auth.FirebaseAuthException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 import com.app.api.repositories.AdminRepository;
 import com.app.api.services.AdminService;
 import java.util.List;
@@ -49,8 +39,6 @@ public class AdminControllerTest {
 
     @MockitoBean
     private AdminRepository adminRepository;
-
-    private static final String VALID_TOKEN = "Bearer valid-token";
 
     @Test
     void getAdmins_withValidToken_returns200() throws Exception{
