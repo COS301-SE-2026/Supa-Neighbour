@@ -13,17 +13,12 @@ class LandingPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header / Navigation
             _buildHeader(context),
-            // Hero Section
             _buildHeroSection(context),
-            // Features Section
-            _buildFeaturesSection(context),
-            // How It Works Section
+            _buildFeatureRows(context),     
+            _buildScreenshotCarousel(context),
             _buildHowItWorksSection(context),
-            // Call to Action
             _buildCTASection(context),
-            // Footer
             _buildFooter(context),
           ],
         ),
@@ -48,23 +43,29 @@ class LandingPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 40,
+              Image.asset(
+                'assets/Logo.png',
                 height: 40,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2A9D8F),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                  child: Text(
-                    'S',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A9D8F),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                  ),
-                ),
+                    child: const Center(
+                      child: Text(
+                        'S',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(width: 10),
               Text(
@@ -105,19 +106,19 @@ class LandingPage extends StatelessWidget {
               const SizedBox(width: 8),
               ElevatedButton(
                 onPressed: () {
-                Navigator.pushReplacement(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                    builder: (context) => const AuthScreen(),
-                     ),
-                    );
-                },
-                 style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2A9D8F),
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                      builder: (context) => const AuthScreen(),
                     ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2A9D8F),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: Text(
                   'Get Started',
@@ -136,12 +137,20 @@ class LandingPage extends StatelessWidget {
   }
 
   Widget _buildHeroSection(BuildContext context) {
+    final screenshots = [
+      'assets/screenshots/home-screen.png',
+      'assets/screenshots/tasks-available.png',
+      'assets/screenshots/task-detail.png',
+      'assets/screenshots/leaderboard.png',
+      'assets/screenshots/profile.png',
+    ];
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF2A9D8F).withValues(alpha: 0.1),
+            const Color(0xFF2A9D8F).withValues(alpha: 0.08),
             Colors.white,
           ],
           begin: Alignment.topCenter,
@@ -193,56 +202,56 @@ class LandingPage extends StatelessWidget {
                 Row(
                   children: [
                     ElevatedButton(
-                        onPressed: () {
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                builder: (context) => const AuthScreen(),
-                                ),
-                            );
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2A9D8F),
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                            shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            ),
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AuthScreen(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2A9D8F),
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(
-                            'Get Started',
-                            style: GoogleFonts.openSans(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            ),
+                      ),
+                      child: Text(
+                        'Get Started',
+                        style: GoogleFonts.openSans(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
+                      ),
                     ),
                     const SizedBox(width: 16),
                     OutlinedButton(
-                        onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Learn More coming soon'),
-                                duration: Duration(seconds: 1),
-                            ),
-                            );
-                        },
-                        style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF2A9D8F)),
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                            shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            ),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Learn More coming soon'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF2A9D8F)),
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(
-                            'Learn More',
-                            style: GoogleFonts.openSans(
-                            color: const Color(0xFF2A9D8F),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            ),
+                      ),
+                      child: Text(
+                        'Learn More',
+                        style: GoogleFonts.openSans(
+                          color: const Color(0xFF2A9D8F),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
-                     ),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -250,36 +259,55 @@ class LandingPage extends StatelessWidget {
           ),
           const SizedBox(width: 40),
           Expanded(
-            child: Container(
-              height: 400,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2A9D8F).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: const Color(0xFF2A9D8F).withValues(alpha: 0.2),
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.phone_android,
-                      size: 80,
-                      color: Color(0xFF2A9D8F),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'App Screenshot\nComing Soon',
-                      style: GoogleFonts.openSans(
-                        color: const Color(0xFF2A9D8F),
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
+            child: SizedBox(
+              height: 450,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: screenshots.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    width: 250,
+                    margin: const EdgeInsets.only(right: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A9D8F).withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFF2A9D8F).withValues(alpha: 0.2),
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                  ],
-                ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.asset(
+                        screenshots[index],
+                        fit: BoxFit.contain,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.image_not_supported,
+                                  size: 48,
+                                  color: const Color(0xFF2A9D8F),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Screenshot ${index + 1}',
+                                  style: GoogleFonts.openSans(
+                                    color: const Color(0xFF2A9D8F),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -288,90 +316,241 @@ class LandingPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFeaturesSection(BuildContext context) {
+  Widget _buildFeatureRows(BuildContext context) {
     final features = [
-      {'icon': Icons.task, 'title': 'Task Management', 'desc': 'Post and accept tasks with ease'},
-      {'icon': Icons.chat, 'title': 'In-App Chat', 'desc': 'Communicate securely with neighbours'},
-      {'icon': Icons.stars, 'title': 'Trust Scores', 'desc': 'Build reputation through ratings'},
-      {'icon': Icons.emoji_events, 'title': 'Gamification', 'desc': 'Earn XP and level up'},
+      {
+        'title': 'Post and Accept Tasks',
+        'desc': 'Create tasks in seconds and find helpers in your neighbourhood. Whether you need plants watered or packages collected, help is just a tap away.',
+        'image': 'assets/screenshots/home-screen.png',
+        'imageLeft': true,
+      },
+      {
+        'title': 'Chat Securely with Neighbours',
+        'desc': 'Communicate directly with neighbours without sharing personal contact details. All messages are private and secure.',
+        'image': 'assets/screenshots/chat-inbox.png',
+        'imageLeft': false,
+      },
+      {
+        'title': 'Build Trust and Earn XP',
+        'desc': 'Complete tasks, receive ratings, and earn XP. Progress from Bronze to Gold as you become a trusted member of your community.',
+        'image': 'assets/screenshots/leaderboard.png',
+        'imageLeft': true,
+      },
+      {
+        'title': 'Level Up with Gamification',
+        'desc': 'Earn achievements and climb the leaderboard. The more you help, the more you earn. Your community recognises your contributions.',
+        'image': 'assets/screenshots/profile.png',
+        'imageLeft': false,
+      },
     ];
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Column(
+        children: features.asMap().entries.map((entry) {
+          final index = entry.key;
+          final feature = entry.value;
+          final isEven = index % 2 == 0;
+
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+            decoration: BoxDecoration(
+              color: isEven ? Colors.white : const Color(0xFFF8FAFA),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (feature['imageLeft'] as bool)
+                  _buildFeatureImage(feature['image'] as String),
+                if (feature['imageLeft'] as bool)
+                  const SizedBox(width: 40),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        feature['title'] as String,
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFF264653),
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        feature['desc'] as String,
+                        style: GoogleFonts.openSans(
+                          color: const Color(0xFF6B7280),
+                          fontSize: 16,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Learn more coming soon'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF2A9D8F),
+                        ),
+                        child: Text(
+                          'Learn more →',
+                          style: GoogleFonts.openSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (!(feature['imageLeft'] as bool))
+                  const SizedBox(width: 40),
+                if (!(feature['imageLeft'] as bool))
+                  _buildFeatureImage(feature['image'] as String),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildFeatureImage(String imagePath) {
+    return Container(
+      width: 300,
+      height: 400,
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A9D8F).withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF2A9D8F).withValues(alpha: 0.2),
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.contain,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.image_not_supported,
+                    size: 48,
+                    color: const Color(0xFF2A9D8F),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Screenshot',
+                    style: GoogleFonts.openSans(
+                      color: const Color(0xFF2A9D8F),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScreenshotCarousel(BuildContext context) {
+    final screenshots = [
+      'assets/screenshots/home-screen.png',
+      'assets/screenshots/tasks-available.png',
+      'assets/screenshots/task-detail.png',
+      'assets/screenshots/leaderboard.png',
+      'assets/screenshots/profile.png',
+    ];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      color: const Color(0xFFF8FAFA),
       child: Column(
         children: [
           Text(
-            'Everything You Need',
+            'See SupaNeighbour in Action',
             style: GoogleFonts.poppins(
               color: const Color(0xFF264653),
-              fontSize: 36,
+              fontSize: 32,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Built for modern neighbourhoods',
+            'Screenshots from the app',
             style: GoogleFonts.openSans(
               color: const Color(0xFF6B7280),
               fontSize: 18,
             ),
           ),
-          const SizedBox(height: 40),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 24,
-              mainAxisSpacing: 24,
-              childAspectRatio: 0.9,
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 400,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: screenshots.length,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: 250,
+                  margin: const EdgeInsets.only(right: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      screenshots[index],
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.image_not_supported,
+                                size: 48,
+                                color: const Color(0xFF2A9D8F),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Screenshot ${index + 1}',
+                                style: GoogleFonts.openSans(
+                                  color: const Color(0xFF2A9D8F),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
             ),
-            itemCount: features.length,
-            itemBuilder: (context, index) {
-              final feature = features[index];
-              return Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      feature['icon'] as IconData,
-                      color: const Color(0xFF2A9D8F),
-                      size: 48,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      feature['title'] as String,
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFF264653),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      feature['desc'] as String,
-                      style: GoogleFonts.openSans(
-                        color: const Color(0xFF6B7280),
-                        fontSize: 14,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              );
-            },
           ),
         ],
       ),
@@ -469,6 +648,27 @@ class LandingPage extends StatelessWidget {
               );
             }).toList(),
           ),
+          const SizedBox(height: 40),
+          TextButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Learn more about how it works coming soon'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF2A9D8F),
+            ),
+            child: Text(
+              'Learn more about how it works →',
+              style: GoogleFonts.openSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -506,120 +706,120 @@ class LandingPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-         ElevatedButton(
+          ElevatedButton(
             onPressed: () {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                    builder: (context) => const AuthScreen(),
-                    ),
-                );
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AuthScreen(),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                shape: RoundedRectangleBorder(
+              backgroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                ),
+              ),
             ),
             child: Text(
-                'Get Started',
-                style: GoogleFonts.openSans(
+              'Get Started',
+              style: GoogleFonts.openSans(
                 color: const Color(0xFF2A9D8F),
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                ),
               ),
             ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildFooter(BuildContext context) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-    decoration: BoxDecoration(
-      color: const Color(0xFF264653),
-    ),
-    child: Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const StyleGuidePage(),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF264653),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const StyleGuidePage(),
+                    ),
+                  );
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white.withValues(alpha: 0.7),
+                ),
+                child: Text(
+                  'Style Guide',
+                  style: GoogleFonts.openSans(
+                    fontSize: 14,
                   ),
-                );
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white.withValues(alpha: 0.7),
-              ),
-              child: Text(
-                'Style Guide',
-                style: GoogleFonts.openSans(
-                  fontSize: 14,
                 ),
               ),
-            ),
-            const SizedBox(width: 16),
-            Container(
-              width: 1,
-              height: 16,
-              color: Colors.white.withValues(alpha: 0.3),
-            ),
-            const SizedBox(width: 16),
-            TextButton(
-              onPressed: () {
-                // Include Privacy Policy later
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white.withValues(alpha: 0.7),
+              const SizedBox(width: 16),
+              Container(
+                width: 1,
+                height: 16,
+                color: Colors.white.withValues(alpha: 0.3),
               ),
-              child: Text(
-                'Privacy',
-                style: GoogleFonts.openSans(
-                  fontSize: 14,
+              const SizedBox(width: 16),
+              TextButton(
+                onPressed: () {
+                  // TODO: Open Privacy Policy
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white.withValues(alpha: 0.7),
+                ),
+                child: Text(
+                  'Privacy',
+                  style: GoogleFonts.openSans(
+                    fontSize: 14,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 16),
-            Container(
-              width: 1,
-              height: 16,
-              color: Colors.white.withValues(alpha: 0.3),
-            ),
-            const SizedBox(width: 16),
-            TextButton(
-              onPressed: () {
-                // Include Terms of service later
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white.withValues(alpha: 0.7),
+              const SizedBox(width: 16),
+              Container(
+                width: 1,
+                height: 16,
+                color: Colors.white.withValues(alpha: 0.3),
               ),
-              child: Text(
-                'Terms',
-                style: GoogleFonts.openSans(
-                  fontSize: 14,
+              const SizedBox(width: 16),
+              TextButton(
+                onPressed: () {
+                  // TODO: Open Terms of Service
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white.withValues(alpha: 0.7),
+                ),
+                child: Text(
+                  'Terms',
+                  style: GoogleFonts.openSans(
+                    fontSize: 14,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Text(
-          '© 2026 SupaNeighbour. All rights reserved.',
-          style: GoogleFonts.openSans(
-            color: Colors.white.withValues(alpha: 0.4),
-            fontSize: 12,
+            ],
           ),
-        ),
-      ],
-    ),
-  );
-}
+          const SizedBox(height: 12),
+          Text(
+            '© 2026 SupaNeighbour. All rights reserved.',
+            style: GoogleFonts.openSans(
+              color: Colors.white.withValues(alpha: 0.4),
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
