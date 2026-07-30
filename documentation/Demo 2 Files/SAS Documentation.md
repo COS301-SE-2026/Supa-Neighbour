@@ -132,7 +132,9 @@ The `main` branch deploys automatically to the production environment via GitHub
 
 
 ### Rollback Strategy
-//FILL THIS
+
+- **Backend:** Every image pushed to Azure Container Registry is tagged uniquely by branch name and commit SHA, so no previous version is ever overwritten. In the event of a failed deployment, rollback is performed by re-pointing the Azure Web App's container configuration to the last known-good image tag and restarting the app.
+- **Frontend (static pages):** Deployments are tied to Git commits via GitHub Actions. Rollback is performed by checking out the last known-good commit, rebuilding, and redeploying via the Static Web Apps CLI.
 
 
 ### Deployment Diagram
