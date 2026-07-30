@@ -1,263 +1,148 @@
 package com.app.api.models;
 
 import java.sql.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 
 /**
- * Represents a user in the system.
+ * Represents a user within the application.
+ * <p>
+ * This entity maps to the {@code user_table} database table and stores
+ * personal information, authentication details, address, badge, rating,
+ * and user type.
+ * </p>
  */
+@Data
+@Getter
+@Setter
 @Entity
-@Table(name = "UserTable")
+@Table(name = "user_table")
 public class User {
 
-    /** The user ID. */
+    /**
+     * The unique identifier for the user.
+     */
     @Id
-    @Column(name = "UserID")
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private int userid;
 
-    /** The user password. */
-    @Column(name = "UserPassword")
-    private String password;
+    /**
+     * The Firebase authentication UID associated with the user.
+     */
+    @Column(name = "user_firebase_uid", unique = true)
+    private String firebaseUid;
 
-    /** The user first name. */
-    @Column(name = "UserName")
+    /**
+     * Indicates whether the user's email has been verified.
+     */
+    @Column(name = "user_email_verified")
+    private boolean emailVerified;
+
+    /**
+     * Indicates whether the user's phone number has been verified.
+     */
+    @Column(name = "user_phone_verified")
+    private boolean phoneVerified;
+    /**
+     * The username of the user
+     */
+    @Column(name = "user_username", unique = true)
+    private String username;
+
+    /** user's first name */
+    @Column(name = "user_name")
     private String firstName;
 
-    /** The user last name. */
-    @Column(name = "UserSurname")
+    /** user's surname */
+    @Column(name = "user_surname")
     private String lastName;
 
-    /** The user email. */
-    @Column(name = "UserEmail")
+    /** user's email */
+    @Column(name = "user_email")
     private String email;
-
-    /** The user phone number. */
-    @Column(name = "UserPhoneNumber")
+    /** user's phone number */
+    @Column(name = "user_phone_number")
     private String phoneNumber;
-
-    /** The user gender. */
-    @Column(name = "UserGender")
-    private String gender;
-
-    /** The user date of birth. */
-    @Column(name = "UserDOB")
+    /** user's date of birth */
+    @Column(name = "user_dob")
     private Date dateOfBirth;
-
-    /** The user address ID. */
-    @Column(name = "UserAddressID")
-    private int addressId;
-
-    /** The user badge ID. */
-    @Column(name = "UserBadgeID")
-    private String badgeId;
-
-    /** The user rating ID. */
-    @Column(name = "UserRatingID")
-    private String ratingId;
-
-    /** The user type ID. */
-    @Column(name = "UserTypeID")
-    private String typeId;
+    /** user's gender */
+    @Column(name = "user_gender")
+    private String gender;
+    /** user's address id */
+    @ManyToOne
+    @JoinColumn(name = "user_address_id")
+    private Address addressid;
+    /** user's badge id */
+    @ManyToOne
+    @JoinColumn(name = "user_badge_id")
+    private Badges badgeid;
+     /** user's rating id */
+    @ManyToOne
+    @JoinColumn(name = "user_rating_id")
+    private Ratings ratingid;
+    /** user's type */
+    @Column(name = "user_type")
+    private String userType;
 
     /**
      * Default constructor required by JPA.
      */
     public User() {
-        // needed by jpa
     }
 
     /**
-     * Gets the user ID.
-     * @return the user ID
+     * Constructs a user with all attributes.
+     *
+     * @param userid the unique identifier of the user
+     * @param firebaseUid the Firebase authentication UID
+     * @param firstName the user's first name
+     * @param lastName the user's last name
+     * @param password the user's password
+     * @param email the user's email address
+     * @param phoneNumber the user's phone number
+     * @param dateOfBirth the user's date of birth
+     * @param gender the user's gender
+     * @param addressid the user's associated address
+     * @param badgeid the badge assigned to the user
+     * @param ratingid the rating associated with the user
+     * @param userType the user's type or role
      */
-    public int getId() {
-        return id;
-    }
-
-    /**
-     * Sets the user ID.
-     * @param id the user ID
-     */
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    /**
-     * Gets the password.
-     * @return the password
-     */
-    public String getPassword() {
-        return password;
-    }
-
-    /**
-     * Sets the password.
-     * @param password the password
-     */
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    /**
-     * Gets the first name.
-     * @return the first name
-     */
-    public String getFirstName() {
-        return firstName;
-    }
-
-    /**
-     * Sets the first name.
-     * @param firstName the first name
-     */
-    public void setFirstName(String firstName) {
+    public User(int userid,String firebaseUid,boolean phoneVerified,boolean emailVerified, String firstName, String lastName, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
+        this.userid = userid;
+        this.firebaseUid = firebaseUid;
+        this.emailVerified = emailVerified;
+        this.phoneVerified = phoneVerified;
         this.firstName = firstName;
-    }
-
-    /**
-     * Gets the last name.
-     * @return the last name
-     */
-    public String getLastName() {
-        return lastName;
-    }
-
-    /**
-     * Sets the last name.
-     * @param lastName the last name
-     */
-    public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    /**
-     * Gets the email.
-     * @return the email
-     */
-    public String getEmail() {
-        return email;
-    }
-
-    /**
-     * Sets the email.
-     * @param email the email
-     */
-    public void setEmail(String email) {
         this.email = email;
-    }
-
-    /**
-     * Gets the phone number.
-     * @return the phone number
-     */
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    /**
-     * Sets the phone number.
-     * @param phoneNumber the phone number
-     */
-    public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    /**
-     * Gets the gender.
-     * @return the gender
-     */
-    public String getGender() {
-        return gender;
-    }
-
-    /**
-     * Sets the gender.
-     * @param gender the gender
-     */
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    /**
-     * Gets the date of birth.
-     * @return the date of birth
-     */
-    public Date getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    /**
-     * Sets the date of birth.
-     * @param dateOfBirth the date of birth
-     */
-    public void setDateOfBirth(Date dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+        this.gender = gender;
+        this.addressid = addressid;
+        this.badgeid = badgeid;
+        this.ratingid = ratingid;
+        this.userType = userType;
     }
 
-    /**
-     * Gets the address ID.
-     * @return the address ID
-     */
-    public int getAddressId() {
-        return addressId;
+/**
+ * Returns the the firebase id 
+ * @return fireUid
+ */
+    public String getFirebaseUid(){
+        return firebaseUid;
     }
 
-    /**
-     * Sets the address ID.
-     * @param addressId the address ID
-     */
-    public void setAddressId(int addressId) {
-        this.addressId = addressId;
-    }
-
-    /**
-     * Gets the badge ID.
-     * @return the badge ID
-     */
-    public String getBadgeId() {
-        return badgeId;
-    }
-
-    /**
-     * Sets the badge ID.
-     * @param badgeId the badge ID
-     */
-    public void setBadgeId(String badgeId) {
-        this.badgeId = badgeId;
-    }
-
-    /**
-     * Gets the rating ID.
-     * @return the rating ID
-     */
-    public String getRatingId() {
-        return ratingId;
-    }
-
-    /**
-     * Sets the rating ID.
-     * @param ratingId the rating ID
-     */
-    public void setRatingId(String ratingId) {
-        this.ratingId = ratingId;
-    }
-
-    /**
-     * Gets the type ID.
-     * @return the type ID
-     */
-    public String getTypeId() {
-        return typeId;
-    }
-
-    /**
-     * Sets the type ID.
-     * @param typeId the type ID
-     */
-    public void setTypeId(String typeId) {
-        this.typeId = typeId;
-    }
 }

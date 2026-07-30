@@ -43,3 +43,33 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# Android auto-generated
+android/build/
+android/app/src/main/java/io/flutter/plugins/
+android/build/reports/
+android/app/build.gradle.kts
+android/build.gradle.kts
+android/gradle.properties
+
+# iOS auto-generated
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+
+# Linux auto-generated
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugins.cmake
+
+# macOS auto-generated
+macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Windows auto-generated
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugins.cmake
+
+# Pub lock file (auto-generated)
+#pubspec.lock
+#need ci to use the same version and the local tests

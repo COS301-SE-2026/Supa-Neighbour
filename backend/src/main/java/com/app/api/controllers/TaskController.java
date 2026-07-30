@@ -1,10 +1,12 @@
 package com.app.api.controllers;
 
+import com.app.api.dtos.TaskDetailDTO;
 import com.app.api.models.Task;
 import com.app.api.services.TaskService;
+import com.google.firebase.auth.FirebaseAuthException;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +14,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.google.firebase.auth.FirebaseAuthException;
+import com.app.api.services.FirebaseAuthService;
+import java.util.List;
 /**
  * REST controller for task-related endpoints.
  */
@@ -22,18 +27,21 @@ public class TaskController {
 
     /** The task service. */
     private final TaskService taskService;
+    private final FirebaseAuthService firebaseAuthService;
+
 
     /**
      * Constructs a TaskController with the given TaskService.
      * @param taskService the task service
      */
-    @Autowired
-    public TaskController(TaskService taskService) {
+    public TaskController(TaskService taskService, FirebaseAuthService firebaseAuthService) {
         this.taskService = taskService;
+        this.firebaseAuthService = firebaseAuthService;
+   
     }
 
     /**
-     * Get a task by its ID.
+     * Get a task by its ID, including resolved requester and helper names.
      * @param taskId the ID of the task
      * @return the task if found, 404 otherwise
      */
@@ -41,8 +49,8 @@ public class TaskController {
     @ApiResponse(responseCode = "200", description = "Task found")
     @ApiResponse(responseCode = "404", description = "Task not found")
     @GetMapping("/tasks/{taskId}")
-    public ResponseEntity<Task> getTaskById(@PathVariable int taskId) {
-        Task task = taskService.getTaskById(taskId);
+    public ResponseEntity<TaskDetailDTO> getTaskById(@PathVariable int taskId) {
+        TaskDetailDTO task = taskService.getTaskDetailById(taskId);
 
         if (task == null) {
             return ResponseEntity.notFound().build();
@@ -52,15 +60,24 @@ public class TaskController {
     }
 
     /**
-     * Get all tasks.
+     * Get all tasks, including resolved requester and helper names.
      * @return all tasks
      */
     @Operation(summary = "Get all tasks")
     @ApiResponse(responseCode = "200", description = "Tasks retrieved")
     @ApiResponse(responseCode = "404", description = "Unauthorised")
     @GetMapping("/tasks")
-    public ResponseEntity<Iterable<Task>> getAllTasks() {
-        return ResponseEntity.ok(taskService.getAllTasks());
+    public ResponseEntity<?> getAllTasks(
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        try{
+            
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            return ResponseEntity.ok(taskService.getAllTaskDetailsByUserId(userId));
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+        }
     }
 
     /**
@@ -103,7 +120,7 @@ public class TaskController {
     }
 
     /**
-     * Get all tasks for a specific user.
+     * Get all tasks for a specific user, including resolved requester and helper names.
      * @param userId the ID of the user
      * @return tasks linked to the user's dependent profile, or 404 if not found
      */
@@ -111,8 +128,8 @@ public class TaskController {
     @ApiResponse(responseCode = "200", description = "Tasks retrieved")
     @ApiResponse(responseCode = "404", description = "No dependent profile found for user")
     @GetMapping("/users/{userId}/tasks")
-    public ResponseEntity<Iterable<Task>> getTasksByUserId(@PathVariable int userId) {
-        Iterable<Task> tasks = taskService.getTasksByUserId(userId);
+    public ResponseEntity<List<TaskDetailDTO>> getTasksByUserId(@PathVariable int userId, Integer helperId) {
+        List<TaskDetailDTO> tasks = taskService.getTaskDetailsByUserId(userId);
 
         if (tasks == null) {
             return ResponseEntity.notFound().build();
@@ -134,6 +151,4 @@ public class TaskController {
         Task newTask = taskService.createTask(task);
         return ResponseEntity.status(201).body(newTask);
     }
-    
 }
-

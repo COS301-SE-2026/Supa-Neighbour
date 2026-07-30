@@ -17,18 +17,20 @@
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
 ![Azure](https://img.shields.io/badge/Azure-Cloud-blue?logo=microsoftazure)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-green?logo=springboot)
-![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
 ![Node](https://img.shields.io/badge/Node.js-20-green?logo=nodedotjs)
 
 ---
-q
+
 ## Table of Contents
 
-* [Overview](#-overview)
-* [Features](#-features)
-* [Tech Stack](#-tech-stack)
-* [Team and Information](#-team-and-information)
-* [Contact Information](#-contact)
+- [SupaNeighbour](#supaneighbour) <!-- omit in doc  -->
+  - [Parse\&Co in conjunction with Gendac](#parseco-in-conjunction-with-gendac)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Relevant Links/Documents](#relevant-linksdocuments)
+  - [Project Structure](#project-structure)
+  - [Team and Information](#team-and-information)
+  - [Contact](#contact)
 
 ---
 
@@ -36,7 +38,8 @@ q
 
 **The SupaNeighbour system** aims to create a secure, community-driven platform where residents can request and provide short-term assistance for small household. Modernised in a way such that helping others is both good for them and you
 
-## Enables The Community to:
+**Enables The Community to:**
+
 * People to request help with tasks.
 * Volunteers or skilled individuals to offer assistance.
 * Smart matching based on compatibility, location, and skills.
@@ -44,125 +47,80 @@ q
 
 ---
 
-## Features
+## Relevant Links/Documents
 
-* User roles: Admin, Helper, Dependent
-* Location-based task matching
-* Compatibility scoring system
-* Badge & XP system for Helpers
-* Rating & review system
-* Analytics tracking
-* Task tracking
+| Name | Description | Link |
+|------|--------------|------|
+| Project Board | GitHub Projects board tracking sprints, issues, and progress | [View](https://github.com/orgs/COS301-SE-2026/projects/34) |
+| API Contract | Specification of backend API endpoints and request/response formats | [View API Contract](/documentation/Demo%202%20Files/API_Service_Contract.md) |
+| SAS | Software Architecture Specification document | [View SAS](/documentation/Demo%202%20Files/SAS%20Documentation.md) |
+| SRS | Software Requirements Specification document | [View SRS](/documentation/Demo%202%20Files/SRS%20Document.md) |
+| Testing Policy | Team's testing standards and coverage requirements | [View Testing Policy](/documentation/Demo%202%20Files/Testing_Policy.md) |
+| Coding Standards Doc | Team's coding conventions and style guide | [View Coding Standards](/documentation/Demo%202%20Files/Coding_Standards_Document.md) |
+| Architecture Diagram | Architectural Diagram of the system | [View Diagram](/documentation/Demo%202%20Files/Images/Architecture%20diagram%20V2.png)
+| Landing Page | SupaNeighbour's Landing Page | https://green-beach-06bbfcd03.7.azurestaticapps.net/ |
+| Style Guide | SupaNeighbour's style Guide | https://red-pebble-0a5f86903.7.azurestaticapps.net/ |
+| Live Backend | The deployed backend to Azure | https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net/ |
 
----
+> Please note that the above link to the live backend will lead you to meet with a white label error page. If you would like to confirm that the backend is live, please use the following api to test:
+https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net/api/users
 
-## Tech Stack
+> You will be met with a list of all users in json/xml format
 
-**Frontend**
-
-* Mobile App: Flutter (Dart)
-
-* Web Admin Dashboard: Flutter Web on Azure  Static Web Apps (Dart)
-
-* Maps & Geolocation: Azure Maps + flutter_map (Dart + Java) 
-
-
-**Backend**
-
-* Main API: Spring Boot on Azure App Service (Java)
-
-* Matching Engine (GraphQL): Netflix DGS on Spring Boot (Java)
-
-* Admin Dashboard API Extensions: Express/Fastify * microservice (TypeScript) - optional
-
-
-
-**Database**
-
-* Primary Data Store: Azure Cosmos DB (NoSQL)
-
-* Relational Data Store: Azure SQL Database (SQL)
-
-* Relative API connection SpringBoot/Java
-
-
-**Security**
-
-* Secrets Management: Azure Key Vault
-
-* Authentication: Microsoft Entra ID B2C
-
-
-**DevOps & CI/CD**
-
-* CI/CD: GitHub + GitHub Actions
-
-**Other Tools**
-
-* Git & GitHub
-* Docker (optional)
-
----
-
-## Extra Links
-* [Project Board](https://github.com/orgs/COS301-SE-2026/projects/34)
-* [Functional Requirements](https://docs.google.com/document/d/1PVcbys8ZG97wmAtsVa-1X8_czOlywJprGr-_2dYto4w/edit?usp=sharing)
-* [Capstone Demo instructions](https://drive.google.com/file/d/14-R9XofWrY65djt_qI9ZB4H_m_geZqdD/view?usp=drive_link)
-* [Database Domain Model](https://docs.google.com/document/d/1nC0Un50nfuOG_E8rg6VxcGCwM4UnnsT5mpWU7TS6gRs/edit?usp=sharing)
 ---
 
 
 ## Project Structure
 
+**Backend (Spring Boot)**
 ```
-my-social-app/
-├── .github/            # CI/CD workflows
-├── api/                # Spring Boot backend
-├── flutter/            # Mobile + Web Frontend
-├── functions/          # Azure serverless functions
-├── e2e/                # End-to-end Testing
-├── documenation/       # Documentation   
-├── .gitignore
+src/main/java/com/app/api/
+├── config/
+├── controllers/
+├── services/
+├── repositories/
+├── dtos/
+├── model/
+└── security/
+src/main/resources/
+├── application.yml
+├── application-azure.yml
+└── Firebase/
+```
+
+**Frontend (Flutter)**
+```
+frontend/
+├── lib/
+│   ├── main.dart
+│   ├── screens/
+│   │   ├── auth/
+│   │   ├── home/
+│   │   ├── tasks/
+│   │   ├── chat/
+│   │   ├── leaderboard/
+│   │   └── profile/
+│   ├── widgets/
+│   │   └── achievements/
+│   ├── services/
+│   ├── models/
+│   ├── providers/
+│   ├── constants/
+│   └── components/
+├── assets/
+│   └── screenshots/
+├── test/
+├── pubspec.yaml
 └── README.md
 ```
 
 ---
-## Team and Information
+## Team Information
 
-* Blessing Gibendi: Team Lead
-
-  [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272?utm_source=share_via&utm_content=profile&utm_medium=member_android)
-
-* David Ekele Kalu: Tester
- 
-  [LinkedIn](https://www.linkedin.com/in/david-kalu-504150402/)
-
-* Divo Kohler: Data Engineer/Service Engineer
-
-  [LinkedIn](https://www.linkedin.com/in/divo-kohler-1023b6397/)
-
-* Amantle Keamogetse Temo: Intergration Enigeer
-
-  [LinkedIn](https://www.linkedin.com/in/amantle-temo-54bb6b369?utm_source=share_via&utm_content=profile&utm_medium=member_ios)
-
-* Michelle W Njoroge: UI Engineer/Designer
-
-  [LinkedIn](https://www.linkedin.com/in/michelle-njoroge-12264a209?utm_source=share_via&utm_content=profile&utm_medium=member_android)
-
----
-
-##  Future Improvements
-
-* Mobile app integration
-* Real-time notifications
-* AI-based Identification system
-* Enhanced analytics dashboard
-
----
-
-##  Contact
-
-For questions or collaboration:
-
-* Email:  parseandco@gmail.com
-* GitHub: https://github.com/Supa-Neighbour
+| **Team Member** | **Role** | **Profile** | **Tools** | **LinkedIn** |
+|-----------------|----------|-------------|-----------|--------------|
+| **Blessing Gibendi** | Team Lead | Third-year Computer Science student at the University of Pretoria with a solid foundation in Java, Python, JavaScript, Angular, React, and databases. A self-taught Python developer, she quickly adapts to new tools and frameworks and leads the team with a calm, methodical approach. With a strong interest in AI, she is using this project to strengthen both her leadership and application development skills. | Python, C++, Angular, React, Java, JavaScript, TypeScript, PHP, PostgreSQL | [LinkedIn](https://www.linkedin.com/in/blessing-gibendi-774556272) |
+| **David Ekele Kalu** | Tester | Third-year Computer Science student with practical experience in C++, Java, TypeScript, Python, and PHP. He has taken ownership of application flow and architecture across multiple projects and has built and deployed WordPress websites from frontend to hosting. A resourceful researcher, he enjoys solving unfamiliar problems efficiently. | C++, Java, JavaScript, PHP, Python | [LinkedIn](https://www.linkedin.com/in/david-kalu-504150402/) |
+| **Divo Kohler** | Data Engineer / Service Engineer | Third-year Computer Science student at the University of Pretoria with strong backend and database expertise. Experienced in SQL, NoSQL, Java backend development, concurrent systems, Hibernate, Spring Boot, API management, and UI design for intuitive applications. | Java, C++, PostgreSQL, MariaDB, MongoDB, Spring Boot, Lombok, Node.js | [LinkedIn](https://www.linkedin.com/in/divo-kohler-1023b6397/) |
+| **Amantle Keamogetse Temo** | Integration Engineer | Third-year Computer Science student with experience in relational, NoSQL, and NewSQL databases, data warehousing, OLAP, big data, machine learning, software engineering, concurrency, AI, networking, and modern full-stack web development. | Python, Java, C++, JavaScript, TypeScript (Angular), R, PHP, PostgreSQL, MongoDB, Neo4j, SAS | [LinkedIn](https://www.linkedin.com/in/amantle-temo-54bb6b369) |
+| **Michelle W Njoroge** | UI Engineer / Designer | Third-year Computer Science student at the University of Pretoria specializing in UI engineering and design. Experienced in responsive frontend development, Java backend development, and UI/UX design using Figma and Canva, with additional experience in React, Vue.js, Angular, and C#. | Java, C++, JavaScript, TypeScript, HTML & CSS, Python (NumPy, SymPy), Node.js, PHP, C#, React, Vue.js, Angular, Figma, Canva, Git | [LinkedIn](https://www.linkedin.com/in/michelle-njoroge-12264a209) |

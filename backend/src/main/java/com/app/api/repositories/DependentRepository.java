@@ -1,19 +1,20 @@
 package com.app.api.repositories;
 
-import com.app.api.models.Dependent;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.app.api.models.Dependent;
 
 /**
  * Repository for Dependent entities.
  */
 @Repository
-public interface DependentRepository extends CrudRepository<Dependent, Integer> {
-
-    /**
-     * Find the dependent profile associated with a given user.
-     * @param userId the user's ID
-     * @return the dependent profile for the user
+public interface DependentRepository extends JpaRepository<Dependent, Integer> {
+   /**
+     * Finds dependents belonging to the given user id.
+     *
+     * @param userId the user id to filter by
+     * @return matching dependents
      */
-    Dependent findByUserId(int userId);
+    Dependent findByUserId_Userid(int userId);
 }

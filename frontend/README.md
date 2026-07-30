@@ -157,10 +157,27 @@ For now,you should see the Supa-Neighbour test screen. If the button and counter
 
 ```
 frontend/
-└── lib/
-    ├── main.dart        ← entry point — loads admin or mobile app based on platform
-    ├── app/             ← mobile app screens and widgets (normal users)
-    └── admin/           ← web dashboard screens and widgets (admin users)
+├── lib/
+│   ├── main.dart
+│   ├── screens/
+│   │   ├── auth/
+│   │   ├── home/
+│   │   ├── tasks/
+│   │   ├── chat/
+│   │   ├── leaderboard/
+│   │   └── profile/
+│   ├── widgets/
+│   │   └── achievements/
+│   ├── services/
+│   ├── models/
+│   ├── providers/
+│   ├── constants/
+│   └── components/
+├── assets/
+│   └── screenshots/
+├── test/
+├── pubspec.yaml
+└── README.md
 ```
 
 ---
@@ -172,6 +189,8 @@ frontend/
 | `flutter pub get` | Installs/updates dependencies from pubspec.yaml |
 | `flutter run -d web-server --web-port=3000` | Runs the web dashboard locally |
 | `flutter test` | Runs all unit and widget tests |
+| `flutter test --coverage`| Runs all , ensure you have lcov installed
+| `flutter analyze`| Runs Linting on all frontend files
 | `flutter build web` | Builds the web dashboard for deployment |
 | `flutter doctor` | Checks your Flutter setup for any issues |
 

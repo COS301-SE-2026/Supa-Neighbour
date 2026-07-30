@@ -2,32 +2,40 @@ package com.app.api.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 /**
  * Represents a dependent profile in the system.
  */
+@Data
+@Getter
+@Setter
 @Entity
-@Table(name = "DependentTable")
+@Table(name = "Dependent_table")
 public class Dependent {
 
     /** The dependent ID. */
     @Id
-    @Column(name = "DependentID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "dependent_id")
     private int dependentId;
 
     /** The user ID. */
-    @Column(name = "UserID")
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User userId;
 
     /** The task type ID. */
-    @Column(name = "TaskTypeID")
-    private Integer taskTypeId;
-
-    /** The compatible ID. */
-    @Column(name = "CompatibleID")
-    private Integer compatibleId;
+    @ManyToOne
+    @JoinColumn(name = "task_type_id")
+    private TaskType taskTypeId;
 
     /**
      * Default constructor required by JPA.
@@ -36,6 +44,19 @@ public class Dependent {
         // needed by jpa
     }
 
+    /**
+     * Constructs a new {@code Dependent} with the specified identifier,
+     * associated user, and task type.
+     *
+     * @param dependentId the unique identifier of the dependent.
+     * @param userId the user associated with this dependent.
+     * @param taskTypeId the task type associated with this dependent.
+     */
+    public Dependent(int dependentId, User userId, TaskType taskTypeId) {
+        this.dependentId = dependentId;
+        this.userId = userId;
+        this.taskTypeId = taskTypeId;
+    }
     /**
      * Gets the dependent ID.
      * @return the dependent ID
@@ -56,7 +77,7 @@ public class Dependent {
      * Gets the user ID.
      * @return the user ID
      */
-    public Integer getUserId() {
+    public User getUserId() {
         return userId;
     }
 
@@ -64,7 +85,7 @@ public class Dependent {
      * Sets the user ID.
      * @param userId the user ID
      */
-    public void setUserId(Integer userId) {
+    public void setUserId(User userId) {
         this.userId = userId;
     }
 
@@ -72,7 +93,7 @@ public class Dependent {
      * Gets the task type ID.
      * @return the task type ID
      */
-    public Integer getTaskTypeId() {
+    public TaskType getTaskTypeId() {
         return taskTypeId;
     }
 
@@ -80,23 +101,8 @@ public class Dependent {
      * Sets the task type ID.
      * @param taskTypeId the task type ID
      */
-    public void setTaskTypeId(Integer taskTypeId) {
+    public void setTaskTypeId(TaskType taskTypeId) {
         this.taskTypeId = taskTypeId;
     }
 
-    /**
-     * Gets the compatible ID.
-     * @return the compatible ID
-     */
-    public Integer getCompatibleId() {
-        return compatibleId;
-    }
-
-    /**
-     * Sets the compatible ID.
-     * @param compatibleId the compatible ID
-     */
-    public void setCompatibleId(Integer compatibleId) {
-        this.compatibleId = compatibleId;
-    }
 }

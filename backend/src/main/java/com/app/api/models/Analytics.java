@@ -2,121 +2,161 @@ package com.app.api.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
+import lombok.Builder;
+import lombok.Data;
 /**
- * Represents an analytics record in the system.
+ * Represents an analytics record within the application.
+ * <p>
+ * This entity maps to the {@code analytics_table} database table and
+ * stores references to a task, administrator, helper analytics,
+ * and dependent analytics.
+ * </p>
  */
+@Data
+@Builder
 @Entity
-@Table(name = "AnalyticsTable")
+@Table(name = "analytics_table")
 public class Analytics {
 
-    /** The analytics ID. */
+    /** the unique identifier of the analytics table */
     @Id
-    @Column(name = "AnalyticsID")
-    private int analyticsId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "analytics_id")
+    private int analyticsid;
 
-    /** The task ID. */
-    @Column(name = "TaskID")
-    private Integer taskId;
+    /** task associated with the analytics tables */
+    @ManyToOne
+    @JoinColumn(name = "task_id")
+    private TaskInvoice taskid;
+    /** the administrator associated with the analytics record */
+    @ManyToOne
+    @JoinColumn(name = "admin_id")
+    private Admin adminid;
 
-    /** The admin ID. */
-    @Column(name = "AdminID")
-    private Integer adminId;
+    /**the helper analytics associated with the record */
+    @ManyToOne
+    @JoinColumn(name = "helper_type_id")
+    private HelperAnalytics helpertypeid;
 
-    /** The helper type ID. */
-    @Column(name = "HelperTypeID")
-    private String helperTypeId;
+    /** the dependent information associated with this record */
+    @ManyToOne
+    @JoinColumn(name = "dependent_type_id")
+    private DependentAnalytics dependenttypeid;
 
-    /** The dependent type ID. */
-    @Column(name = "DependentTypeID")
-    private String dependentTypeId;
-
-    /**
-     * Default constructor required by JPA.
-     */
+    /** the default constructor required by JPA */
     public Analytics() {
-        //  needed by jpa
     }
 
     /**
-     * Gets the analytics ID.
+     * Constructs an analytics record with all fields.
+     *
+     * @param analyticsid the unique identifier of the analytics record
+     * @param taskid the associated task
+     * @param adminid the associated administrator
+     * @param helpertypeid the associated helper analytics
+     * @param dependenttypeid the associated dependent analytics
+     */
+    public Analytics(int analyticsid, TaskInvoice taskid, Admin adminid, HelperAnalytics helpertypeid,DependentAnalytics dependenttypeid) {
+        this.analyticsid = analyticsid;
+        this.taskid = taskid;
+        this.adminid = adminid;
+        this.helpertypeid = helpertypeid;
+        this.dependenttypeid = dependenttypeid;
+    }
+
+    /**
+     * Returns the analytics record identifier.
+     *
      * @return the analytics ID
      */
-    public int getAnalyticsId() {
-        return analyticsId;
+    public int getAnalyticsid() {
+        return analyticsid;
     }
 
     /**
-     * Sets the analytics ID.
-     * @param analyticsId the analytics ID
+     * Sets the analytics record identifier.
+     * 
+     * @param analyticsid the unique idetifier of the analytics record
      */
-    public void setAnalyticsId(int analyticsId) {
-        this.analyticsId = analyticsId;
+    public void setAnalyticsid(int analyticsid) {
+        this.analyticsid = analyticsid;
     }
 
     /**
-     * Gets the task ID.
-     * @return the task ID
+     * Returns the taskid associated with the analytics record
+     *
+     * @return the tasksid
      */
-    public Integer getTaskId() {
-        return taskId;
+    public TaskInvoice getTaskid() {
+        return taskid;
     }
 
     /**
-     * Sets the task ID.
-     * @param taskId the task ID
+     * Sets the task identifier
+     * 
+     * @param taskid the unique idetifier of the task
      */
-    public void setTaskId(int taskId) {
-        this.taskId = taskId;
+    public void setTaskid(TaskInvoice taskid) {
+        this.taskid = taskid;
     }
 
     /**
-     * Gets the admin ID.
-     * @return the admin ID
+     * Returns the analytics record identifier.
+     * 
+     * @return administrator's id
      */
-    public Integer getAdminId() {
-        return adminId;
+    public Admin getAdminid() {
+        return adminid;
     }
 
     /**
-     * Sets the admin ID.
-     * @param adminId the admin ID
+     * Sets the admin identifier
+     * 
+     * @param adminid the unique idetifier of the administrator
      */
-    public void setAdminId(Integer adminId) {
-        this.adminId = adminId;
+    public void setAdminid(Admin adminid) {
+        this.adminid = adminid;
     }
 
     /**
-     * Gets the helper type ID.
-     * @return the helper type ID
+     * Returns the Helper's identifier
+     * 
+     * @return Helper's id
      */
-    public String getHelperTypeId() {
-        return helperTypeId;
+    public HelperAnalytics getHelpertypeid() {
+        return helpertypeid;
     }
 
     /**
-     * Sets the helper type ID.
-     * @param helperTypeId the helper type ID
+     * Sets the helper identifier
+     * 
+     * @param helpertypeid the unique idetifier of the helper
      */
-    public void setHelperTypeId(String helperTypeId) {
-        this.helperTypeId = helperTypeId;
+    public void setHelpertypeid(HelperAnalytics helpertypeid) {
+        this.helpertypeid = helpertypeid;
     }
 
     /**
-     * Gets the dependent type ID.
-     * @return the dependent type ID
+     * Returns the Dependent's identifier
+     * 
+     * @return Dependent's id
      */
-    public String getDependentTypeId() {
-        return dependentTypeId;
+    public DependentAnalytics getDependenttypeid() {
+        return dependenttypeid;
     }
 
     /**
-     * Sets the dependent type ID.
-     * @param dependentTypeId the dependent type ID
+     * Sets the Dependent's identifier
+     * 
+     * @param dependenttypeid the unique idetifier of the dependent
      */
-    public void setDependentTypeId(String dependentTypeId) {
-        this.dependentTypeId = dependentTypeId;
+    public void setDependenttypeid(DependentAnalytics dependenttypeid) {
+        this.dependenttypeid = dependenttypeid;
     }
 }

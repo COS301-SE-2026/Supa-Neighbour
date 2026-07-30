@@ -1,8 +1,7 @@
-# Testing Guide — Supa-Neighbour Flutter App
+# Testing Guide
 
 ## Overview
-
-This project uses Flutter's built-in testing framework to ensure code correctness and UI reliability. Tests are split into two categories: **unit tests** and **widget tests**, each serving a distinct purpose.
+This project uses Flutter's built-in testing framework to ensure code correctness and UI reliability. Tests are split into categories: unit tests, widget tests, integration tests, and end-to-end tests.
 
 ---
 
@@ -10,12 +9,18 @@ This project uses Flutter's built-in testing framework to ensure code correctnes
 
 ```
 test/
-├── unit/                        # Unit tests — pure Dart logic, no UI
-│   ├── models/                  # Tests for data models (e.g. Task, User)
-│   └── services/                # Tests for services (e.g. TaskService, AuthService)
-├── widget/                      # Widget tests — UI rendering and interaction
-│   └── task_detail_screen_test.dart
-└── widget_test.dart             # Default Flutter-generated file (can be deleted)
+├── unit/
+│   └── models/
+├── widget/
+│   ├── auth/
+│   ├── home/
+│   ├── tasks/
+│   ├── chat/
+│   ├── leaderboard/
+│   ├── profile/
+│   └── components/
+├── integration/
+└── e2e/
 ```
 
 ---
@@ -24,19 +29,20 @@ test/
 
 ### Already included by default
 
-`flutter_test` is bundled with Flutter and requires no extra setup.
+`flutter_test` is bundled with Flutter so it requires no extra setup.
 
-### Optional — Mocking with Mockito
+### Mocking with Mockito
 
-If your services have dependencies (e.g. an API client or repository), install Mockito for mocking:
+Since our services have dependencies (e.g. an API client or repository), we will install Mockito for mocking:
 
-Add to `pubspec.yaml` under `dev_dependencies`(if it is already not provided):
+Add to `pubspec.yaml` under `dev_dependencies`:
 
 ```yaml
 dev_dependencies:
   flutter_test:
     sdk: flutter
   mockito: ^5.4.4
+  build_runner: ^2.4.9
 ```
 
 Then run:
@@ -58,13 +64,19 @@ flutter test
 Run a specific file:
 
 ```bash
-flutter test test/widget/task_detail_screen_test.dart
+flutter test test/widget/tasks/task_detail_screen_test.dart
 ```
 
 Run a specific test by name:
 
 ```bash
 flutter test --plain-name 'renders the task title'
+```
+
+Run tests with coverage:
+
+```bash
+flutter test --coverage
 ```
 
 After adding `@GenerateMocks` annotations (Mockito), regenerate mocks:
@@ -99,24 +111,21 @@ Write a unit test any time a class or function:
 // test/unit/models/task_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supa_neighbour/app/models/task.dart';
+import 'package:supa_neighbour/models/task_model.dart';
 
 void main() {
   group('Task model', () {
 
-    test('isHighReward returns true when XP is 100 or more', () {
-      final task = Task(title: 'Clean gutters', xpReward: 100);
-      expect(task.isHighReward, true);
-    });
-
-    test('isHighReward returns false when XP is below 100', () {
-      final task = Task(title: 'Water plants', xpReward: 50);
-      expect(task.isHighReward, false);
-    });
-
-    test('toMap returns the correct structure', () {
-      final task = Task(title: 'Water plants', xpReward: 50);
-      expect(task.toMap(), {'title': 'Water plants', 'xpReward': 50});
+    test('fromJson creates Task with correct data', () {
+      final json = {
+        'taskId': 1,
+        'title': 'Water plants',
+        'xpReward': 50,
+      };
+      final task = Task.fromJson(json);
+      expect(task.id, '1');
+      expect(task.title, 'Water plants');
+      expect(task.xpReward, 50);
     });
 
   });
@@ -131,8 +140,8 @@ void main() {
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import 'package:supa_neighbour/app/services/task_service.dart';
-import 'package:supa_neighbour/app/models/task.dart';
+import 'package:supa_neighbour/services/task_service.dart';
+import 'package:supa_neighbour/models/task_model.dart';
 
 @GenerateMocks([ApiClient])
 void main() {
@@ -195,11 +204,11 @@ Write a widget test any time a widget or screen:
 ### Example — TaskDetailScreen widget test
 
 ```dart
-// test/widget/task_detail_screen_test.dart
+// test/widget/tasks/task_detail_screen_test.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supa_neighbour/screens/task_detail_screen.dart';
+import 'package:supa_neighbour/screens/tasks/task_detail_screen.dart';
 
 void main() {
   Widget buildTestableWidget() {
@@ -225,34 +234,69 @@ void main() {
       expect(find.text('+50 XP'), findsOneWidget);
     });
 
-    testWidgets('renders task time and location', (tester) async {
-      await tester.pumpWidget(buildTestableWidget());
-      expect(find.text('Tomorrow at 3:00 PM'), findsOneWidget);
-      expect(find.text('2 doors down • 50m away'), findsOneWidget);
-    });
-
-    testWidgets('tapping Accept Task shows a snackbar', (tester) async {
-      await tester.pumpWidget(buildTestableWidget());
-      await tester.tap(find.text('Accept Task'));
-      await tester.pump();
-      expect(find.text('Task accepted! (Coming soon)'), findsOneWidget);
-    });
-
-    testWidgets('tapping Message Helper shows a snackbar', (tester) async {
-      await tester.pumpWidget(buildTestableWidget());
-      await tester.tap(find.text('Message Helper'));
-      await tester.pump();
-      expect(find.text('Message helper (Coming soon)'), findsOneWidget);
-    });
-
-    testWidgets('back button is present in app bar', (tester) async {
-      await tester.pumpWidget(buildTestableWidget());
-      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
-    });
-
   });
 }
 ```
+
+---
+
+## Integration Tests
+
+### What they test
+
+Integration tests verify that multiple components work together correctly. This includes:
+
+- Navigation between screens
+- API calls and UI updates
+- Complete user flows
+
+### When to write them
+
+Write an integration test for core user flows:
+
+- Login -> Home
+- Create Task -> My Tasks
+- Complete Task -> Approval
+- View Helper -> Invite
+
+### Example Structure
+
+```dart
+// test/integration/task_flow_test.dart
+
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  group('Task Creation Flow', () {
+    testWidgets('User can create a task and see it in My Tasks', (tester) async {
+      // 1. Login
+      // 2. Navigate to Create Task
+      // 3. Fill form and submit
+      // 4. Verify task appears in My Tasks
+    });
+  });
+}
+```
+
+---
+
+## End-to-End Tests
+
+### What they test
+
+End-to-End tests verify complete user journeys with real API calls and database interactions.
+
+### When to write them
+
+Write E2E tests for complete user journeys:
+
+- Register -> Login -> Create Task
+- Requester -> View Helpers -> Invite
+- Helper -> Accept -> Complete -> Review
+
+### Note
+
+E2E tests require a real backend environment. These tests are recommended but not required for Demo 2.
 
 ---
 
@@ -265,12 +309,15 @@ void main() {
 | `WidgetTester` | Flutter's tool to simulate rendering and user interactions |
 | `tester.pumpWidget()` | Renders a widget — always `await` this |
 | `tester.pump()` | Triggers a frame/animation — always `await` after interactions |
+| `tester.pumpAndSettle()` | Waits for all animations and microtasks to complete |
 | `find.text()` | Locates a widget by exact text content |
 | `find.byIcon()` | Locates a widget by icon |
+| `find.byType()` | Locates a widget by its type |
 | `expect(..., findsOneWidget)` | Asserts exactly one matching widget was found |
 | `expect(..., findsNothing)` | Asserts no matching widget was found |
 | `setUp()` | Runs before each test in a group — used to initialise shared state |
-| `MockApiClient` | A fake version of a dependency you control in tests |
+| `setUpAll()` | Runs once before all tests in a group |
+| `Mock` | A fake version of a dependency you control in tests |
 | `when(...).thenAnswer(...)` | Defines what a mock returns when called |
 | `MaterialApp` wrapper | Required for screens that use Navigator, ScaffoldMessenger, etc. |
 
@@ -278,31 +325,57 @@ void main() {
 
 ## Common Mistakes to Avoid
 
-**Missing `await` on async calls**
+### Missing `await` on async calls
 
 ```dart
-// ❌ Wrong
+// Wrong
 tester.pumpWidget(buildTestableWidget());
 
-// ✅ Correct
+// Correct
 await tester.pumpWidget(buildTestableWidget());
 ```
 
-**Text mismatch in `find.text()`**
+### Text mismatch in `find.text()`
 
 `find.text()` requires an exact match including spacing, capitalisation, and punctuation.
 
 ```dart
-// ❌ Wrong — typo and missing space
+// Wrong - typo and missing space
 find.text('Tommorow at 3:00PM')
 
-// ✅ Correct — matches the source exactly
+// Correct - matches the source exactly
 find.text('Tomorrow at 3:00 PM')
 ```
 
-**Not wrapping screens in `MaterialApp`**
+### Not wrapping screens in `MaterialApp`
 
 Screens that use `Navigator`, `ScaffoldMessenger`, or `Theme` will throw errors without a `MaterialApp` wrapper in tests.
 
+### Not using `pumpAndSettle()` for async operations
+
+```dart
+// Wrong - won't wait for async operations to complete
+await tester.pumpWidget(buildTestableWidget());
+expect(find.text('Loading...'), findsOneWidget);
+
+// Correct - waits for all async operations
+await tester.pumpWidget(buildTestableWidget());
+await tester.pumpAndSettle();
+expect(find.text('Loading...'), findsNothing);
+```
+
 ---
 
+## Demo 2 Testing Requirements
+
+| Test Type | Required | Target |
+|-----------|----------|--------|
+| Unit Tests | Yes | All models and services |
+| Widget Tests | Yes | All screens and components |
+| Integration Tests | Yes | Core user flows |
+| E2E Tests | Recommended | Full user journeys |
+| Coverage | Yes | 80 percent or higher |
+
+---
+
+**Last updated:** July 2026

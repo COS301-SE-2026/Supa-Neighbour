@@ -6,73 +6,85 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.sql.Date;
 
+//
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+
+
 /**
  * Represents a task in the system.
  */
 @Entity
-@Table(name = "TaskInvoiceTable")
+@Table(name = "task_invoice_table")
 public class Task {
 
     /** The task ID. */
     @Id
-    @Column(name = "TaskID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "task_id")
     private int taskId;
 
+
     /** The helper ID. */
-    @Column(name = "HelperID")
+    @Column(name = "helper_id")
     private Integer helperId;
 
     /** The dependent ID. */
-    @Column(name = "DependentID")
+    @Column(name = "dependent_id")
     private Integer dependentId;
 
     /** Whether the task is immediate. */
-    @Column(name = "IsImmediate")
+    @Column(name = "is_immediate")
     private boolean isImmediate;
 
     /** The location ID. */
-    @Column(name = "LocationID")
+    @Column(name = "location_id")
     private Integer locationId;
 
     /** The task type ID. */
-    @Column(name = "TaskTypeID")
+    @Column(name = "task_type_id")
     private Integer taskTypeId;
 
     /** Whether the task needs a specialist. */
-    @Column(name = "NeedsSpecialist")
+    @Column(name = "needs_specialist")
     private boolean needsSpecialist;
 
     /** The signed admin ID. */
-    @Column(name = "SignedAdminID")
+    @Column(name = "signed_admin_id")
     private Integer signedAdminId;
 
     /** The start date. */
-    @Column(name = "StartDate")
+    @Column(name = "start_date")
     private Date startDate;
 
     /** The end date. */
-    @Column(name = "EndDate")
+    @Column(name = "end_date")
     private Date endDate;
 
     /** The helper badge ID. */
-    @Column(name = "HelperBadgeID")
-    private String helperBadgeId;
+    @Column(name = "helper_badge_id")
+    private Integer helperBadgeId;
 
     /** The dependent rating ID. */
-    @Column(name = "DependentRatingID")
+    @Column(name = "dependent_rating_review")
     private String dependentRatingId;
 
     /** The helper rating ID. */
-    @Column(name = "HelperRatingID")
+    @Column(name = "helper_rating_review")
     private String helperRatingId;
 
     /** The admin review. */
-    @Column(name = "AdminReview")
+    @Column(name = "admin_review")
     private String adminReview;
 
     /** The compatibility ID. */
-    @Column(name = "CompatibilityID")
+    @Column(name = "compatibility_id")
     private Integer compatibilityId;
+
+    /** The task status. */
+    @Column(name = "status")
+    private String status;
+
 
     /**
      * Default constructor required by JPA.
@@ -245,7 +257,7 @@ public class Task {
      * Gets the helper badge ID.
      * @return the helper badge ID
      */
-    public String getHelperBadgeId() {
+    public Integer getHelperBadgeId() {
         return helperBadgeId;
     }
 
@@ -253,7 +265,7 @@ public class Task {
      * Sets the helper badge ID.
      * @param helperBadgeId the helper badge ID
      */
-    public void setHelperBadgeId(String helperBadgeId) {
+    public void setHelperBadgeId(Integer helperBadgeId) {
         this.helperBadgeId = helperBadgeId;
     }
 
@@ -320,4 +332,21 @@ public class Task {
     public void setCompatibilityId(Integer compatibilityId) {
         this.compatibilityId = compatibilityId;
     }
+
+    /**
+     * Gets the task status.
+     * @return the status
+     */
+    public String getStatus() {
+        return status;
+    }
+
+    /**
+     * Sets the task status.
+     * @param status the status
+     */
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
 }

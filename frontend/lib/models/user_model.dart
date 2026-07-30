@@ -92,24 +92,25 @@ class User {
     };
   }
 
-  // Create from JSON (for future API integration)
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      email: json['email'],
-      firstName: json['firstName'],
-      lastName: json['lastName'],
-      phone: json['phone'],
-      username: json['username'],
-      birthday: json['birthday'] != null ? DateTime.parse(json['birthday']) : null,
-      gender: json['gender'],
-      street: json['street'],
-      town: json['town'],
-      zipCode: json['zipCode'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
-    );
-  }
+  
+factory User.fromJson(Map<String, dynamic> json) {
+  return User(
+    id: json['userid'].toString(),
+    email: json['email'] as String? ?? '',
+    firstName: json['firstName'] as String? ?? '',
+    lastName: json['lastName'] as String? ?? '',
+    phone: json['phoneNumber'] as String?,
+    username: json['username'] as String?,
+    birthday: json['birthday'] != null ? DateTime.parse(json['birthday'].toString()) : null,
+    gender: json['user_gender'] as String?,
+    street: json['user_street'] as String?,      
+    town: json['user_town'] as String?,          
+    zipCode: json['user_zipcode'] as String?,
+    createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
+  );
+}
+
+
 
   // Creates an empty user
   static User empty() {

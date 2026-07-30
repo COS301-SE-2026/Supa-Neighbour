@@ -1,19 +1,23 @@
 package com.app.api.repositories;
 
-import com.app.api.models.Analytics;
-import org.springframework.data.repository.CrudRepository;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.app.api.models.Analytics;
+
 /**
- * Repository for Analytics entities.
+ * Repository for analytics entities
  */
 @Repository
-public interface AnalyticsRepository extends CrudRepository<Analytics, Integer> {
+public interface AnalyticsRepository extends JpaRepository<Analytics, Integer> {
 
     /**
-     * Find all analytics records linked to a specific task.
-     * @param taskId the task ID
-     * @return analytics records associated with the task
+     * Finds all Analytics records associated with a specific task.
+     *
+     * @param taskId the ID of the task
+     * @return list of Analytics entities for the given task
      */
-    Iterable<Analytics> findByTaskId(int taskId);
+    List<Analytics> findByTaskid_Taskid(int taskId);
 }

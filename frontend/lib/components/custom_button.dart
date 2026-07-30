@@ -1,45 +1,82 @@
 import 'package:flutter/material.dart';
+import '../../constants/app_colors.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool isOutlined;
+  final bool isDisabled;
+  final bool isLoading;
   final double width;
   final double height;
+  final double fontSize;
+  final EdgeInsets padding;
 
   const CustomButton({
     super.key,
     required this.text,
-    required this.onTap,
+    this.onTap,
     this.isOutlined = false,
-    required this.width,
-    required this.height,
+    this.isDisabled = false,
+    this.isLoading = false,
+    this.width = double.infinity,
+    this.height = 48,
+    this.fontSize = 14,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(29),
-          color: isOutlined ? Colors.transparent : const Color(0xFF1C9A89),
-          border: isOutlined
-              ? Border.all(color: const Color(0xFF1C9A89), width: 4)
-              : null,
-        ),
-        child: Center(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 40,
-              fontWeight: FontWeight.w600,
-              color: isOutlined ? const Color(0xFF1C9A89) : Colors.white,
-            ),
+    final bool isInteractive = !isDisabled && !isLoading && onTap != null;
+
+    return SizedBox(
+      width: width,
+      height: height,
+      child: ElevatedButton(
+        onPressed: isInteractive ? onTap : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isOutlined
+              ? Colors.transparent
+              : AppColors.primaryTeal(context),
+          foregroundColor: isOutlined
+              ? AppColors.primaryTeal(context)
+              : AppColors.textLight(context),
+          elevation: 0,
+          padding: padding,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: isOutlined
+                ? BorderSide(
+                    color: AppColors.primaryTeal(context),
+                    width: 2,
+                  )
+                : BorderSide.none,
           ),
+          disabledBackgroundColor: isOutlined
+              ? Colors.transparent
+              : AppColors.primaryTeal(context).withValues(alpha: 0.4),
+          disabledForegroundColor: isOutlined
+              ? AppColors.primaryTeal(context).withValues(alpha: 0.4)
+              : AppColors.textLight(context).withValues(alpha: 0.6),
         ),
+        child: isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Text(
+                text,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Open Sans',
+                  letterSpacing: 0.5,
+                ),
+              ),
       ),
     );
   }

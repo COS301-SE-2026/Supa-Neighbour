@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supa_neighbour/constants/app_colors.dart';
+import '../help/help_menu_screen.dart';
 import '../../models/auth_session.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
 import '../../widgets/bottom_nav_bar.dart';
-import 'create_task_screen.dart';
-import 'inbox_screen.dart';
-import 'my_tasks_screen.dart';
-import 'task_detail_screen.dart';
+import '../tasks/create_task_screen.dart';
+import '../leaderboard/leaderboard_screen.dart';
+import '../chat/inbox_screen.dart';
+import '../tasks/my_tasks_screen.dart';
+import '../profile/profile_screen.dart';
+import '../tasks/task_detail_screen.dart';
+import '../../services/task_service.dart';
+
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,8 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
     const HomeContent(),
     const MyTasksScreen(),
     const InboxScreen(),
-    const StatsPlaceholder(),
-    const ProfilePlaceholder(),
+    const LeaderboardScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -44,7 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Home Content Widget
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -54,26 +60,67 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   List<Task> _nearbyTasks = [];
+  List<Task> _availableTasks = [];
+   
   User? _currentUser;
+  final TaskService _taskService = TaskService();
+  double _trustScore = 0.0;
+  bool _isLoadingStats = true;
+  int _helpsGiven = 0;
+
+  int? get _currentUserId {
+    final id = AuthSession.instance.currentUser?.id;
+    return id != null ? int.tryParse(id) : null;
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadNearbyTasks();
-    _loadCurrentUser();
+    _currentUser = AuthSession.instance.currentUser;
+    _loadData();
   }
 
-  void _loadCurrentUser() {
-    setState(() {
-      _currentUser = AuthSession.instance.currentUser;
-    });
+  Future<void> _loadData() async {
+    setState(() => _isLoadingStats = true);
+    final userId = _currentUserId;
+    if (userId == null) {
+      setState(() => _isLoadingStats = false);
+      return;
+    }
+    try {
+      final results = await Future.wait([
+        _taskService.getTasksByUserId(userId),
+        _taskService.getUserById(userId),
+      ]);
+      final tasks = results[0] as List<Task>;
+      final userMap = results[1] as Map<String, dynamic>;
+      if (!mounted) return;
+      setState(() {
+        _nearbyTasks = tasks;
+        _helpsGiven = tasks.where((t) => t.status == 'completed').length;
+        final ratingData = userMap['rating'];
+        if (ratingData != null && ratingData is Map) {
+          final score = ratingData['averageRating'];
+          _trustScore = score != null ? (score as num).toDouble() : 0.0;
+        }
+        _isLoadingStats = false;
+      });
+      final available = await _taskService.getAvailableTasks(userId);
+      if (mounted) setState(() => _availableTasks = available);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _nearbyTasks = [];
+        _isLoadingStats = false;
+      });
+    }
   }
 
-  void _loadNearbyTasks() {
-    setState(() {
-      _nearbyTasks = Task.getMockTasks();
-    });
-  }
+ Future<void> _loadNearbyTasks() async {
+  await _loadData();
+}
+
+
 
   String getGreeting() {
     final hour = DateTime.now().hour;
@@ -82,17 +129,24 @@ class _HomeContentState extends State<HomeContent> {
     return 'Good evening';
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFFFFF),
+        backgroundColor: AppColors.background(context),
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
+          onPressed: () {
+            HelpMenuScreen.showHelpModal(context, 'home');
+          },
+        ),
         title: Text(
           'Supa Neighbour',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF2A9D8F),
+            color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -100,16 +154,14 @@ class _HomeContentState extends State<HomeContent> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: Color(0xFF2A9D8F)),
-            onPressed: () {
-              // next feature
-            },
+            icon: Icon(Icons.notifications_none, color: AppColors.primaryTeal(context)),
+            onPressed: () {},
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          _loadNearbyTasks();
+         await  _loadNearbyTasks();
           return Future.value();
         },
         child: SingleChildScrollView(
@@ -117,20 +169,13 @@ class _HomeContentState extends State<HomeContent> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome Section - Now using AuthSession
               _buildWelcomeSection(),
               const SizedBox(height: 24),
-
-              // Quick Stats Row
               _buildStatsRow(),
               const SizedBox(height: 24),
-
-              // Nearby Tasks Section
               _buildNearbyTasksSection(context),
               const SizedBox(height: 12),
-
-              // Task List
-              _nearbyTasks.isEmpty
+              _nearbyTasks.isEmpty && _availableTasks.isEmpty
                   ? _buildEmptyState()
                   : _buildNearbyTaskList(context),
               const SizedBox(height: 80),
@@ -140,15 +185,16 @@ class _HomeContentState extends State<HomeContent> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.push(
+          final result = await Navigator.push<dynamic>(
             context,
-            MaterialPageRoute(
-              builder: (_) => const CreateTaskScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const CreateTaskScreen()),
           );
-          _loadNearbyTasks();
+          if (!mounted) return;
+          if (result != null) {
+            _loadNearbyTasks();
+          }
         },
-        backgroundColor: const Color(0xFF2A9D8F),
+        backgroundColor: AppColors.primaryTeal(context),
         child: const Icon(Icons.add, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -164,8 +210,8 @@ class _HomeContentState extends State<HomeContent> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFFCCCCCC).withValues(alpha: 0.2),
-            const Color(0xFFE9C46A).withValues(alpha: 0.05),
+            AppColors.surfaceGrey(context).withValues(alpha: 0.5),
+            AppColors.citrusYellow(context).withValues(alpha: 0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -181,14 +227,14 @@ class _HomeContentState extends State<HomeContent> {
                 Text(
                   '$greeting,',
                   style: GoogleFonts.openSans(
-                    color: const Color(0xFF264653),
+                    color: AppColors.charcoal(context),
                     fontSize: 14,
                   ),
                 ),
                 Text(
                   userName,
                   style: GoogleFonts.poppins(
-                    color: const Color(0xFF2A9D8F),
+                    color: AppColors.primaryTeal(context),
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
                   ),
@@ -197,13 +243,15 @@ class _HomeContentState extends State<HomeContent> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE9C46A),
+                    color: AppColors.citrusYellow(context),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '⭐ 4.8 Trust Score',
+                    _isLoadingStats
+                        ? '⭐ -- Trust Score'
+                        : '⭐ ${_trustScore.toStringAsFixed(1)} Trust Score',
                     style: GoogleFonts.openSans(
-                      color: const Color(0xFF264653),
+                      color: AppColors.charcoal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -216,12 +264,12 @@ class _HomeContentState extends State<HomeContent> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: const Color(0xFF2A9D8F).withValues(alpha: 0.2),
+              color: AppColors.primaryTeal(context).withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person,
-              color: Color(0xFF2A9D8F),
+              color: AppColors.primaryTeal(context),
               size: 40,
             ),
           ),
@@ -238,13 +286,13 @@ class _HomeContentState extends State<HomeContent> {
           Icon(
             Icons.assignment_outlined,
             size: 80,
-            color: const Color(0xFF2A9D8F).withValues(alpha: 0.3),
+            color: AppColors.primaryTeal(context).withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
             'No tasks yet',
             style: GoogleFonts.poppins(
-              color: const Color(0xFF264653),
+              color: AppColors.charcoal(context),
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -253,7 +301,7 @@ class _HomeContentState extends State<HomeContent> {
           Text(
             'Create your first task by tapping the + button',
             style: GoogleFonts.openSans(
-              color: const Color(0xFF9CA3AF),
+              color: AppColors.textGrey(context),
               fontSize: 14,
             ),
             textAlign: TextAlign.center,
@@ -264,14 +312,16 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildStatsRow() {
-    final tasksCount = _nearbyTasks.length;
-    final activeCount = _nearbyTasks.where((t) => t.status == 'pending').length;
-    
+    final tasksPosted = _nearbyTasks.length;
+    final activeCount = _nearbyTasks
+        .where((t) => t.status == 'open' || t.status == 'assigned' || t.status == 'in_progress')
+        .length;
+
     return Row(
       children: [
-        _buildStatCard('5', 'Helps Given', const Color(0xFF2A9D8F)),
+        _buildStatCard(_helpsGiven.toString(), 'Completed', const Color(0xFF2A9D8F)),
         const SizedBox(width: 12),
-        _buildStatCard(tasksCount.toString(), 'Tasks Posted', const Color(0xFFE9C46A)),
+        _buildStatCard(tasksPosted.toString(), 'Tasks Posted', const Color(0xFFE9C46A)),
         const SizedBox(width: 12),
         _buildStatCard(activeCount.toString(), 'Active', const Color(0xFF69B578)),
       ],
@@ -279,11 +329,12 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildStatCard(String value, String label, Color color) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -307,7 +358,7 @@ class _HomeContentState extends State<HomeContent> {
             Text(
               label,
               style: GoogleFonts.openSans(
-                color: const Color(0xFF264653),
+                color: AppColors.charcoal(context),
                 fontSize: 12,
               ),
             ),
@@ -318,40 +369,43 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Widget _buildNearbyTasksSection(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'My Tasks',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF264653),
-            fontSize: 18,
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        'Available Nearby', 
+        style: GoogleFonts.poppins(
+          color: AppColors.charcoal(context),
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      TextButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MyTasksScreen(initialTab: 0),
+            ),
+          );
+        },
+        child: Text(
+          'See All',
+          style: GoogleFonts.openSans(
+            color: AppColors.primaryTeal(context),
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
-        TextButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MyTasksScreen()),
-            );
-          },
-          child: Text(
-            'See All',
-            style: GoogleFonts.openSans(
-              color: const Color(0xFF2A9D8F),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
   Widget _buildNearbyTaskList(BuildContext context) {
+    final displayTasks = _availableTasks.isNotEmpty ? _availableTasks : _nearbyTasks;
     return Column(
-      children: _nearbyTasks.map((task) {
+      children: displayTasks.take(5).map((task) {
         return _buildTaskCard(
           context: context,
           task: task,
@@ -379,13 +433,14 @@ class _HomeContentState extends State<HomeContent> {
     required Task task,
     required VoidCallback onTap,
   }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -401,12 +456,12 @@ class _HomeContentState extends State<HomeContent> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFF2A9D8F).withValues(alpha: 0.1),
+                color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 _getCategoryIcon(task.category),
-                color: const Color(0xFF2A9D8F),
+                color: AppColors.primaryTeal(context),
                 size: 28,
               ),
             ),
@@ -418,7 +473,7 @@ class _HomeContentState extends State<HomeContent> {
                   Text(
                     task.title,
                     style: GoogleFonts.poppins(
-                      color: const Color(0xFF264653),
+                      color: AppColors.charcoal(context),
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -426,12 +481,12 @@ class _HomeContentState extends State<HomeContent> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.access_time, size: 14, color: Color(0xFF2A9D8F)),
+                      Icon(Icons.access_time, size: 14, color: AppColors.primaryTeal(context)),
                       const SizedBox(width: 4),
                       Text(
                         '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
                         style: GoogleFonts.openSans(
-                          color: const Color(0xFF264653),
+                          color: AppColors.charcoal(context),
                           fontSize: 12,
                         ),
                       ),
@@ -443,13 +498,13 @@ class _HomeContentState extends State<HomeContent> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFE9C46A),
+                color: AppColors.citrusYellow(context),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 '+${task.xpReward} XP',
                 style: GoogleFonts.openSans(
-                  color: const Color(0xFF264653),
+                  color: AppColors.charcoal(context),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -478,95 +533,5 @@ class _HomeContentState extends State<HomeContent> {
       default:
         return Icons.assignment;
     }
-  }
-}
-
-
-// Placeholder Screens
-class StatsPlaceholder extends StatelessWidget {
-  const StatsPlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFFFFFFF),
-        elevation: 0,
-        title: Text(
-          'Statistics',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF2A9D8F),
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.bar_chart,
-              size: 80,
-              color: const Color(0xFF2A9D8F).withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Statistics Coming Soon',
-              style: GoogleFonts.openSans(
-                color: const Color(0xFF264653),
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ProfilePlaceholder extends StatelessWidget {
-  const ProfilePlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFFFFFFF),
-        elevation: 0,
-        title: Text(
-          'Profile',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF2A9D8F),
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.person_outline,
-              size: 80,
-              color: const Color(0xFF2A9D8F).withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Profile Coming Soon',
-              style: GoogleFonts.openSans(
-                color: const Color(0xFF264653),
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

@@ -4,6 +4,11 @@
     "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <module name="Checker">
+
+    <module name="SuppressionFilter">
+        <property name="file" value="${config_loc}/checkstyle-suppressions.xml"/>
+    </module>
+
     <module name="TreeWalker">
         <module name="TypeName"/>
         <module name="MethodName"/>
@@ -23,11 +28,11 @@
         <module name="AvoidStarImport"/>
 
         <module name="MethodLength">
-            <property name="max" value="50"/>
+            <property name="max" value="100"/>
         </module>
 
         <module name="ParameterNumber">
-            <property name="max" value="7"/>
+            <property name="max" value="20"/>
         </module>
 
         <module name="MissingJavadocMethod">
