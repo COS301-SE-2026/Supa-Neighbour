@@ -90,13 +90,28 @@ src/main/resources/
 
 **Frontend (Flutter)**
 ```
-frontend/lib/app/
-├── screens/
-├── widgets/
-├── services/
-├── components/
-├── constants/
-└── model/
+frontend/
+├── lib/
+│   ├── main.dart
+│   ├── screens/
+│   │   ├── auth/
+│   │   ├── home/
+│   │   ├── tasks/
+│   │   ├── chat/
+│   │   ├── leaderboard/
+│   │   └── profile/
+│   ├── widgets/
+│   │   └── achievements/
+│   ├── services/
+│   ├── models/
+│   ├── providers/
+│   ├── constants/
+│   └── components/
+├── assets/
+│   └── screenshots/
+├── test/
+├── pubspec.yaml
+└── README.md
 ```
 
 ---
