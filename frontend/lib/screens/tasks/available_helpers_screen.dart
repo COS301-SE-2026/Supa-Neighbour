@@ -38,7 +38,7 @@ Future<void> _loadHelpers() async {
     final taskId = int.tryParse(widget.task.id);
     if (taskId == null) throw Exception('Invalid task ID');
     final token = await fb.FirebaseAuth.instance.currentUser?.getIdToken();
-    final dio = Dio(BaseOptions(baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net/'));
+    final dio = Dio(BaseOptions(baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net'));
     final res = await dio.get(
       '/api/task-invitations',
       options: token != null
