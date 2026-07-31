@@ -41,7 +41,7 @@ void initState() {
         await prefs2.setInt('current_user_id', int.parse(user.id));
 
         try {
-          final dioTemp = Dio(BaseOptions(baseUrl: 'http://localhost:8080'));
+          final dioTemp = Dio(BaseOptions(baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net/'));
           final depRes = await dioTemp.get('/api/dependents');
           final depList = depRes.data as List<dynamic>;
           for (final item in depList) {

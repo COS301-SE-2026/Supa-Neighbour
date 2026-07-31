@@ -12,7 +12,7 @@ class AuthService {
       : _dio = dio ??
             Dio(BaseOptions(
              // baseUrl: 'http://10.0.2.2:8080',
-              baseUrl: 'http://localhost:8080',
+              baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net/',
               connectTimeout: const Duration(seconds: 19),
               receiveTimeout: const Duration(seconds: 19),
             )),
