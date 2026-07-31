@@ -129,6 +129,18 @@ class _HomeContentState extends State<HomeContent> {
     return 'Good evening';
   }
 
+  Future<void> _callMatchHelpers(int taskId) async {
+    try {
+      final token = await fb.FirebaseAuth.instance.currentUser?.getIdToken();
+      if (token == null) return;
+      final dio = Dio(BaseOptions(baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net'));
+      await dio.post(
+        '/api/task-invitations/$taskId/match',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+    } catch (_) {
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

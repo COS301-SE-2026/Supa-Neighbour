@@ -99,7 +99,7 @@ Future<void> _handleLogin() async {
 
 Future<int?> _fetchDependentId(int userId) async {
   try {
-    final dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080'));
+    final dio = Dio(BaseOptions(baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net'));
     final res = await dio.get('/api/dependents');
     final list = res.data as List<dynamic>;
     for (final item in list) {
