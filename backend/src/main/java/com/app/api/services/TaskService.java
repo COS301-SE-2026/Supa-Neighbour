@@ -183,6 +183,7 @@ public class TaskService {
      * @return the saved task
      */
     public Task createTask(Task task) {
+        task.setStatus("open");
         return taskRepo.save(task);
     }
 
