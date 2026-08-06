@@ -13,8 +13,6 @@ import '../tasks/my_tasks_screen.dart';
 import '../profile/profile_screen.dart';
 import '../tasks/task_detail_screen.dart';
 import '../../services/task_service.dart';
-import 'package:dio/dio.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fb;
 
 
 
@@ -129,19 +127,6 @@ class _HomeContentState extends State<HomeContent> {
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
-  }
-
-  Future<void> _callMatchHelpers(int taskId) async {
-    try {
-      final token = await fb.FirebaseAuth.instance.currentUser?.getIdToken();
-      if (token == null) return;
-      final dio = Dio(BaseOptions(baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net'));
-      await dio.post(
-        '/api/task-invitations/$taskId/match',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-    } catch (_) {
-    }
   }
 
   @override
