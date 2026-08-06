@@ -5,13 +5,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 /// responsible for all task-related API calls.
+//https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net
 class TaskService {
   final Dio _dio;
 
   TaskService({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
-              baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
+              baseUrl: 'http://localhost:8080',
               connectTimeout: const Duration(seconds: 10),// will update timeut if needed
               receiveTimeout: const Duration(seconds: 10),
             ));
