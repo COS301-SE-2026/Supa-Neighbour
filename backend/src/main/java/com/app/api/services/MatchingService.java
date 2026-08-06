@@ -60,6 +60,8 @@ public class MatchingService {
             return null;
         }
 
+        int requesterUserId = task.getDependentid().getUserId().getUserid();
+
         String requesterZone = getZoneFromTask(task);
         if (requesterZone == null) {
             return new ArrayList<>();
@@ -75,6 +77,10 @@ public class MatchingService {
         List<MatchedHelperDTO> matched = new ArrayList<>();
 
         for(Helper helper : availableHelpers) {
+
+            if (helper.getUserid() != null && helper.getUserid().getUserid() == requesterUserId) {
+            continue; 
+            }
 
             String helperZone = getZoneFromHelper(helper);
             if (helperZone == null) {
