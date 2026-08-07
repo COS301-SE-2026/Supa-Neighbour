@@ -1,4 +1,4 @@
-name: Frontend CI/CD
+name: Frontend Static Pages CI/CD
 
 on:
   push:
@@ -42,7 +42,7 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -65,11 +65,11 @@ jobs:
   
   deploy-styleguide:
     name: Deploy Style Guide
-    runs-on: ubuntu-lates
+    runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -80,7 +80,7 @@ jobs:
         run: flutter pub get
         working-directory: frontend
         
-      - name: Build landing page
+      - name: Build style guide
         run: flutter build web -t lib/main_style_guide.dart
         working-directory: frontend
 
@@ -89,5 +89,3 @@ jobs:
         working-directory: frontend
         env:
           DEPLOYMENT_TOKEN: ${{ secrets.SWA_STYLEGUIDE_TOKEN }}
-
-    

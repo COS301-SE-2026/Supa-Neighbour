@@ -24,6 +24,10 @@ jobs:
         run: mvn clean install -DskipTests -Dspring-boot.repackage.skip=true
         working-directory: backend
       
+      - name: Run tests
+        run: mvn test
+        working-directory: backend
+      
       - name: Lint
         run: mvn checkstyle:check
         working-directory: backend
@@ -37,6 +41,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Write Firebase service account key
+        run: |
+          mkdir -p backend/src/main/resources/Firebase
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}' > backend/src/main/resources/Firebase/serviceAccountKey.json
         
       - name: Log in to Azure Container Registry
         uses: docker/login-action@v3
