@@ -126,9 +126,9 @@ class Task {
       createdAt: parsedDate,
       createdBy: '', // dependentId not returned - see below
       helperId: null, // this IS the helper's own task list; not relevant here
-      requesterName: null, // not returned by this endpoint - see below
+      requesterName: json['requesterName'] as String?,
       helperName: null,
-      completionNote: null,
+      completionNote: json['completionNote'] as String?,
       completionPhotos: null,
     );
 }
@@ -137,17 +137,15 @@ class Task {
   static String _resolveCategoryName(int? taskTypeId){
     switch(taskTypeId){
       case 1:
-        return 'Plants';
+        return 'Medical Assistance';
       case 2:
-        return 'Pets';
-         case 3:
-        return 'Bins';
+        return 'Pet Care';
+      case 3:
+        return 'Technology Support';
       case 4:
-        return 'Packages';
+        return 'Transportation Support';
       case 5:
-        return 'Home Check-in';
-      case 6:
-        return 'Pool Pump';
+        return 'Home Repair';
       default:
         return 'Other';
     }
@@ -156,43 +154,36 @@ class Task {
   /// categoryName -> taskTypeId
   static int resolveTaskTypeId(String category){
     switch (category) {
-      case 'Plants':
+      case 'Medical Assistance':
         return 1;
-      case 'Pets':
+      case 'Pet Care':
         return 2;
-      case 'Bins':
-      return 3;
-      case 'Packages':
+      case 'Technology Support':
+        return 3;
+      case 'Transportation Support':
         return 4;
-      case 'Home Check-in':
+      case 'Home Repair':
         return 5;
-      case 'Pool Pump':
-        return 6;
       default:
-        return 7;
-
+        return 1; // fallback to first valid type
     }
   }
 
   /// taskTypeId -> flat XP reward per category.
-  /// Backend has no XP/points column yet, so this is a flat rate per
-  /// category rather than a true per-task value.
   static int _resolveXpReward(int? taskTypeId) {
     switch (taskTypeId) {
       case 1:
-        return 50; // Plants
+        return 50; // Medical Assistance
       case 2:
-        return 60; // Pets
+        return 60; // Pet Care
       case 3:
-        return 20; // Bins
+        return 40; // Technology Support
       case 4:
-        return 30; // Packages
+        return 30; // Transportation Support
       case 5:
-        return 40; // Home Check-in
-      case 6:
-        return 45; // Pool Pump
+        return 45; // Home Repair
       default:
-        return 25; // Other
+        return 25;
     }
   }
 
