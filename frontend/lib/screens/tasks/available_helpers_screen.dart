@@ -46,9 +46,12 @@ Future<void> _loadHelpers() async {
           : null,
     );
     final all = res.data as List<dynamic>;
-    final filtered = all
-        .where((inv) => inv['taskId']?['taskid'] == taskId || inv['taskId']?['task_id'] == taskId)
-        .toList();
+    final filtered = all.where((inv) {
+    final taskObj = inv['taskId'] as Map<String, dynamic>?;
+    if (taskObj == null) return false;
+      final id = taskObj['taskid']; 
+      return id != null && id == taskId;
+    }).toList();
     if (!mounted) return;
     setState(() {
       _matchedHelpers = filtered.cast<Map<String, dynamic>>();

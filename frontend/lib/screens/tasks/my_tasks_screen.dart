@@ -421,7 +421,7 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
     margin: const EdgeInsets.only(bottom: 12),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: AppColors.surfaceGrey(context),
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
@@ -437,7 +437,7 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: const Color(0xFF2A9D8F).withOpacity(0.1),
+            color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -454,7 +454,7 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
               Text(
                 task.title,
                 style: GoogleFonts.poppins(
-                  color: const Color(0xFF264653),
+                  color: AppColors.charcoal(context),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -467,7 +467,7 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
                   Text(
                     task.category,
                     style: GoogleFonts.openSans(
-                      color: const Color(0xFF6B7280),
+                      color: AppColors.textGrey(context),
                       fontSize: 12,
                     ),
                   ),
@@ -477,8 +477,8 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
                   Text(
                     '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
                     style: GoogleFonts.openSans(
-                      color: const Color(0xFF6B7280),
-                      fontSize: 12,
+                     color: AppColors.textGrey(context),
+                     fontSize: 12,
                     ),
                   ),
                 ],
@@ -562,18 +562,16 @@ void _acceptTask(Task task) async {
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
-      case 'Plants':
-        return Icons.eco;
-      case 'Pets':
+      case 'Medical Assistance':
+        return Icons.medical_services;
+      case 'Pet Care':
         return Icons.pets;
-      case 'Bins':
-        return Icons.delete;
-      case 'Packages':
-        return Icons.inventory;
-      case 'Home Check-in':
-        return Icons.home;
-      case 'Pool Pump':
-        return Icons.water;
+      case 'Technology Support':
+        return Icons.computer;
+      case 'Transportation Support':
+        return Icons.directions_car;
+      case 'Home Repair':
+        return Icons.home_repair_service;
       default:
         return Icons.assignment;
     }

@@ -25,13 +25,11 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
   // Categories
   final List<String> _categories = [
-    'Plants',
-    'Pets',
-    'Bins',
-    'Packages',
-    'Home Check-in',
-    'Pool Pump',
-    'Other',
+    'Medical Assistance',
+    'Pet Care',
+    'Technology Support',
+    'Transportation Support',
+    'Home Repair',
   ];
 
   @override
