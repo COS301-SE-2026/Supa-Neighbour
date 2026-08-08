@@ -25,11 +25,11 @@ jobs:
           MILESTONE="Sprint 2"   # update this each sprint
           ISSUES=$(gh issue list --repo ${{ github.repository }} --milestone "$MILESTONE" --state open --json labels)
           POINTS=$(echo "$ISSUES" | jq '[.[].labels[] | select(.name | startswith("points:")) | (.name | split(":")[1] | tonumber)] | add // 0')
-          echo "points=$POINTS" >> $GITHUB_OUTPUTs
+          echo "points=$POINTS" >> $GITHUB_OUTPUT
 
       - name: Append snapshot
         run: | 
-          echo "$(date +'%Y-%m-%d'),${{ steps.calc.outputs.points }}" >> burndown-data.csv
+          echo "$(date +'%Y-%m-%d'),${{ steps.calc.outputs.points }}" >> burndown-data-sprint2.csv
         
       - name: Commit and push
         run: | 
