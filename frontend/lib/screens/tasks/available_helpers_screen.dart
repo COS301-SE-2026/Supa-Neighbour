@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../models/task_model.dart';
+import '../leaderboard/helper_profile_preview_screen.dart';
+
 
 
 
@@ -38,31 +40,35 @@ Future<void> _loadHelpers() async {
     final taskId = int.tryParse(widget.task.id);
     if (taskId == null) throw Exception('Invalid task ID');
     final token = await fb.FirebaseAuth.instance.currentUser?.getIdToken();
-    final dio = Dio(BaseOptions(baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net'));
-    final res = await dio.get(
-      '/api/task-invitations',
+    final dio = Dio(BaseOptions(baseUrl: 'http://localhost:8080'));
+    final res = await dio.post(
+      '/api/task-invitations/$taskId/match',
       options: token != null
           ? Options(headers: {'Authorization': 'Bearer $token'})
           : null,
     );
-    final all = res.data as List<dynamic>;
-    final filtered = all.where((inv) {
-    final taskObj = inv['taskId'] as Map<String, dynamic>?;
-    if (taskObj == null) return false;
-      final id = taskObj['taskid']; 
-      return id != null && id == taskId;
+    final data = res.data as Map<String, dynamic>;
+    final helpers = data['helpers'] as List<dynamic>? ?? [];
+    final mapped = helpers.map((h) {
+      final m = h as Map<String, dynamic>;
+      return {
+        'helperId': m['helperId'],
+        'helperName': m['helperName'],
+        'neighbourhoodZone': m['neighbourhoodZone'],
+        'skillMatched': m['skillMatched'],
+        'helperXp': m['helperXp'],
+        'status': m['invitationStatus'],
+      };
     }).toList();
     if (!mounted) return;
     setState(() {
-      _matchedHelpers = filtered.cast<Map<String, dynamic>>();
-      _isLoading = false;
-    });
-  } catch (_) {
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-  }
-}
+      _matchedHelpers = mapped.cast<Map<String, dynamic>>();
+        _isLoading = false;
+      });
+    } catch (e) {
 
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -309,16 +315,30 @@ Future<void> _loadHelpers() async {
   }
 
 
-  Widget _buildMatchedHelperCard(Map<String, dynamic> invitation) {
-  final helper = invitation['helperId'] as Map<String, dynamic>?;
-  final user = helper?['userid'] as Map<String, dynamic>?;
-  final firstName = user?['firstName'] as String? ?? 'Helper';
-  final lastName = user?['lastName'] as String? ?? '';
-  final fullName = '$firstName $lastName'.trim();
-  final status = invitation['status'] as String? ?? 'Invited';
+  Widget _buildMatchedHelperCard(Map<String, dynamic> inv) {
+  final fullName = inv['helperName'] as String? ?? 'Helper';
+  final status = inv['status'] as String? ?? '';
+  final skillMatched = inv['skillMatched'] as bool? ?? false;
+  final xp = inv['helperXp'] as int? ?? 0;
+  final firstName = fullName.isNotEmpty ? fullName.split(' ').first : 'H';
   final isInvited = status == 'Accepted';
+  final helperId = inv['helperId'] as int?;
 
-  return Container(
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HelperProfilePreviewScreen(
+            helperId: helperId,
+            taskId: widget.task.id,
+            showRequestButton: true,
+          ),
+        ),
+      );
+    },
+    child: Container(
+
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
       color: Colors.white,
@@ -388,6 +408,7 @@ Future<void> _loadHelpers() async {
           ),
         ),
       ],
+    ),
     ),
   );
 }

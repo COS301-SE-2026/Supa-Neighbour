@@ -115,7 +115,7 @@ public class MatchingService {
                 TaskInvitation invitation = TaskInvitation.builder()
                 .taskId(task)
                 .helperId(helper)
-                .status("Invited")
+                .status(null)
                 .invitedAt(new Date())
                 .build();
                 taskInvitationRepo.save(invitation);
@@ -132,7 +132,7 @@ public class MatchingService {
                     helperZone,
                     skillMatched,
                     helper.getHelperXp(),
-                    "Helper Added"
+                    "Helpers matched"
             ));
         }
 
