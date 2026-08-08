@@ -333,7 +333,7 @@ public class TaskInvitationController {
 
 
         try{
-            TaskInvitation updated = taskInvitationService.declineInvitation(taskId, helper.getHelperid(), taskInvoice, helper);
+            taskInvitationService.declineInvitation(taskId, helper.getHelperid(), taskInvoice, helper);
             return ResponseEntity.ok(
                 Map.of(
                 "message", "Task declined.",
