@@ -16,11 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.google.firebase.auth.FirebaseAuthException;
 
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.app.api.models.TaskInvoice;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.TaskInvoiceService;
-import com.google.firebase.auth.FirebaseAuthException;
 
 /**
  * REST controller for task invoice.
@@ -119,7 +117,7 @@ public class TaskInvoiceController {
         @RequestBody TaskInvoice taskInvoice,
         @RequestHeader("Authorization") String authHeader) {
         try{
-            String token = authHeader.replace("Bearer, ", "");
+            String token = authHeader.replace("Bearer ", "");
             firebaseAuthService.getUserIdFromToken(token);
 
             TaskInvoice existing = taskInvoiceService.getTaskInvoiceById(id);
