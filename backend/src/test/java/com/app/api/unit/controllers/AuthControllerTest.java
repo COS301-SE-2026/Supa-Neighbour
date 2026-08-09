@@ -1,5 +1,32 @@
 package com.app.api.unit.controllers;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 import com.app.api.controllers.AuthController;
 import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
@@ -9,6 +36,8 @@ import com.app.api.models.Settings;
 import com.app.api.models.User;
 import com.app.api.repositories.AddressRepository;
 import com.app.api.repositories.BadgesRepository;
+import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.RatingsRepository;
 import com.app.api.repositories.SettingsRepository;
 import com.app.api.repositories.UserRepository;
@@ -17,26 +46,6 @@ import com.app.api.services.FirebaseAuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.time.LocalDate;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
@@ -58,6 +67,12 @@ class AuthControllerTest {
 
     @Mock
     private SettingsRepository settingsRepository;
+
+    @Mock
+    private HelperRepository helperRepository;
+
+    @Mock
+    private DependentRepository dependentRepository;
 
     @InjectMocks
     private AuthController authController;
@@ -106,8 +121,6 @@ class AuthControllerTest {
         Ratings rating = new Ratings();
 
         when(addressRepository.findById(1)).thenReturn(Optional.of(address));
-        when(badgeRepository.findById(1)).thenReturn(Optional.of(badge));
-        when(ratingRepository.findById(1)).thenReturn(Optional.of(rating));
 
         User savedUser = new User();
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
