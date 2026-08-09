@@ -63,13 +63,17 @@ public class HelperTasksRepository {
                     tit.start_date,
                     tit.end_date,
                     l.neighbourhood_name,
-                    tt.xp_worth
+                    tt.xp_worth,
+                    null AS admin_review,
+                    u.user_name || ' ' || u.user_surname AS requester_name
                 FROM task_invitation_table  ti
                 JOIN task_invoice_table     tit ON tit.task_id     = ti.task_id
                 JOIN task_type_table        tt  ON tt.task_type_id = tit.task_type_id
                 JOIN location_table         l   ON l.location_id   = tit.location_id
+                LEFT JOIN dependent_table   d   ON d.dependent_id  = tit.dependent_id
+                LEFT JOIN user_table        u   ON u.user_id        = d.user_id
                 WHERE ti.helper_id  = :helperId
-                  AND tit.status    = 'open'
+                AND tit.status    = 'open'
                 """ + statusClause + """
                 ORDER BY tit.start_date DESC
                 LIMIT :limit OFFSET :offset
@@ -113,16 +117,19 @@ String sql = """
             ti.start_date,
             ti.end_date,
             l.neighbourhood_name,
-            tt.xp_worth
+            tt.xp_worth,
+            ti.admin_review,
+            u.user_name || ' ' || u.user_surname AS requester_name
         FROM task_invoice_table ti
         JOIN task_type_table tt ON tt.task_type_id = ti.task_type_id
         JOIN location_table l ON l.location_id = ti.location_id
+        LEFT JOIN dependent_table d ON d.dependent_id = ti.dependent_id
+        LEFT JOIN user_table u ON u.user_id = d.user_id
         WHERE ti.helper_id = :helperId
         """ + statusClause + """
         ORDER BY ti.start_date DESC
         LIMIT :limit OFFSET :offset
         """;
-                System.out.println(sql);
         var query = em.createNativeQuery(sql)
                 .setParameter("helperId", helperId)
                 .setParameter("limit", limit)

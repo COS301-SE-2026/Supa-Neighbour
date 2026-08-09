@@ -9,7 +9,8 @@ class HelperProfileService {
   HelperProfileService({Dio? dio, fb.FirebaseAuth? firebaseAuth})
       : _dio = dio ??
             Dio(BaseOptions(
-              baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
+             // baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
+              baseUrl: 'http://localhost:8080',
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
               headers: {
