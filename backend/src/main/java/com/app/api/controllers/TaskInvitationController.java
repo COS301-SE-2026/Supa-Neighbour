@@ -278,8 +278,10 @@ public class TaskInvitationController {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "This task has already been accepted"));
             }
-
-
+            if("NOT_FOUND".equals(e.getMessage())){
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .body(Map.of("error", "No invitation exists for this helper on this task"));
+            }
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(Map.of("error", "Task is not available for acceptance"));
         }

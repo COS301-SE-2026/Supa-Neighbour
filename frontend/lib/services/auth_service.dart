@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb; //to avoid clash with usr model
 import '../models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/address_model.dart';
 
 
 class AuthService {
@@ -81,6 +82,27 @@ Future<User> loginWithToken(String idToken) async {
     await _firebaseAuth.signOut();
   }
 
+  Future<int> createAddress({
+    required String street,
+    required String town,
+    required int zip,
+  }) async{
+    final Response<Map<String, dynamic>> res = await _dio.post(
+      '/api/addresses', 
+      data: {
+        'street': street, 
+        'town': town,
+        'zip': zip,
+      },
+    );
+
+    if(res.statusCode == 201 && res.data != null){
+      return Address.fromJson(res.data!).addressid;    
+    }
+
+    throw Exception('Address createion failed: unexpected response from server.');
+  }
+
 
   
   Future<User> register({
@@ -92,11 +114,16 @@ Future<User> loginWithToken(String idToken) async {
     required String dateOfBirth, 
     required String gender,
     required String username,
+    required String street,
+    required String town,
+    required int zip,
     String userType = 'user',
-    int addressId = 1,
-    int badgeId = 1,
-    int ratingId = 1,
   }) async {
+    final int addressId = await createAddress(
+      street: street, 
+      town: town,
+      zip: zip,
+    );
     final Response<Map<String, dynamic>> response = await _dio.post(
       '/api/auth/register',
       options: Options(
@@ -112,8 +139,6 @@ Future<User> loginWithToken(String idToken) async {
         'username': username,
         'userType': userType,
         'addressId': addressId,
-        'badgeId': badgeId,
-        'ratingId': ratingId,
       },
     );
 
