@@ -38,15 +38,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * Unit tests for {@link AuthController}.
- * <p>
- * NOTE: {@link RegisterRequest} field types for {@code dateOfBirth}, {@code gender}
- * and {@code userType} were not visible in the uploaded source, so this test assumes
- * {@code dateOfBirth} is a {@link LocalDate} and {@code gender}/{@code userType} are
- * {@link String}. Adjust the setters in {@link #buildValidRegisterRequest()} if the
- * real DTO differs.
- */
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
