@@ -9,7 +9,6 @@ import '../leaderboard/helper_profile_preview_screen.dart';
 
 
 
-
 class AvailableHelpersScreen extends StatefulWidget {
   final Task task;
 
@@ -65,8 +64,16 @@ Future<void> _loadHelpers() async {
       _matchedHelpers = mapped.cast<Map<String, dynamic>>();
         _isLoading = false;
       });
-    } catch (e) {
-
+    } on Exception catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -318,8 +325,6 @@ Future<void> _loadHelpers() async {
   Widget _buildMatchedHelperCard(Map<String, dynamic> inv) {
   final fullName = inv['helperName'] as String? ?? 'Helper';
   final status = inv['status'] as String? ?? '';
-  final skillMatched = inv['skillMatched'] as bool? ?? false;
-  final xp = inv['helperXp'] as int? ?? 0;
   final firstName = fullName.isNotEmpty ? fullName.split(' ').first : 'H';
   final isInvited = status == 'Accepted';
   final helperId = inv['helperId'] as int?;
