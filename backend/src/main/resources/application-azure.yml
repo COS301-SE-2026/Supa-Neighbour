@@ -18,6 +18,8 @@ azure:
     connection-string: ${BLOB_CONNECTION_STRING}
     posts-container: posts
     profiles-container: profiles
+    task-images-container: task-images
+    chat-images-container: chat-images
 management:
   endpoint:
     health:

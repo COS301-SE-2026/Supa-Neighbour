@@ -1,20 +1,20 @@
 package com.app.api.services;
 
-import com.azure.storage.blob.BlobClient;
-import com.azure.storage.blob.BlobContainerClient;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.sas.BlobSasPermission;
 import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
-import java.time.OffsetDateTime;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.UUID;
 
 /**
  * Service responsible for uploading image files to Azure Blob Storage.
@@ -32,15 +32,26 @@ public class BlobStorageService {
      * Azure Blob Storage container used to store post images.
      */
     private final BlobContainerClient postsContainerClient;
+    private final BlobContainerClient taskImagesContainerClient;
+    private final BlobContainerClient chatImagesContainerClient;
+    private final BlobContainerClient profilesContainerClient;
 
-     /**
+    /**
      * Constructs a new {@code BlobStorageService}.
      *
      * @param postsContainerClient the Azure Blob Storage container client used
      *                             for storing post images
      */
-    public BlobStorageService(@Qualifier("postsContainerClient") BlobContainerClient postsContainerClient){
+    public BlobStorageService(
+            @Qualifier("postsContainerClient") BlobContainerClient postsContainerClient,
+            @Qualifier("taskImagesContainerClient") BlobContainerClient taskImagesContainerClient,
+            @Qualifier("chatImagesContainerClient") BlobContainerClient chatImagesContainerClient,
+            @Qualifier("profileContainerClient") BlobContainerClient profilesContainerClient
+        ){
         this.postsContainerClient = postsContainerClient;
+        this.taskImagesContainerClient = taskImagesContainerClient;
+        this.chatImagesContainerClient = chatImagesContainerClient;
+        this.profilesContainerClient = profilesContainerClient;
     }
 
     /**
@@ -70,6 +81,32 @@ public class BlobStorageService {
         return blobClient.getBlobUrl();
     }
 
+    public String uploadTaskImage(MultipartFile file) throws IOException{
+        return uploadImage(file, taskImagesContainerClient);
+    }
+
+    public String uploadChatImage(MultipartFile file) throws IOException{
+        return uploadImage(file, chatImagesContainerClient);
+    }
+
+    public String uploadProfileImage(MultipartFile file) throws IOException{
+        return uploadImage(file, profilesContainerClient);
+    }
+
+    public String uploadImage(MultipartFile file, BlobContainerClient containerClient) throws IOException{
+        validateImage(file);
+
+        String extension = getExtension(file.getOriginalFilename());
+        String blobName = UUID.randomUUID() + extension;
+
+        BlobClient blobClient = postsContainerClient.getBlobClient(blobName);
+        try (InputStream dataStream = file.getInputStream()) {
+            blobClient.upload(dataStream, file.getSize(), true);
+        }
+
+        return blobClient.getBlobUrl();
+    }
+
     
     /**
      * Validates an uploaded image.
@@ -84,12 +121,6 @@ public class BlobStorageService {
      *
      * @param file the uploaded image to validate
      * @throws IllegalArgumentException if the image fails validation
-     */
-    /**
-     * Validates an uploaded image.
-     *
-     * @param file the uploaded image
-     * @throws IllegalArgumentException if the image is invalid
      */
     private void validateImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -112,12 +143,6 @@ public class BlobStorageService {
      * @param filename the original filename
      * @return the file extension, including the leading period (e.g. ".png"),
      *         or an empty string if no extension exists
-     */
-    /**
-     * Returns the file extension.
-     *
-     * @param filename the original filename
-     * @return the file extension, or an empty string if none exists
      */
     private String getExtension(String filename) {
         if (filename == null || !filename.contains(".")) {
@@ -142,9 +167,9 @@ public class BlobStorageService {
      *         four hours
      * @throws IllegalArgumentException if the provided blob URL is invalid
      */
-    public String generateSasUrl(String blobUrl){
-        String blobName = extractBlobName(blobUrl);
-        BlobClient blobClient = postsContainerClient.getBlobClient(blobName);
+    public String generateSasUrl(String blobUrl, BlobContainerClient containerClient){
+        String blobName = extractBlobName(blobUrl, containerClient.getBlobContainerName());
+        BlobClient blobClient = containerClient.getBlobClient(blobName);
 
         BlobSasPermission permission = new BlobSasPermission().setReadPermission(true);
         OffsetDateTime expiry = OffsetDateTime.now().plusHours(4);
@@ -176,14 +201,22 @@ public class BlobStorageService {
      * @return the blob name relative to the container
      * @throws IllegalArgumentException if the supplied URL is malformed
      */
-    public String extractBlobName(String blobUrl){
+    public String extractBlobName(String blobUrl, String containerName){
         try{
             URI uri = new URI(blobUrl);
             String path = uri.getPath();
 
-            return path.substring("/posts/".length());
+            return path.substring(("/"+ containerName + "/").length());
         }catch(URISyntaxException e){
             throw new IllegalArgumentException("Invalid blob URL", e);
         }
+    }
+
+    /**
+     * Generates a SAS URL for a blob in the posts container.
+     * Convenience overload for callers that only ever deal with post images.
+     */
+    public String generateSasUrl(String blobUrl){
+        return generateSasUrl(blobUrl, postsContainerClient);
     }
 }
