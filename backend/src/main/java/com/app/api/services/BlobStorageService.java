@@ -46,7 +46,7 @@ public class BlobStorageService {
             @Qualifier("postsContainerClient") BlobContainerClient postsContainerClient,
             @Qualifier("taskImagesContainerClient") BlobContainerClient taskImagesContainerClient,
             @Qualifier("chatImagesContainerClient") BlobContainerClient chatImagesContainerClient,
-            @Qualifier("profileContainerClient") BlobContainerClient profilesContainerClient
+            @Qualifier("profilesContainerClient") BlobContainerClient profilesContainerClient
         ){
         this.postsContainerClient = postsContainerClient;
         this.taskImagesContainerClient = taskImagesContainerClient;
@@ -81,25 +81,45 @@ public class BlobStorageService {
         return blobClient.getBlobUrl();
     }
 
+    /** * Uploads an image associated with a task to the task images container. 
+     * @param file the image file to upload 
+     * @return the URL of the uploaded image 
+     * @throws IOException if an error occurs while reading or uploading the file 
+     * */
     public String uploadTaskImage(MultipartFile file) throws IOException{
         return uploadImage(file, taskImagesContainerClient);
     }
 
+    /** Uploads an image associated with a chat to the chat images container. 
+     *  @param file the image file to upload * @return the URL of the uploaded image 
+     *  @throws IOException if an error occurs while reading or uploading the file 
+     */
     public String uploadChatImage(MultipartFile file) throws IOException{
         return uploadImage(file, chatImagesContainerClient);
     }
 
+    /** * Uploads a profile image to the profiles container.
+     *  @param file the profile image to upload 
+     * @return the URL of the uploaded profile image 
+     * @throws IOException if an error occurs while reading or uploading the file 
+     */
     public String uploadProfileImage(MultipartFile file) throws IOException{
         return uploadImage(file, profilesContainerClient);
     }
 
+    /** Validates and uploads an image file to the specified Azure Blob Storage container. 
+     * A unique blob name is generated using a UUID while preserving * the file's original extension. 
+     *  @param file the image file to validate and upload 
+     * @param containerClient the Azure Blob Storage container client to which the image will be uploaded 
+     * @return the URL of the uploaded image * @throws IOException if an error occurs while reading or uploading the file 
+     * */
     public String uploadImage(MultipartFile file, BlobContainerClient containerClient) throws IOException{
         validateImage(file);
 
         String extension = getExtension(file.getOriginalFilename());
         String blobName = UUID.randomUUID() + extension;
 
-        BlobClient blobClient = postsContainerClient.getBlobClient(blobName);
+        BlobClient blobClient = containerClient.getBlobClient(blobName);
         try (InputStream dataStream = file.getInputStream()) {
             blobClient.upload(dataStream, file.getSize(), true);
         }
@@ -218,5 +238,23 @@ public class BlobStorageService {
      */
     public String generateSasUrl(String blobUrl){
         return generateSasUrl(blobUrl, postsContainerClient);
+    }
+
+    /**
+     * Generates the SAS URL for a blob in the chat Images Controller
+     * @param blobUrl
+     * @return Strings of the image
+     */
+    public String generateChatSasUrl(String blobUrl){
+        return generateSasUrl(blobUrl, chatImagesContainerClient);
+    }
+
+    /**
+     * Generated the SAS URL for a blob in the task images Controller
+     * @param blobUrl
+     * @return string of path to image
+     */
+    public String generateTaskSasUrl(String blobUrl){
+        return generateSasUrl(blobUrl, taskImagesContainerClient);
     }
 }
