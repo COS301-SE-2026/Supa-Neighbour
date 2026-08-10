@@ -113,11 +113,11 @@ public class MatchingService {
 
             if(!alreadyExist){
                 TaskInvitation invitation = TaskInvitation.builder()
-                            .taskId(task)
-                            .helperId(helper)
-                            .status(null)
-                            .invitedAt(new Date())
-                            .build();
+                .taskId(task)
+                .helperId(helper)
+                .status(null)
+                .invitedAt(new Date())
+                .build();
                 taskInvitationRepo.save(invitation);
             }
             
@@ -132,7 +132,7 @@ public class MatchingService {
                     helperZone,
                     skillMatched,
                     helper.getHelperXp(),
-                    "Helper Added"
+                    "Helpers matched"
             ));
         }
 

@@ -103,6 +103,8 @@ public class HelperTasksService {
         row[3] != null ? row[3].toString() : null, 
         row[4] != null ? row[4].toString() : null,
         (String) row[5], 
-        row[6] != null ? ((Number) row[6]).intValue() : null);
+        row[6] != null ? ((Number) row[6]).intValue() : null,
+        row[7] != null ? (String) row[7] : null,
+        row[8] != null ? (String) row[8] : null);
     }
 }

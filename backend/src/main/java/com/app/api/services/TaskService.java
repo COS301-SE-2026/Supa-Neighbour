@@ -286,7 +286,7 @@ public class TaskService {
         Task task = new Task();
         task.setTaskId(invoice.getTaskid());
         task.setHelperId(invoice.getHelperid() != null ? invoice.getHelperid().getHelperid() : null);
-        task.setDependentId(invoice.getDependentid() != null ? invoice.getDependentid().getUserId().getUserid() : null);
+        task.setDependentId(invoice.getDependentid() != null ? invoice.getDependentid().getDependentId() : null);
         task.setImmediate(invoice.getImmediate());
         task.setLocationId(invoice.getLocationid() != null ? invoice.getLocationid().getLocationid() : null);
         task.setTaskTypeId(invoice.getTasktypeid() != null ? invoice.getTasktypeid().getTasktypeid() : null);

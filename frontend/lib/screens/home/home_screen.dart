@@ -13,6 +13,7 @@ import '../tasks/my_tasks_screen.dart';
 import '../profile/profile_screen.dart';
 import '../tasks/task_detail_screen.dart';
 import '../../services/task_service.dart';
+import '../../services/profile_service.dart';
 
 
 
@@ -64,6 +65,7 @@ class _HomeContentState extends State<HomeContent> {
    
   User? _currentUser;
   final TaskService _taskService = TaskService();
+  final UserProfileService _profileService = UserProfileService();
   double _trustScore = 0.0;
   bool _isLoadingStats = true;
   int _helpsGiven = 0;
@@ -88,21 +90,13 @@ class _HomeContentState extends State<HomeContent> {
       return;
     }
     try {
-      final results = await Future.wait([
-        _taskService.getTasksByUserId(userId),
-        _taskService.getUserById(userId),
-      ]);
-      final tasks = results[0] as List<Task>;
-      final userMap = results[1] as Map<String, dynamic>;
+      final tasks = await _taskService.getTasksByUserId(userId);
+      final profile = await _profileService.getMyProfile();
       if (!mounted) return;
       setState(() {
         _nearbyTasks = tasks;
         _helpsGiven = tasks.where((t) => t.status == 'completed').length;
-        final ratingData = userMap['rating'];
-        if (ratingData != null && ratingData is Map) {
-          final score = ratingData['averageRating'];
-          _trustScore = score != null ? (score as num).toDouble() : 0.0;
-        }
+        _trustScore = profile.trustScore ?? 0.0;
         _isLoadingStats = false;
       });
       final available = await _taskService.getAvailableTasks(userId);
@@ -517,18 +511,16 @@ class _HomeContentState extends State<HomeContent> {
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
-      case 'Plants':
-        return Icons.eco;
-      case 'Pets':
+      case 'Medical Assistance':
+        return Icons.medical_services;
+      case 'Pet Care':
         return Icons.pets;
-      case 'Bins':
-        return Icons.delete;
-      case 'Packages':
-        return Icons.inventory;
-      case 'Home Check-in':
-        return Icons.home;
-      case 'Pool Pump':
-        return Icons.water;
+      case 'Technology Support':
+        return Icons.computer;
+      case 'Transportation Support':
+        return Icons.directions_car;
+      case 'Home Repair':
+        return Icons.home_repair_service;
       default:
         return Icons.assignment;
     }

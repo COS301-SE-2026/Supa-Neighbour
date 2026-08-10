@@ -125,7 +125,10 @@ public class PostsController {
         }catch(FirebaseAuthException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }catch(InvalidPostException e){
-            return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getMessage()));
+            return ResponseEntity
+                .status(HttpStatus.valueOf(e.getStatusCode()))
+                .header("Content-Type", "application/json")
+                .body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -167,7 +170,10 @@ public class PostsController {
         }catch(FirebaseAuthException e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }catch(InvalidPostException e){
-            return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getMessage()));
+            return ResponseEntity
+                .status(HttpStatus.valueOf(e.getStatusCode()))
+                .header("Content-Type", "application/json")
+                .body(Map.of("error", e.getMessage()));
         }
     }
 
