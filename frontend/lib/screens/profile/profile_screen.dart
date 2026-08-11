@@ -5,21 +5,22 @@ import '../../constants/skill_options.dart';
 import '../../constants/badge_visuals.dart';
 import 'package:supa_neighbour/screens/profile/achievements_screen.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
-import '../../services/auth_service.dart';
 import '../auth/splash_screen.dart';
 import '../../services/profile_service.dart';
 import '../../models/user_profile_response.dart';
 import '../profile/privacy_settings_screen.dart';
 import '../help/help_menu_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   UserProfileResponse? _profile;
   bool _isLoading = true;
   String? _errorMessage;
@@ -888,7 +889,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _performLogout() async{
     try{
-      await AuthService().logout();
+      final auth = ref.read(authServiceProvider);
+      await auth.logout();
       if(mounted){
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SplashScreen()),
