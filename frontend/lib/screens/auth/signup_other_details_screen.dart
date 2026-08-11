@@ -7,10 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
 class SignupOtherDetailsScreen extends ConsumerStatefulWidget {
-  final User user;
-  final String idToken;
-  final String password;
-
   const SignupOtherDetailsScreen({
     super.key,
     required this.user,
@@ -20,8 +16,10 @@ class SignupOtherDetailsScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<SignupOtherDetailsScreen> createState() => _SignupOtherDetailsScreenState();
+  ConsumerState<SignupOtherDetailsScreen> createState() => _SignupOtherDetailsScreenState();
 }
 
+class _SignupOtherDetailsScreenState extends ConsumerState<SignupOtherDetailsScreen> {
 class _SignupOtherDetailsScreenState extends ConsumerState<SignupOtherDetailsScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
@@ -52,6 +50,8 @@ class _SignupOtherDetailsScreenState extends ConsumerState<SignupOtherDetailsScr
     if(widget.user.street == null || widget.user.town == null || zip == null){
       throw Exception(' Missing or invalis residential address details.');
     }
+    final auth = ref.read(authServiceProvider);  
+    final User registeredUser = await auth.register( 
     final auth = ref.read(authServiceProvider);  
     final User registeredUser = await auth.register( 
       idToken: widget.idToken,
@@ -133,6 +133,7 @@ class _SignupOtherDetailsScreenState extends ConsumerState<SignupOtherDetailsScr
                   ),
                   
                   SizedBox(height: screenHeight * 0.02),
+                  
                   
                   
                   LogoPlaceholder(size: logoSize),
