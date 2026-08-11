@@ -12,6 +12,8 @@ import '../chat/inbox_screen.dart';
 import '../tasks/my_tasks_screen.dart';
 import '../profile/profile_screen.dart';
 import '../tasks/task_detail_screen.dart';
+import '../../services/task_service.dart';
+import '../../services/profile_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
@@ -52,18 +54,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class HomeContent extends ConsumerStatefulWidget {
+cclass HomeContent extends ConsumerStatefulWidget {
   const HomeContent({super.key});
 
   @override
   ConsumerState<HomeContent> createState() => _HomeContentState();
+  ConsumerState<HomeContent> createState() => _HomeContentState();
 }
 
+class _HomeContentState extends ConsumerState<HomeContent> {
 class _HomeContentState extends ConsumerState<HomeContent> {
   List<Task> _nearbyTasks = [];
   List<Task> _availableTasks = [];
    
   User? _currentUser;
+  final TaskService _taskService = TaskService();
   double _trustScore = 0.0;
   bool _isLoadingStats = true;
   int _helpsGiven = 0;
@@ -88,8 +93,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       return;
     }
     try {
-      final taskService = ref.read(taskServiceProvider);
-      final tasks = await taskService.getTasksByUserId(userId);
+      final tasks = await _taskService.getTasksByUserId(userId);
       final profileService = ref.read(profileServiceProvider); 
       final profile = await profileService.getMyProfile();
       if (!mounted) return;
