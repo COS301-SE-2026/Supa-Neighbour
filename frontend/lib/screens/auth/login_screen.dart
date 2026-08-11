@@ -8,25 +8,27 @@ import '../../services/auth_service.dart';
 import '../home/home_screen.dart';
 import 'forgot_password_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
 
 
 
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _rememberMe = false;
   
-  final AuthService _authService = AuthService();
+  
 
 
 Future<void> _handleLogin() async {
@@ -46,7 +48,8 @@ Future<void> _handleLogin() async {
   setState(() => _isLoading = true);
 
   try {
-    final User user = await _authService.login(
+    final auth = ref.read(authServiceProvider);  
+    final User user = await auth.login( 
       _emailController.text.trim(),
       _passwordController.text,
     );
