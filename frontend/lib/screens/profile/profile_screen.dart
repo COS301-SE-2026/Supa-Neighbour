@@ -41,7 +41,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     });
 
     try{
-      final profile = await UserProfileService().getMyProfile();
+       final profileService = ref.read(profileServiceProvider);
+      final profile = await profileService.getMyProfile();
       setState(() {
         _profile = profile;
         _localSkillEdits = List.from(profile.skills);
@@ -154,7 +155,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 setDialogState (() => isSaving = true);
 
                 try{
-                  final response = await UserProfileService().updateSkills(selectedSkills.toList());
+                  final profileService = ref.read(profileServiceProvider);
+                  final response = await profileService.updateSkills(selectedSkills.toList());
 
                   setState (() {
                     _localSkillEdits = response.skills ?? selectedSkills.toList();

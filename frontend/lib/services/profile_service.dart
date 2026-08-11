@@ -3,7 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:supa_neighbour/models/update_profile_response.dart';
 import '../models/user_profile_response.dart';
 
-class UserProfileService{
+// INTERFACE (Contract)
+abstract class IProfileService {
+  Future<UserProfileResponse> getMyProfile();
+  Future<UpdateProfileResponse> updateSkills(List<String> skills);
+}
+
+class UserProfileService implements IProfileService {
   final Dio _dio;
   final fb.FirebaseAuth _firebaseAuth;
 
