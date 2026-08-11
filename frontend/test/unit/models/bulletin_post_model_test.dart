@@ -5,7 +5,6 @@ void main() {
   group('BulletinPost Model Unit Tests', () {
     final now = DateTime.now();
     final later = now.add(const Duration(hours: 1));
-    const currentUserId = 123;
 
     late BulletinPost testPost;
 
