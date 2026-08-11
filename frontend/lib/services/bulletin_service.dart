@@ -92,7 +92,7 @@ class BulletinService {
       ),
     });
     final res = await _dio.post(
-      '/api/upload/image',
+      '/api/upload/post/image',
       data: formData,
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
