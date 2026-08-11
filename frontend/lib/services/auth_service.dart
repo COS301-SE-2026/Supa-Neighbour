@@ -5,7 +5,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/address_model.dart';
 
 
-class AuthService {
+// INTERFACE (Contract)
+abstract class IAuthService {
+  Future<User> login(String email, String password);
+  Future<User> loginWithToken(String idToken);
+  Future<void> logout();
+  Future<void> deleteAccount();
+  Future<User> register({
+    required String idToken,
+    required String firstName,
+    required String lastName,
+    required String password,
+    required String phoneNumber,
+    required String dateOfBirth,
+    required String gender,
+    required String username,
+    required String street,
+    required String town,
+    required int zip,
+    String userType = 'user',
+  });
+}
+
+
+class AuthService implements IAuthService {
   final Dio _dio;
   final fb.FirebaseAuth _firebaseAuth;
 
