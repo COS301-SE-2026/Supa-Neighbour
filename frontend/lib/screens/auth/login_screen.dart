@@ -10,37 +10,29 @@ import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../home/home_screen.dart';
 import 'forgot_password_screen.dart';
-import 'signup_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class LoginScreen extends StatefulWidget {
-  final AuthService? authService;
-  
-  const LoginScreen({super.key, this.authService});
+
+
+
+
+class LoginScreen extends ConsumerStatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _rememberMe = false;
   
-  late final AuthService _authService;
+  
 
-  @override
-  void initState() {
-    super.initState();
-    _authService = widget.authService ?? AuthService();
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 
   Future<void> _handleLogin() async {
     if (_emailController.text.trim().isEmpty) {
@@ -64,12 +56,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    try {
-      final User user = await _authService.login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-      AuthSession.instance.login(user);
+  try {
+    final auth = ref.read(authServiceProvider);  
+    final User user = await auth.login( 
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
+    AuthSession.instance.login(user);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('remember_me', _rememberMe);
