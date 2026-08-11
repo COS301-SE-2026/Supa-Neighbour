@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-cclass HomeContent extends ConsumerStatefulWidget {
+class HomeContent extends ConsumerStatefulWidget {
   const HomeContent({super.key});
 
   @override
@@ -68,7 +68,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   List<Task> _availableTasks = [];
    
   User? _currentUser;
-  final TaskService _taskService = TaskService();
   double _trustScore = 0.0;
   bool _isLoadingStats = true;
   int _helpsGiven = 0;
@@ -93,7 +92,8 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       return;
     }
     try {
-      final tasks = await _taskService.getTasksByUserId(userId);
+      final taskService = ref.read(taskServiceProvider);
+      final tasks = await taskService.getTasksByUserId(userId);
       final profileService = ref.read(profileServiceProvider); 
       final profile = await profileService.getMyProfile();
       if (!mounted) return;
