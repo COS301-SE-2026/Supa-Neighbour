@@ -32,18 +32,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   
   
 
-  @override
-  void initState() {
-    super.initState();
-    _authService = widget.authService ?? AuthService();
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 
   try {
     final auth = ref.read(authServiceProvider);  
