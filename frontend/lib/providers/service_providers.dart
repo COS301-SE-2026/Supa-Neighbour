@@ -5,3 +5,8 @@ import '../services/auth_service.dart';
 final authServiceProvider = Provider<IAuthService>((ref) {
   return AuthService();
 });
+
+// PROFILE SERVICE PROVIDER
+final profileServiceProvider = Provider<IProfileService>((ref) {
+  return UserProfileService();
+});
