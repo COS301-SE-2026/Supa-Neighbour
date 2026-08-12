@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
-import '../../components/logo_placeholder.dart'; // Keep this import
+import '../../components/logo_placeholder.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_text_files.dart';
 import 'signup_otp_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -22,19 +24,28 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _handleSignup() async {
     if (_emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your email'), backgroundColor: Color(0xFF1C9A89)),
+        SnackBar(
+          content: const Text('Please enter your email'),
+          backgroundColor: AppColors.primaryTeal(context),
+        ),
       );
       return;
     }
     if (_passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your password'), backgroundColor: Color(0xFF1C9A89)),
+        SnackBar(
+          content: const Text('Please enter your password'),
+          backgroundColor: AppColors.primaryTeal(context),
+        ),
       );
       return;
     }
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match'), backgroundColor: Color(0xFF1C9A89)),
+        SnackBar(
+          content: const Text('Passwords do not match'),
+          backgroundColor: AppColors.primaryTeal(context),
+        ),
       );
       return;
     }
@@ -109,91 +120,211 @@ class _SignupScreenState extends State<SignupScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final logoSize = screenWidth * 0.3;
-    final titleSize = screenWidth * 0.08;
-    final subtitleSize = screenWidth * 0.045;
-    final buttonHeight = screenHeight * 0.07;
-    final fontSize = screenWidth * 0.04;
-    final smallFontSize = screenWidth * 0.035;
+    // Responsive sizing
+    final isSmallScreen = screenWidth < 400;
+    final isLargeScreen = screenWidth > 800;
+    
+    final logoSize = (screenWidth * 0.3).clamp(80.0, 180.0);
+    final titleSize = isSmallScreen ? 24.0 : (isLargeScreen ? 40.0 : 32.0);
+    final subtitleSize = isSmallScreen ? 14.0 : (isLargeScreen ? 24.0 : 18.0);
+    final buttonHeight = isSmallScreen ? 48.0 : 56.0;
+    final fontSize = isSmallScreen ? 14.0 : (isLargeScreen ? 20.0 : 16.0);
+    final smallFontSize = isSmallScreen ? 12.0 : (isLargeScreen ? 16.0 : 14.0);
+    
+    // Spacing
+    final spacing = screenHeight * 0.015;
+    final largeSpacing = screenHeight * 0.03;
 
     return Scaffold(
       body: SafeArea(
         child: Container(
           width: screenWidth,
           height: screenHeight,
-          color: Colors.white,
+          color: AppColors.background(context),
           child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-              child: Column(
-                children: [
-                  SizedBox(height: screenHeight * 0.03),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 50, height: 50,
-                        decoration: const BoxDecoration(color: Color(0xFF1C9A89), shape: BoxShape.circle),
-                        child: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: screenHeight,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Back Button
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryTeal(context),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.arrow_back,
+                            color: AppColors.textLight(context),
+                            size: 30,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: screenHeight * 0.02),
-                  LogoPlaceholder(size: logoSize),
-                  SizedBox(height: screenHeight * 0.03),
-                  Text('super Neighbour', style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.w600, color: const Color(0xFF1C9A89)), textAlign: TextAlign.center),
-                  SizedBox(height: screenHeight * 0.01),
-                  Text('Your neighbourly helper', style: TextStyle(fontSize: subtitleSize, fontWeight: FontWeight.w600, color: const Color(0xFF1C9A89)), textAlign: TextAlign.center),
-                  SizedBox(height: screenHeight * 0.04),
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [BoxShadow(color: Colors.grey.withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, 10))],
+                    
+                    SizedBox(height: spacing),
+
+                    // Logo
+                    LogoPlaceholder(size: logoSize),
+                    
+                    SizedBox(height: largeSpacing),
+
+                    // Title
+                    Text(
+                      'Super Neighbour',
+                      style: AppTextStyles.primaryHeader(context).copyWith(
+                        fontSize: titleSize,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.all(screenWidth * 0.07),
-                      child: Column(
-                        children: [
-                          Text('Sign Up', style: TextStyle(fontSize: titleSize * 0.8, fontWeight: FontWeight.w600, color: const Color(0xFF1C9A89))),
-                          SizedBox(height: screenHeight * 0.03),
-                          _buildField('Email', _emailController, 'Enter your email', keyboardType: TextInputType.emailAddress),
-                          SizedBox(height: screenHeight * 0.025),
-                          _buildPasswordField('Password', _passwordController, _obscurePassword, () => setState(() => _obscurePassword = !_obscurePassword)),
-                          SizedBox(height: screenHeight * 0.025),
-                          _buildPasswordField('Confirm password', _confirmPasswordController, _obscureConfirmPassword, () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword)),
-                          SizedBox(height: screenHeight * 0.04),
-                          GestureDetector(
-                            onTap: _isLoading ? null : _handleSignup,
-                            child: Container(
-                              width: double.infinity, height: buttonHeight,
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(29), color: const Color(0xFF1C9A89)),
-                              child: Center(
-                                child: _isLoading
-                                    ? SizedBox(width: buttonHeight * 0.4, height: buttonHeight * 0.4, child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                    : Text('Sign up', style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600, color: Colors.white)),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Already a neighbour? ', style: TextStyle(fontSize: smallFontSize, color: const Color(0xFF1C9A89))),
-                              GestureDetector(
-                                onTap: () => Navigator.pop(context),
-                                child: Text('Login', style: TextStyle(fontSize: smallFontSize, color: const Color(0xFF1C9A89), fontWeight: FontWeight.w600)),
-                              ),
-                            ],
+                    
+                    SizedBox(height: spacing * 0.5),
+
+                    // Subtitle
+                    Text(
+                      'Your neighbourly helper',
+                      style: AppTextStyles.secondaryHeader(context).copyWith(
+                        fontSize: subtitleSize,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    
+                    SizedBox(height: largeSpacing * 0.8),
+
+                    // Card Container
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.background(context),
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.charcoal(context).withValues(alpha: 0.08),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
                           ),
                         ],
                       ),
+                      child: Padding(
+                        padding: EdgeInsets.all(screenWidth * 0.05),
+                        child: Column(
+                          children: [
+                            // Sign Up Title
+                            Text(
+                              'Sign Up',
+                              style: AppTextStyles.primaryHeader(context).copyWith(
+                                fontSize: isSmallScreen ? 20.0 : 24.0,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryTeal(context),
+                              ),
+                            ),
+                            
+                            SizedBox(height: spacing * 1.2),
+
+                            // Email Field
+                            _buildField(
+                              'Email',
+                              _emailController,
+                              'Enter your email',
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                            
+                            SizedBox(height: spacing),
+
+                            // Password Field
+                            _buildPasswordField(
+                              'Password',
+                              _passwordController,
+                              _obscurePassword,
+                              () => setState(() => _obscurePassword = !_obscurePassword),
+                            ),
+                            
+                            SizedBox(height: spacing),
+
+                            // Confirm Password Field
+                            _buildPasswordField(
+                              'Confirm password',
+                              _confirmPasswordController,
+                              _obscureConfirmPassword,
+                              () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                            ),
+                            
+                            SizedBox(height: spacing * 1.5),
+
+                            // Sign Up Button
+                            GestureDetector(
+                              onTap: _isLoading ? null : _handleSignup,
+                              child: Container(
+                                width: double.infinity,
+                                height: buttonHeight,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(29),
+                                  color: AppColors.primaryTeal(context),
+                                ),
+                                child: Center(
+                                  child: _isLoading
+                                      ? SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            color: AppColors.textLight(context),
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Text(
+                                          'Sign up',
+                                          style: AppTextStyles.buttonText(context).copyWith(
+                                            fontSize: isSmallScreen ? 16.0 : 20.0,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ),
+                            
+                            SizedBox(height: spacing),
+
+                            // Already a neighbour? Login - FIXED OVERFLOW
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Text(
+                                  'Already a neighbour? ',
+                                  style: AppTextStyles.bodyText(context).copyWith(
+                                    fontSize: smallFontSize,
+                                    color: AppColors.primaryTeal(context),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => Navigator.pop(context),
+                                  child: Text(
+                                    'Login',
+                                    style: AppTextStyles.bodyText(context).copyWith(
+                                      fontSize: smallFontSize,
+                                      color: AppColors.primaryTeal(context),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                ],
+                    
+                    SizedBox(height: spacing * 1.5),
+                  ],
+                ),
               ),
             ),
           ),
@@ -202,28 +333,59 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController controller, String hint, {TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildField(
+    String label,
+    TextEditingController controller,
+    String hint, {
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    final fontSize = screenWidth * 0.04;
-    final buttonHeight = screenHeight * 0.07;
+    final isSmallScreen = screenWidth < 400;
+    final fontSize = isSmallScreen ? 14.0 : 16.0;
+    final buttonHeight = isSmallScreen ? 48.0 : 56.0;
+    final spacing = screenHeight * 0.015;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w400, color: const Color(0xFF1C9A89))),
-        SizedBox(height: screenHeight * 0.01),
+        Text(
+          label,
+          style: AppTextStyles.bodyText(context).copyWith(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w500,
+            color: AppColors.primaryTeal(context),
+          ),
+        ),
+        SizedBox(height: spacing * 0.3),
         Container(
-          width: double.infinity, height: buttonHeight,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(29), color: Colors.white, border: Border.all(color: const Color(0xFF1C9A89), width: 2)),
+          width: double.infinity,
+          height: buttonHeight,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(29),
+            color: AppColors.background(context),
+            border: Border.all(
+              color: AppColors.primaryTeal(context),
+              width: 2,
+            ),
+          ),
           child: TextField(
             controller: controller,
-            style: TextStyle(fontSize: fontSize * 0.7),
+            style: AppTextStyles.bodyText(context).copyWith(
+              color: AppColors.charcoal(context),
+            ),
             keyboardType: keyboardType,
+            cursorColor: AppColors.primaryTeal(context),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(fontSize: fontSize * 0.6, color: Colors.grey),
+              hintStyle: AppTextStyles.bodyText(context).copyWith(
+                color: AppColors.textGrey(context),
+              ),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.02),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.01,
+              ),
             ),
           ),
         ),
@@ -231,29 +393,66 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _buildPasswordField(String label, TextEditingController controller, bool obscure, VoidCallback toggle) {
+  Widget _buildPasswordField(
+    String label,
+    TextEditingController controller,
+    bool obscure,
+    VoidCallback toggle,
+  ) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    final fontSize = screenWidth * 0.04;
-    final buttonHeight = screenHeight * 0.07;
+    final isSmallScreen = screenWidth < 400;
+    final fontSize = isSmallScreen ? 14.0 : 16.0;
+    final buttonHeight = isSmallScreen ? 48.0 : 56.0;
+    final spacing = screenHeight * 0.015;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w400, color: const Color(0xFF1C9A89))),
-        SizedBox(height: screenHeight * 0.01),
+        Text(
+          label,
+          style: AppTextStyles.bodyText(context).copyWith(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w500,
+            color: AppColors.primaryTeal(context),
+          ),
+        ),
+        SizedBox(height: spacing * 0.3),
         Container(
-          width: double.infinity, height: buttonHeight,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(29), color: Colors.white, border: Border.all(color: const Color(0xFF1C9A89), width: 2)),
+          width: double.infinity,
+          height: buttonHeight,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(29),
+            color: AppColors.background(context),
+            border: Border.all(
+              color: AppColors.primaryTeal(context),
+              width: 2,
+            ),
+          ),
           child: TextField(
             controller: controller,
             obscureText: obscure,
-            style: TextStyle(fontSize: fontSize * 0.7),
+            style: AppTextStyles.bodyText(context).copyWith(
+              color: AppColors.charcoal(context),
+            ),
+            cursorColor: AppColors.primaryTeal(context),
             decoration: InputDecoration(
               hintText: 'Enter your password',
-              hintStyle: TextStyle(fontSize: fontSize * 0.6, color: Colors.grey),
+              hintStyle: AppTextStyles.bodyText(context).copyWith(
+                color: AppColors.textGrey(context),
+              ),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.02),
-              suffixIcon: IconButton(icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF1C9A89)), onPressed: toggle),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.01,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  obscure ? Icons.visibility_off : Icons.visibility,
+                  color: AppColors.primaryTeal(context),
+                ),
+                onPressed: toggle,
+              ),
             ),
           ),
         ),
