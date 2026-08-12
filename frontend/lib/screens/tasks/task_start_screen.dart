@@ -5,9 +5,11 @@ import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'task_completion_page.dart';
+import '../../services/task_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
+class TaskStartScreen extends ConsumerStatefulWidget {
 class TaskStartScreen extends ConsumerStatefulWidget {
   final Task task;
 
@@ -18,8 +20,10 @@ class TaskStartScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<TaskStartScreen> createState() => _TaskStartScreenState();
+  ConsumerState<TaskStartScreen> createState() => _TaskStartScreenState();
 }
 
+class _TaskStartScreenState extends ConsumerState<TaskStartScreen> {
 class _TaskStartScreenState extends ConsumerState<TaskStartScreen> {
   bool _isStarting = false;
 
@@ -27,6 +31,8 @@ class _TaskStartScreenState extends ConsumerState<TaskStartScreen> {
     setState(() => _isStarting = true);
 
     try {
+      final taskService = ref.read(taskServiceProvider);
+      await taskService.updateTask(
       final taskService = ref.read(taskServiceProvider);
       await taskService.updateTask(
         taskId: int.parse(widget.task.id),
