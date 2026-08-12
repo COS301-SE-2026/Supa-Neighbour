@@ -53,6 +53,7 @@ public class HelperTasksService {
      *         the user is not registered as a helper
      */
     public HelperTaskResponse getAcceptedTasks(int userId, String statusFilter, int limit, int offset){
+    public HelperTaskResponse getAcceptedTasks(int userId, String statusFilter, int limit, int offset){
         Integer helperId = helperTasksRepository.findHelperByUserId(userId);
 
 
@@ -61,14 +62,18 @@ public class HelperTasksService {
         }
 
         List<Object[]> acceptedRows = helperTasksRepository.findAcceptedTasks(helperId, limit, offset);
+        List<Object[]> acceptedRows = helperTasksRepository.findAcceptedTasks(helperId, limit, offset);
 
         List<HelperTaskDTO> tasks = new ArrayList<>();
+        for(Object[] row : acceptedRows){
         for(Object[] row : acceptedRows){
             tasks.add(mapRow(row));
         }
 
         int total = helperTasksRepository.countAcceptedTasks(helperId);
+        int total = helperTasksRepository.countAcceptedTasks(helperId);
 
+        return new HelperTaskResponse(helperId, total, tasks);       
         return new HelperTaskResponse(helperId, total, tasks);       
     }
 
@@ -84,22 +89,6 @@ public class HelperTasksService {
         row[8] != null ? (String) row[8] : null);
     }
 
-    /**
-     * Retrieves a helper's completed tasks.
-     *
-     * <p>
-     * Resolves the given user to their helper record, then returns the
-     * helper's tasks that have been accepted and completed, mapped to
-     * summary DTOs. Results are paginated.
-     * </p>
-     *
-     * @param userId the identifier of the user (must resolve to a helper)
-     * @param limit  the maximum number of task records to return
-     * @param offset the number of task records to skip for pagination
-     * @return a list of completed task summaries for the helper
-     * @throws ResponseStatusException with status {@code 403 FORBIDDEN} if the
-     *         user does not have an associated helper record
-     */
     public List<HelperTaskDTO> getCompletedTasks(int userId, int limit, int offset) {
         Integer helperId = helperTasksRepository.findHelperByUserId(userId);
 

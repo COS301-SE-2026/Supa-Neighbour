@@ -89,12 +89,19 @@ public class HelperTasksRepository {
 
     /**
      * Retrieves tasks that a helper has accepted and been assigned to.
+     * Retrieves tasks that a helper has accepted and been assigned to.
      *
      * <p>
      * Returns tasks where the helper's invitation has been accepted and
      * the underlying task has moved to the {@code assigned} state.
+     * Returns tasks where the helper's invitation has been accepted and
+     * the underlying task has moved to the {@code assigned} state.
      * </p>
      *
+     * @param helperId the identifier of the helper
+     * @param limit    the maximum number of task records to return
+     * @param offset   the number of task records to skip for pagination
+     * @return a list of accepted/assigned task records for the helper
      * @param helperId the identifier of the helper
      * @param limit    the maximum number of task records to return
      * @param offset   the number of task records to skip for pagination
@@ -116,7 +123,7 @@ public class HelperTasksRepository {
                 FROM task_invitation_table  ti
                 JOIN task_invoice_table     tit ON tit.task_id     = ti.task_id
                 JOIN task_type_table        tt  ON tt.task_type_id = tit.task_type_id
-                LEFT JOIN location_table         l   ON l.location_id   = tit.location_id
+                JOIN location_table         l   ON l.location_id   = tit.location_id
                 LEFT JOIN dependent_table   d   ON d.dependent_id  = tit.dependent_id
                 LEFT JOIN user_table        u   ON u.user_id        = d.user_id
                 WHERE ti.helper_id  = :helperId
@@ -126,6 +133,9 @@ public class HelperTasksRepository {
                 LIMIT :limit OFFSET :offset
         """;
         var query = em.createNativeQuery(sql)
+                    .setParameter("helperId", helperId)
+                    .setParameter("limit", limit)
+                    .setParameter("offset", offset);
                     .setParameter("helperId", helperId)
                     .setParameter("limit", limit)
                     .setParameter("offset", offset);
@@ -152,20 +162,6 @@ public class HelperTasksRepository {
         return ((Number) query.getSingleResult()).intValue();
     }
 
-    /**
-     * Retrieves completed tasks for the specified helper.
-     *
-     * <p>
-     * Only tasks where the helper's invitation was accepted and the
-     * underlying task has reached the {@code completed} state are
-     * returned. Results are paginated.
-     * </p>
-     *
-     * @param helperId the identifier of the helper
-     * @param limit    the maximum number of task records to return
-     * @param offset   the number of task records to skip for pagination
-     * @return a list of completed task records for the helper
-     */
     public List<Object[]> findCompletedTasks(int helperId, int limit, int offset) {
         String sql = """
                 SELECT
@@ -197,7 +193,39 @@ public class HelperTasksRepository {
                 .setParameter("offset", offset);
 
         return query.getResultList();
+                SELECT
+                    tit.task_id,
+                    tt.type_description   AS task_type,
+                    ti.status,
+                    tit.start_date,
+                    tit.end_date,
+                    l.neighbourhood_name,
+                    tt.xp_worth,
+                    tit.admin_review,
+                    u.user_name || ' ' || u.user_surname AS requester_name
+                FROM task_invitation_table  ti
+                JOIN task_invoice_table     tit ON tit.task_id     = ti.task_id
+                JOIN task_type_table        tt  ON tt.task_type_id = tit.task_type_id
+                JOIN location_table         l   ON l.location_id   = tit.location_id
+                LEFT JOIN dependent_table   d   ON d.dependent_id  = tit.dependent_id
+                LEFT JOIN user_table        u   ON u.user_id        = d.user_id
+                WHERE ti.helper_id  = :helperId
+                AND ti.status     = 'Accepted'
+                AND tit.status    = 'completed'
+                ORDER BY tit.start_date DESC
+                LIMIT :limit OFFSET :offset
+                """;
+
+        var query = em.createNativeQuery(sql)
+                .setParameter("helperId", helperId)
+                .setParameter("limit", limit)
+                .setParameter("offset", offset);
+
+        return query.getResultList();
     }
+
+
+
 
 
 
