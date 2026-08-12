@@ -6,7 +6,6 @@ import '../../constants/badge_visuals.dart';
 import 'package:supa_neighbour/screens/profile/achievements_screen.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
 import '../auth/splash_screen.dart';
-import '../../services/profile_service.dart';
 import '../../models/user_profile_response.dart';
 import '../profile/privacy_settings_screen.dart';
 import '../help/help_menu_screen.dart';

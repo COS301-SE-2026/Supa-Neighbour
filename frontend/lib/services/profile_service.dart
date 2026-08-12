@@ -22,7 +22,8 @@ class UserProfileService implements IProfileService {
     receiveTimeout: const Duration(seconds: 10),
     )),
     _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
-
+ 
+  @override
   Future<UserProfileResponse> getMyProfile() async{
     final String? idToken = await _firebaseAuth.currentUser?.getIdToken(false);
 
@@ -42,6 +43,7 @@ class UserProfileService implements IProfileService {
     throw Exception('Failed to fetch profile: unexpected response form server.');
   }
 
+  @override
   Future<UpdateProfileResponse> updateSkills(List<String> skills) async{
     final String? idToken = await _firebaseAuth.currentUser?.getIdToken(false);
     if(idToken == null){

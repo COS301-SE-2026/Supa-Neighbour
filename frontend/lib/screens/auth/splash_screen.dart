@@ -6,7 +6,6 @@ import 'auth_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../home/home_screen.dart';
-import '../../services/auth_service.dart';
 import '../../models/auth_session.dart';
 import '../../components/logo_placeholder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

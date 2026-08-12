@@ -12,8 +12,6 @@ import '../chat/inbox_screen.dart';
 import '../tasks/my_tasks_screen.dart';
 import '../profile/profile_screen.dart';
 import '../tasks/task_detail_screen.dart';
-import '../../services/task_service.dart';
-import '../../services/profile_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 

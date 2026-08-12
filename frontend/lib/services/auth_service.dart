@@ -42,7 +42,7 @@ class AuthService implements IAuthService {
             )),
         _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
 
- 
+  @override
   Future<User> login(String email, String password) async {
     // sign in with fb
     final fb.UserCredential credential = await _firebaseAuth
@@ -70,7 +70,7 @@ class AuthService implements IAuthService {
     throw Exception('Login failed: unexpected response from server.');
   }
 
-
+@override
 Future<User> loginWithToken(String idToken) async {
   final Response<Map<String, dynamic>> response = await _dio.post(
     '/api/auth/login',
@@ -86,7 +86,7 @@ Future<User> loginWithToken(String idToken) async {
   throw Exception('Auto-login failed: unexpected response from server.');
 }
 
-
+ @override
   Future<void> logout() async {
     try{
       final String? idToken = await _firebaseAuth.currentUser?.getIdToken();
@@ -127,7 +127,7 @@ Future<User> loginWithToken(String idToken) async {
   }
 
 
-  
+  @override
   Future<User> register({
     required String idToken,
     required String firstName,
@@ -171,7 +171,8 @@ Future<User> loginWithToken(String idToken) async {
 
     throw Exception('Registration failed: unexpected response from server.');
   }
-
+  
+  @override
   Future<void> deleteAccount() async{
     final String? idToken = await  _firebaseAuth.currentUser?.getIdToken(false);
 

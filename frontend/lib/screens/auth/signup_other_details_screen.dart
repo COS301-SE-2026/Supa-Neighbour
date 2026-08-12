@@ -7,6 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
 class SignupOtherDetailsScreen extends ConsumerStatefulWidget {
+  final User user;
+  final String idToken;
+  final String password;
+
   const SignupOtherDetailsScreen({
     super.key,
     required this.user,
