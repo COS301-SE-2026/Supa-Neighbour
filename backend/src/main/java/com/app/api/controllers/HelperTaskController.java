@@ -60,7 +60,7 @@ public class HelperTaskController {
         try{
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
-            HelperTaskResponse response = helperTasksService.getTasks(userId, statusFilter, limit, offset);
+            HelperTaskResponse response = helperTasksService.getAcceptedTasks(userId, statusFilter, limit, offset);
             return ResponseEntity.ok(response);
         } catch (FirebaseAuthException e) {
             return ResponseEntity.status(401).body("Invalid or expired Firebase token");
