@@ -5,7 +5,6 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_colors.dart';
 import 'edit_task_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/service_providers.dart';
 
 class TaskDetailScreen extends ConsumerStatefulWidget {
 class TaskDetailScreen extends ConsumerStatefulWidget {
