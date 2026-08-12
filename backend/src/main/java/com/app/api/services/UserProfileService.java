@@ -118,7 +118,7 @@ public class UserProfileService {
                 ((Number) row[0]).intValue(),
                 (String) row[1],
                 row[2] != null ? row[2].toString() : null, 
-                row[3] != null ? ((Number) row[3]).intValue() : null
+                row[3] != null ? ((Number) row[3]).intValue() : 0
             )).toList();
         }
 
