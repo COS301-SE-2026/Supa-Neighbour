@@ -77,6 +77,11 @@ public class ChatController {
             @PathVariable int userId) {
 
         Map<String, Object> result = chatService.getChatsByUserId(userId);
+
+        if(result == null){
+            return ResponseEntity.notFound().build();
+        }
+
         return ResponseEntity.ok(result);
     }
 
@@ -120,6 +125,12 @@ public class ChatController {
             @PathVariable int chatId,
             @RequestBody Map<String, Object> body) {
 
+        Object userIdObject = body.get("userID");
+
+        if (userIdObject == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        
         int userId = (Integer) body.get("userID");
         chatService.markAsRead(chatId, userId);
 

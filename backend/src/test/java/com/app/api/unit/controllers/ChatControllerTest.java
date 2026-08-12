@@ -25,6 +25,10 @@ import com.app.api.controllers.ChatController;
 import com.app.api.services.ChatService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
 @ExtendWith(MockitoExtension.class)
 class ChatControllerTest {
 
@@ -150,7 +154,7 @@ class ChatControllerTest {
 
         mockMvc.perform(get("/api/chats/999")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -273,5 +277,48 @@ class ChatControllerTest {
                 .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.content").value(""));
+    }
+
+    @Test
+    void markAsRead_ShouldReturnSuccessResponse() throws Exception{
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("userID", 101);
+        mockMvc.perform(put("/api/chats/1/read")
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(requestBody)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.chatID").value(1))
+        .andExpect(jsonPath("$.markedAsRead").value(true));
+
+        verify(chatService, times(1)).markAsRead(1, 101);
+    }
+
+    @Test
+    void markAsRead_WithDifferentChatAndUser_ShouldMarkMessageAsRead() throws Exception{
+        Map<String, Object> requestBody = new HashMap<>();
+
+        requestBody.put("userID", 202);
+        
+        mockMvc.perform(put("/api/chats/55/read")
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(requestBody)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.chatID").value(55))
+        .andExpect(jsonPath("$.markedAsRead").value(true));
+
+        verify(chatService, times(1)).markAsRead(55, 202);
+    }
+
+    @Test
+    void markAsRead_WithoutUserId_ShouldReturnServerError() throws Exception{
+        Map<String, Object> requestBody = new HashMap<>();
+
+        mockMvc.perform(put("/api/chats/1/read")
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(requestBody)))
+        .andExpect(status().isBadRequest());
     }
 }

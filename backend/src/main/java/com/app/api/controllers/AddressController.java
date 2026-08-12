@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.models.Address;
 import com.app.api.services.AddressService;
+import com.app.api.dtos.AddressInfoDTO;
 
 /**
  * REST controller for managing addresses.
@@ -71,9 +72,13 @@ public class AddressController {
      * @return the saved address
      */
     @PostMapping
-    public ResponseEntity<Address> createAddress(@RequestBody Address address) {
-        Address saved = addressService.saveAddress(address);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    public ResponseEntity<?> createAddress(@RequestBody AddressInfoDTO request) {
+        try{
+            Address saved = addressService.resolveOrCreateAddress(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // PUT /api/addresses/1

@@ -50,6 +50,10 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
     final dateOfBirth =
         '${birthday.year}-${birthday.month.toString().padLeft(2, '0')}-${birthday.day.toString().padLeft(2, '0')}';
 
+    final int? zip = int.tryParse(widget.user.zipCode ?? '');
+    if(widget.user.street == null || widget.user.town == null || zip == null){
+      throw Exception(' Missing or invalis residential address details.');
+    }
     final User registeredUser = await _authService.register(
       idToken: widget.idToken,
       firstName: widget.user.firstName,
@@ -59,6 +63,9 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
       dateOfBirth: dateOfBirth,
       gender: widget.user.gender ?? 'Other',
       username: _usernameController.text.trim(),
+      street: widget.user.street!,
+      town: widget.user.town!,
+      zip: zip,
     );
 
     AuthSession.instance.login(registeredUser);
