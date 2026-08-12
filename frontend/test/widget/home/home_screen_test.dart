@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:supa_neighbour/models/auth_session.dart';
 import 'package:supa_neighbour/models/user_model.dart';
 import 'package:supa_neighbour/screens/home/home_screen.dart';
-import 'package:supa_neighbour/providers/service_providers.dart';
 
 void main() {
   group('HomeScreen Widget Tests', () {
