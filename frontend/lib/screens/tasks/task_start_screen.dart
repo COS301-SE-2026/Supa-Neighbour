@@ -6,9 +6,10 @@ import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'task_completion_page.dart';
 import '../../services/task_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-
-class TaskStartScreen extends StatefulWidget {
+class TaskStartScreen extends ConsumerStatefulWidget {
   final Task task;
 
   const TaskStartScreen({
@@ -17,19 +18,18 @@ class TaskStartScreen extends StatefulWidget {
   });
 
   @override
-  State<TaskStartScreen> createState() => _TaskStartScreenState();
+  ConsumerState<TaskStartScreen> createState() => _TaskStartScreenState();
 }
 
-class _TaskStartScreenState extends State<TaskStartScreen> {
+class _TaskStartScreenState extends ConsumerState<TaskStartScreen> {
   bool _isStarting = false;
-
-  final TaskService _taskService = TaskService();
 
   Future<void> _startTask() async {
     setState(() => _isStarting = true);
 
     try {
-      await _taskService.updateTask(
+      final taskService = ref.read(taskServiceProvider);
+      await taskService.updateTask(
         taskId: int.parse(widget.task.id),
         status: 'in_progress',
       );
