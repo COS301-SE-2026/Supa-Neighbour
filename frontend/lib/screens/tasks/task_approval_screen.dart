@@ -5,9 +5,11 @@ import '../../components/custom_button.dart';
 import '../../components/custom_field_input.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../services/task_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
+class TaskApprovalScreen extends ConsumerStatefulWidget {
 class TaskApprovalScreen extends ConsumerStatefulWidget {
   final Task task;
 
@@ -18,8 +20,10 @@ class TaskApprovalScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<TaskApprovalScreen> createState() => _TaskApprovalScreenState();
+  ConsumerState<TaskApprovalScreen> createState() => _TaskApprovalScreenState();
 }
 
+class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
 class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
   double _rating = 0;
   final TextEditingController _reviewController = TextEditingController();
@@ -426,9 +430,48 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
         ],
       ),
     );
+  Future<void> _approveCompletion(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Approve Task Completion?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Confirming...will award XP to the helper and mark this task as complete.',
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Rating: ${_rating.toStringAsFixed(1)} / 5.0',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppColors.citrusYellow(context),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+            ),
+            child: const Text('Approve'),
+          ),
+        ],
+      ),
+    );
 
     if (confirmed != true) return;
+    if (confirmed != true) return;
 
+    setState(() => _isSubmitting = true);
     setState(() => _isSubmitting = true);
 
     try {
@@ -440,9 +483,41 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
             ? '${_rating.toStringAsFixed(1)}/5 — ${_reviewController.text}'
             : '${_rating.toStringAsFixed(1)}/5',
       );
+    try {
+      final taskService = ref.read(taskServiceProvider);
+      await taskService.updateTask(
+        taskId: int.parse(widget.task.id),
+        status: 'completed',
+        adminReview: _reviewController.text.isNotEmpty
+            ? '${_rating.toStringAsFixed(1)}/5 — ${_reviewController.text}'
+            : '${_rating.toStringAsFixed(1)}/5',
+      );
 
       Task.updateTaskStatus(widget.task.id, 'completed');
+      Task.updateTaskStatus(widget.task.id, 'completed');
 
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Task approved! XP awarded to helper.'),
+            backgroundColor: Color(0xFF4CAF50),
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } on Exception catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
+import '../../constants/app_colors.dart';
 import 'edit_task_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
+class TaskDetailScreen extends ConsumerStatefulWidget {
 class TaskDetailScreen extends ConsumerStatefulWidget {
   final Task task;
   final VoidCallback? onTaskUpdated;
@@ -21,8 +24,10 @@ class TaskDetailScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<TaskDetailScreen> createState() => _TaskDetailScreenState();
+  ConsumerState<TaskDetailScreen> createState() => _TaskDetailScreenState();
 }
 
+class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
   // CHANGE: Update to use AppColors with context
   Color _getStatusColor(String status, BuildContext context) {
