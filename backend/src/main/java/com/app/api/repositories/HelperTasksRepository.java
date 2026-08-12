@@ -162,6 +162,20 @@ public class HelperTasksRepository {
         return ((Number) query.getSingleResult()).intValue();
     }
 
+    /**
+     * Retrieves completed tasks for the specified helper.
+     *
+     * <p>
+     * Only tasks where the helper's invitation was accepted and the
+     * underlying task has reached the {@code completed} state are
+     * returned. Results are paginated.
+     * </p>
+     *
+     * @param helperId the identifier of the helper
+     * @param limit    the maximum number of task records to return
+     * @param offset   the number of task records to skip for pagination
+     * @return a list of completed task records for the helper
+     */
     public List<Object[]> findCompletedTasks(int helperId, int limit, int offset) {
         String sql = """
                 SELECT
