@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import '../../components/logo_placeholder.dart';
 import '../../models/auth_session.dart';
 import '../../models/user_model.dart';
-import '../../services/auth_service.dart';
 import '../home/home_screen.dart';
 import 'forgot_password_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
