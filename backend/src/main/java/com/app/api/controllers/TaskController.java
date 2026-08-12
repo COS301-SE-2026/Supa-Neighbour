@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import com.google.firebase.auth.FirebaseAuthException;
 import com.app.api.services.FirebaseAuthService;
 import java.util.List;
 /**
