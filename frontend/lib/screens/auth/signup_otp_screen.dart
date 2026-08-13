@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../../components/logo_placeholder.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_text_files.dart';
 import 'signup_details_screen.dart';
 
 class SignupOtpScreen extends StatefulWidget {
@@ -63,7 +65,7 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Verification email resent to ${widget.email}'),
-          backgroundColor: const Color(0xFF1C9A89),
+          backgroundColor: AppColors.primaryTeal(context),
         ),
       );
     } on Exception catch (e) {
@@ -84,198 +86,205 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final logoSize = screenWidth * 0.3;
-    final titleSize = screenWidth * 0.08;
-    final subtitleSize = screenWidth * 0.045;
-    final fontSize = screenWidth * 0.04;
-    final smallFontSize = screenWidth * 0.035;
+    // Responsive sizing
+    final isSmallScreen = screenWidth < 400;
+    final isLargeScreen = screenWidth > 800;
+    
+    final logoSize = (screenWidth * 0.3).clamp(80.0, 180.0);
+    final titleSize = isSmallScreen ? 24.0 : (isLargeScreen ? 40.0 : 32.0);
+    final subtitleSize = isSmallScreen ? 14.0 : (isLargeScreen ? 24.0 : 18.0);
+    final fontSize = isSmallScreen ? 14.0 : (isLargeScreen ? 20.0 : 16.0);
+    final smallFontSize = isSmallScreen ? 12.0 : (isLargeScreen ? 16.0 : 14.0);
+    
+    // Spacing
+    final spacing = screenHeight * 0.015;
+    final largeSpacing = screenHeight * 0.03;
 
     return Scaffold(
       body: SafeArea(
         child: Container(
           width: screenWidth,
           height: screenHeight,
-          color: Colors.white,
+          color: AppColors.background(context),
           child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-              child: Column(
-                children: [
-                  SizedBox(height: screenHeight * 0.03),
-
-                  // Back button - returns to signup screen
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF1C9A89),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                          size: 30,
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: screenHeight,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Back button
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryTeal(context),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.arrow_back,
+                            color: AppColors.textLight(context),
+                            size: 30,
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  SizedBox(height: screenHeight * 0.02),
+                    SizedBox(height: spacing),
 
-                  LogoPlaceholder(size: logoSize),
+                    LogoPlaceholder(size: logoSize),
 
-                  SizedBox(height: screenHeight * 0.03),
+                    SizedBox(height: largeSpacing),
 
-                  Text(
-                    'super Neighbour',
-                    style: TextStyle(
-                      fontSize: titleSize,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1C9A89),
+                    Text(
+                      'Super Neighbour',
+                      style: AppTextStyles.primaryHeader(context).copyWith(
+                        fontSize: titleSize,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
 
-                  SizedBox(height: screenHeight * 0.01),
+                    SizedBox(height: spacing * 0.5),
 
-                  Text(
-                    'Your neighbourly helper',
-                    style: TextStyle(
-                      fontSize: subtitleSize,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1C9A89),
+                    Text(
+                      'Your neighbourly helper',
+                      style: AppTextStyles.secondaryHeader(context).copyWith(
+                        fontSize: subtitleSize,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
 
-                  SizedBox(height: screenHeight * 0.04),
+                    SizedBox(height: largeSpacing * 0.8),
 
-                  // Card
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withValues(alpha: 0.2),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(screenWidth * 0.07),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Verify Email',
-                            style: TextStyle(
-                              fontSize: titleSize * 0.8,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1C9A89),
-                            ),
-                          ),
-
-                          SizedBox(height: screenHeight * 0.03),
-
-                          // Email envelope icon
-                          Icon(
-                            Icons.mark_email_unread_outlined,
-                            size: screenWidth * 0.15,
-                            color: const Color(0xFF1C9A89),
-                          ),
-
-                          SizedBox(height: screenHeight * 0.03),
-
-                          Text(
-                            'We sent a verification link to',
-                            style: TextStyle(
-                              fontSize: fontSize,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF1C9A89),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-
-                          SizedBox(height: screenHeight * 0.01),
-
-                          // User's email address in bold
-                          Text(
-                            widget.email,
-                            style: TextStyle(
-                              fontSize: fontSize,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1C9A89),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-
-                          SizedBox(height: screenHeight * 0.02),
-
-                          Text(
-                            'Click the link in the email to continue.\nThis page will update automatically.',
-                            style: TextStyle(
-                              fontSize: smallFontSize,
-                              color: Colors.grey[600],
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-
-                          SizedBox(height: screenHeight * 0.04),
-
-                          // Spinner - polling
-                          const CircularProgressIndicator(
-                            color: Color(0xFF1C9A89),
-                            strokeWidth: 2,
-                          ),
-
-                          SizedBox(height: screenHeight * 0.04),
-
-                          // Resend row
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Didn't receive it? ",
-                                style: TextStyle(
-                                  fontSize: smallFontSize,
-                                  color: const Color(0xFF1C9A89),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: _isResending ? null : _handleResendEmail,
-                                child: _isResending
-                                    ? SizedBox(
-                                        width: smallFontSize,
-                                        height: smallFontSize,
-                                        child: const CircularProgressIndicator(
-                                          color: Color(0xFF1C9A89),
-                                          strokeWidth: 1.5,
-                                        ),
-                                      )
-                                    : Text(
-                                        'Resend email',
-                                        style: TextStyle(
-                                          fontSize: smallFontSize,
-                                          color: const Color(0xFF1C9A89),
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                              ),
-                            ],
+                    // Card
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.background(context),
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.charcoal(context).withValues(alpha: 0.08),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
                           ),
                         ],
                       ),
-                    ),
-                  ),
+                      child: Padding(
+                        padding: EdgeInsets.all(screenWidth * 0.05),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Verify Email',
+                              style: AppTextStyles.primaryHeader(context).copyWith(
+                                fontSize: isSmallScreen ? 20.0 : 24.0,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryTeal(context),
+                              ),
+                            ),
 
-                  SizedBox(height: screenHeight * 0.03),
-                ],
+                            SizedBox(height: spacing * 1.2),
+
+                            // Email envelope icon
+                            Icon(
+                              Icons.mark_email_unread_outlined,
+                              size: screenWidth * 0.12,
+                              color: AppColors.primaryTeal(context),
+                            ),
+
+                            SizedBox(height: spacing),
+
+                            Text(
+                              'We sent a verification link to',
+                              style: AppTextStyles.bodyText(context).copyWith(
+                                fontSize: fontSize,
+                                color: AppColors.primaryTeal(context),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+
+                            SizedBox(height: spacing * 0.5),
+
+                            // User's email address in bold
+                            Text(
+                              widget.email,
+                              style: AppTextStyles.bodyText(context).copyWith(
+                                fontSize: fontSize,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryTeal(context),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+
+                            SizedBox(height: spacing),
+
+                            Text(
+                              'Click the link in the email to continue.\nThis page will update automatically.',
+                              style: AppTextStyles.bodyText(context).copyWith(
+                                fontSize: smallFontSize,
+                                color: AppColors.textGrey(context),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+
+                            SizedBox(height: spacing * 1.5),
+
+                            // Spinner - polling
+                            const CircularProgressIndicator(
+                              color: Color(0xFF2A9D8F),
+                              strokeWidth: 2,
+                            ),
+
+                            SizedBox(height: spacing * 1.5),
+
+                            // Resend row - FIXED with Wrap
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Text(
+                                  "Didn't receive it? ",
+                                  style: AppTextStyles.bodyText(context).copyWith(
+                                    fontSize: smallFontSize,
+                                    color: AppColors.primaryTeal(context),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: _isResending ? null : _handleResendEmail,
+                                  child: _isResending
+                                      ? SizedBox(
+                                          width: smallFontSize,
+                                          height: smallFontSize,
+                                          child: const CircularProgressIndicator(
+                                            color: Color(0xFF2A9D8F),
+                                            strokeWidth: 1.5,
+                                          ),
+                                        )
+                                      : Text(
+                                          'Resend email',
+                                          style: AppTextStyles.bodyText(context).copyWith(
+                                            fontSize: smallFontSize,
+                                            color: AppColors.primaryTeal(context),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: spacing * 1.5),
+                  ],
+                ),
               ),
             ),
           ),
