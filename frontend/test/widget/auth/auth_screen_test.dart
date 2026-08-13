@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supa_neighbour/screens/auth/auth_screen.dart';
 import 'package:supa_neighbour/components/logo_placeholder.dart';
-import 'package:supa_neighbour/constants/app_colors.dart';
-import 'package:supa_neighbour/constants/app_text_files.dart';
 
 void main() {
   group('AuthScreen', () {
