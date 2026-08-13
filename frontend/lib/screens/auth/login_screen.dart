@@ -150,7 +150,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final titleSize = isSmallScreen ? 28.0 : (isLargeScreen ? 40.0 : 32.0);
     final subtitleSize = isSmallScreen ? 16.0 : (isLargeScreen ? 24.0 : 18.0);
     final buttonHeight = isSmallScreen ? 48.0 : 56.0;
-    final fontSize = isSmallScreen ? 14.0 : (isLargeScreen ? 20.0 : 16.0);
     final smallFontSize = isSmallScreen ? 12.0 : (isLargeScreen ? 16.0 : 14.0);
     
     // Spacing - responsive to screen size

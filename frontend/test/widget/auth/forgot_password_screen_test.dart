@@ -5,7 +5,6 @@ import 'package:supa_neighbour/components/logo_placeholder.dart';
 
 void main() {
   group('ForgotPasswordScreen', () {
-    const testEmail = 'test@example.com';
 
     void setLargeTestWindow(WidgetTester tester) {
       tester.binding.window.physicalSizeTestValue = const Size(1080, 2400);
