@@ -3,9 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../models/bulletin_post_model.dart';
 import '../../models/bulletin_comment_model.dart';
+import '../../services/bulletin_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
+class BulletinPostDetailScreen extends ConsumerStatefulWidget {
+  final int postId;
 class BulletinPostDetailScreen extends ConsumerStatefulWidget {
   final int postId;
 
@@ -14,10 +17,13 @@ class BulletinPostDetailScreen extends ConsumerStatefulWidget {
     required this.postId,
   });
 
+
   @override
+  ConsumerState<BulletinPostDetailScreen> createState() => _BulletinPostDetailScreenState();
   ConsumerState<BulletinPostDetailScreen> createState() => _BulletinPostDetailScreenState();
 }
 
+class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScreen> {
 class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScreen> {
   final TextEditingController _commentController = TextEditingController();
   BulletinPost? _post;
@@ -39,8 +45,17 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
     super.dispose();
   }
 
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadData() async {
     try {
+      final bulletinService = ref.read(bulletinServiceProvider);
+      final post = await bulletinService.getPost(widget.postId);
+      final comments = await bulletinService.getComments(widget.postId);
       final bulletinService = ref.read(bulletinServiceProvider);
       final post = await bulletinService.getPost(widget.postId);
       final comments = await bulletinService.getComments(widget.postId);
@@ -70,6 +85,8 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
     try {
       final bulletinService = ref.read(bulletinServiceProvider);
       final newComment = await bulletinService.addComment(widget.postId, content);
+      final bulletinService = ref.read(bulletinServiceProvider);
+      final newComment = await bulletinService.addComment(widget.postId, content);
       if (!mounted) return;
       setState(() {
         _comments.insert(0, newComment);
@@ -93,7 +110,9 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
   void _toggleHelpful() async {
     try {
       final bulletinService = ref.read(bulletinServiceProvider);
+      final bulletinService = ref.read(bulletinServiceProvider);
       if (_isHelpful) {
+        await bulletinService.removeHelpful(widget.postId);
         await bulletinService.removeHelpful(widget.postId);
         if (!mounted) return;
         setState(() {
@@ -101,6 +120,7 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
           _helpfulCount--;
         });
       } else {
+        await bulletinService.addHelpful(widget.postId);
         await bulletinService.addHelpful(widget.postId);
         if (!mounted) return;
         setState(() {
@@ -140,6 +160,8 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
 
     if (confirmed == true) {
       try {
+        final bulletinService = ref.read(bulletinServiceProvider);
+        await bulletinService.deletePost(widget.postId);
         final bulletinService = ref.read(bulletinServiceProvider);
         await bulletinService.deletePost(widget.postId);
         if (mounted) {
@@ -301,6 +323,17 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
                   ),
                   const SizedBox(height: 16),
                   if (post.mediaUrl != null)
+                    Container(
+                      width: double.infinity,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        image: DecorationImage(
+                          image: NetworkImage(post.mediaUrl!),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
                     Container(
                       width: double.infinity,
                       height: 200,
