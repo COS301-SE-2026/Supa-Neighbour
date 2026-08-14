@@ -33,10 +33,11 @@ public class LeaderboardRepository {
                 FROM helper_table h
                 JOIN user_table u ON u.user_id = h.user_id
                 JOIN address_table a ON a.address_id = u.user_address_id
+                JOIN location_table l ON l.location_id = a.neighbourhood_id
                 LEFT JOIN helper_analytics_table ha ON ha.user_id = u.user_id
-                WHERE a.neighbourhood_id = :neighbourhoodId
+                WHERE l.neighbourhood_id = :neighbourhoodId
                 ORDER BY score DESC
-                """;
+            """;
         @SuppressWarnings("unchecked")
         List<Object[]> rows = em.createNativeQuery(sql).setParameter("neighbourhoodId", neighbourhoodId).getResultList();
 
