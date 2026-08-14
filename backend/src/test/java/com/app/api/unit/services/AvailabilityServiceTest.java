@@ -1,7 +1,6 @@
 package com.app.api.unit.services;
 
 import com.app.api.models.Availability;
-import com.app.api.models.User;
 import com.app.api.repositories.AvailabilityRepository;
 import com.app.api.services.AvailabilityService;
 import org.junit.jupiter.api.BeforeEach;
