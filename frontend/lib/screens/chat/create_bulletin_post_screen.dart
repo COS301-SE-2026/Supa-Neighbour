@@ -6,16 +6,20 @@ import 'dart:io';
 import '../../components/custom_button.dart';
 import '../../components/custom_field_input.dart';
 import '../../constants/app_colors.dart';
+import '../../services/bulletin_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
+class CreateBulletinPostScreen extends ConsumerStatefulWidget {
 class CreateBulletinPostScreen extends ConsumerStatefulWidget {
   const CreateBulletinPostScreen({super.key});
 
   @override
   ConsumerState<CreateBulletinPostScreen> createState() => _CreateBulletinPostScreenState();
+  ConsumerState<CreateBulletinPostScreen> createState() => _CreateBulletinPostScreenState();
 }
 
+class _CreateBulletinPostScreenState extends ConsumerState<CreateBulletinPostScreen> {
 class _CreateBulletinPostScreenState extends ConsumerState<CreateBulletinPostScreen> {
   final TextEditingController _bodyController = TextEditingController();
   String _selectedCategory = 'general';
@@ -33,6 +37,12 @@ class _CreateBulletinPostScreenState extends ConsumerState<CreateBulletinPostScr
   ];
 
   final ImagePicker _imagePicker = ImagePicker();
+
+  @override
+  void dispose() {
+    _bodyController.dispose();
+    super.dispose();
+  }
 
   @override
   void dispose() {
@@ -78,11 +88,14 @@ class _CreateBulletinPostScreenState extends ConsumerState<CreateBulletinPostScr
 
     try {
       final bulletinService = ref.read(bulletinServiceProvider);
+      final bulletinService = ref.read(bulletinServiceProvider);
       String? mediaUrl;
       if (_selectedImages.isNotEmpty) {
         mediaUrl = await bulletinService.uploadImage(_selectedImages.first);
+        mediaUrl = await bulletinService.uploadImage(_selectedImages.first);
       }
 
+      await bulletinService.createPost(
       await bulletinService.createPost(
         postContent: _bodyController.text.trim(),
         category: _selectedCategory,
