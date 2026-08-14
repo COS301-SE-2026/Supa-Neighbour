@@ -5,16 +5,20 @@ import '../../models/achievement_model.dart';
 import '../../widgets/achievements/achievement_progress_stats.dart';
 import '../../widgets/achievements/achievement_grid.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
+import '../../services/achievement_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
+class AchievementsScreen extends ConsumerStatefulWidget {
 class AchievementsScreen extends ConsumerStatefulWidget {
   const AchievementsScreen({super.key});
 
   @override
   ConsumerState<AchievementsScreen> createState() => _AchievementsScreenState();
+  ConsumerState<AchievementsScreen> createState() => _AchievementsScreenState();
 }
 
+class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
 class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   List<Achievement> _earnedAchievements = [];
   List<Achievement> _unearnedAchievements = [];
@@ -28,11 +32,14 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   }
 
   Future<void> _fetchAchievements() async {
+  Future<void> _fetchAchievements() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
     try {
+      final achievementService = ref.read(achievementServiceProvider);
+      final response = await achievementService.getAchievements();
       final achievementService = ref.read(achievementServiceProvider);
       final response = await achievementService.getAchievements();
       if (mounted) {
@@ -79,6 +86,11 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
             icon: Icon(Icons.settings_outlined, color: AppColors.charcoal(context)),
             onPressed: () {
               Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
                 context,
                 MaterialPageRoute(
                   builder: (context) => const SettingsScreen(),
