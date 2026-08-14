@@ -2,7 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/achievement_model.dart';
 
-class AchievementService {
+// INTERFACE
+abstract class IAchievementService {
+  Future<AchievementsResponse> getAchievements();
+}
+
+class AchievementService implements IAchievementService {
   final Dio _dio;
 
   AchievementService({Dio? dio})
