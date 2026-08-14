@@ -3,6 +3,7 @@ import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 import '../services/task_service.dart';
 import '../services/bulletin_service.dart';
+import '../services/chat_service.dart';
 
 // AUTH SERVICE PROVIDER
 final authServiceProvider = Provider<IAuthService>((ref) {
@@ -22,4 +23,9 @@ final taskServiceProvider = Provider<ITaskService>((ref) {
 // BULLETIN SERVICE PROVIDER
 final bulletinServiceProvider = Provider<IBulletinService>((ref) {
   return BulletinService();
+});
+
+// CHAT SERVICE PROVIDER
+final chatServiceProvider = Provider<IChatService>((ref) {
+  return ChatService();
 });

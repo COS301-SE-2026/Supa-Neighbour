@@ -1,7 +1,15 @@
 import 'package:dio/dio.dart';
 
+// INTERFACE
+abstract class IChatService {
+  Future<List<Map<String, dynamic>>> getChatsByUserId(int userId);
+  Future<Map<String, dynamic>> getMessages(int chatId, {int page = 1, int limit = 50});
+  Future<Map<String, dynamic>> sendMessage(int chatId, int senderId, String content, {String type = 'text'});
+  Future<void> markAsRead(int chatId, int userId);
+}
+
 /// Service responsible for all chat-related calls.
-class ChatService {
+class ChatService implements IChatService {
   final Dio _dio;
 
   ChatService({Dio? dio})
