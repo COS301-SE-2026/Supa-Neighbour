@@ -5,7 +5,32 @@ import 'package:image_picker/image_picker.dart';
 import '../models/bulletin_post_model.dart';
 import '../models/bulletin_comment_model.dart';
 
-class BulletinService {
+// INTERFACE (Contract)
+abstract class IBulletinService {
+  Future<List<BulletinPost>> getPosts({
+    String? category,
+    String? search,
+    int page = 1,
+    int limit = 20,
+  });
+  
+  Future<BulletinPost> getPost(int postId);
+  Future<List<BulletinComment>> getComments(int postId);
+  Future<String?> uploadImage(XFile imageFile);
+  
+  Future<void> createPost({
+    required String postContent,
+    required String category,
+    String? mediaUrl,
+  });
+  
+  Future<void> deletePost(int postId);
+  Future<BulletinComment> addComment(int postId, String content);
+  Future<void> addHelpful(int postId);
+  Future<void> removeHelpful(int postId);
+}
+
+class BulletinService implements IBulletinService {
   final Dio _dio;
 
   BulletinService({Dio? dio})

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 import '../services/task_service.dart';
+import '../services/bulletin_service.dart';
 
 // AUTH SERVICE PROVIDER
 final authServiceProvider = Provider<IAuthService>((ref) {
@@ -16,4 +17,9 @@ final profileServiceProvider = Provider<IProfileService>((ref) {
 // TASK SERVICE PROVIDER
 final taskServiceProvider = Provider<ITaskService>((ref) {
   return TaskService();
+});
+
+// BULLETIN SERVICE PROVIDER
+final bulletinServiceProvider = Provider<IBulletinService>((ref) {
+  return BulletinService();
 });
