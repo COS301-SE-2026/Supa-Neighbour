@@ -5,9 +5,11 @@ import '../../constants/app_colors.dart';
 import '../../models/user_model.dart';
 import '../../models/review_model.dart';
 import '../../models/helper_profile_response.dart';
+import '../../services/helper_profile_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
+class HelperProfilePreviewScreen extends ConsumerStatefulWidget {
 class HelperProfilePreviewScreen extends ConsumerStatefulWidget {
   final User? helper;
   final int? helperId;
@@ -23,8 +25,10 @@ class HelperProfilePreviewScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<HelperProfilePreviewScreen> createState() => _HelperProfilePreviewScreenState();
+  ConsumerState<HelperProfilePreviewScreen> createState() => _HelperProfilePreviewScreenState();
 }
 
+class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePreviewScreen> {
 class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePreviewScreen> {
   bool _isLoading = false;
   bool _isInviting = false;
@@ -88,6 +92,8 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
     });
 
     try {
+      final helperProfileService = ref.read(helperProfileServiceProvider);
+      final data = await helperProfileService.getHelperProfile(widget.helperId!);
       final helperProfileService = ref.read(helperProfileServiceProvider);
       final data = await helperProfileService.getHelperProfile(widget.helperId!);
       setState(() {
@@ -169,6 +175,7 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
       _isInviting = true;
     });
 
+    // Call API to invite helper
     // Call API to invite helper
     await Future.delayed(const Duration(seconds: 1));
 
@@ -321,6 +328,7 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
             icon: Icon(Icons.more_vert, color: AppColors.charcoal(context)),
             onPressed: () {
               // TODO: Add more options
+              // TODO: Add more options
             },
           ),
         ],
@@ -340,6 +348,16 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
             const SizedBox(height: 24),
             _buildReviewsSection(),
             const SizedBox(height: 24),
+            if (widget.showRequestButton)
+              SizedBox(
+                width: double.infinity,
+                child: CustomButton(
+                  text: _isInvited ? 'Requested ✓' : 'Request Help',
+                  onTap: _isInvited ? null : _inviteHelper,
+                  isLoading: _isInviting,
+                  isDisabled: _isInvited,
+                ),
+              ),
             if (widget.showRequestButton)
               SizedBox(
                 width: double.infinity,
@@ -594,6 +612,9 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
               ),
             ),
             GestureDetector(
+              onTap: () {
+                // TODO: Navigate to all reviews
+              },
               onTap: () {
                 // TODO: Navigate to all reviews
               },
