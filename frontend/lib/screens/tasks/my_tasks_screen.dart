@@ -13,6 +13,7 @@ import '../../models/auth_session.dart';
 import '../../services/task_service.dart';
 
 
+
 class MyTasksScreen extends StatefulWidget {
   final int initialTab;
   
@@ -313,6 +314,7 @@ Widget _buildTaskCard(Task task, {required bool isRequesterView, bool isAvailabl
               builder: (context) => TaskDetailScreen(
                 task: task,
                 isAvailableTab: true,
+                isRequesterView: false,
               ),
             ),
           );
@@ -370,6 +372,7 @@ Widget _buildTaskCard(Task task, {required bool isRequesterView, bool isAvailabl
               builder: (context) => TaskDetailScreen(
                 task: task,
                 onTaskUpdated: () => _refreshTasks(),
+                isRequesterView: false,
               ),
             ),
           );
