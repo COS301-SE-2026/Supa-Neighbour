@@ -10,11 +10,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.models.User;
 import com.app.api.services.UserService;
+import com.app.api.repositories.UserDeviceRepository;
+import com.app.api.services.FirebaseAuthService;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.app.api.dtos.DeviceTokenRequestDTO;
 
 /**
  * REST controller that provides endpoints for managing users.
@@ -31,13 +36,17 @@ public class UserController {
      * Service used to perform user-related business logic.
      */
     private final UserService userService;
+    private final UserDeviceRepository userDeviceRepository;
+    private final FirebaseAuthService firebaseAuthService;
 
     /**
      * User Contructor
      * @param userService service for the user controller
      */
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserDeviceRepository userDeviceRepository, FirebaseAuthService firebaseAuthService) {
         this.userService = userService;
+        this.firebaseAuthService = firebaseAuthService;
+        this.userDeviceRepository = userDeviceRepository;
     }
 
     /**
@@ -127,4 +136,20 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/me/device-token")
+    public ResponseEntity<?> registerDeviceToken(
+        @RequestHeader("Authorization") String authHeader,
+        @RequestHeader DeviceTokenRequestDTO request
+    ){
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            userDeviceRepository.upsertToken(userId, request.getFcmToken());
+            return ResponseEntity.ok().build();
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).build();
+        }      
+    }
+    
 }
