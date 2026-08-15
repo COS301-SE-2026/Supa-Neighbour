@@ -30,8 +30,12 @@ final chatServiceProvider = Provider<IChatService>((ref) {
   return ChatService();
 });
 
-
 // ACHIEVEMENT SERVICE PROVIDER
 final achievementServiceProvider = Provider<IAchievementService>((ref) {
   return AchievementService();
+});
+
+// LEADERBOARD SERVICE PROVIDER
+final leaderboardServiceProvider = Provider<ILeaderboardService>((ref) {
+  return LeaderboardService();
 });
