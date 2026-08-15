@@ -123,7 +123,7 @@ public class HelperTasksRepository {
                 FROM task_invitation_table  ti
                 JOIN task_invoice_table     tit ON tit.task_id     = ti.task_id
                 JOIN task_type_table        tt  ON tt.task_type_id = tit.task_type_id
-                JOIN location_table         l   ON l.location_id   = tit.location_id
+                LEFT JOIN location_table         l   ON l.location_id   = tit.location_id
                 LEFT JOIN dependent_table   d   ON d.dependent_id  = tit.dependent_id
                 LEFT JOIN user_table        u   ON u.user_id        = d.user_id
                 WHERE ti.helper_id  = :helperId
