@@ -5,7 +5,6 @@ import '../../models/achievement_model.dart';
 import '../../widgets/achievements/achievement_progress_stats.dart';
 import '../../widgets/achievements/achievement_grid.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
-import '../../services/achievement_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
