@@ -70,7 +70,7 @@ Future<void> _loadHelpers() async {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error(context),
           ),
         );
       }
@@ -346,11 +346,11 @@ Future<void> _loadHelpers() async {
 
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color : AppColors.white(context),
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.04),
+          color: AppColors.lightGrey(context),
           blurRadius: 8,
           offset: const Offset(0, 2),
         ),
