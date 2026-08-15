@@ -65,6 +65,7 @@ public class CommentsServiceTest {
 
         post = new Posts();
         post.setPostid(100);
+        post.setUserid(user);
 
         existingComment = new Comments();
         existingComment.setCommentid(1);

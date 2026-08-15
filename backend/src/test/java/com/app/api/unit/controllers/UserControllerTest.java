@@ -2,6 +2,9 @@ package com.app.api.unit.controllers;
 
 import com.app.api.controllers.UserController;
 import com.app.api.models.User;
+import com.app.api.repositories.UserDeviceRepository;
+import com.app.api.repositories.UserRepository;
+import com.app.api.security.FirebaseAuthenticationFilter;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import com.app.api.repositories.UserRepository;
 import java.sql.Date;
 import java.util.List;
 
@@ -37,6 +39,13 @@ class UserControllerTest {
 
     @MockitoBean
     private UserRepository userRepository;
+
+    @MockitoBean
+    private UserDeviceRepository userDeviceRepository;
+
+    @MockitoBean
+    private FirebaseAuthenticationFilter firebaseAuthenticationFilter;
+
     @Test
     void getAllUsers_returns200WithList() throws Exception {
         User user1 = new User();
@@ -166,4 +175,6 @@ class UserControllerTest {
 
         verify(userService, never()).deleteUser(anyInt());
     }
+
+    
 }
