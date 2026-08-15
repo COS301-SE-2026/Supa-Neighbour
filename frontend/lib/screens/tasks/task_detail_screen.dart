@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
-import '../../constants/app_colors.dart'; // ADD: Import AppColors
+import '../../constants/app_colors.dart';
 import 'edit_task_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TaskDetailScreen extends StatefulWidget {
+class TaskDetailScreen extends ConsumerStatefulWidget {
   final Task task;
   final VoidCallback? onTaskUpdated;
   final bool isRequesterView;
@@ -19,10 +20,10 @@ class TaskDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<TaskDetailScreen> createState() => _TaskDetailScreenState();
+  ConsumerState<TaskDetailScreen> createState() => _TaskDetailScreenState();
 }
 
-class _TaskDetailScreenState extends State<TaskDetailScreen> {
+class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
   // CHANGE: Update to use AppColors with context
   Color _getStatusColor(String status, BuildContext context) {
     switch (status) {

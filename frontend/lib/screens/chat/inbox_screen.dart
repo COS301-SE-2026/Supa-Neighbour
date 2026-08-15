@@ -5,19 +5,20 @@ import '../../models/chat_thread.dart';
 import '../../constants/app_colors.dart';
 import 'bulletin_screen.dart';
 import 'chat_detail_screen.dart';
-import '../../services/chat_service.dart';
 import '../help/help_menu_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class InboxScreen extends StatefulWidget {
+class InboxScreen extends ConsumerStatefulWidget {
   const InboxScreen({super.key});
+
   @override
-  State<InboxScreen> createState() => _InboxScreenState();
+  ConsumerState<InboxScreen> createState() => _InboxScreenState();
 }
 
-class _InboxScreenState extends State<InboxScreen>
+class _InboxScreenState extends ConsumerState<InboxScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final ChatService _chatService = ChatService();
   List<ChatThread> _chats = [];
   bool _isLoading = false;
   String? _error;
@@ -29,20 +30,20 @@ class _InboxScreenState extends State<InboxScreen>
     _initUserId();
   }
 
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   Future<void> _initUserId() async {
     final prefs = await SharedPreferences.getInstance();
     final stored = prefs.getInt('current_user_id');
     if (stored != null) {
       setState(() => _currentUserId = stored);
     }
-   _tabController = TabController(length: 2, vsync: this);
-  _loadChats();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+    _tabController = TabController(length: 2, vsync: this);
+    _loadChats();
   }
 
   Future<void> _loadChats() async {
@@ -51,8 +52,9 @@ class _InboxScreenState extends State<InboxScreen>
       _error = null;
     });
     try {
+      final chatService = ref.read(chatServiceProvider);
       final List<Map<String, dynamic>> data =
-          await _chatService.getChatsByUserId(_currentUserId);
+          await chatService.getChatsByUserId(_currentUserId);
       setState(() {
         _chats = data.map((c) => ChatThread.fromJson(c)).toList();
         _isLoading = false;
@@ -69,24 +71,24 @@ class _InboxScreenState extends State<InboxScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background(context),
-    appBar: AppBar(
-      backgroundColor: AppColors.background(context),
-      elevation: 0,
-      title: Text(
-        'Chat',
-        style: GoogleFonts.poppins(
-          color: AppColors.primaryTeal(context),
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
+      appBar: AppBar(
+        backgroundColor: AppColors.background(context),
+        elevation: 0,
+        title: Text(
+          'Chat',
+          style: GoogleFonts.poppins(
+            color: AppColors.primaryTeal(context),
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
-        icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
-        onPressed: () {
-          HelpMenuScreen.showHelpModal(context, 'chat');
-        },
-      ),
+          icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
+          onPressed: () {
+            HelpMenuScreen.showHelpModal(context, 'chat');
+          },
+        ),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.primaryTeal(context),
@@ -97,8 +99,7 @@ class _InboxScreenState extends State<InboxScreen>
             Tab(text: 'Community Bulletin'),
           ],
         ),
-      ),  
-    
+      ),
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -154,7 +155,6 @@ class ChatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -167,7 +167,6 @@ class ChatCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Avatar
             CircleAvatar(
               radius: 27,
               backgroundColor: Colors.white,

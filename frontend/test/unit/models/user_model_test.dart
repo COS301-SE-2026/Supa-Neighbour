@@ -102,12 +102,12 @@ void main() {
       });
 
       test('fromJson should create User from map', () {
-       final json = {
-          'user_id': 'user_5',
-          'user_email': 'fromjson@example.com',
-          'user_name': 'Json',
-          'user_surname': 'User',
-          'user_phone_number': '0987654321',
+        final json = {
+          'userid': 'user_5',
+          'email': 'fromjson@example.com',
+          'firstName': 'Json',
+          'lastName': 'User',
+          'phoneNumber': '0987654321',
           'username': 'jsonuser',
           'birthday': DateTime(1995, 5, 15).toIso8601String(),
           'user_gender': 'Female',

@@ -5,8 +5,8 @@ import 'package:supa_neighbour/screens/auth/splash_screen.dart';
 import '../../constants/app_colors.dart';
 import 'privacy_settings_screen.dart';  
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../services/auth_service.dart';
 import '../help/help_menu_screen.dart';
+import '../../providers/service_providers.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -42,7 +42,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if(!mounted) return;
 
     try{
-      await AuthService().logout();
+       final auth = ref.read(authServiceProvider);
+    await auth.logout();
       if(mounted){
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SplashScreen()),
@@ -107,7 +108,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
    if (confirmed != true || !mounted) return;
     try{
-      await AuthService().deleteAccount();
+      final auth = ref.read(authServiceProvider);
+      await auth.deleteAccount();
       if(mounted){
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SplashScreen()),

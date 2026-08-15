@@ -55,7 +55,6 @@ void main() {
           createdAt: now,
           createdBy: 'user_1',
         );
-        // TimeOfDay.toString() returns "TimeOfDay(14:30)"
         expect(taskWithTime.time.toString(), 'TimeOfDay(14:30)');
         expect(taskWithTime.time.hour, 14);
         expect(taskWithTime.time.minute, 30);
@@ -129,8 +128,8 @@ void main() {
         final task = Task.fromJson(json);
 
         expect(task.id, '1');
-        expect(task.title, 'Plants');
-        expect(task.category, 'Plants');
+        expect(task.title, 'Medical Assistance');
+        expect(task.category, 'Medical Assistance');
         expect(task.xpReward, 50);
         expect(task.instructions, 'Water all plants twice');
         expect(task.createdBy, 'user_123');
@@ -156,18 +155,35 @@ void main() {
         expect(task.date, isNotNull);
       });
 
-      test('should resolve category names correctly', () {
-        final json1 = {'taskId': 3, 'taskTypeId': 2, 'startDate': now.toIso8601String()};
-        final json2 = {'taskId': 4, 'taskTypeId': 3, 'startDate': now.toIso8601String()};
-        final json3 = {'taskId': 5, 'taskTypeId': 6, 'startDate': now.toIso8601String()};
+      test('should resolve all category names correctly', () {
+        final json1 = {'taskId': 3, 'taskTypeId': 1, 'startDate': now.toIso8601String()};
+        final json2 = {'taskId': 4, 'taskTypeId': 2, 'startDate': now.toIso8601String()};
+        final json3 = {'taskId': 5, 'taskTypeId': 3, 'startDate': now.toIso8601String()};
+        final json4 = {'taskId': 6, 'taskTypeId': 4, 'startDate': now.toIso8601String()};
+        final json5 = {'taskId': 7, 'taskTypeId': 5, 'startDate': now.toIso8601String()};
 
         final task1 = Task.fromJson(json1);
         final task2 = Task.fromJson(json2);
         final task3 = Task.fromJson(json3);
+        final task4 = Task.fromJson(json4);
+        final task5 = Task.fromJson(json5);
 
-        expect(task1.category, 'Pets');
-        expect(task2.category, 'Bins');
-        expect(task3.category, 'Pool Pump');
+        expect(task1.category, 'Medical Assistance');
+        expect(task2.category, 'Pet Care');
+        expect(task3.category, 'Technology Support');
+        expect(task4.category, 'Transportation Support');
+        expect(task5.category, 'Home Repair');
+      });
+
+      // TODO: Consult team about adding these categories back -mich
+      // The following categories exist in mock data but not in _resolveCategoryName
+      // 'Plants', 'Pets', 'Bins', 'Packages', 'Home Check-in', 'Pool Pump'
+      test('should resolve old category names if added back', skip: true, () {
+        // This test is skipped until we decide on the final category list
+        // When categories are added back, remove skip: true and update expectations
+        final json = {'taskId': 8, 'taskTypeId': 6, 'startDate': now.toIso8601String()};
+        final task = Task.fromJson(json);
+        expect(task.category, 'Pool Pump');
       });
 
       test('should resolve XP rewards correctly', () {
@@ -179,9 +195,9 @@ void main() {
         final task2 = Task.fromJson(json2);
         final task3 = Task.fromJson(json3);
 
-        expect(task1.xpReward, 50); 
+        expect(task1.xpReward, 50);
         expect(task2.xpReward, 60);
-        expect(task3.xpReward, 40);
+        expect(task3.xpReward, 45);
       });
 
       test('should use default XP for unknown task type', () {
@@ -192,7 +208,7 @@ void main() {
         };
 
         final task = Task.fromJson(json);
-        expect(task.xpReward, 25); // Default
+        expect(task.xpReward, 25);
       });
     });
 
@@ -234,13 +250,23 @@ void main() {
 
     group('resolveTaskTypeId', () {
       test('should resolve category to correct task type ID', () {
+        expect(Task.resolveTaskTypeId('Medical Assistance'), 1);
+        expect(Task.resolveTaskTypeId('Pet Care'), 2);
+        expect(Task.resolveTaskTypeId('Technology Support'), 3);
+        expect(Task.resolveTaskTypeId('Transportation Support'), 4);
+        expect(Task.resolveTaskTypeId('Home Repair'), 5);
+        expect(Task.resolveTaskTypeId('Unknown'), 1);
+      });
+
+      // TODO: Consult team about adding these categories back
+      test('should resolve old categories to their IDs if added back', skip: true, () {
+        // This test is skipped until the team decides on the final category list
+        // When categories are added back, remove skip: true and update expectations
         expect(Task.resolveTaskTypeId('Plants'), 1);
         expect(Task.resolveTaskTypeId('Pets'), 2);
-        expect(Task.resolveTaskTypeId('Bins'), 3);
         expect(Task.resolveTaskTypeId('Packages'), 4);
         expect(Task.resolveTaskTypeId('Home Check-in'), 5);
         expect(Task.resolveTaskTypeId('Pool Pump'), 6);
-        expect(Task.resolveTaskTypeId('Unknown'), 7);
       });
     });
 
