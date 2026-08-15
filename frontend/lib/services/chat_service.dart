@@ -22,6 +22,7 @@ class ChatService implements IChatService {
             ));
 
   /// Gets all chat threads for a user from GET /api/chats/{userId}.
+  @override
   Future<List<Map<String, dynamic>>> getChatsByUserId(int userId) async {
     try {
       final Response<Map<String, dynamic>> res =
@@ -35,6 +36,7 @@ class ChatService implements IChatService {
   }
 
   /// Gets paginated messages for a chat from GET /api/chats/{chatId}/messages.
+  @override
   Future<Map<String, dynamic>> getMessages(int chatId,
       {int page = 1, int limit = 50}) async {
     try {
@@ -49,6 +51,7 @@ class ChatService implements IChatService {
   }
 
   /// Sends a message to a chat via POST /api/chats/{chatId}/messages.
+  @override
   Future<Map<String, dynamic>> sendMessage(
       int chatId, int senderId, String content,
       {String type = 'text'}) async {
@@ -66,6 +69,7 @@ class ChatService implements IChatService {
   }
 
   /// mark chat as read via /api/chats/$chatId/read.
+  @override
   Future<void> markAsRead(int chatId, int userId) async {
     try {
       await _dio.put('/api/chats/$chatId/read', data: {'userID': userId});

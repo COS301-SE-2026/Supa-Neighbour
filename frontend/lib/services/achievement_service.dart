@@ -19,6 +19,7 @@ class AchievementService implements IAchievementService {
               receiveTimeout: const Duration(seconds: 10),
             ));
 
+  @override
   Future<AchievementsResponse> getAchievements() async {
     final fbUser = fb.FirebaseAuth.instance.currentUser;
     if (fbUser == null) {

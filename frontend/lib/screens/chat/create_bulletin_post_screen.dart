@@ -6,7 +6,6 @@ import 'dart:io';
 import '../../components/custom_button.dart';
 import '../../components/custom_field_input.dart';
 import '../../constants/app_colors.dart';
-import '../../services/bulletin_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 

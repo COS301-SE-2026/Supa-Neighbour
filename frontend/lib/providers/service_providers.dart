@@ -6,6 +6,8 @@ import '../services/bulletin_service.dart';
 import '../services/chat_service.dart';
 import '../services/helper_profile_service.dart';
 import '../services/settings_service.dart';
+import '../services/achievement_service.dart';
+import '../services/leaderboard_service.dart';
 
 // AUTH SERVICE PROVIDER
 final authServiceProvider = Provider<IAuthService>((ref) {
