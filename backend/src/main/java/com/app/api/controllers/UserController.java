@@ -137,10 +137,55 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Registers or updates a device's Firebase Cloud Messaging (FCM) token for the authenticated user.
+     * 
+     * <p>This endpoint allows a client application to register its device token with the server,
+     * enabling push notifications to be sent to that specific device. If the user already has
+     * a registered token for this device, it will be updated; otherwise, a new token record
+     * will be created.
+     * 
+     * <p>The registration process involves:
+     * <ol>
+     *   <li>Validating the user's authentication via JWT token from the Authorization header</li>
+     *   <li>Extracting the user ID from the authenticated token using Firebase Authentication</li>
+     *   <li>Persisting or updating the FCM token in the database for the identified user</li>
+     * </ol>
+     * 
+     * <p>Once registered, the token can be used by the notification service to deliver
+     * push notifications to the user's device. This is essential for features such as:
+     * <ul>
+     *   <li>Task assignment notifications (helper matching)</li>
+     *   <li>Task start notifications to requesters</li>
+     *   <li>Post creation and comment notifications</li>
+     * </ul>
+     * 
+     * <p><strong>Important:</strong> The client should call this endpoint whenever:
+     * <ul>
+     *   <li>The app is first installed</li>
+     *   <li>The user logs in</li>
+     *   <li>The FCM token is refreshed by Firebase</li>
+     *   <li>The app is relaunched</li>
+     * </ul>
+     * 
+     * @param authHeader The Authorization header containing the Bearer JWT token.
+     *                   Expected format: "Bearer {token}". This token is validated
+     *                   and used to authenticate the user.
+     * @param request The request body containing the device's FCM token information.
+     *                Must include a valid FCM token string.
+     * @return A {@code ResponseEntity} with:
+     *         <ul>
+     *           <li>{@code 200 OK} if the token was successfully registered or updated</li>
+     *           <li>{@code 401 Unauthorized} if the authentication token is invalid,
+     *               expired, or cannot be verified by Firebase Authentication</li>
+     *           <li>{@code 400 Bad Request} if the request body is invalid or the FCM token
+     *               is missing/empty (if validation is implemented)</li>
+     *         </ul>
+     **/
     @PostMapping("/me/device-token")
     public ResponseEntity<?> registerDeviceToken(
         @RequestHeader("Authorization") String authHeader,
-        @RequestHeader DeviceTokenRequestDTO request
+        @RequestBody DeviceTokenRequestDTO request
     ){
         try{
             String token = authHeader.replace("Bearer ", "");
@@ -151,5 +196,4 @@ public class UserController {
             return ResponseEntity.status(401).build();
         }      
     }
-    
 }

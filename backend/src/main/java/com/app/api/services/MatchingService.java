@@ -1,6 +1,16 @@
 package com.app.api.services;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.app.api.dtos.MatchedHelperDTO;
+import com.app.api.events.HelperMatchedEvent;
 import com.app.api.models.Helper;
 import com.app.api.models.HelperSkill;
 import com.app.api.models.TaskInvitation;
@@ -9,13 +19,6 @@ import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.HelperSkillRepository;
 import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Service class responsible for matching helpers to tasks based on various criteria such as location and skills.
@@ -27,6 +30,9 @@ public class MatchingService {
     private final HelperSkillRepository helperSkillRepo;
     private final TaskInvitationRepository taskInvitationRepo;
     private final TaskInvoiceRepository taskInvoiceRepo;
+    private final NotificationsService notificationsService;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     /**
      * Constructs a MatchingService with the specified repositories.
@@ -39,11 +45,13 @@ public class MatchingService {
     public MatchingService(HelperRepository helperRepo,
             HelperSkillRepository helperSkillRepo,
             TaskInvitationRepository taskInvitationRepo,
-            TaskInvoiceRepository taskInvoiceRepo) {
+            TaskInvoiceRepository taskInvoiceRepo,
+            NotificationsService notificationsService) {
         this.helperRepo = helperRepo;
         this.helperSkillRepo = helperSkillRepo;
         this.taskInvitationRepo = taskInvitationRepo;
         this.taskInvoiceRepo = taskInvoiceRepo;
+        this.notificationsService = notificationsService; 
     }
 
     /**
@@ -79,7 +87,7 @@ public class MatchingService {
         for(Helper helper : availableHelpers) {
 
             if (helper.getUserid() != null && helper.getUserid().getUserid() == requesterUserId) {
-            continue; 
+                continue; 
             }
 
             String helperZone = getZoneFromHelper(helper);
@@ -119,6 +127,16 @@ public class MatchingService {
                 .invitedAt(new Date())
                 .build();
                 taskInvitationRepo.save(invitation);
+
+                String newTask = "New Task Created";
+
+                if(helper.getUserid() != null){
+                   eventPublisher.publishEvent(new HelperMatchedEvent(
+                        helper.getUserid().getUserid(),
+                        taskId,
+                        newTask //task.getTitle() - TODO: change back
+                    ));
+                }
             }
             
 

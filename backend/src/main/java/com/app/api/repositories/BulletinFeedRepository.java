@@ -41,6 +41,22 @@ public class BulletinFeedRepository {
             this.locationId = locationId;
             this.neighbourhoodName = neighbourhoodName;
         }
+
+        /**
+         * 
+         * @return locationId
+         */
+        public int getLocationId(){
+            return locationId;
+        }
+
+        /**
+         * 
+         * @return neighbourhoodName
+         */
+        public String getNeighbourhoodName(){
+            return neighbourhoodName;
+        }
     }
         /**
          * Resolves the caller's neighbourhood via
@@ -52,7 +68,7 @@ public class BulletinFeedRepository {
         @SuppressWarnings("unchecked")
         public CallerNeighbourhood findCallerNeighbourhood(int userId){
             Query query = entityManager.createNativeQuery(
-                "SELECT a.neighbourhood_id, l.neighbourhood_name " +
+                 "SELECT l.neighbourhood_id, l.neighbourhood_name " +
                 "FROM user_table u " +
                 "JOIN address_table a ON a.address_id = u.user_address_id " +
                 "JOIN location_table l ON l.location_id = a.neighbourhood_id " +
@@ -87,14 +103,15 @@ public class BulletinFeedRepository {
     public List<PostFeedItemDTO> findFeed(int neighbourhoodLocationId, String category, String search, int limit, int offset){
         StringBuilder sql = new StringBuilder(
             "SELECT p.post_id, p.user_id, u.user_username, p.post_content, p.media_url, p.category, " +
-                "  (SELECT COUNT(*) FROM reaction_table r WHERE r.post_id = p.post_id AND r.reaction_type = 'like') AS helpful_count, " +
-                "  (SELECT COUNT(*) FROM reaction_table r WHERE r.post_id = p.post_id AND r.reaction_type = 'dislike') AS dis_helpful_count, " +
-                "  (SELECT COUNT(*) FROM comments_table c WHERE c.post_id = p.post_id) AS comment_count, " +
-                "  p.created_at, p.updated_at " +
-                "FROM posts_table p " +
-                "JOIN user_table u ON u.user_id = p.user_id " +
-                "JOIN address_table a ON a.address_id = u.user_address_id " +
-                "WHERE a.neighbourhood_id = :neighbourhoodLocationId "
+            "  (SELECT COUNT(*) FROM reaction_table r WHERE r.post_id = p.post_id AND r.reaction_type = 'like') AS helpful_count, " +
+            "  (SELECT COUNT(*) FROM reaction_table r WHERE r.post_id = p.post_id AND r.reaction_type = 'dislike') AS dis_helpful_count, " +
+            "  (SELECT COUNT(*) FROM comments_table c WHERE c.post_id = p.post_id) AS comment_count, " +
+            "  p.created_at, p.updated_at " +
+            "FROM posts_table p " +
+            "JOIN user_table u ON u.user_id = p.user_id " +
+            "JOIN address_table a ON a.address_id = u.user_address_id " +
+            "JOIN location_table l ON l.location_id = a.neighbourhood_id " +
+            "WHERE l.neighbourhood_id = :neighbourhoodLocationId "
         );
 
         appendOptionalFilters(sql, category, search);
@@ -275,5 +292,36 @@ public class BulletinFeedRepository {
         return result;
     }
 
+    /**
+     * Retrieves a paginated list of user IDs belonging to users who reside in the specified neighbourhood,
+     * excluding a particular user from the result set.
+     * 
+     * @param neighbourhoodId The unique identifier of the neighbourhood to search within
+     * @param excludeUserId The unique identifier of the user to exclude from the results
+     * @param pageNumber The page number (0-indexed) to retrieve
+     * @param pageSize The maximum number of results to return per page
+     * @return A {@code List<Integer>} containing the user IDs of users in the specified neighbourhood
+     * @throws IllegalArgumentException if any parameter is invalid
+     */
+    @SuppressWarnings("unchecked")
+    public List<Integer> findUserIdsInNeighbourhood(int neighbourhoodId, int excludeUserId){
+        Query query = entityManager.createNamedQuery(
+            "SELECT u.user_id " +
+            "FROM user_table u " +
+            "JOIN address_table a ON a.address_id = u.user_address_id " +
+            "JOIN location_table l ON l.location_id = a.neighbourhood_id " +
+            "WHERE l.neighbourhood_id = :neighbourhoodId " +
+            "AND u.user_id != :excludeUserId"
+        );
 
+        query.setParameter("neighbourhoodId", neighbourhoodId);
+        query.setParameter("excludeUserId", excludeUserId);
+
+        List<Integer> userIds = new ArrayList<>();
+        for(Object row: query.getResultList()){
+            userIds.add(((Number) row).intValue());
+        }
+
+        return userIds;
+    }
 }
