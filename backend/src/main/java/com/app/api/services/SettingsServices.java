@@ -213,10 +213,9 @@ public class SettingsServices {
         String level = calculateLevel(helper.getHelperXp());
         Integer xp = helper.getHelperXp();
 
-        List<RecentTaskDTO> recentTaskDTOs = helperTasksService.getTasks(userId, "completed", 5, 0)
-                .getTasks()
+        List<RecentTaskDTO> recentTaskDTOs = helperTasksService.getCompletedTasks(userId, 5, 0)
                 .stream()
-                .map(t -> new RecentTaskDTO(t.getTaskId(), t.getTaskType(), t.getEndDate(), 500))
+                .map(t -> new RecentTaskDTO(t.getTaskId(), t.getTaskType(), t.getEndDate(), t.getXpAwarded()))
                 .toList();
 
         List<AchievementDTO> achievementDTOs = achievementService.getAchievements(userId).getEarned();
