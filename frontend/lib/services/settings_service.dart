@@ -2,7 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/mode_response.dart';
 
-class SettingsService {
+// INTERFACE (Contract)
+abstract class ISettingsService {
+  Future<ModeResponse> getMode();
+  Future<ModeResponse> setMode(String mode);
+}
+
+class SettingsService implements ISettingsService {
   final Dio _dio;
   final fb.FirebaseAuth _firebaseAuth;
 
