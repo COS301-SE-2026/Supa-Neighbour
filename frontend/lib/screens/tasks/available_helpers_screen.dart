@@ -7,7 +7,6 @@ import '../../constants/app_colors.dart';
 import '../../models/task_model.dart';
 import '../leaderboard/helper_profile_preview_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/service_providers.dart';
 
 class AvailableHelpersScreen extends ConsumerStatefulWidget {
   final Task task;

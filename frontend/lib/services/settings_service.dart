@@ -26,6 +26,7 @@ class SettingsService implements ISettingsService {
     return _firebaseAuth.currentUser?.getIdToken(false ) ?? Future.value(null);
   }
 
+  @override
   Future<ModeResponse> getMode() async {
     final idToken = await _getIdToken();
     if(idToken == null){
@@ -44,6 +45,7 @@ class SettingsService implements ISettingsService {
     throw Exception('Failed to fetch mode: unexpected response form server');
   }
 
+  @override
   Future<ModeResponse> setMode(String mode) async {
     final idToken = await _getIdToken();
     if(idToken == null){

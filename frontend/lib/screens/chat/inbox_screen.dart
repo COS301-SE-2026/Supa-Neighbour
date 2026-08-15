@@ -5,7 +5,6 @@ import '../../models/chat_thread.dart';
 import '../../constants/app_colors.dart';
 import 'bulletin_screen.dart';
 import 'chat_detail_screen.dart';
-import '../../services/chat_service.dart';
 import '../help/help_menu_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';

@@ -56,6 +56,7 @@ class BulletinService implements IBulletinService {
   }
 
   // Get post from /api/bulletin/posts with optional category and search params
+  @override
   Future<List<BulletinPost>> getPosts({
     String? category,
     String? search,
@@ -82,6 +83,7 @@ class BulletinService implements IBulletinService {
   }
 
   // Get a single post by id from /api/bulletin/posts/{postId}
+  @override
   Future<BulletinPost> getPost(int postId) async {
     final token = await _getToken();
     final currentUserId = await _getCurrentUserId();
@@ -93,6 +95,7 @@ class BulletinService implements IBulletinService {
   }
 
   // Get comments for a post from /api/bulletin/posts/{postId}
+  @override
   Future<List<BulletinComment>> getComments(int postId) async {
     final token = await _getToken();
     final res = await _dio.get(
@@ -107,6 +110,7 @@ class BulletinService implements IBulletinService {
   }
 
   // Upload an image to /api/upload/image and return the image URL
+  @override
   Future<String?> uploadImage(XFile imageFile) async {
     final token = await _getToken();
     final bytes = await imageFile.readAsBytes();
@@ -125,6 +129,7 @@ class BulletinService implements IBulletinService {
   }
 
   // Create a new post to /api/bulletin/posts
+  @override
   Future<void> createPost({
     required String postContent,
     required String category,
@@ -143,6 +148,7 @@ class BulletinService implements IBulletinService {
   }
 
   // Delete a post by id from /api/bulletin/posts/{postId}
+  @override
   Future<void> deletePost(int postId) async {
     final token = await _getToken();
     await _dio.delete(
@@ -152,6 +158,7 @@ class BulletinService implements IBulletinService {
   }
 
   // Add a comment to a post by id from /api/comments/bulletin/{postId}
+  @override
   Future<BulletinComment> addComment(int postId, String content) async {
     final token = await _getToken();
     final res = await _dio.post(
@@ -172,6 +179,7 @@ class BulletinService implements IBulletinService {
   }
 
   // Add a helpful (like) to a post by id from /api/comments/bulletin/posts/{postId}/like
+  @override
   Future<void> addHelpful(int postId) async {
     final token = await _getToken();
     await _dio.post(
@@ -181,6 +189,7 @@ class BulletinService implements IBulletinService {
   }
 
   // Delete a comment by id from /api/comments/bulletin/{commentId}
+  @override
   Future<void> removeHelpful(int postId) async {
     final token = await _getToken();
     await _dio.delete(
