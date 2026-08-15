@@ -4,6 +4,7 @@ import '../services/profile_service.dart';
 import '../services/task_service.dart';
 import '../services/bulletin_service.dart';
 import '../services/chat_service.dart';
+import '../services/helper_profile_service.dart';
 
 // AUTH SERVICE PROVIDER
 final authServiceProvider = Provider<IAuthService>((ref) {
@@ -38,4 +39,9 @@ final achievementServiceProvider = Provider<IAchievementService>((ref) {
 // LEADERBOARD SERVICE PROVIDER
 final leaderboardServiceProvider = Provider<ILeaderboardService>((ref) {
   return LeaderboardService();
+});
+
+// HELPER PROFILE SERVICE PROVIDER
+final helperProfileServiceProvider = Provider<IHelperProfileService>((ref) {
+  return HelperProfileService();
 });

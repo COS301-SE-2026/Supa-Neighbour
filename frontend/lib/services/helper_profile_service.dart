@@ -2,7 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/helper_profile_response.dart';
 
-class HelperProfileService {
+// INTERFACE (Contract)
+abstract class IHelperProfileService {
+  Future<HelperProfileResponse> getHelperProfile(int helperId);
+}
+
+class HelperProfileService implements IHelperProfileService {
   final Dio _dio;
   final fb.FirebaseAuth _firebaseAuth;
 
@@ -20,6 +25,7 @@ class HelperProfileService {
             )),
         _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
 
+  @override
   Future<HelperProfileResponse> getHelperProfile(int helperId) async {
     try {
       final user = _firebaseAuth.currentUser;
