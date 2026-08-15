@@ -19,8 +19,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
+import com.app.api.dtos.UpdateSettingsDTO;
+import com.app.api.dtos.UserSettingsDTO;
+import com.app.api.models.User;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.time.Instant;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -129,6 +134,15 @@ public class SettingsControllerTest {
     }
 
     @Test
+    void getMode_withInvalidToken_return401() throws Exception {
+        when(firebaseAuthService.getUserIdFromToken(anyString())).thenThrow(mock(FirebaseAuthException.class));
+
+        mockMvc.perform(get("/api/settings/users/mode")
+            .header("Authorization", "Bearer bad-token"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void setMode_withInvalidToken_returns401() throws Exception{
         when(firebaseAuthService.getUserIdFromToken(anyString())).thenThrow(mock(FirebaseAuthException.class));
 
@@ -188,11 +202,99 @@ public class SettingsControllerTest {
         .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void setMode_withValidToken_returns200() throws Exception {
+        when(firebaseAuthService.getUserIdFromToken(anyString())).thenReturn(1);
+        when(settingsServices.setUserMode(eq(1), eq("dark"))).thenReturn(new ModeResponse("dark"));
+
+        ModeResponse request = new ModeResponse("dark");
+
+        mockMvc.perform(post("/api/settings/users/mode")
+            .header("Authorization", VALID_TOKEN)
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.mode").value("dark"));
+    }
+
+    @Test
+    void getUserInfo_withValidToken_returns200() throws Exception {
+        when(firebaseAuthService.getUserIdFromToken(anyString())).thenReturn(1);
+        when(settingsServices.getUserInfo(42)).thenReturn(mock(UserSettingsDTO.class));
+
+        mockMvc.perform(get("/api/settings/users/information/42")
+            .header("Authorization", VALID_TOKEN))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void getUserInfo_withInvalidToken_returns401() throws Exception {
+        when(firebaseAuthService.getUserIdFromToken(anyString())).thenThrow(mock(FirebaseAuthException.class));
+
+        mockMvc.perform(get("/api/settings/users/information/42")
+        .header("Authorization", "Bearer bad-token"))
+        .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void updateSettings_withValidToken_returns200() throws Exception {
+        when(firebaseAuthService.getUserIdFromToken(anyString())).thenReturn(1);
+        when(settingsServices.updateSettings(eq(42), any())).thenReturn(mock(UserSettingsDTO.class));
+
+        UpdateSettingsDTO dto = new UpdateSettingsDTO();
+
+        mockMvc.perform(put("/api/settings/42")
+            .header("Authorization", VALID_TOKEN)
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateSettings_withInvalidToken_returns401() throws Exception {
+        when(firebaseAuthService.getUserIdFromToken(anyString())).thenThrow(mock(FirebaseAuthException.class));
+
+        UpdateSettingsDTO dto = new UpdateSettingsDTO();
+
+        mockMvc.perform(put("/api/settings/42")
+            .header("Authorization", "Bearer bad-token")
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(dto)))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void deleteUser_withValidToken_returns204() throws Exception {
+        User user = mock(User.class);
+        when(user.getFirebaseUid()).thenReturn(null);
+        when(firebaseAuthService.getUserIdFromToken(anyString())).thenReturn(1);
+        when(userRepository.findById(1)).thenReturn(java.util.Optional.of(user));
+
+        mockMvc.perform(delete("/api/settings/me/user")
+            .header("Authorization", VALID_TOKEN))
+            .andExpect(status().isNoContent());
+
+        verify(settingsRepository).deleteById(1);
+        verify(userRepository).delete(user);
+    }
+
+    @Test
+    void deleteUser_withInvalidToken_returns404() throws Exception {
+        when(firebaseAuthService.getUserIdFromToken(anyString())).thenReturn(1);
+        when(userRepository.findById(1)).thenReturn(Optional.empty());
+
+        mockMvc.perform(delete("/api/settings/me/user")
+        .header("Authorization",VALID_TOKEN))
+        .andExpect(status().isNotFound());
+    }
 
 
+    @Test
+    void deleteUser_withInvalidToken_returns401() throws Exception {
+        when(firebaseAuthService.getUserIdFromToken(anyString())).thenThrow(mock(FirebaseAuthException.class));
 
-
-
-
-
+        mockMvc.perform(delete("/api/settings/me/user")
+    .header("Authorization", "Bearer bad-token"))
+    .andExpect(status().isUnauthorized());
+    }
 }

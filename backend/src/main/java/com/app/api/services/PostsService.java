@@ -72,12 +72,6 @@ public class PostsService {
     public static class InvalidPostException extends RuntimeException{
         private final int statusCode;
         /**
- * Creates an InvalidPostException.
- *
- * @param message the error message
- * @param statusCode the associated HTTP status code
- */
-        /**
          * Constructs a new {@code InvalidPostException}.
          *
          * @param message the error message describing why the request is invalid
@@ -88,11 +82,6 @@ public class PostsService {
             super(message);
             this.statusCode = statusCode;
         }
-/**
- * Returns the associated HTTP status code.
- *
- * @return the HTTP status code
- */
         /**
          * Returns the HTTP status code associated with this exception.
          *

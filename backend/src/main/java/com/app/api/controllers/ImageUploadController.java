@@ -61,7 +61,7 @@ public class ImageUploadController {
      *   <li><b>500 Internal Server Error</b> if an unexpected error occurs during upload</li>
      * </ul>
      */
-    @PostMapping("/image")
+    @PostMapping("/post/image")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file){
         try{
             String imageUrl = blobStorageService.uploadPostImage(file);
@@ -71,6 +71,52 @@ public class ImageUploadController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }catch(IOException e){
             return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occurred. Please try again."));
+        }
+    }
+
+    /**
+     * Uploads an image file associated with a task to Azure Blob Storage.
+     *
+     * @param file the image file to upload
+     * @return a {@link ResponseEntity} containing:
+     * <ul>
+     *   <li><b>201 Created</b> with the uploaded image URL</li>
+     *   <li><b>400 Bad Request</b> if the uploaded file is invalid</li>
+     *   <li><b>500 Internal Server Error</b> if an unexpected error occurs during upload</li>
+     * </ul>
+     */
+    @PostMapping("/task/image")
+    public ResponseEntity<?> uploadTaskImage(@RequestParam("file") MultipartFile file){
+        try{
+            String imageUrl = blobStorageService.uploadTaskImage(file);
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("imageUrl", imageUrl));
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }catch(IOException e){
+            return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occured. Please try again"));
+        }
+    }
+
+    /**
+     * Uploads an image file associated with a chat message to Azure Blob Storage.
+     *
+     * @param file the image file to upload
+     * @return a {@link ResponseEntity} containing:
+     * <ul>
+     *   <li><b>201 Created</b> with the uploaded image URL</li>
+     *   <li><b>400 Bad Request</b> if the uploaded file is invalid</li>
+     *   <li><b>500 Internal Server Error</b> if an unexpected error occurs during upload</li>
+     * </ul>
+     */
+    @PostMapping("/chat/image")
+    public ResponseEntity<?> uploadChatImage(@RequestParam("file") MultipartFile file){
+        try{
+            String imageUrl = blobStorageService.uploadChatImage(file);
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("imageUrl", imageUrl));
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }catch(IOException e){
+            return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occured. Please try again"));
         }
     }
 }

@@ -50,7 +50,7 @@ public class Location {
      * @param neighbourhoodid     the neighbourhood identifier
      * @param neighbourhoodName   the name of the neighbourhood
      */
-    public Location(int locationid,int locationRadius,int locationCenterPoint, int neighbourhoodid, String neighbourhoodName) {
+    public Location(int locationid,int locationCenterPoint, int locationRadius, int neighbourhoodid, String neighbourhoodName) {
         this.locationCenterPoint=locationCenterPoint;
         this.locationid=locationid;
         this.locationRadius = locationRadius;
