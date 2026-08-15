@@ -5,7 +5,6 @@ import '../../constants/app_colors.dart';
 import '../../models/user_model.dart';
 import '../../models/review_model.dart';
 import '../../models/helper_profile_response.dart';
-import '../../services/helper_profile_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 

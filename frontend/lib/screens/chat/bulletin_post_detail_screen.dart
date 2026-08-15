@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../models/bulletin_post_model.dart';
 import '../../models/bulletin_comment_model.dart';
-import '../../services/bulletin_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
