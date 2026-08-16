@@ -89,6 +89,46 @@ public class HelperTasksRepository {
     }
 
     /**
+     * Retrieves tasks that a helper has accepted, covering all active and
+     * historical invoice statuses.
+     *
+     * @param helperId the identifier of the helper
+     * @param limit    the maximum number of task records to return
+     * @param offset   the number of task records to skip for pagination
+     * @return a list of task records for the helper
+     */
+    @SuppressWarnings("unchecked")
+    public List<Object[]> findAcceptedTasks(int helperId, int limit, int offset) {
+        String sql = """
+                SELECT
+                    ti.task_id,
+                    tt.type_description AS task_type,
+                    ti.status,
+                    ti.start_date,
+                    ti.end_date,
+                    l.neighbourhood_name,
+                    tt.xp_worth,
+                    ti.admin_review,
+                    u.user_name || ' ' || u.user_surname AS requester_name,
+                    u.user_id AS requester_user_id
+                FROM task_invoice_table ti
+                JOIN task_type_table tt ON tt.task_type_id = ti.task_type_id
+                JOIN location_table l ON l.location_id = ti.location_id
+                LEFT JOIN dependent_table d ON d.dependent_id = ti.dependent_id
+                LEFT JOIN user_table u ON u.user_id = d.user_id
+                WHERE ti.helper_id = :helperId
+                AND ti.status IN ('assigned', 'in_progress', 'pending_approval', 'completed', 'cancelled')
+                ORDER BY ti.start_date DESC
+                LIMIT :limit OFFSET :offset
+                """;
+        return em.createNativeQuery(sql)
+                .setParameter("helperId", helperId)
+                .setParameter("limit", limit)
+                .setParameter("offset", offset)
+                .getResultList();
+    }
+
+    /**
      * Retrieves tasks that a helper has accepted and been assigned to.
      *
      * <p>
@@ -134,6 +174,10 @@ String sql = """
                     .setParameter("helperId", helperId)
                     .setParameter("limit", limit)
                     .setParameter("offset", offset);
+
+        if (statusFilter != null) {
+            query.setParameter("status", statusFilter);
+        }
 
         return query.getResultList();
     }
