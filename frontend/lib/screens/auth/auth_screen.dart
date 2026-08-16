@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../components/logo_placeholder.dart';  // Add this import
+import '../../components/logo_placeholder.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_text_files.dart';
 import 'login_screen.dart';
 import 'signup_screen.dart';
 
@@ -11,117 +13,131 @@ class AuthScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Samsung S20 FE reference dimensions
-    const double designWidth = 1080;
-    const double designHeight = 2400;
-
-    // Scale factors
-    final scaleX = screenWidth / designWidth;
-    final scaleY = screenHeight / designHeight;
+    // Responsive sizing
+    final isSmallScreen = screenWidth < 400;
+    final isLargeScreen = screenWidth > 800;
     
-    final logoSize = 286 * scaleX;
+    // Responsive logo size
+    final logoSize = (screenWidth * 0.3).clamp(100.0, 300.0);
+    
+    // Responsive font sizes
+    final titleSize = isSmallScreen ? 28.0 : (isLargeScreen ? 48.0 : 36.0);
+    final subtitleSize = isSmallScreen ? 16.0 : (isLargeScreen ? 28.0 : 20.0);
+    final buttonTextSize = isSmallScreen ? 16.0 : (isLargeScreen ? 24.0 : 20.0);
+    
+    // Responsive spacing
+    final spacing = isSmallScreen ? 16.0 : (isLargeScreen ? 32.0 : 24.0);
+    final largeSpacing = isSmallScreen ? 32.0 : (isLargeScreen ? 60.0 : 48.0);
+    
+    // Button sizing
+    final buttonWidth = (screenWidth * 0.8).clamp(200.0, 500.0);
+    final buttonHeight = isSmallScreen ? 48.0 : (isLargeScreen ? 64.0 : 56.0);
 
     return Scaffold(
       body: Container(
         width: screenWidth,
         height: screenHeight,
-        color: Colors.white,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo - Using LogoPlaceholder (replaced placeholder container)
-            LogoPlaceholder(size: logoSize),
+        color: AppColors.background(context),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: screenHeight,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo
+                LogoPlaceholder(size: logoSize),
 
-            const SizedBox(height: 60),
+                SizedBox(height: spacing),
 
-            // Title
-            Text(
-              'super Neighbour',
-              style: TextStyle(
-                fontSize: 80 * scaleX,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1C9A89),
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 16),
-
-            // Subtitle
-            Text(
-              'Your neighbourly helper',
-              style: TextStyle(
-                fontSize: 40 * scaleX,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1C9A89),
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 80),
-
-            // Login Button - Navigates to Login Screen
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              },
-              child: Container(
-                width: 671 * scaleX,
-                height: 90 * scaleY,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(29),
-                  color: const Color(0xFF1C9A89),
+                // Title
+                Text(
+                  'Super Neighbour',
+                  style: AppTextStyles.primaryHeader(context).copyWith(
+                    fontSize: titleSize,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                child: Center(
-                  child: Text(
-                    'login',
-                    style: TextStyle(
-                      fontSize: 40 * scaleX,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+
+                SizedBox(height: spacing * 0.6),
+
+                // Subtitle
+                Text(
+                  'Your neighbourly helper',
+                  style: AppTextStyles.secondaryHeader(context).copyWith(
+                    fontSize: subtitleSize,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                SizedBox(height: largeSpacing),
+
+                // Login Button
+                SizedBox(
+                  width: buttonWidth,
+                  height: buttonHeight,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryTeal(context),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(29),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Login',
+                      style: AppTextStyles.buttonText(context).copyWith(
+                        fontSize: buttonTextSize,
+                        color: AppColors.textLight(context),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 20),
+                SizedBox(height: spacing * 0.6),
 
-            // Create Account Button
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SignupScreen()),
-                );
-              },
-              child: Container(
-                width: 671 * scaleX,
-                height: 90 * scaleY,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(29),
-                  border: Border.all(
-                    color: const Color(0xFF1C9A89),
-                    width: 4 * scaleX,
-                  ),
-                  color: Colors.transparent,
-                ),
-                child: Center(
-                  child: Text(
-                    'create an account',
-                    style: TextStyle(
-                      fontSize: 40 * scaleX,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1C9A89),
+                // Create Account Button
+                SizedBox(
+                  width: buttonWidth,
+                  height: buttonHeight,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SignupScreen()),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: AppColors.primaryTeal(context),
+                        width: 2,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(29),
+                      ),
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Create an account',
+                      style: AppTextStyles.buttonText(context).copyWith(
+                        fontSize: buttonTextSize,
+                        color: AppColors.primaryTeal(context),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                
+                SizedBox(height: largeSpacing),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
