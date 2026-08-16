@@ -245,7 +245,9 @@ String sql = """
                 .setParameter("limit", limit)
                 .setParameter("offset", offset);
 
-        return query.getResultList();
+        @SuppressWarnings("unchecked")
+        List<Object[]> result = (List<Object[]>) query.getResultList();
+        return result;
     }
 
 
