@@ -5,23 +5,21 @@ import '../../models/achievement_model.dart';
 import '../../widgets/achievements/achievement_progress_stats.dart';
 import '../../widgets/achievements/achievement_grid.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
-import '../../services/achievement_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-
-class AchievementsScreen extends StatefulWidget {
+class AchievementsScreen extends ConsumerStatefulWidget {
   const AchievementsScreen({super.key});
 
   @override
-  State<AchievementsScreen> createState() => _AchievementsScreenState();
+  ConsumerState<AchievementsScreen> createState() => _AchievementsScreenState();
 }
 
-class _AchievementsScreenState extends State<AchievementsScreen> {
+class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   List<Achievement> _earnedAchievements = [];
   List<Achievement> _unearnedAchievements = [];
   bool _isLoading = true;
   String? _error;
-  final AchievementService _achievementService = AchievementService();
-
 
   @override
   void initState() {
@@ -29,13 +27,14 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     _fetchAchievements();
   }
 
-   Future<void> _fetchAchievements() async {
+  Future<void> _fetchAchievements() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
     try {
-      final response = await _achievementService.getAchievements();
+      final achievementService = ref.read(achievementServiceProvider);
+      final response = await achievementService.getAchievements();
       if (mounted) {
         setState(() {
           _earnedAchievements = response.earned;
@@ -52,7 +51,6 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -81,11 +79,11 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             icon: Icon(Icons.settings_outlined, color: AppColors.charcoal(context)),
             onPressed: () {
               Navigator.push(
-              context,
-              MaterialPageRoute(
-              builder: (context) => const SettingsScreen(),
-        ),
-      );
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
             },
           ),
         ],

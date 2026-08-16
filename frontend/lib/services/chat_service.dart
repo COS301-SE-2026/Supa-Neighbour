@@ -1,7 +1,15 @@
 import 'package:dio/dio.dart';
 
+// INTERFACE
+abstract class IChatService {
+  Future<List<Map<String, dynamic>>> getChatsByUserId(int userId);
+  Future<Map<String, dynamic>> getMessages(int chatId, {int page = 1, int limit = 50});
+  Future<Map<String, dynamic>> sendMessage(int chatId, int senderId, String content, {String type = 'text'});
+  Future<void> markAsRead(int chatId, int userId);
+}
+
 /// Service responsible for all chat-related calls.
-class ChatService {
+class ChatService implements IChatService {
   final Dio _dio;
 
   ChatService({Dio? dio})
@@ -14,6 +22,7 @@ class ChatService {
             ));
 
   /// Gets all chat threads for a user from GET /api/chats/{userId}.
+  @override
   Future<List<Map<String, dynamic>>> getChatsByUserId(int userId) async {
     try {
       final Response<Map<String, dynamic>> res =
@@ -27,6 +36,7 @@ class ChatService {
   }
 
   /// Gets paginated messages for a chat from GET /api/chats/{chatId}/messages.
+  @override
   Future<Map<String, dynamic>> getMessages(int chatId,
       {int page = 1, int limit = 50}) async {
     try {
@@ -41,6 +51,7 @@ class ChatService {
   }
 
   /// Sends a message to a chat via POST /api/chats/{chatId}/messages.
+  @override
   Future<Map<String, dynamic>> sendMessage(
       int chatId, int senderId, String content,
       {String type = 'text'}) async {
@@ -58,6 +69,7 @@ class ChatService {
   }
 
   /// mark chat as read via /api/chats/$chatId/read.
+  @override
   Future<void> markAsRead(int chatId, int userId) async {
     try {
       await _dio.put('/api/chats/$chatId/read', data: {'userID': userId});

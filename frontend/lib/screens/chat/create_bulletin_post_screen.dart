@@ -6,17 +6,17 @@ import 'dart:io';
 import '../../components/custom_button.dart';
 import '../../components/custom_field_input.dart';
 import '../../constants/app_colors.dart';
-import '../../services/bulletin_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class CreateBulletinPostScreen extends StatefulWidget {
+class CreateBulletinPostScreen extends ConsumerStatefulWidget {
   const CreateBulletinPostScreen({super.key});
 
   @override
-  State<CreateBulletinPostScreen> createState() => _CreateBulletinPostScreenState();
+  ConsumerState<CreateBulletinPostScreen> createState() => _CreateBulletinPostScreenState();
 }
 
-class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
-  final BulletinService _bulletinService = BulletinService();
+class _CreateBulletinPostScreenState extends ConsumerState<CreateBulletinPostScreen> {
   final TextEditingController _bodyController = TextEditingController();
   String _selectedCategory = 'general';
   final List<XFile> _selectedImages = [];
@@ -33,6 +33,12 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
   ];
 
   final ImagePicker _imagePicker = ImagePicker();
+
+  @override
+  void dispose() {
+    _bodyController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickImage() async {
     final XFile? image = await _imagePicker.pickImage(
@@ -71,12 +77,13 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
     });
 
     try {
+      final bulletinService = ref.read(bulletinServiceProvider);
       String? mediaUrl;
       if (_selectedImages.isNotEmpty) {
-        mediaUrl = await _bulletinService.uploadImage(_selectedImages.first);
+        mediaUrl = await bulletinService.uploadImage(_selectedImages.first);
       }
 
-      await _bulletinService.createPost(
+      await bulletinService.createPost(
         postContent: _bodyController.text.trim(),
         category: _selectedCategory,
         mediaUrl: mediaUrl,

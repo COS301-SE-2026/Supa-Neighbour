@@ -10,20 +10,20 @@ import 'task_completion_page.dart';
 import 'task_awaiting_approval_screen.dart';
 import 'task_approval_screen.dart';
 import '../../models/auth_session.dart';
-import '../../services/task_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
 
-
-class MyTasksScreen extends StatefulWidget {
+class MyTasksScreen extends ConsumerStatefulWidget {
   final int initialTab;
   
   const MyTasksScreen({super.key, this.initialTab = 0});
 
   @override
-  State<MyTasksScreen> createState() => _MyTasksScreenState();
+  ConsumerState<MyTasksScreen> createState() => _MyTasksScreenState();
 }
 
-class _MyTasksScreenState extends State<MyTasksScreen>
+class _MyTasksScreenState extends ConsumerState<MyTasksScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -48,23 +48,20 @@ class _MyTasksScreenState extends State<MyTasksScreen>
     super.dispose();
   }
 
-  
-
-final TaskService _taskService = TaskService();
-
 Future<void> _loadAllTasks() async {
   final currentUserId = int.tryParse(
     AuthSession.instance.currentUser?.id ?? '',
   );
 
   try {
+    final taskService = ref.read(taskServiceProvider);
     final results = await Future.wait([
       currentUserId != null
-          ? _taskService.getTasksByUserId(currentUserId)
+          ? taskService.getTasksByUserId(currentUserId)
           : Future.value(<Task>[]),
-      _taskService.getMyHelperTasks(),
+      taskService.getMyHelperTasks(),
       currentUserId != null
-          ? _taskService.getAvailableTasks(currentUserId)
+          ? taskService.getAvailableTasks(currentUserId)
           : Future.value(<Task>[])
     ]);
 
@@ -91,7 +88,8 @@ Future<void> _loadAllTasks() async {
 
 void _passTask(Task task) async {
   try {
-    await _taskService.declineTaskInvitation(int.parse(task.id));
+    final taskService = ref.read(taskServiceProvider);
+    await taskService.declineTaskInvitation(int.parse(task.id));
   } catch (_) {
   }
   if (!mounted) return;
@@ -544,7 +542,8 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
 
 void _acceptTask(Task task) async {
   try {
-    await _taskService.acceptTaskInvitation(int.parse(task.id));
+    final taskService = ref.read(taskServiceProvider);
+    await taskService.acceptTaskInvitation(int.parse(task.id));
   } catch (_) {
   }
   if (!mounted) return;

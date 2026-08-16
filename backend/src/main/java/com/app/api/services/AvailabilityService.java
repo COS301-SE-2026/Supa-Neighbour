@@ -75,8 +75,8 @@ public class AvailabilityService {
         }
         existing.setDayofweek(updated.getDayofweek());
         existing.setTimewindow(updated.getTimewindow());
-        existing.setDayofweek(updated.getDayofweek());
         existing.setIsactive(updated.isIsactive());
+        existing.setUser_id(updated.getUser_id());
 
         return availabilityRepository.save(existing);
     }

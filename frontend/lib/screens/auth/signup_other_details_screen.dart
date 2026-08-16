@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../../components/logo_placeholder.dart';
 import '../../models/auth_session.dart';
 import '../../models/user_model.dart';
-import '../../services/auth_service.dart';
 import '../home/home_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-
-class SignupOtherDetailsScreen extends StatefulWidget {
+class SignupOtherDetailsScreen extends ConsumerStatefulWidget {
   final User user;
-  final String idToken;  
-  final String password;  
+  final String idToken;
+  final String password;
 
   const SignupOtherDetailsScreen({
     super.key,
@@ -19,15 +19,13 @@ class SignupOtherDetailsScreen extends StatefulWidget {
   });
 
   @override
-  State<SignupOtherDetailsScreen> createState() => _SignupOtherDetailsScreenState();
+  ConsumerState<SignupOtherDetailsScreen> createState() => _SignupOtherDetailsScreenState();
 }
 
-
-class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
+class _SignupOtherDetailsScreenState extends ConsumerState<SignupOtherDetailsScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   bool _isLoading = false;
-  final AuthService _authService = AuthService();
 
  Future<void> _handleFinish() async {
   if (_phoneController.text.isEmpty) {
@@ -54,7 +52,8 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
     if(widget.user.street == null || widget.user.town == null || zip == null){
       throw Exception(' Missing or invalis residential address details.');
     }
-    final User registeredUser = await _authService.register(
+    final auth = ref.read(authServiceProvider);  
+    final User registeredUser = await auth.register( 
       idToken: widget.idToken,
       firstName: widget.user.firstName,
       lastName: widget.user.lastName,
@@ -135,7 +134,7 @@ class _SignupOtherDetailsScreenState extends State<SignupOtherDetailsScreen> {
                   
                   SizedBox(height: screenHeight * 0.02),
                   
-                  // Logo - Using LogoPlaceholder (replaced placeholder container)
+                  
                   LogoPlaceholder(size: logoSize),
                   
                   SizedBox(height: screenHeight * 0.03),

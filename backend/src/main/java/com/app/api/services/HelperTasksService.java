@@ -52,15 +52,7 @@ public class HelperTasksService {
      * @throws ResponseStatusException if the supplied status is invalid or
      *         the user is not registered as a helper
      */
-    public HelperTaskResponse getTasks(int userId, String statusFilter, int limit, int offset){
-        if (statusFilter != null && statusFilter.isBlank()) {
-            statusFilter = null;
-        }
-
-        if(statusFilter != null && !VALID_STATUSES.contains(statusFilter)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status must be one of: Invited, Declined, Rejected, Accepted, assigned, in_progress, " + "pending_approval, completed, cancelled");
-        }
-
+    public HelperTaskResponse getAcceptedTasks(int userId, String statusFilter, int limit, int offset){
         Integer helperId = helperTasksRepository.findHelperByUserId(userId);
 
 
@@ -68,32 +60,16 @@ public class HelperTasksService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not a helper");
         }
 
-        List<Object[]> invitedRows = new ArrayList<>();
-        List<Object[]> assignedRows = new ArrayList<>();
-
-        boolean fetchInvited  = statusFilter == null || (statusFilter != null && INVITATION_STATUSES.contains(statusFilter));
-        boolean fetchAssigned = statusFilter == null || (statusFilter != null && INVOICE_STATUSES.contains(statusFilter));
-
-        if(fetchInvited){
-            invitedRows  = helperTasksRepository.findInvitedTasks(helperId, statusFilter != null && INVITATION_STATUSES.contains(statusFilter) ? statusFilter : null, limit, offset);
-        }
-
-        if(fetchAssigned){
-            assignedRows = helperTasksRepository.findAssignedTasks(helperId, statusFilter != null && INVOICE_STATUSES.contains(statusFilter) ? statusFilter : null, limit, offset);
-        }
+        List<Object[]> acceptedRows = helperTasksRepository.findAcceptedTasks(helperId, limit, offset);
 
         List<HelperTaskDTO> tasks = new ArrayList<>();
-        for(Object[] row: invitedRows){
+        for(Object[] row : acceptedRows){
             tasks.add(mapRow(row));
         }
 
-        for(Object[] row : assignedRows){
-            tasks.add(mapRow(row));
-        }
+        int total = helperTasksRepository.countAcceptedTasks(helperId);
 
-        int total = helperTasksRepository.countAllTasks(helperId);
-
-        return new HelperTaskResponse(helperId, total, tasks);
+        return new HelperTaskResponse(helperId, total, tasks);       
     }
 
     private HelperTaskDTO mapRow(Object[] row){
@@ -107,5 +83,38 @@ public class HelperTasksService {
         row[7] != null ? (String) row[7] : null,
         row[8] != null ? (String) row[8] : null,
         row[9] != null ? ((Number) row[9]).intValue() : null);
+    }
+
+    /**
+     * Retrieves a helper's completed tasks.
+     *
+     * <p>
+     * Resolves the given user to their helper record, then returns the
+     * helper's tasks that have been accepted and completed, mapped to
+     * summary DTOs. Results are paginated.
+     * </p>
+     *
+     * @param userId the identifier of the user (must resolve to a helper)
+     * @param limit  the maximum number of task records to return
+     * @param offset the number of task records to skip for pagination
+     * @return a list of completed task summaries for the helper
+     * @throws ResponseStatusException with status {@code 403 FORBIDDEN} if the
+     *         user does not have an associated helper record
+     */
+    public List<HelperTaskDTO> getCompletedTasks(int userId, int limit, int offset) {
+        Integer helperId = helperTasksRepository.findHelperByUserId(userId);
+
+        if(helperId == null){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not a helper");
+        }
+
+        List<Object[]> completedRows = helperTasksRepository.findCompletedTasks(helperId, limit, offset);
+
+        List<HelperTaskDTO> tasks = new ArrayList<>();
+        for(Object[] row : completedRows){
+            tasks.add(mapRow(row));
+        }
+
+        return tasks;
     }
 }

@@ -14,18 +14,26 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
+import com.app.api.dtos.TaskDetailDTO;
 import com.app.api.models.Dependent;
+import com.app.api.models.Helper;
 import com.app.api.models.Task;
+import com.app.api.models.TaskInvitation;
+import com.app.api.models.TaskInvoice;
+import com.app.api.models.User;
 import com.app.api.repositories.AnalyticsRepository;
 import com.app.api.repositories.ChatRepository;
 import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.MessageRepository;
+import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskRepository;
 import com.app.api.services.TaskService;
 
@@ -48,6 +56,12 @@ public class TaskServiceTest
 
     @InjectMocks
     private TaskService taskService;
+
+    @Mock
+    private HelperRepository helperRepo;
+
+    @Mock
+    private TaskInvitationRepository taskInvitationRepo;
 
     @BeforeEach
     void initMocks()
@@ -271,5 +285,229 @@ public class TaskServiceTest
         verify(messageRepo, times(1)).deleteByChatId(chatId);
         verify(chatRepo, times(1)).deleteAll(List.of(chat));
         verify(taskRepo, times(1)).deleteById(id);
+    }
+
+    @Test
+    void getTaskDetailById_found_notHelperOrDependent_returnsBasicDetail(){
+
+        int id = 2001;
+        Task task = new Task();
+        task.setTaskId(id);
+        task.setStatus("open");
+        task.setImmediate(true);
+        task.setNeedsSpecialist(false);
+
+        when(taskRepo.findById(id)).thenReturn(Optional.of(task));
+        
+        TaskDetailDTO detail = taskService.getTaskDetailById(id);
+
+        assertNotNull(detail);
+        assertEquals(id, detail.getTaskId());
+        assertEquals("open", detail.getStatus());
+        assertNull(detail.getRequesterName());
+        assertNull(detail.getHelperName());
+        verify(dependentRepo, never()).findById(anyInt());
+        verify(helperRepo, never()).findById(anyInt());
+    }
+
+    @Test
+    void getTaskDetailById_notFound_returnsNull(){
+        when(taskRepo.findById(9999)).thenReturn(Optional.empty());
+
+        TaskDetailDTO detail = taskService.getTaskDetailById(9999);
+        assertNull(detail);
+        verify(taskRepo, times(1)).findById(9999);
+    }
+
+    @Test
+    void getTaskDetailaById_found_dependentAndHelperResolved_namesPopulated(){
+        int id = 2002;
+        int dependentId = 7;
+        int helperId = 9;
+
+        Task task = new Task();
+        task.setTaskId(id);
+        task.setDependentId(dependentId);
+        task.setHelperId(helperId);
+
+        User dependentUser = mock(User.class);
+        when(dependentUser.getFirstName()).thenReturn("Jane");
+        when(dependentUser.getLastName()).thenReturn("Doe");
+
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+        dependent.setUserId(dependentUser);
+
+        User helperUser = mock(User.class);
+        when(helperUser.getFirstName()).thenReturn("John");
+        when(helperUser.getLastName()).thenReturn("Smith");
+
+        Helper helper = Helper.builder().helperid(helperId).userid(helperUser).build();
+
+        when(taskRepo.findById(id)).thenReturn(Optional.of(task));
+        when(dependentRepo.findById(dependentId)).thenReturn(Optional.of(dependent));
+        when(helperRepo.findById(helperId)).thenReturn(Optional.of(helper));
+
+        TaskDetailDTO detail = taskService.getTaskDetailById(id);
+        assertNotNull(detail);
+        assertEquals("Jane Doe", detail.getRequesterName());
+        assertEquals("John Smith", detail.getHelperName());
+    }
+
+    @Test 
+    void getTaskDetailsById_found_dependentUserNull_skipsRequesterName(){
+        int id = 2003;
+        int dependentId = 8;
+
+        Task task = new Task();
+        task.setTaskId(id);
+        task.setDependentId(dependentId);
+
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+
+        when(taskRepo.findById(id)).thenReturn(Optional.of(task));
+        TaskDetailDTO detail = taskService.getTaskDetailById(id);
+
+        assertNotNull(detail);
+        assertNull(detail.getRequesterName());
+    }
+
+    @Test
+    void getTaskDetailById_found_helperNotInRepo_skipsHelperName(){
+        int id = 2004;
+        int helperId = 11;
+
+        Task task = new Task();
+        task.setTaskId(id);
+        task.setHelperId(helperId);
+
+        when(taskRepo.findById(id)).thenReturn(Optional.of(task));
+        when(helperRepo.findById(helperId)).thenReturn(Optional.empty());
+
+        TaskDetailDTO detail = taskService.getTaskDetailById(id);
+
+        assertNotNull(detail);
+        assertNull(detail.getHelperName());
+    }
+
+    @Test
+    void getAllTaskDetailsByUserId_noHelperProfile_returnEmptylist(){
+        when(helperRepo.findByUserid_Userid(999)).thenReturn(Optional.empty());
+
+        List<TaskDetailDTO> details = taskService.getAllTaskDetailsByUserId(999);
+        assertNotNull(details);
+        assertTrue(details.isEmpty());
+        verify(taskInvitationRepo, never()).findByHelperId_HelperidAndStatus(anyInt(), org.mockito.ArgumentMatchers.any());
+        
+    }
+
+    @Test
+    void getAllTaskDetailsByUserId_helperExistsButNoPendingInvitations_returnsEmptyList(){
+        int userId = 43;
+        int helperId = 6;
+
+        Helper helper = Helper.builder().helperid(helperId).build();
+
+        when(helperRepo.findByUserid_Userid(userId)).thenReturn(Optional.of(helper));
+        when(taskInvitationRepo.findByHelperId_HelperidAndStatus(helperId, null)).thenReturn(List.of());
+        List<TaskDetailDTO> details = taskService.getAllTaskDetailsByUserId(userId);
+
+        assertNotNull(details);
+        assertTrue(details.isEmpty());
+    }
+
+    @Test
+    void getAllTaskDetailsByUserId_withPendingInvitations_returnsDetails() {
+        int userId = 42;
+        int helperId = 5;
+
+        Helper helper = Helper.builder()
+                .helperid(helperId)
+                .build();
+
+        TaskInvoice invoice = mock(TaskInvoice.class);
+        when(invoice.getTaskid()).thenReturn(3001);
+        when(invoice.getHelperid()).thenReturn(null);
+        when(invoice.getDependentid()).thenReturn(null);
+        when(invoice.getImmediate()).thenReturn(Boolean.TRUE);
+        when(invoice.getLocationid()).thenReturn(null);
+        when(invoice.getTasktypeid()).thenReturn(null);
+        when(invoice.isNeedsspecialist()).thenReturn(false);
+        when(invoice.getSignedadminid()).thenReturn(null);
+        when(invoice.getStartdate()).thenReturn(null);
+        when(invoice.getEnddate()).thenReturn(null);
+        when(invoice.getHelperbadgeid()).thenReturn(null);
+        when(invoice.getDependentRatingreview()).thenReturn("Good");
+        when(invoice.getHelperRatingreview()).thenReturn("Great");
+        when(invoice.getAdminReview()).thenReturn(null);
+        when(invoice.getStatus()).thenReturn("Invited");
+        when(invoice.getCompatibilityid()).thenReturn(null);
+
+        TaskInvitation invitation = TaskInvitation.builder()
+                .taskInvitationId(1)
+                .taskId(invoice)
+                .helperId(helper)
+                .status("Invited")
+                .build();
+
+        when(helperRepo.findByUserid_Userid(userId)).thenReturn(Optional.of(helper));
+        when(taskInvitationRepo.findByHelperId_HelperidAndStatus(helperId, null))
+                .thenReturn(List.of(invitation));
+
+        List<TaskDetailDTO> details = taskService.getAllTaskDetailsByUserId(userId);
+
+        assertNotNull(details);
+        assertEquals(1, details.size());
+        assertEquals(3001, details.get(0).getTaskId());
+        assertEquals("Invited", details.get(0).getStatus());
+        assertEquals("Good", details.get(0).getDependentRatingId());
+        assertEquals("Great", details.get(0).getHelperRatingId());
+    }
+
+    @Test
+    void getTaskDetailsByUserId_noDependentProfile_returnsNull() {
+
+        int userId = 999;
+
+        when(dependentRepo.findByUserId_Userid(userId))
+                .thenReturn(null);
+
+        List<TaskDetailDTO> result =
+                taskService.getTaskDetailsByUserId(userId);
+
+        assertNull(result);
+
+        verify(dependentRepo)
+                .findByUserId_Userid(userId);
+
+        verify(taskRepo, never())
+                .findByDependentId(anyInt());
+    }
+
+    @Test
+    void getTaskDetailsByUserId_dependentExists_returnrTaskDetails(){
+        int userId = 103;
+        int dependentId = 7;
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+
+        Task task = new Task();
+
+        task.setTaskId(1001);
+        task.setStatus("open");
+
+        when(dependentRepo.findByUserId_Userid(userId)).thenReturn(dependent);
+        when(taskRepo.findByDependentId(dependentId)).thenReturn(List.of(task));
+
+        List<TaskDetailDTO> result = taskService.getTaskDetailsByUserId(userId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        assertEquals(1001, result.get(0).getTaskId());
+        assertEquals("open", result.get(0).getStatus());
+        verify(dependentRepo).findByUserId_Userid(userId);
+        verify(taskRepo).findByDependentId(dependentId);
     }
 }

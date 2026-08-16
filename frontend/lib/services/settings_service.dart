@@ -2,7 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/mode_response.dart';
 
-class SettingsService {
+// INTERFACE (Contract)
+abstract class ISettingsService {
+  Future<ModeResponse> getMode();
+  Future<ModeResponse> setMode(String mode);
+}
+
+class SettingsService implements ISettingsService {
   final Dio _dio;
   final fb.FirebaseAuth _firebaseAuth;
 
@@ -20,6 +26,7 @@ class SettingsService {
     return _firebaseAuth.currentUser?.getIdToken(false ) ?? Future.value(null);
   }
 
+  @override
   Future<ModeResponse> getMode() async {
     final idToken = await _getIdToken();
     if(idToken == null){
@@ -38,6 +45,7 @@ class SettingsService {
     throw Exception('Failed to fetch mode: unexpected response form server');
   }
 
+  @override
   Future<ModeResponse> setMode(String mode) async {
     final idToken = await _getIdToken();
     if(idToken == null){
