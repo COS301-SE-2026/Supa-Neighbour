@@ -17,6 +17,10 @@ import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OneToMany;
+
 
 
 /**
@@ -91,6 +95,15 @@ public class TaskInvoice {
     @ManyToOne
     @JoinColumn(name = "compatibility_id")
     private Compatibility compatibilityid;
+
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "instructions")
+    private String instructions;
+
+    @OneToMany(mappedBy = "taskid", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TaskImage> images;
 
     /**
      * Gets the task identifier.
@@ -379,6 +392,60 @@ public class TaskInvoice {
      */
     public void setCompatibilityid(Compatibility compatibilityid) {
         this.compatibilityid = compatibilityid;
+    }
+
+    /**
+     * Gets the title of the task.
+     *
+     * @return the task title
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Sets the title of the task.
+     *
+     * @param title the task title
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * Gets the instructions for the task.
+     *
+     * @return the task instructions
+     */
+    public String getInstructions() {
+        return instructions;
+    }
+
+    /**
+     * Sets the instructions for the task.
+     *
+     * @param instructions the task instructions
+     */
+    public void setInstructions(String instructions) {
+        this.instructions = instructions;
+    }
+
+    /**
+     * Gets the list of images attached to the task.
+     *
+     * @return the task images
+     */
+    public List<TaskImage> getImages() {
+        return images;
+    }
+
+    /**
+     * Sets the list of images attached to the task.
+     *
+     * @param images the task images
+     */
+    public void setImages(List<TaskImage> images) {
+        this.images = images;
     }
 
 }
