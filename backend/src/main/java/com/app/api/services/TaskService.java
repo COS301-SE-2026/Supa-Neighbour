@@ -228,6 +228,7 @@ public class TaskService {
             Dependent dependent = dependentRepo.findById(task.getDependentId()).orElse(null);
             if (dependent != null && dependent.getUserId() != null) {
                 dto.setRequesterName(fullName(dependent.getUserId()));
+                dto.setRequesterUserId(dependent.getUserId().getUserid());
             }
         }
 

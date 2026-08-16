@@ -12,6 +12,7 @@ import 'task_approval_screen.dart';
 import '../../models/auth_session.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import '../leaderboard/helper_profile_preview_screen.dart';
 
 
 class MyTasksScreen extends ConsumerStatefulWidget {

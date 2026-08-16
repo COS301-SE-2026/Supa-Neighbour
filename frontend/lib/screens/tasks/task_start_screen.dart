@@ -163,6 +163,7 @@ class _TaskStartScreenState extends ConsumerState<TaskStartScreen> {
                         helperId: requesterId,
                         taskId: widget.task.id,
                         showRequestButton: false,
+                        isUserId: true,
                       ),
                     ),
                   );

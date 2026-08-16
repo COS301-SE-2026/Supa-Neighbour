@@ -96,7 +96,7 @@ class Task {
     instructions: json['adminReview'] as String? ?? '',
     status: status,
     createdAt: startDate,
-    createdBy: json['dependentId']?.toString() ?? 'unknown',
+    createdBy: json['requesterUserId']?.toString() ?? 'unknown',
     helperId: json['helperId']?.toString(),
     requesterName: json['requesterName'] as String?,
     helperName: json['helperName'] as String?,

@@ -177,6 +177,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                           helperId: requesterId,
                           taskId: widget.task.id,
                           showRequestButton: false,
+                          isUserId: true,
                         ),
                       ),
                     );

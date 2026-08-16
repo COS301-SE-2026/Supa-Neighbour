@@ -113,6 +113,7 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
                         helperId: requesterId,
                         taskId: task.id,
                         showRequestButton: false,
+                        isUserId: true,
                       ),
                     ),
                   );
