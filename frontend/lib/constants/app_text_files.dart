@@ -22,4 +22,11 @@ class AppTextStyles {
     fontWeight: FontWeight.normal,
     color: AppColors.white(context),
   );
+
+  static TextStyle buttonText(BuildContext context) => TextStyle(
+    fontFamily: 'GoogleSansFlex',
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textLight(context),
+  );
 }
