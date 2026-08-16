@@ -17,6 +17,7 @@ analyzer:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - "build/**"
+    - "coverage/**"
     - "ios/**"
     - "android/**"
 
