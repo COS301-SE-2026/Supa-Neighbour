@@ -124,7 +124,7 @@ class Task {
       instructions: '', // not returned by this endpoint
       status: json['status'] as String? ?? 'open',
       createdAt: parsedDate,
-      createdBy: '', // dependentId not returned - see below
+      createdBy: json['requesterUserId']?.toString() ?? '',
       helperId: null, // this IS the helper's own task list; not relevant here
       requesterName: json['requesterName'] as String?,
       helperName: null,

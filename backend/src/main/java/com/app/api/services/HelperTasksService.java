@@ -105,6 +105,7 @@ public class HelperTasksService {
         (String) row[5], 
         row[6] != null ? ((Number) row[6]).intValue() : null,
         row[7] != null ? (String) row[7] : null,
-        row[8] != null ? (String) row[8] : null);
+        row[8] != null ? (String) row[8] : null,
+        row[9] != null ? ((Number) row[9]).intValue() : null);
     }
 }

@@ -65,7 +65,8 @@ public class HelperTasksRepository {
                     l.neighbourhood_name,
                     tt.xp_worth,
                     null AS admin_review,
-                    u.user_name || ' ' || u.user_surname AS requester_name
+                    u.user_name || ' ' || u.user_surname AS requester_name,
+                    u.user_id AS requester_user_id
                 FROM task_invitation_table  ti
                 JOIN task_invoice_table     tit ON tit.task_id     = ti.task_id
                 JOIN task_type_table        tt  ON tt.task_type_id = tit.task_type_id
@@ -119,7 +120,8 @@ String sql = """
             l.neighbourhood_name,
             tt.xp_worth,
             ti.admin_review,
-            u.user_name || ' ' || u.user_surname AS requester_name
+            u.user_name || ' ' || u.user_surname AS requester_name,
+            u.user_id AS requester_user_id
         FROM task_invoice_table ti
         JOIN task_type_table tt ON tt.task_type_id = ti.task_type_id
         JOIN location_table l ON l.location_id = ti.location_id
