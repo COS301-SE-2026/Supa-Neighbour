@@ -7,7 +7,6 @@ import '../../components/loading_bar.dart';
 import '../../components/splash_title.dart';
 import '../../components/logo_placeholder.dart';
 import '../../constants/app_colors.dart';
-import '../../constants/app_text_files.dart';
 import '../../models/auth_session.dart';
 import '../../providers/service_providers.dart';
 import 'auth_screen.dart';

@@ -1,3 +1,4 @@
+// test/widget/auth/splash_screen_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +18,12 @@ void main() {
     void resetTestWindow(WidgetTester tester) {
       tester.binding.window.clearPhysicalSizeTestValue();
       tester.binding.window.clearDevicePixelRatioTestValue();
+    }
+
+    // Helper to set normal test window (for font size tests)
+    void setNormalTestWindow(WidgetTester tester) {
+      tester.binding.window.physicalSizeTestValue = const Size(800, 1600);
+      tester.binding.window.devicePixelRatioTestValue = 1.0;
     }
 
     testWidgets('displays logo placeholder', (WidgetTester tester) async {
@@ -143,7 +150,6 @@ void main() {
 
       final titleFinder = find.text('Super Neighbour');
       final titleWidget = tester.widget<Text>(titleFinder);
-
       expect(titleWidget.style?.color, const Color(0xFF2A9D8F));
       
       resetTestWindow(tester);
@@ -164,7 +170,6 @@ void main() {
 
       final subtitleFinder = find.text('Your neighbourly helper');
       final subtitleWidget = tester.widget<Text>(subtitleFinder);
-      // AppColors.primaryTeal is Color(0xFF2A9D8F) in light mode
       expect(subtitleWidget.style?.color, const Color(0xFF2A9D8F));
       
       resetTestWindow(tester);
@@ -185,14 +190,14 @@ void main() {
 
       final container = find.byType(Container).first;
       final containerWidget = tester.widget<Container>(container);
-      // AppColors.background returns white in light mode
       expect(containerWidget.color, Colors.white);
       
       resetTestWindow(tester);
     });
 
+    // ✅ FIXED: Use normal screen size to test normal font sizes
     testWidgets('title has correct font size on normal screens', (WidgetTester tester) async {
-      setLargeTestWindow(tester);
+      setNormalTestWindow(tester);
       
       await tester.pumpWidget(
         const ProviderScope(
@@ -212,8 +217,9 @@ void main() {
       resetTestWindow(tester);
     });
 
+    // ✅ FIXED: Use normal screen size to test normal font sizes
     testWidgets('subtitle has correct font size on normal screens', (WidgetTester tester) async {
-      setLargeTestWindow(tester);
+      setNormalTestWindow(tester);
       
       await tester.pumpWidget(
         const ProviderScope(
@@ -229,6 +235,48 @@ void main() {
       final subtitleWidget = tester.widget<Text>(subtitleFinder);
       // For normal screens (400-800px), subtitle size should be 20.0
       expect(subtitleWidget.style?.fontSize, 20.0);
+      
+      resetTestWindow(tester);
+    });
+
+    testWidgets('title has correct font size on large screens', (WidgetTester tester) async {
+      setLargeTestWindow(tester);
+      
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: SplashScreen(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final titleFinder = find.text('Super Neighbour');
+      final titleWidget = tester.widget<Text>(titleFinder);
+      // For large screens (>800px), title size should be 48.0
+      expect(titleWidget.style?.fontSize, 48.0);
+      
+      resetTestWindow(tester);
+    });
+
+    testWidgets('subtitle has correct font size on large screens', (WidgetTester tester) async {
+      setLargeTestWindow(tester);
+      
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: SplashScreen(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final subtitleFinder = find.text('Your neighbourly helper');
+      final subtitleWidget = tester.widget<Text>(subtitleFinder);
+      // For large screens (>800px), subtitle size should be 28.0
+      expect(subtitleWidget.style?.fontSize, 28.0);
       
       resetTestWindow(tester);
     });
@@ -249,18 +297,15 @@ void main() {
       final logoFinder = find.byType(LogoPlaceholder);
       final logoWidget = tester.widget<LogoPlaceholder>(logoFinder);
       
-      // Logo should be centered using Positioned with left calculation
       final logoElement = tester.element(logoFinder);
       final logoRenderBox = logoElement.renderObject as RenderBox;
       final logoPosition = logoRenderBox.localToGlobal(Offset.zero);
       
-      // Logo should be centered (approximately)
       final screenWidth = tester.binding.window.physicalSize.width / 
                            tester.binding.window.devicePixelRatio;
       final logoWidth = logoWidget.size;
       final expectedLeft = (screenWidth - logoWidth) / 2;
       
-      // Allow some tolerance due to pixel rounding
       expect(logoPosition.dx, greaterThan(expectedLeft - 10));
       expect(logoPosition.dx, lessThan(expectedLeft + 10));
       
@@ -285,13 +330,11 @@ void main() {
       final loadingBarRenderBox = loadingBarElement.renderObject as RenderBox;
       final loadingBarPosition = loadingBarRenderBox.localToGlobal(Offset.zero);
       
-      // Loading bar should be centered (approximately)
       final screenWidth = tester.binding.window.physicalSize.width / 
                            tester.binding.window.devicePixelRatio;
       final loadingBar = tester.widget<LoadingBar>(loadingBarFinder);
       final expectedLeft = (screenWidth - loadingBar.width) / 2;
       
-      // Allow some tolerance due to pixel rounding
       expect(loadingBarPosition.dx, greaterThan(expectedLeft - 10));
       expect(loadingBarPosition.dx, lessThan(expectedLeft + 10));
       
@@ -331,7 +374,6 @@ void main() {
       await tester.pumpAndSettle();
 
       final logoWidget = tester.widget<LogoPlaceholder>(find.byType(LogoPlaceholder));
-      // Logo size should be between 100 and 300
       expect(logoWidget.size, greaterThanOrEqualTo(100.0));
       expect(logoWidget.size, lessThanOrEqualTo(300.0));
       
