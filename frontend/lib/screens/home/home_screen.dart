@@ -12,8 +12,8 @@ import '../chat/inbox_screen.dart';
 import '../tasks/my_tasks_screen.dart';
 import '../profile/profile_screen.dart';
 import '../tasks/task_detail_screen.dart';
-import '../../services/task_service.dart';
-import '../../services/profile_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
 
 
@@ -52,20 +52,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class HomeContent extends StatefulWidget {
+class HomeContent extends ConsumerStatefulWidget {
   const HomeContent({super.key});
 
   @override
-  State<HomeContent> createState() => _HomeContentState();
+  ConsumerState<HomeContent> createState() => _HomeContentState();
 }
 
-class _HomeContentState extends State<HomeContent> {
+class _HomeContentState extends ConsumerState<HomeContent> {
   List<Task> _nearbyTasks = [];
   List<Task> _availableTasks = [];
    
   User? _currentUser;
-  final TaskService _taskService = TaskService();
-  final UserProfileService _profileService = UserProfileService();
   double _trustScore = 0.0;
   bool _isLoadingStats = true;
   int _helpsGiven = 0;
@@ -90,8 +88,10 @@ class _HomeContentState extends State<HomeContent> {
       return;
     }
     try {
-      final tasks = await _taskService.getTasksByUserId(userId);
-      final profile = await _profileService.getMyProfile();
+      final taskService = ref.read(taskServiceProvider);
+      final tasks = await taskService.getTasksByUserId(userId);
+      final profileService = ref.read(profileServiceProvider); 
+      final profile = await profileService.getMyProfile();
       if (!mounted) return;
       setState(() {
         _nearbyTasks = tasks;
@@ -99,7 +99,7 @@ class _HomeContentState extends State<HomeContent> {
         _trustScore = profile.trustScore ?? 0.0;
         _isLoadingStats = false;
       });
-      final available = await _taskService.getAvailableTasks(userId);
+      final available = await taskService.getAvailableTasks(userId);
       if (mounted) setState(() => _availableTasks = available);
     } catch (_) {
       if (!mounted) return;

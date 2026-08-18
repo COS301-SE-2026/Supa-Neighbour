@@ -62,9 +62,7 @@ class HelperAnalyticsControllerTest {
         helperAnalytics.setUserid(user);
         helperAnalytics.setTasktypeid(taskType);
         helperAnalytics.setLocationid(location);
-        helperAnalytics.setCompatibilityid(compatibility);
         helperAnalytics.setAverageRating(4.5f);
-        helperAnalytics.setAverageGivingRating(4.0f);
     }
 
     @Test
@@ -107,8 +105,7 @@ class HelperAnalyticsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.helperAnalyticsid").value("HA1"))
-                .andExpect(jsonPath("$.averageGivingRating").value(4.0));
+                .andExpect(jsonPath("$.helperAnalyticsid").value("HA1"));
 
         verify(helperAnalyticsService, times(1)).getHelperAnalyticsById("HA1");
     }
@@ -147,7 +144,6 @@ class HelperAnalyticsControllerTest {
         HelperAnalytics updatedAnalytics = new HelperAnalytics();
         updatedAnalytics.setHelperAnalyticsid("HA1");
         updatedAnalytics.setAverageRating(4.9f);
-        updatedAnalytics.setAverageGivingRating(4.8f);
 
         when(helperAnalyticsService.getHelperAnalyticsById("HA1")).thenReturn(helperAnalytics);
         when(helperAnalyticsService.updateHelperAnalytics(eq("HA1"), any(HelperAnalytics.class))).thenReturn(updatedAnalytics);
@@ -157,8 +153,7 @@ class HelperAnalyticsControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updatedAnalytics)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.averageRating").value(4.9))
-                .andExpect(jsonPath("$.averageGivingRating").value(4.8));
+                .andExpect(jsonPath("$.averageRating").value(4.9));
 
         verify(helperAnalyticsService, times(1)).getHelperAnalyticsById("HA1");
         verify(helperAnalyticsService, times(1)).updateHelperAnalytics(eq("HA1"), any(HelperAnalytics.class));

@@ -5,7 +5,32 @@ import 'package:image_picker/image_picker.dart';
 import '../models/bulletin_post_model.dart';
 import '../models/bulletin_comment_model.dart';
 
-class BulletinService {
+// INTERFACE (Contract)
+abstract class IBulletinService {
+  Future<List<BulletinPost>> getPosts({
+    String? category,
+    String? search,
+    int page = 1,
+    int limit = 20,
+  });
+  
+  Future<BulletinPost> getPost(int postId);
+  Future<List<BulletinComment>> getComments(int postId);
+  Future<String?> uploadImage(XFile imageFile);
+  
+  Future<void> createPost({
+    required String postContent,
+    required String category,
+    String? mediaUrl,
+  });
+  
+  Future<void> deletePost(int postId);
+  Future<BulletinComment> addComment(int postId, String content);
+  Future<void> addHelpful(int postId);
+  Future<void> removeHelpful(int postId);
+}
+
+class BulletinService implements IBulletinService {
   final Dio _dio;
 
   BulletinService({Dio? dio})
@@ -31,6 +56,7 @@ class BulletinService {
   }
 
   // Get post from /api/bulletin/posts with optional category and search params
+  @override
   Future<List<BulletinPost>> getPosts({
     String? category,
     String? search,
@@ -57,6 +83,7 @@ class BulletinService {
   }
 
   // Get a single post by id from /api/bulletin/posts/{postId}
+  @override
   Future<BulletinPost> getPost(int postId) async {
     final token = await _getToken();
     final currentUserId = await _getCurrentUserId();
@@ -68,6 +95,7 @@ class BulletinService {
   }
 
   // Get comments for a post from /api/bulletin/posts/{postId}
+  @override
   Future<List<BulletinComment>> getComments(int postId) async {
     final token = await _getToken();
     final res = await _dio.get(
@@ -82,6 +110,7 @@ class BulletinService {
   }
 
   // Upload an image to /api/upload/image and return the image URL
+  @override
   Future<String?> uploadImage(XFile imageFile) async {
     final token = await _getToken();
     final bytes = await imageFile.readAsBytes();
@@ -100,6 +129,7 @@ class BulletinService {
   }
 
   // Create a new post to /api/bulletin/posts
+  @override
   Future<void> createPost({
     required String postContent,
     required String category,
@@ -118,6 +148,7 @@ class BulletinService {
   }
 
   // Delete a post by id from /api/bulletin/posts/{postId}
+  @override
   Future<void> deletePost(int postId) async {
     final token = await _getToken();
     await _dio.delete(
@@ -127,6 +158,7 @@ class BulletinService {
   }
 
   // Add a comment to a post by id from /api/comments/bulletin/{postId}
+  @override
   Future<BulletinComment> addComment(int postId, String content) async {
     final token = await _getToken();
     final res = await _dio.post(
@@ -147,6 +179,7 @@ class BulletinService {
   }
 
   // Add a helpful (like) to a post by id from /api/comments/bulletin/posts/{postId}/like
+  @override
   Future<void> addHelpful(int postId) async {
     final token = await _getToken();
     await _dio.post(
@@ -156,6 +189,7 @@ class BulletinService {
   }
 
   // Delete a comment by id from /api/comments/bulletin/{commentId}
+  @override
   Future<void> removeHelpful(int postId) async {
     final token = await _getToken();
     await _dio.delete(

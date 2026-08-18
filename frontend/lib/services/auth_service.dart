@@ -5,7 +5,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/address_model.dart';
 
 
-class AuthService {
+// INTERFACE (Contract)
+abstract class IAuthService {
+  Future<User> login(String email, String password);
+  Future<User> loginWithToken(String idToken);
+  Future<void> logout();
+  Future<void> deleteAccount();
+  Future<User> register({
+    required String idToken,
+    required String firstName,
+    required String lastName,
+    required String password,
+    required String phoneNumber,
+    required String dateOfBirth,
+    required String gender,
+    required String username,
+    required String street,
+    required String town,
+    required int zip,
+    String userType = 'user',
+  });
+}
+
+
+class AuthService implements IAuthService {
   final Dio _dio;
   final fb.FirebaseAuth _firebaseAuth;
 
@@ -19,7 +42,7 @@ class AuthService {
             )),
         _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
 
- 
+  @override
   Future<User> login(String email, String password) async {
     // sign in with fb
     final fb.UserCredential credential = await _firebaseAuth
@@ -47,7 +70,7 @@ class AuthService {
     throw Exception('Login failed: unexpected response from server.');
   }
 
-
+@override
 Future<User> loginWithToken(String idToken) async {
   final Response<Map<String, dynamic>> response = await _dio.post(
     '/api/auth/login',
@@ -63,7 +86,7 @@ Future<User> loginWithToken(String idToken) async {
   throw Exception('Auto-login failed: unexpected response from server.');
 }
 
-
+ @override
   Future<void> logout() async {
     try{
       final String? idToken = await _firebaseAuth.currentUser?.getIdToken();
@@ -104,7 +127,7 @@ Future<User> loginWithToken(String idToken) async {
   }
 
 
-  
+  @override
   Future<User> register({
     required String idToken,
     required String firstName,
@@ -148,7 +171,8 @@ Future<User> loginWithToken(String idToken) async {
 
     throw Exception('Registration failed: unexpected response from server.');
   }
-
+  
+  @override
   Future<void> deleteAccount() async{
     final String? idToken = await  _firebaseAuth.currentUser?.getIdToken(false);
 

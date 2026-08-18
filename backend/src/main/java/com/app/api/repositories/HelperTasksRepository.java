@@ -88,87 +88,117 @@ public class HelperTasksRepository {
     }
 
     /**
-     * Retrieves assigned and completed tasks for the specified helper.
+     * Retrieves tasks that a helper has accepted and been assigned to.
      *
      * <p>
-     * Only tasks that have progressed beyond the {@code open} state are
-     * returned. Results may optionally be filtered by task status and
-     * paginated.
+     * Returns tasks where the helper's invitation has been accepted and
+     * the underlying task has moved to the {@code assigned} state.
      * </p>
      *
-     * @param helperId     the identifier of the helper
-     * @param statusFilter an optional task status filter
-     * @param limit        the maximum number of task records to return
-     * @param offset       the number of task records to skip for pagination
-     * @return a list of assigned task records matching the supplied criteria
+     * @param helperId the identifier of the helper
+     * @param limit    the maximum number of task records to return
+     * @param offset   the number of task records to skip for pagination
+     * @return a list of accepted/assigned task records for the helper
      */
     @SuppressWarnings("unchecked")
-    public List<Object[]> findAssignedTasks(int helperId, String statusFilter,
-            int limit, int offset) {
-String statusClause = statusFilter != null
-        ? " AND ti.status = :status "
-        : " AND ti.status IN ('assigned', 'in_progress', 'pending_approval', 'completed', 'cancelled') ";
-
-String sql = """
-        SELECT
-            ti.task_id,
-            tt.type_description AS task_type,
-            ti.status,
-            ti.start_date,
-            ti.end_date,
-            l.neighbourhood_name,
-            tt.xp_worth,
-            ti.admin_review,
-            u.user_name || ' ' || u.user_surname AS requester_name
-        FROM task_invoice_table ti
-        JOIN task_type_table tt ON tt.task_type_id = ti.task_type_id
-        JOIN location_table l ON l.location_id = ti.location_id
-        LEFT JOIN dependent_table d ON d.dependent_id = ti.dependent_id
-        LEFT JOIN user_table u ON u.user_id = d.user_id
-        WHERE ti.helper_id = :helperId
-        """ + statusClause + """
-        ORDER BY ti.start_date DESC
-        LIMIT :limit OFFSET :offset
+    public List<Object[]> findAcceptedTasks(int helperId,int limit, int offset) {
+        String sql = """
+                SELECT
+                    tit.task_id,
+                    tt.type_description   AS task_type,
+                    ti.status,
+                    tit.start_date,
+                    tit.end_date,
+                    l.neighbourhood_name,
+                    tt.xp_worth,
+                    tit.admin_review,
+                    u.user_name || ' ' || u.user_surname AS requester_name
+                FROM task_invitation_table  ti
+                JOIN task_invoice_table     tit ON tit.task_id     = ti.task_id
+                JOIN task_type_table        tt  ON tt.task_type_id = tit.task_type_id
+                LEFT JOIN location_table         l   ON l.location_id   = tit.location_id
+                LEFT JOIN dependent_table   d   ON d.dependent_id  = tit.dependent_id
+                LEFT JOIN user_table        u   ON u.user_id        = d.user_id
+                WHERE ti.helper_id  = :helperId
+                AND ti.status     = 'Accepted'
+                AND tit.status    = 'assigned'
+                ORDER BY tit.start_date DESC
+                LIMIT :limit OFFSET :offset
         """;
         var query = em.createNativeQuery(sql)
-                .setParameter("helperId", helperId)
-                .setParameter("limit", limit)
-                .setParameter("offset", offset);
-
-        if (statusFilter != null) {
-            query.setParameter("status", statusFilter);
-        }
+                    .setParameter("helperId", helperId)
+                    .setParameter("limit", limit)
+                    .setParameter("offset", offset);
 
         return query.getResultList();
     }
 
     /**
-     * Counts the total number of tasks associated with a helper.
+     * Counts tasks that a helper has accepted and been assigned to.
+     *
+     * @param helperId the identifier of the helper
+     * @return the total number of accepted/assigned tasks for the helper
+     */
+    public int countAcceptedTasks(int helperId) {
+        String sql = """
+            SELECT COUNT(*)
+            FROM task_invitation_table  ti
+            JOIN task_invoice_table     tit ON tit.task_id = ti.task_id
+            WHERE ti.helper_id  = :helperId
+            AND ti.status     = 'Accepted'
+            AND tit.status    = 'assigned'
+            """;
+        var query = em.createNativeQuery(sql).setParameter("helperId", helperId);
+        return ((Number) query.getSingleResult()).intValue();
+    }
+
+    /**
+     * Retrieves completed tasks for the specified helper.
      *
      * <p>
-     * The count includes both outstanding task invitations and
-     * assigned tasks.
+     * Only tasks where the helper's invitation was accepted and the
+     * underlying task has reached the {@code completed} state are
+     * returned. Results are paginated.
      * </p>
      *
      * @param helperId the identifier of the helper
-     * @return the total number of tasks associated with the helper
+     * @param limit    the maximum number of task records to return
+     * @param offset   the number of task records to skip for pagination
+     * @return a list of completed task records for the helper
      */
-    public int countAllTasks(int helperId) {
+    public List<Object[]> findCompletedTasks(int helperId, int limit, int offset) {
         String sql = """
-                SELECT COUNT(*) FROM (
-                    SELECT ti.task_id
-                    FROM task_invitation_table ti
-                    JOIN task_invoice_table tit ON tit.task_id = ti.task_id
-                    WHERE ti.helper_id = :helperId
-                      AND tit.status   = 'open'
-                    UNION ALL
-                    SELECT task_id
-                    FROM task_invoice_table
-                    WHERE helper_id = :helperId
-                      AND status   != 'open'
-                ) combined
+                SELECT
+                    tit.task_id,
+                    tt.type_description   AS task_type,
+                    ti.status,
+                    tit.start_date,
+                    tit.end_date,
+                    l.neighbourhood_name,
+                    tt.xp_worth,
+                    tit.admin_review,
+                    u.user_name || ' ' || u.user_surname AS requester_name
+                FROM task_invitation_table  ti
+                JOIN task_invoice_table     tit ON tit.task_id     = ti.task_id
+                JOIN task_type_table        tt  ON tt.task_type_id = tit.task_type_id
+                JOIN location_table         l   ON l.location_id   = tit.location_id
+                LEFT JOIN dependent_table   d   ON d.dependent_id  = tit.dependent_id
+                LEFT JOIN user_table        u   ON u.user_id        = d.user_id
+                WHERE ti.helper_id  = :helperId
+                AND ti.status     = 'Accepted'
+                AND tit.status    = 'completed'
+                ORDER BY tit.start_date DESC
+                LIMIT :limit OFFSET :offset
                 """;
 
-        return ((Number) em.createNativeQuery(sql).setParameter("helperId", helperId).getSingleResult()).intValue();
+        var query = em.createNativeQuery(sql)
+                .setParameter("helperId", helperId)
+                .setParameter("limit", limit)
+                .setParameter("offset", offset);
+
+        return query.getResultList();
     }
+
+
+
 }

@@ -4,8 +4,42 @@ import '../models/task_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
+// INTERFACE (Contract)
+abstract class ITaskService {
+  Future<List<Task>> getTasksByUserId(int userId);
+  Future<List<Task>> getMyHelperTasks({
+    String? statusFilter,
+    int limit = 50,
+    int offset = 0,
+  });
+  Future<Task> createTask({
+    required int dependentId,
+    required int taskTypeId,
+    required DateTime startDate,
+    required bool isImmediate,
+    required bool needsSpecialist,
+  });
+  Future<Task> updateTask({
+    required int taskId,
+    int? taskTypeId,
+    DateTime? startDate,
+    String? adminReview,
+    String? status,
+  });
+  Future<void> deleteTask(int taskId);
+  Future<Map<String, dynamic>> getUserById(int userId);
+  Future<int?> getDependentIdForUser(int userId);
+  Future<int?> getHelperIdForUser(int userId);
+  Future<List<Map<String, dynamic>>> getInvitationsForHelper(int helperId);
+  Future<void> acceptTaskInvitation(int taskId);
+  Future<void> declineTaskInvitation(int taskId);
+  Future<List<Task>> getAvailableTasks(int currentUserId);
+  Future<void> matchHelpersForTask(int taskId);
+}
+
+
 /// responsible for all task-related API calls.
-class TaskService {
+class TaskService implements ITaskService {
   final Dio _dio;
 
   TaskService({Dio? dio})
@@ -23,6 +57,7 @@ class TaskService {
   }
 
   /// GET /users/{userId}/tasks - tasks where the user is the dependent.
+  @override
   Future<List<Task>> getTasksByUserId(int userId) async {
     try {
       final token = await _getToken();
@@ -44,6 +79,7 @@ class TaskService {
   }
 
   /// GET /api/helpers/me/tasks - tasks where the auth user is the helper.
+  @override
   Future<List<Task>> getMyHelperTasks({
     String? statusFilter,
     int limit = 50,
@@ -76,6 +112,7 @@ class TaskService {
   }
 
   /// POST /tasks/create
+  @override
   Future<Task> createTask({
     required int dependentId,
     required int taskTypeId,
@@ -105,6 +142,7 @@ class TaskService {
   }
 
   /// PUT /tasks/{taskId}
+  @override
   Future<Task> updateTask({
     required int taskId,
     int? taskTypeId,
@@ -136,6 +174,7 @@ class TaskService {
   }
 
   /// DELETE /tasks/{taskId}
+  @override
   Future<void> deleteTask(int taskId) async {
     try {
       final token = await _getToken();
@@ -151,6 +190,7 @@ class TaskService {
   }
 
   /// GET /api/users/{id} - fetch a user's profile by id.
+  @override
   Future<Map<String, dynamic>> getUserById(int userId) async {
     try {
       final token = await _getToken();
@@ -169,7 +209,7 @@ class TaskService {
   
   
 
-
+@override
 Future<int?> getDependentIdForUser(int userId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -180,7 +220,7 @@ Future<int?> getDependentIdForUser(int userId) async {
       return null;
     }
   }
-
+  @override
   Future<int?> getHelperIdForUser(int userId) async {
     try {
       final token = await _getToken();
@@ -205,6 +245,7 @@ Future<int?> getDependentIdForUser(int userId) async {
     }
   }
 
+ @override
   Future<List<Map<String, dynamic>>> getInvitationsForHelper(int helperId) async {
     try {
       final token = await _getToken();
@@ -230,7 +271,8 @@ Future<int?> getDependentIdForUser(int userId) async {
       throw Exception("Couldn't load invitations: ${e.message}");
     }
   }
-
+  
+  @override
   Future<void> acceptTaskInvitation(int taskId) async {
     try {
       final token = await _getToken();
@@ -245,7 +287,7 @@ Future<int?> getDependentIdForUser(int userId) async {
     }
   }
 
-  
+@override
 Future<void> declineTaskInvitation(int taskId) async {
    try {
       final token = await _getToken();
@@ -260,6 +302,7 @@ Future<void> declineTaskInvitation(int taskId) async {
     }
   }
 
+ @override
   Future<List<Task>> getAvailableTasks(int currentUserId) async {
     try {
       final token = await _getToken();
@@ -280,6 +323,8 @@ Future<void> declineTaskInvitation(int taskId) async {
     }
   }
 
+
+ @override
   Future<void> matchHelpersForTask(int taskId) async {
     try {
       final token = await _getToken();

@@ -5,14 +5,14 @@ import '../../constants/app_colors.dart';
 import '../../models/user_model.dart';
 import '../../models/review_model.dart';
 import '../../models/helper_profile_response.dart';
-import '../../services/helper_profile_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class HelperProfilePreviewScreen extends StatefulWidget {
+class HelperProfilePreviewScreen extends ConsumerStatefulWidget {
   final User? helper;
   final int? helperId;
   final String? taskId;
   final bool showRequestButton;
-
   const HelperProfilePreviewScreen({
     super.key,
     this.helper,
@@ -22,10 +22,10 @@ class HelperProfilePreviewScreen extends StatefulWidget {
   });
 
   @override
-  State<HelperProfilePreviewScreen> createState() => _HelperProfilePreviewScreenState();
+  ConsumerState<HelperProfilePreviewScreen> createState() => _HelperProfilePreviewScreenState();
 }
 
-class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen> {
+class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePreviewScreen> {
   bool _isLoading = false;
   bool _isInviting = false;
   bool _isInvited = false;
@@ -36,8 +36,6 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
   List<Review> _reviews = [];
   bool _isAvailable = true;
   User? _helperUser;
-
-  final HelperProfileService _helperProfileService = HelperProfileService();
 
   @override
   void initState() {
@@ -90,7 +88,8 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
     });
 
     try {
-      final data = await _helperProfileService.getHelperProfile(widget.helperId!);
+      final helperProfileService = ref.read(helperProfileServiceProvider);
+      final data = await helperProfileService.getHelperProfile(widget.helperId!);
       setState(() {
         _profileData = data;
         _isLoading = false;
@@ -170,7 +169,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
       _isInviting = true;
     });
 
-    //Call API to invite helper
+    // Call API to invite helper
     await Future.delayed(const Duration(seconds: 1));
 
     if (mounted) {
@@ -321,7 +320,7 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
           IconButton(
             icon: Icon(Icons.more_vert, color: AppColors.charcoal(context)),
             onPressed: () {
-
+              // TODO: Add more options
             },
           ),
         ],
@@ -341,18 +340,16 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
             const SizedBox(height: 24),
             _buildReviewsSection(),
             const SizedBox(height: 24),
-            // Request Help Button only shows in Available helpers screen, not leaderboard
-          if (widget.showRequestButton)
-            SizedBox(
-              width: double.infinity,
-              child: CustomButton(
-                text: _isInvited ? 'Requested ✓' : 'Request Help',
-                onTap: _isInvited ? null : _inviteHelper,
-                isLoading: _isInviting,
-                isDisabled: _isInvited,
+            if (widget.showRequestButton)
+              SizedBox(
+                width: double.infinity,
+                child: CustomButton(
+                  text: _isInvited ? 'Requested ✓' : 'Request Help',
+                  onTap: _isInvited ? null : _inviteHelper,
+                  isLoading: _isInviting,
+                  isDisabled: _isInvited,
+                ),
               ),
-            ),
-
             const SizedBox(height: 32),
           ],
         ),
@@ -597,7 +594,9 @@ class _HelperProfilePreviewScreenState extends State<HelperProfilePreviewScreen>
               ),
             ),
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                // TODO: Navigate to all reviews
+              },
               child: Text(
                 'See All',
                 style: GoogleFonts.openSans(

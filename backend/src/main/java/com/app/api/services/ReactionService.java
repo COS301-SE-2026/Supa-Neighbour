@@ -7,18 +7,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+
 import com.app.api.models.Posts;
 import com.app.api.models.Reaction;
+import com.app.api.dtos.CommentReactionResponseDTO;
 import com.app.api.models.Comments;
 import com.app.api.repositories.CommentsRepository;
 import com.app.api.repositories.ReactionRepository;
 import com.app.api.dtos.ReactionResponseDTO;
-import com.app.api.dtos.CommentReactionResponseDTO;
 import com.app.api.dtos.ReactionRemovedResponseDTO;
 import com.app.api.repositories.UserRepository;
 import com.app.api.repositories.PostsRepository;
-import java.sql.Timestamp;
-import java.time.Instant;
 
 /**
  * Service layer for managing like operations.
@@ -187,8 +188,6 @@ public class ReactionService {
         return new CommentReactionResponseDTO("Reaction added", commentId, "dislike", dislikeCount);
     }
 
-    
-
     /**
      * Saves a reaction while handling duplicate reaction attempts.
      * <p>
@@ -197,13 +196,13 @@ public class ReactionService {
      * {@link ResponseStatusException} with a {@code 409 CONFLICT} status is thrown.
      * </p>
      *
-     * @param reaction the reaction to save
+     * @param reaction        the reaction to save
      * @param conflictMessage the error message returned if the reaction already
      *                        exists
      * @throws ResponseStatusException if the reaction cannot be saved due to a
      *                                 data integrity violation
      */
-    private void saveReactionSafely(Reaction reaction, String conflictMessage){
+    private void saveReactionSafely(Reaction reaction, String conflictMessage) {
         try {
             reactionRepository.save(reaction);
         } catch (DataIntegrityViolationException e) {
@@ -255,25 +254,49 @@ public class ReactionService {
      * @throws ResponseStatusException if the post does not exist or the user has
      *                                 already reacted to the post
      */
-    public CommentReactionResponseDTO addHelpfulReactionToPost(int postId, int userId) {
-        Posts post = postsRepository.findById(postId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+/**
+ * Adds a helpful reaction to the specified post.
+ *
+ * @param postId the identifier of the post
+ * @param userId the identifier of the authenticated user
+ * @return a response containing the created reaction and updated like count
+ * @throws ResponseStatusException if the post does not exist or the user
+ *         has already reacted to the post
+ */
+public CommentReactionResponseDTO addHelpfulReactionToPost(
+        int postId,
+        int userId) {
 
-        if (reactionRepository.countByUserAndPost(userId, postId) > 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already reacted to this post");
-        }
+    Posts post = postsRepository.findById(postId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Post not found"));
 
-        Reaction reaction = new Reaction();
-        reaction.setPostid(post);
-        reaction.setUserid(userRepository.getReferenceById(userId));
-        reaction.setReactionType("like");
-        reaction.setCreatedAt(Timestamp.from(Instant.now()));
-
-        saveReactionSafely(reaction, "You have already reacted to this post");
-
-        long helpfulCount = reactionRepository.countByUserAndPost(userId,postId); // see note below
-        return new CommentReactionResponseDTO("Reaction added", postId, "like", helpfulCount);
+    if (reactionRepository.countByUserAndPost(userId, postId) > 0) {
+        throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "You have already reacted to this post");
     }
+
+    Reaction reaction = new Reaction();
+
+    reaction.setPostid(post);
+    reaction.setUserid(userRepository.getReferenceById(userId));
+    reaction.setReactionType("like");
+    reaction.setCreatedAt(Timestamp.from(Instant.now()));
+
+    saveReactionSafely(
+            reaction,
+            "You have already reacted to this post");
+
+    long helpfulCount = reactionRepository.countLiked(postId);
+
+    return new CommentReactionResponseDTO(
+            "Reaction added",
+            postId,
+            "like",
+            helpfulCount);
+}
 
     /**
      * Removes a user's helpful (like) reaction from a post.
@@ -284,14 +307,31 @@ public class ReactionService {
      *         reaction count
      * @throws ResponseStatusException if the helpful reaction does not exist
      */
-    public ReactionRemovedResponseDTO removeHelpfulReaction(int postId, int userId) {
-        Reaction reaction = reactionRepository.findByUserAndPostAndType(userId, postId, "like")
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "no helpful reaction to remove"));
+    /**
+     * Removes a user's helpful (like) reaction from a post.
+     *
+     * @param postId the identifier of the post
+     * @param userId the identifier of the authenticated user
+     * @return a response confirming the reaction removal and the updated helpful
+     *         reaction count
+     * @throws ResponseStatusException if the helpful reaction does not exist
+     */
+    public ReactionRemovedResponseDTO removeHelpfulReaction(int postId,int userId) {
 
+        Reaction reaction = reactionRepository.findByUserAndPostAndType(
+                userId,
+                postId,
+                "like")
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "no helpful reaction to remove"));
         reactionRepository.delete(reaction);
 
-        long count = reactionRepository.countByUserAndComment(userId,postId);
+        long count = reactionRepository.countLiked(postId);
 
-        return new ReactionRemovedResponseDTO("Reaction removed", postId, count);
+        return new ReactionRemovedResponseDTO(
+                "Reaction removed",
+                postId,
+                count);
     }
 }

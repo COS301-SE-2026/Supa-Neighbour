@@ -1,13 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../services/task_service.dart';
 import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-
-
-class TaskCompletionPage extends StatefulWidget {
+class TaskCompletionPage extends ConsumerStatefulWidget {
   final String taskId;
   final String taskTitle;
   final String residentName;
@@ -24,16 +23,13 @@ class TaskCompletionPage extends StatefulWidget {
   });
 
   @override
-  State<TaskCompletionPage> createState() => _TaskCompletionPageState();
+  ConsumerState<TaskCompletionPage> createState() => _TaskCompletionPageState();
 }
 
-class _TaskCompletionPageState extends State<TaskCompletionPage> {
+class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   final TextEditingController _noteController = TextEditingController();
   final List<String> _photoPaths = [];
   bool _isSubmitting = false;
-
-  final TaskService _taskService = TaskService();
-
 
   @override
   void dispose() {
@@ -85,7 +81,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
             Text(
               'You will earn +${widget.xpReward} XP upon resident confirmation.',
               style: GoogleFonts.openSans(
-                // CHANGE: Use AppColors.citrusYellow
                 color: AppColors.citrusYellow(context),
                 fontWeight: FontWeight.bold,
               ),
@@ -105,7 +100,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              // CHANGE: Use AppColors.primaryTeal
               backgroundColor: AppColors.primaryTeal(context),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
@@ -128,57 +122,53 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
     }
   }
 
-Future<void> _submitCompletion() async {
-  //// semi complete
-  setState(() => _isSubmitting = true);
-  try {
-    await _taskService.updateTask(
-      taskId: int.parse(widget.taskId),
-      status: 'pending_approval',
-      adminReview: _noteController.text.isNotEmpty
-          ? _noteController.text
-          : null,
-    );
-
-    Task.updateTaskStatus(widget.taskId, 'pending_approval');
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Task submitted! Waiting for resident confirmation.'),
-          // CHANGE: Use AppColors.primaryTeal
-          backgroundColor: AppColors.primaryTeal(context),
-        ),
+  Future<void> _submitCompletion() async {
+    setState(() => _isSubmitting = true);
+    try {
+      final taskService = ref.read(taskServiceProvider);
+      await taskService.updateTask(
+        taskId: int.parse(widget.taskId),
+        status: 'pending_approval',
+        adminReview: _noteController.text.isNotEmpty
+            ? _noteController.text
+            : null,
       );
-      Navigator.pop(context);
+
+      Task.updateTaskStatus(widget.taskId, 'pending_approval');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Task submitted! Waiting for resident confirmation.'),
+            backgroundColor: AppColors.primaryTeal(context),
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
-  } on Exception catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  } finally {
-    if (mounted) setState(() => _isSubmitting = false);
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      // CHANGE: Use AppColors.background
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            // CHANGE: Use AppColors.charcoal
             color: AppColors.charcoal(context),
           ),
           onPressed: () => Navigator.pop(context),
@@ -187,11 +177,9 @@ Future<void> _submitCompletion() async {
           'Task Completion',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
-            // CHANGE: Use AppColors.charcoal
             color: AppColors.charcoal(context),
           ),
         ),
-        // CHANGE: Use AppColors.background
         backgroundColor: AppColors.background(context),
         elevation: 0,
         foregroundColor: AppColors.charcoal(context),
@@ -206,7 +194,6 @@ Future<void> _submitCompletion() async {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                // CHANGE: Use AppColors.surfaceGrey
                 color: isDarkMode ? AppColors.surfaceGrey(context) : AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
@@ -227,7 +214,6 @@ Future<void> _submitCompletion() async {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      // CHANGE: Use AppColors.charcoal
                       color: AppColors.charcoal(context),
                     ),
                   ),
@@ -236,7 +222,6 @@ Future<void> _submitCompletion() async {
                     'Resident: ${widget.residentName}',
                     style: GoogleFonts.openSans(
                       fontSize: 14,
-                      // CHANGE: Use AppColors.charcoal
                       color: AppColors.charcoal(context),
                     ),
                   ),
@@ -245,7 +230,6 @@ Future<void> _submitCompletion() async {
                     'Due: ${widget.dueDate}',
                     style: GoogleFonts.openSans(
                       fontSize: 14,
-                      // CHANGE: Use AppColors.charcoal
                       color: AppColors.charcoal(context),
                     ),
                   ),
@@ -255,7 +239,6 @@ Future<void> _submitCompletion() async {
                     style: GoogleFonts.openSans(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      // CHANGE: Use AppColors.citrusYellow
                       color: AppColors.citrusYellow(context),
                     ),
                   ),
@@ -271,7 +254,6 @@ Future<void> _submitCompletion() async {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                // CHANGE: Use AppColors.charcoal
                 color: AppColors.charcoal(context),
               ),
             ),
@@ -280,7 +262,6 @@ Future<void> _submitCompletion() async {
               'Add photos to show your work (optional)',
               style: GoogleFonts.openSans(
                 fontSize: 12,
-                // CHANGE: Use AppColors.textGrey
                 color: AppColors.textGrey(context),
               ),
             ),
@@ -303,7 +284,6 @@ Future<void> _submitCompletion() async {
                         margin: const EdgeInsets.only(right: 12),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            // CHANGE: Use AppColors.primaryTeal
                             color: AppColors.primaryTeal(context),
                             width: 2,
                           ),
@@ -315,7 +295,6 @@ Future<void> _submitCompletion() async {
                           children: [
                             Icon(
                               Icons.add,
-                              // CHANGE: Use AppColors.primaryTeal
                               color: AppColors.primaryTeal(context),
                               size: 32,
                             ),
@@ -324,7 +303,6 @@ Future<void> _submitCompletion() async {
                               'Add Photo',
                               style: GoogleFonts.openSans(
                                 fontSize: 10,
-                                // CHANGE: Use AppColors.primaryTeal
                                 color: AppColors.primaryTeal(context),
                               ),
                             ),
@@ -391,7 +369,6 @@ Future<void> _submitCompletion() async {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                // CHANGE: Use AppColors.charcoal
                 color: AppColors.charcoal(context),
               ),
             ),
@@ -402,20 +379,17 @@ Future<void> _submitCompletion() async {
               decoration: InputDecoration(
                 hintText: 'Tell the resident what you did...',
                 hintStyle: GoogleFonts.openSans(
-                  // CHANGE: Use AppColors.textGrey
                   color: AppColors.textGrey(context),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    // CHANGE: Use AppColors.surfaceGrey
                     color: AppColors.surfaceGrey(context),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    // CHANGE: Use AppColors.primaryTeal
                     color: AppColors.primaryTeal(context),
                     width: 2,
                   ),
@@ -436,7 +410,6 @@ Future<void> _submitCompletion() async {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _showCompletionDialog,
                 style: ElevatedButton.styleFrom(
-                  // CHANGE: Use AppColors.primaryTeal
                   backgroundColor: AppColors.primaryTeal(context),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -473,7 +446,6 @@ Future<void> _submitCompletion() async {
                 'Resident will need to confirm before XP is awarded',
                 style: GoogleFonts.openSans(
                   fontSize: 12,
-                  // CHANGE: Use AppColors.textGrey
                   color: AppColors.textGrey(context),
                 ),
               ),

@@ -1,6 +1,7 @@
 package com.app.api.unit.controllers;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,15 +32,19 @@ import com.app.api.controllers.AuthController;
 import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
 import com.app.api.models.Badges;
+import com.app.api.models.HelperAnalytics;
 import com.app.api.models.Ratings;
 import com.app.api.models.Settings;
 import com.app.api.models.User;
+import com.app.api.models.UserAchievement;
 import com.app.api.repositories.AddressRepository;
 import com.app.api.repositories.BadgesRepository;
 import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.HelperAnalyticsRepository;
 import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.RatingsRepository;
 import com.app.api.repositories.SettingsRepository;
+import com.app.api.repositories.UserAchievementRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.security.AuthenticatedUser;
 import com.app.api.services.FirebaseAuthService;
@@ -60,12 +65,6 @@ class AuthControllerTest {
     private AddressRepository addressRepository;
 
     @Mock
-    private BadgesRepository badgeRepository;
-
-    @Mock
-    private RatingsRepository ratingRepository;
-
-    @Mock
     private SettingsRepository settingsRepository;
 
     @Mock
@@ -73,6 +72,18 @@ class AuthControllerTest {
 
     @Mock
     private DependentRepository dependentRepository;
+
+    @Mock
+    private UserAchievementRepository userAchievementRepository;
+
+    @Mock
+    private HelperAnalyticsRepository helperAnalyticsRepository;
+
+    @Mock
+    private BadgesRepository badgesRepository;
+
+    @Mock
+    private RatingsRepository ratingsRepository;
 
     @InjectMocks
     private AuthController authController;
@@ -82,6 +93,7 @@ class AuthControllerTest {
 
     private static final String BEARER_TOKEN = "Bearer valid-token";
     private static final String RAW_TOKEN = "valid-token";
+    private static final int DEFAULT_RATING_ID = 6;
 
     @BeforeEach
     void setUp() {
@@ -117,14 +129,23 @@ class AuthControllerTest {
         when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.empty());
 
         Address address = new Address();
-        Badges badge = new Badges();
-        Ratings rating = new Ratings();
-
         when(addressRepository.findById(1)).thenReturn(Optional.of(address));
 
+        Ratings defaultRating = new Ratings();
+        when(ratingsRepository.findById(DEFAULT_RATING_ID)).thenReturn(Optional.of(defaultRating));
+
+        Badges badge = new Badges();
+        badge.setXpReward(1000);
+        when(badgesRepository.findAll()).thenReturn(List.of(badge));
+        when(userAchievementRepository.save(any(UserAchievement.class))).thenReturn(new UserAchievement());
+
+        
         User savedUser = new User();
+        savedUser.setFirstName("Thabo");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
         when(settingsRepository.save(any(Settings.class))).thenReturn(new Settings());
+        when(helperAnalyticsRepository.existsById(anyString())).thenReturn(false);
+        when(helperAnalyticsRepository.save(any(HelperAnalytics.class))).thenReturn(new HelperAnalytics());
 
         mockMvc.perform(post("/api/auth/register")
                 .header("Authorization", BEARER_TOKEN)
@@ -135,6 +156,10 @@ class AuthControllerTest {
 
         verify(userRepository, times(1)).save(any(User.class));
         verify(settingsRepository, times(1)).save(any(Settings.class));
+        verify(userAchievementRepository, times(1)).save(any(UserAchievement.class));
+        verify(helperRepository, times(1)).save(any());
+        verify(dependentRepository, times(1)).save(any());
+        verify(helperAnalyticsRepository, times(1)).save(any(HelperAnalytics.class));
     }
 
     @Test

@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
-import '../../services/task_service.dart';
 import '../../models/auth_session.dart';
 import '../../constants/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
 
-class CreateTaskScreen extends StatefulWidget {
+class CreateTaskScreen extends ConsumerStatefulWidget {
   const CreateTaskScreen({super.key});
 
   @override
-  State<CreateTaskScreen> createState() => _CreateTaskScreenState();
+  ConsumerState<CreateTaskScreen> createState() => _CreateTaskScreenState();
 }
 
-class _CreateTaskScreenState extends State<CreateTaskScreen> {
+class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
   // Form controllers
   final _titleController = TextEditingController();
   final _instructionsController = TextEditingController();
@@ -88,7 +89,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   }
 
   // Service
-  final TaskService _taskService = TaskService();
   bool _isSubmit = false;
 
 Future<void> _submitTask() async {
@@ -116,7 +116,8 @@ Future<void> _submitTask() async {
     setState(() => _isSubmit = true);
 
     try {
-      final dependentId = await _taskService.getDependentIdForUser(userId);
+       final taskService = ref.read(taskServiceProvider);
+       final dependentId = await taskService.getDependentIdForUser(userId);
         if (dependentId == null) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -127,7 +128,7 @@ Future<void> _submitTask() async {
           return;
         }
 
-      final createdTask = await _taskService.createTask(
+       final createdTask = await taskService.createTask(
         dependentId: dependentId,
 
 
@@ -139,7 +140,7 @@ Future<void> _submitTask() async {
 
       final taskId = int.tryParse(createdTask.id);
       if (taskId != null) {
-        _taskService.matchHelpersForTask(taskId);
+        taskService.matchHelpersForTask(taskId);
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

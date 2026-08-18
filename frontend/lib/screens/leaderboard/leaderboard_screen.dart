@@ -3,22 +3,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'helper_profile_preview_screen.dart';
 import '../../constants/app_colors.dart';
 import '../../models/leaderboard_model.dart';
-import '../../services/leaderboard_service.dart';
 import '../help/help_menu_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class LeaderboardScreen extends StatefulWidget {
+class LeaderboardScreen extends ConsumerStatefulWidget {
   const LeaderboardScreen({super.key});
 
   @override
-  State<LeaderboardScreen> createState() => _LeaderboardScreenState();
+  ConsumerState<LeaderboardScreen> createState() => _LeaderboardScreenState();
 }
 
-class _LeaderboardScreenState extends State<LeaderboardScreen> {
+class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   LeaderboardData? _leaderboardData;
   bool _isLoading = true;
   String? _errorMessage;
-
-  final LeaderboardService _leaderboardService = LeaderboardService();
 
   @override
   void initState() {
@@ -33,7 +32,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     });
 
     try {
-      final data = await _leaderboardService.getLeaderboard(
+      final leaderboardService = ref.read(leaderboardServiceProvider);
+      final data = await leaderboardService.getLeaderboard(
         period: 'week',
         rankBy: 'averageRating',
         limit: 20,
