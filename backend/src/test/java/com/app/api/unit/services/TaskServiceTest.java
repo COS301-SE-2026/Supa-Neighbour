@@ -1,5 +1,6 @@
 package com.app.api.unit.services;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,10 +22,13 @@ import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
 
+import com.app.api.dtos.TaskDetailDTO;
 import com.app.api.events.TaskStartedEvent;
 import com.app.api.models.Dependent;
 import com.app.api.models.Helper;
 import com.app.api.models.Task;
+import com.app.api.models.TaskInvitation;
+import com.app.api.models.TaskInvoice;
 import com.app.api.models.User;
 import com.app.api.repositories.AnalyticsRepository;
 import com.app.api.repositories.ChatRepository;
@@ -65,7 +69,8 @@ public class TaskServiceTest
     private TaskInvitationRepository taskInvitationRepo;
 
     @BeforeEach
-    void initMocks()
+    @SuppressWarnings("unused")
+    void setUp()
     {
         MockitoAnnotations.openMocks(this);
     }
@@ -312,7 +317,6 @@ public class TaskServiceTest
         int helperId = 5;
         int dependentId = 3;
         int requesterUserId = 10;
-        String helperName = "John Doe";
         
         // Setup existing task
         Task existing = new Task();
@@ -377,4 +381,416 @@ public class TaskServiceTest
 
     
 
+    @Test
+    void fullName_bothFirstAndLastName_returnsFullName() {
+        // This is a private method, so we test it indirectly through toDetailDTO
+        // We'll test this through getTaskDetailById or toDetailDTO
+        int taskId = 1;
+        int dependentId = 1;
+        
+        Task task = new Task();
+        task.setTaskId(taskId);
+        task.setDependentId(dependentId);
+        
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+        User user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        dependent.setUserId(user);
+        
+        when(taskRepo.findById(taskId)).thenReturn(Optional.of(task));
+        when(dependentRepo.findById(dependentId)).thenReturn(Optional.of(dependent));
+        
+        TaskDetailDTO result = taskService.getTaskDetailById(taskId);
+        
+        assertNotNull(result);
+        assertEquals("John Doe", result.getRequesterName());
+    }
+
+    @Test
+    void fullName_onlyFirstName_returnsFirstName() {
+        int taskId = 1;
+        int dependentId = 1;
+        
+        Task task = new Task();
+        task.setTaskId(taskId);
+        task.setDependentId(dependentId);
+        
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+        User user = new User();
+        user.setFirstName("John");
+        user.setLastName(null);
+        dependent.setUserId(user);
+        
+        when(taskRepo.findById(taskId)).thenReturn(Optional.of(task));
+        when(dependentRepo.findById(dependentId)).thenReturn(Optional.of(dependent));
+        
+        TaskDetailDTO result = taskService.getTaskDetailById(taskId);
+        
+        assertNotNull(result);
+        assertEquals("John", result.getRequesterName());
+    }
+
+    @Test
+    void fullName_onlyLastName_returnsLastName() {
+        int taskId = 1;
+        int dependentId = 1;
+        
+        Task task = new Task();
+        task.setTaskId(taskId);
+        task.setDependentId(dependentId);
+        
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+        User user = new User();
+        user.setFirstName(null);
+        user.setLastName("Doe");
+        dependent.setUserId(user);
+        
+        when(taskRepo.findById(taskId)).thenReturn(Optional.of(task));
+        when(dependentRepo.findById(dependentId)).thenReturn(Optional.of(dependent));
+        
+        TaskDetailDTO result = taskService.getTaskDetailById(taskId);
+        
+        assertNotNull(result);
+        assertEquals("Doe", result.getRequesterName());
+    }
+
+    @Test
+    void fullName_noName_returnsNull() {
+        int taskId = 1;
+        int dependentId = 1;
+        
+        Task task = new Task();
+        task.setTaskId(taskId);
+        task.setDependentId(dependentId);
+        
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+        User user = new User();
+        user.setFirstName(null);
+        user.setLastName(null);
+        dependent.setUserId(user);
+        
+        when(taskRepo.findById(taskId)).thenReturn(Optional.of(task));
+        when(dependentRepo.findById(dependentId)).thenReturn(Optional.of(dependent));
+        
+        TaskDetailDTO result = taskService.getTaskDetailById(taskId);
+        
+        assertNotNull(result);
+        assertNull(result.getRequesterName());
+    }
+
+    @Test
+    void toDetailDTO_taskWithDependentAndHelper_returnsFullDTO() {
+        int taskId = 1;
+        int dependentId = 1;
+        int helperId = 1;
+        int userId = 10;
+        int helperUserId = 20;
+        
+        Task task = new Task();
+        task.setTaskId(taskId);
+        task.setHelperId(helperId);
+        task.setDependentId(dependentId);
+        task.setImmediate(true);
+        task.setLocationId(5);
+        task.setTaskTypeId(3);
+        task.setNeedsSpecialist(true);
+        task.setSignedAdminId(7);
+        task.setStartDate(java.sql.Date.valueOf("2026-05-21"));
+        task.setEndDate(java.sql.Date.valueOf("2026-05-24"));
+        task.setHelperBadgeId(9);
+        task.setDependentRatingId("4");
+        task.setHelperRatingId("5");
+        task.setAdminReview("Good work");
+        task.setCompatibilityId(2);
+        task.setStatus("open");
+        
+        // Setup dependent
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+        User user = new User();
+        user.setUserid(userId);
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        dependent.setUserId(user);
+        
+        // Setup helper
+        Helper helper = new Helper();
+        helper.setHelperid(helperId);
+        User helperUser = new User();
+        helperUser.setUserid(helperUserId);
+        helperUser.setFirstName("Jane");
+        helperUser.setLastName("Smith");
+        helper.setUserid(helperUser);
+        
+        when(taskRepo.findById(taskId)).thenReturn(Optional.of(task));
+        when(dependentRepo.findById(dependentId)).thenReturn(Optional.of(dependent));
+        when(helperRepo.findById(helperId)).thenReturn(Optional.of(helper));
+        
+        TaskDetailDTO result = taskService.getTaskDetailById(taskId);
+        
+        assertNotNull(result);
+        assertEquals(taskId, result.getTaskId());
+        assertEquals(helperId, result.getHelperId());
+        assertEquals(dependentId, result.getDependentId());
+        assertTrue(result.isImmediate());
+        assertEquals(5, result.getLocationId());
+        assertEquals(3, result.getTaskTypeId());
+        assertTrue(result.isNeedsSpecialist());
+        assertEquals(7, result.getSignedAdminId());
+        assertEquals(java.sql.Date.valueOf("2026-05-21"), result.getStartDate());
+        assertEquals(java.sql.Date.valueOf("2026-05-24"), result.getEndDate());
+        assertEquals(9, result.getHelperBadgeId());
+        assertEquals("4", result.getDependentRatingId());
+        assertEquals("5", result.getHelperRatingId());
+        assertEquals("Good work", result.getAdminReview());
+        assertEquals(2, result.getCompatibilityId());
+        assertEquals("open", result.getStatus());
+        assertEquals("John Doe", result.getRequesterName());
+        assertEquals("Jane Smith", result.getHelperName());
+    }
+
+    @Test
+    void getTaskDetailById_taskFound_returnsTaskDetail() {
+        int taskId = 1;
+        int dependentId = 1;
+        
+        Task task = new Task();
+        task.setTaskId(taskId);
+        task.setDependentId(dependentId);
+        
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+        User user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        dependent.setUserId(user);
+        
+        when(taskRepo.findById(taskId)).thenReturn(Optional.of(task));
+        when(dependentRepo.findById(dependentId)).thenReturn(Optional.of(dependent));
+        
+        TaskDetailDTO result = taskService.getTaskDetailById(taskId);
+        
+        assertNotNull(result);
+        assertEquals(taskId, result.getTaskId());
+        assertEquals("John Doe", result.getRequesterName());
+    }
+
+    @Test
+    void getTaskDetailById_taskNotFound_returnsNull() {
+        int taskId = 999;
+        
+        when(taskRepo.findById(taskId)).thenReturn(Optional.empty());
+        
+        TaskDetailDTO result = taskService.getTaskDetailById(taskId);
+        
+        assertNull(result);
+    }
+
+    @Test
+    void getAllTaskDetailsByUserId_helperExistsWithPendingInvitations_returnsTaskDetails() {
+        int userId = 10;
+        int helperId = 1;
+        int taskId = 100;
+        
+        // Setup helper
+        Helper helper = new Helper();
+        helper.setHelperid(helperId);
+        User helperUser = new User();
+        helperUser.setUserid(userId);
+        helperUser.setFirstName("Jane");
+        helperUser.setLastName("Smith");
+        helper.setUserid(helperUser);
+        
+        // Setup task invoice
+        TaskInvoice invoice = new TaskInvoice();
+        invoice.setTaskid(taskId);
+        
+        // Setup dependent for the invoice
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(2);
+        User dependentUser = new User();
+        dependentUser.setUserid(20);
+        dependentUser.setFirstName("John");
+        dependentUser.setLastName("Doe");
+        dependent.setUserId(dependentUser);
+        
+        // Setup task invitation
+        TaskInvitation invitation = new TaskInvitation();
+        invitation.setTaskId(invoice);
+        invitation.setHelperId(helper);
+        invitation.setStatus("pending");
+        
+        List<TaskInvitation> invitations = List.of(invitation);
+        
+        when(helperRepo.findByUserid_Userid(userId)).thenReturn(Optional.of(helper));
+        when(taskInvitationRepo.findByHelperId_HelperidAndStatus(helperId, null)).thenReturn(invitations);
+        
+        // Mock the dependent repo for the invoice
+        when(dependentRepo.findById(2)).thenReturn(Optional.of(dependent));
+        
+        List<TaskDetailDTO> result = taskService.getAllTaskDetailsByUserId(userId);
+        
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(taskId, result.get(0).getTaskId());
+    }
+
+    @Test
+    void getAllTaskDetailsByUserId_helperExistsWithNoInvitations_returnsEmptyList() {
+        int userId = 10;
+        int helperId = 1;
+        
+        Helper helper = new Helper();
+        helper.setHelperid(helperId);
+        User helperUser = new User();
+        helperUser.setUserid(userId);
+        helper.setUserid(helperUser);
+        
+        when(helperRepo.findByUserid_Userid(userId)).thenReturn(Optional.of(helper));
+        when(taskInvitationRepo.findByHelperId_HelperidAndStatus(helperId, null)).thenReturn(List.of());
+        
+        List<TaskDetailDTO> result = taskService.getAllTaskDetailsByUserId(userId);
+        
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getAllTaskDetailsByUserId_helperNotFound_returnsEmptyList() {
+        int userId = 999;
+        
+        when(helperRepo.findByUserid_Userid(userId)).thenReturn(Optional.empty());
+        
+        List<TaskDetailDTO> result = taskService.getAllTaskDetailsByUserId(userId);
+        
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void convertToTask_validInvoice_returnsTask() {
+        // This is a private method, tested indirectly through getAllTaskDetailsByUserId
+        int taskId = 100;
+        int helperId = 1;
+        int dependentId = 2;
+        
+        // Setup helper
+        Helper helper = new Helper();
+        helper.setHelperid(helperId);
+        User helperUser = new User();
+        helperUser.setUserid(10);
+        helper.setUserid(helperUser);
+        
+        // Setup dependent
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+        User dependentUser = new User();
+        dependentUser.setUserid(20);
+        dependentUser.setFirstName("John");
+        dependentUser.setLastName("Doe");
+        dependent.setUserId(dependentUser);
+        
+        // Setup invoice with all fields
+        TaskInvoice invoice = new TaskInvoice();
+        invoice.setTaskid(taskId);
+        invoice.setHelperid(helper);
+        invoice.setDependentid(dependent);
+        invoice.setImmediate(true);
+        invoice.setNeedsspecialist(false);
+        invoice.setStartdate(LocalDate.parse("2026-05-21"));
+        invoice.setEnddate(LocalDate.parse("2026-05-24"));
+        invoice.setStatus("open");
+        
+        // Setup invitation
+        TaskInvitation invitation = new TaskInvitation();
+        invitation.setTaskId(invoice);
+        invitation.setHelperId(helper);
+        invitation.setStatus("pending");
+        
+        List<TaskInvitation> invitations = List.of(invitation);
+        
+        when(helperRepo.findByUserid_Userid(10)).thenReturn(Optional.of(helper));
+        when(taskInvitationRepo.findByHelperId_HelperidAndStatus(helperId, null)).thenReturn(invitations);
+        when(dependentRepo.findById(dependentId)).thenReturn(Optional.of(dependent));
+        
+        List<TaskDetailDTO> result = taskService.getAllTaskDetailsByUserId(10);
+        
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(taskId, result.get(0).getTaskId());
+        assertEquals(helperId, result.get(0).getHelperId());
+        assertEquals(dependentId, result.get(0).getDependentId());
+        assertEquals("open", result.get(0).getStatus());
+    }
+
+
+    @Test
+    void getTaskDetailsByUserId_dependentExists_returnsTaskDetails() {
+        int userId = 10;
+        int dependentId = 1;
+        int taskId = 100;
+        
+        // Setup dependent
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+        User user = new User();
+        user.setUserid(userId);
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        dependent.setUserId(user);
+        
+        // Setup task
+        Task task = new Task();
+        task.setTaskId(taskId);
+        task.setDependentId(dependentId);
+        
+        when(dependentRepo.findByUserId_Userid(userId)).thenReturn(dependent);
+        when(taskRepo.findByDependentId(dependentId)).thenReturn(List.of(task));
+        when(dependentRepo.findById(dependentId)).thenReturn(Optional.of(dependent));
+        
+        List<TaskDetailDTO> result = taskService.getTaskDetailsByUserId(userId);
+        
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(taskId, result.get(0).getTaskId());
+        assertEquals("John Doe", result.get(0).getRequesterName());
+    }
+
+    @Test
+    void getTaskDetailsByUserId_dependentNotFound_returnsNull() {
+        int userId = 999;
+        
+        when(dependentRepo.findByUserId_Userid(userId)).thenReturn(null);
+        
+        List<TaskDetailDTO> result = taskService.getTaskDetailsByUserId(userId);
+        
+        assertNull(result);
+    }
+
+    @Test
+    void getTaskDetailsByUserId_dependentExistsNoTasks_returnsEmptyList() {
+        int userId = 10;
+        int dependentId = 1;
+        
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+        User user = new User();
+        user.setUserid(userId);
+        dependent.setUserId(user);
+        
+        when(dependentRepo.findByUserId_Userid(userId)).thenReturn(dependent);
+        when(taskRepo.findByDependentId(dependentId)).thenReturn(List.of());
+        
+        List<TaskDetailDTO> result = taskService.getTaskDetailsByUserId(userId);
+        
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
 }
