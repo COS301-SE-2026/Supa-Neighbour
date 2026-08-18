@@ -62,6 +62,9 @@ public class TaskDetailDTO {
     /** Display name of the helper assigned to the task, if any. */
     private String helperName;
 
+    /** User ID of the dependent who requested the task. */
+    private Integer requesterUserId;
+
     /**
      * Default constructor required for serialization.
      */
@@ -355,5 +358,21 @@ public class TaskDetailDTO {
      */
     public void setHelperName(String helperName) {
         this.helperName = helperName;
+    }
+
+    /**
+     * Gets the requester's user ID.
+     * @return the requester user ID
+     */
+    public Integer getRequesterUserId() {
+        return requesterUserId;
+    }
+
+    /**
+     * Sets the requester's user ID.
+     * @param requesterUserId the requester user ID
+     */
+    public void setRequesterUserId(Integer requesterUserId) {
+        this.requesterUserId = requesterUserId;
     }
 }

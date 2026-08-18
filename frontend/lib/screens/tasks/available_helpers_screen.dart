@@ -69,7 +69,7 @@ class _AvailableHelpersScreenState extends ConsumerState<AvailableHelpersScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error(context),
           ),
         );
       }
@@ -343,7 +343,7 @@ class _AvailableHelpersScreenState extends ConsumerState<AvailableHelpersScreen>
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white(context),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -352,13 +352,16 @@ class _AvailableHelpersScreenState extends ConsumerState<AvailableHelpersScreen>
               offset: const Offset(0, 2),
             ),
           ],
-          border: isInvited ? Border.all(color: AppColors.success(context), width: 2) : null,
+          border: isInvited
+              ? Border.all(color: AppColors.success(context), width: 2)
+              : null,
         ),
         child: Row(
           children: [
             CircleAvatar(
               radius: 28,
-              backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
+              backgroundColor:
+                  AppColors.primaryTeal(context).withValues(alpha: 0.1),
               child: Text(
                 firstName.isNotEmpty ? firstName[0] : '?',
                 style: TextStyle(
@@ -383,7 +386,8 @@ class _AvailableHelpersScreenState extends ConsumerState<AvailableHelpersScreen>
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: (status == 'Accepted'
                               ? AppColors.success(context)

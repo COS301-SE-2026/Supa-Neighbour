@@ -13,12 +13,15 @@ class HelperProfilePreviewScreen extends ConsumerStatefulWidget {
   final int? helperId;
   final String? taskId;
   final bool showRequestButton;
+  final bool isUserId;
+
   const HelperProfilePreviewScreen({
     super.key,
     this.helper,
     this.helperId,
     this.taskId,
     this.showRequestButton = true,
+    this.isUserId = false,
   });
 
   @override
@@ -89,7 +92,9 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
 
     try {
       final helperProfileService = ref.read(helperProfileServiceProvider);
-      final data = await helperProfileService.getHelperProfile(widget.helperId!);
+      final data = widget.isUserId
+          ? await helperProfileService.getHelperProfileByUserId(widget.helperId!)
+          : await helperProfileService.getHelperProfile(widget.helperId!);
       setState(() {
         _profileData = data;
         _isLoading = false;
