@@ -22,12 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.app.api.config.SecurityConfig;
 import com.app.api.security.FirebaseAuthenticationFilter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import com.app.api.config.SecurityConfig;
+import com.app.api.config.PingController;
 
 /**
  * Tests for {@link SecurityConfig}.
@@ -36,16 +37,13 @@ import com.app.api.config.SecurityConfig;
  * behavior (permitAll, CSRF disabled, CORS headers) is verified against a
  * throwaway controller loaded via {@code @WebMvcTest}.
  */
-@WebMvcTest(controllers = SecurityConfigTest.PingController.class)
+@WebMvcTest(controllers = PingController.class)
 @Import(SecurityConfig.class)
 class SecurityConfigTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    // Real Firebase auth logic isn't under test here — SecurityConfig just needs
-    // *a* filter instance to wire in. We mock it and make it a pass-through so
-    // requests actually reach the controller.
+    
     @MockitoBean
     private FirebaseAuthenticationFilter firebaseAuthenticationFilter;
 
@@ -68,7 +66,6 @@ class SecurityConfigTest {
         }).when(firebaseAuthenticationFilter).doFilter(any(), any(), any());
     }
 
-    // ---- CORS bean, tested in isolation, no Spring context ----
 
     @Test
     void corsConfigurationSource_allowsConfiguredOriginMethodsAndCredentials() {
@@ -86,7 +83,6 @@ class SecurityConfigTest {
         assertThat(corsConfig.getAllowCredentials()).isTrue();
     }
 
-    // ---- Filter chain behavior, via a real (mini) Spring context ----
 
     @Test
     void preflightRequest_fromAllowedOrigin_getsCorsHeaders() throws Exception {
@@ -114,10 +110,7 @@ class SecurityConfigTest {
 
     @Test
     void postRequest_withoutCsrfToken_isNotBlockedByCsrf() throws Exception {
-        // /api/ping has no POST mapping, so 404 is expected. The point of this
-        // test is that we get 404, NOT 403 — a 403 here would mean CSRF
-        // protection kicked in despite csrf().disable().
         mockMvc.perform(post("/api/ping"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isMethodNotAllowed());
     }
 }
