@@ -19,13 +19,19 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationEventPublisher;
 
+import com.app.api.events.TaskStartedEvent;
 import com.app.api.models.Dependent;
+import com.app.api.models.Helper;
 import com.app.api.models.Task;
+import com.app.api.models.User;
 import com.app.api.repositories.AnalyticsRepository;
 import com.app.api.repositories.ChatRepository;
 import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.MessageRepository;
+import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskRepository;
 import com.app.api.services.TaskService;
 
@@ -48,6 +54,15 @@ public class TaskServiceTest
 
     @InjectMocks
     private TaskService taskService;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private HelperRepository helperRepo;
+
+    @Mock
+    private TaskInvitationRepository taskInvitationRepo;
 
     @BeforeEach
     void initMocks()
@@ -161,10 +176,26 @@ public class TaskServiceTest
         updates.setStartDate(java.sql.Date.valueOf("2026-05-21"));
         updates.setEndDate(java.sql.Date.valueOf("2026-05-24"));
         updates.setAdminReview("All fields updated");
+        updates.setStatus("in_progress");
 
         when(taskRepo.findById(id)).thenReturn(Optional.of(existing));
         when(taskRepo.save(existing)).thenReturn(existing);
 
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(3);
+        User user = new User();
+        user.setUserid(10);
+        dependent.setUserId(user);
+        
+        Helper helper = new Helper();
+        helper.setHelperid(5);
+        User helperUser = new User();
+        helperUser.setFirstName("John");
+        helperUser.setLastName("Doe");
+        helper.setUserid(helperUser);
+
+        when(dependentRepo.findById(3)).thenReturn(Optional.of(dependent));
+        when(helperRepo.findById(5)).thenReturn(Optional.of(helper));
         
         Task updatedTask = taskService.updateTask(id, updates);
 
@@ -176,7 +207,9 @@ public class TaskServiceTest
         assertEquals(4, updatedTask.getLocationId());
         assertEquals("All fields updated", updatedTask.getAdminReview());
         verify(taskRepo, times(1)).save(existing);
-}
+        
+        verify(eventPublisher, times(1)).publishEvent(any(TaskStartedEvent.class));
+    }
 
     @Test
     void updateTask_noFieldsUpdated()
@@ -272,4 +305,76 @@ public class TaskServiceTest
         verify(chatRepo, times(1)).deleteAll(List.of(chat));
         verify(taskRepo, times(1)).deleteById(id);
     }
+
+    @Test
+    void updateTask_statusChangeToInProgress_publishesEvent() {
+        int taskId = 1001;
+        int helperId = 5;
+        int dependentId = 3;
+        int requesterUserId = 10;
+        String helperName = "John Doe";
+        
+        // Setup existing task
+        Task existing = new Task();
+        existing.setTaskId(taskId);
+        existing.setHelperId(helperId);
+        existing.setDependentId(dependentId);
+        existing.setStatus("open");
+        
+        Task updates = new Task();
+        updates.setStatus("in_progress");
+        
+        Dependent dependent = new Dependent();
+        dependent.setDependentId(dependentId);
+        User user = new User();
+        user.setUserid(requesterUserId);
+        dependent.setUserId(user);
+        
+        Helper helper = new Helper();
+        helper.setHelperid(helperId);
+        User helperUser = new User();
+        helperUser.setFirstName("John");
+        helperUser.setLastName("Doe");
+        helper.setUserid(helperUser);
+        
+        when(taskRepo.findById(taskId)).thenReturn(Optional.of(existing));
+        when(dependentRepo.findById(dependentId)).thenReturn(Optional.of(dependent));
+        when(helperRepo.findById(helperId)).thenReturn(Optional.of(helper));
+        when(taskRepo.save(existing)).thenReturn(existing);
+        
+        Task updatedTask = taskService.updateTask(taskId, updates);
+        
+        assertNotNull(updatedTask);
+        assertEquals("in_progress", updatedTask.getStatus());
+        
+        verify(eventPublisher, times(1)).publishEvent(any(TaskStartedEvent.class));
+    }
+
+    @Test
+    void updateTask_statusChangeToOtherStatus_doesNotPublishEvent() {
+        int taskId = 1001;
+        
+        // Setup existing task
+        Task existing = new Task();
+        existing.setTaskId(taskId);
+        existing.setStatus("open");
+        
+        // Setup updates - status changes to "completed" not "in_progress"
+        Task updates = new Task();
+        updates.setStatus("completed");
+        
+        when(taskRepo.findById(taskId)).thenReturn(Optional.of(existing));
+        when(taskRepo.save(existing)).thenReturn(existing);
+        
+        Task updatedTask = taskService.updateTask(taskId, updates);
+        
+        assertNotNull(updatedTask);
+        assertEquals("completed", updatedTask.getStatus());
+        
+        // Verify event was NOT published for non "in_progress" status
+        verify(eventPublisher, never()).publishEvent(any(TaskStartedEvent.class));
+    }
+
+    
+
 }

@@ -15,7 +15,7 @@ public class DeviceTokenRequestDTO {
      * by consumers, while still allowing deserialization frameworks to
      * create instances via reflection.
      */
-    DeviceTokenRequestDTO(){
+    public DeviceTokenRequestDTO(){
 
     }
 

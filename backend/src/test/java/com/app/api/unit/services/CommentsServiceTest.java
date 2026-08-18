@@ -1,30 +1,32 @@
 package com.app.api.unit.services;
- 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
- 
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
- 
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
- 
+
 import com.app.api.dtos.CommentPostResponseDTO;
 import com.app.api.dtos.CommentRequestDTO;
 import com.app.api.dtos.CommentResponseDTO;
+import com.app.api.events.PostCommentEvent;
 import com.app.api.models.Comments;
 import com.app.api.models.Posts;
 import com.app.api.models.User;
@@ -34,7 +36,7 @@ import com.app.api.repositories.UserRepository;
 import com.app.api.services.CommentsService;
 
 /**
- * Unite tests for {@link CommentsService}
+ * Unit tests for {@link CommentsService}
  */
 @ExtendWith(MockitoExtension.class)
 public class CommentsServiceTest {
@@ -48,32 +50,39 @@ public class CommentsServiceTest {
     @Mock 
     private UserRepository userRepository;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private CommentsService commentsService;
 
-
-    private User user;
+    private User commenter;
+    private User postAuthor;
     private Comments existingComment;
     private Posts post;
 
     @BeforeEach
     void setup(){
-        user = new User();
-        user.setUserid(10);
-        user.setFirstName("Ble");
-        user.setLastName("Neo");
+        commenter = new User();
+        commenter.setUserid(10);
+        commenter.setFirstName("Ble");
+        commenter.setLastName("Neo");
+
+        postAuthor = new User();
+        postAuthor.setUserid(20);
+        postAuthor.setFirstName("Post");
+        postAuthor.setLastName("Author");
 
         post = new Posts();
         post.setPostid(100);
-        post.setUserid(user);
+        post.setUserid(postAuthor);
 
         existingComment = new Comments();
         existingComment.setCommentid(1);
         existingComment.setPostid(post);
-        existingComment.setUserid(user);
+        existingComment.setUserid(commenter);
         existingComment.setCommentContent("Original content");
         existingComment.setCreatedAt(Timestamp.from(Instant.now()));
-
     }
 
     @Test
@@ -102,7 +111,6 @@ public class CommentsServiceTest {
         Comments result = commentsService.getCommentsById(99);
 
         assertThat(result).isNull();
-
     }
 
     @Test
@@ -127,7 +135,7 @@ public class CommentsServiceTest {
     void updateComments_found_updatesFieldsAndSaves(){
         Comments updated = new Comments();
 
-        updated.setUserid(user);
+        updated.setUserid(commenter);
         updated.setPostid(post);
         updated.setParentCommentid(5);
         updated.setCommentContent("Updated content");
@@ -141,7 +149,6 @@ public class CommentsServiceTest {
 
         Comments result = commentsService.updateComments(1, updated);
         assertThat(result.getCommentContent()).isEqualTo("Updated content");
-
         assertThat(result.getParentCommentid()).isEqualTo(5);
         verify(commentsRepository).save(existingComment);
     }
@@ -153,7 +160,6 @@ public class CommentsServiceTest {
         Comments result = commentsService.updateComments(99, new Comments());
 
         assertThat(result).isNull();
-
         verify(commentsRepository, never()).save(any());
     }
 
@@ -164,14 +170,13 @@ public class CommentsServiceTest {
     }
 
     @Test
-    void addCommentToPost_validTopLevelComment_returnsResponseDTO(){
+    void addCommentToPost_validTopLevelComment_returnsResponseDTOAndPublishesEvent(){
         CommentRequestDTO request = new CommentRequestDTO();
-
         request.setCommentContent("Nice post!");
         request.setParentCommentId(null);
 
         when(postsRepository.findById(100)).thenReturn(Optional.of(post));
-        when(userRepository.getReferenceById(10)).thenReturn(user);
+        when(userRepository.getReferenceById(10)).thenReturn(commenter);
         when(commentsRepository.save(any(Comments.class))).thenAnswer(invocation -> {
             Comments toSave = invocation.getArgument(0);
             toSave.setCommentid(50);
@@ -185,60 +190,114 @@ public class CommentsServiceTest {
         assertThat(result.getuserId()).isEqualTo(10);
         assertThat(result.getCommentContent()).isEqualTo("Nice post!");
         assertThat(result.getParentCommentId()).isNull();
+        
+        // Verify event IS published when commenter is not the post author
+        ArgumentCaptor<PostCommentEvent> eventCaptor = ArgumentCaptor.forClass(PostCommentEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        
+        PostCommentEvent event = eventCaptor.getValue();
+        assertThat(event.getPostAuthorUserId()).isEqualTo(20);
+        assertThat(event.getPostId()).isEqualTo(100);
+        assertThat(event.getCommentorName()).isEqualTo("Ble Neo");
     }
 
     @Test
-    void addCommentToPost_validReply_returnsResponseDTOWithParent(){
+    void addCommentToPost_validTopLevelComment_ownPost_doesNotPublishEvent(){
         CommentRequestDTO request = new CommentRequestDTO();
+        request.setCommentContent("Nice post!");
+        request.setParentCommentId(null);
 
+        // Commenting on own post - authenticated user is the post author (20)
+        when(postsRepository.findById(100)).thenReturn(Optional.of(post));
+        when(userRepository.getReferenceById(20)).thenReturn(postAuthor);
+        when(commentsRepository.save(any(Comments.class))).thenAnswer(invocation -> {
+            Comments toSave = invocation.getArgument(0);
+            toSave.setCommentid(50);
+            return toSave;
+        });
+
+        CommentResponseDTO result = commentsService.addCommentToPost(100, request, 20);
+
+        assertThat(result.getCommentId()).isEqualTo(50);
+        assertThat(result.getPostId()).isEqualTo(100);
+        assertThat(result.getuserId()).isEqualTo(20);
+        assertThat(result.getCommentContent()).isEqualTo("Nice post!");
+        
+        // Verify event is NOT published when commenter is the post author
+        verify(eventPublisher, never()).publishEvent(any(PostCommentEvent.class));
+    }
+
+    @Test
+    void addCommentToPost_validReply_returnsResponseDTOWithParentAndPublishesEvent(){
+        CommentRequestDTO request = new CommentRequestDTO();
         request.setCommentContent("Replying here");
         request.setParentCommentId(1);
+        
         when(postsRepository.findById(100)).thenReturn(Optional.of(post));
         when(commentsRepository.findById(1)).thenReturn(Optional.of(existingComment));
-
-        when(userRepository.getReferenceById(10)).thenReturn(user);
-        when(commentsRepository.save(any(Comments.class))).thenAnswer(invocation ->{
+        when(userRepository.getReferenceById(10)).thenReturn(commenter);
+        when(commentsRepository.save(any(Comments.class))).thenAnswer(invocation -> {
             Comments toSave = invocation.getArgument(0);
             toSave.setCommentid(51);
             return toSave;
         });
+        
         CommentResponseDTO result = commentsService.addCommentToPost(100, request, 10);
+        
         assertThat(result.getParentCommentId()).isEqualTo(1);
+        assertThat(result.getCommentId()).isEqualTo(51);
+        assertThat(result.getPostId()).isEqualTo(100);
+        assertThat(result.getuserId()).isEqualTo(10);
+        assertThat(result.getCommentContent()).isEqualTo("Replying here");
+        
+        // Verify event IS published for reply when commenter is not the post author
+        ArgumentCaptor<PostCommentEvent> eventCaptor = ArgumentCaptor.forClass(PostCommentEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        
+        PostCommentEvent event = eventCaptor.getValue();
+        assertThat(event.getPostAuthorUserId()).isEqualTo(20);
+        assertThat(event.getPostId()).isEqualTo(100);
+        assertThat(event.getCommentorName()).isEqualTo("Ble Neo");
     }
 
     @Test
     void addCommentToPost_blankContent_throwsUnprocessableEntity(){
         CommentRequestDTO request = new CommentRequestDTO();
-
         request.setCommentContent("  ");
-        assertThatThrownBy(() -> commentsService.addCommentToPost(100, request, 10)).isInstanceOf(ResponseStatusException.class)
-        .hasFieldOrPropertyWithValue("status", HttpStatus.UNPROCESSABLE_ENTITY);
+        
+        assertThatThrownBy(() -> commentsService.addCommentToPost(100, request, 10))
+            .isInstanceOf(ResponseStatusException.class)
+            .hasFieldOrPropertyWithValue("status", HttpStatus.UNPROCESSABLE_ENTITY);
 
         verify(postsRepository, never()).findById(any());
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
-    void addCommentToPost_nulllContent_throwsnUnprocessableEntity(){
+    void addCommentToPost_nullContent_throwsUnprocessableEntity(){
         CommentRequestDTO request = new CommentRequestDTO();
-
         request.setCommentContent(null);
+        
         assertThatThrownBy(() -> commentsService.addCommentToPost(100, request, 10))
-        .isInstanceOf(ResponseStatusException.class)
-        .hasFieldOrPropertyWithValue("status", HttpStatus.UNPROCESSABLE_ENTITY);
+            .isInstanceOf(ResponseStatusException.class)
+            .hasFieldOrPropertyWithValue("status", HttpStatus.UNPROCESSABLE_ENTITY);
+        
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
     void addCommentToPost_postNotFound_throwsNotFound(){
         CommentRequestDTO request = new CommentRequestDTO();
-
         request.setCommentContent("Nice post!");
+        
         when(postsRepository.findById(999)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> commentsService.addCommentToPost(999, request, 10))
-        .isInstanceOf(ResponseStatusException.class)
-        .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+            .isInstanceOf(ResponseStatusException.class)
+            .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
 
         verify(commentsRepository, never()).save(any());
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -248,11 +307,13 @@ public class CommentsServiceTest {
         request.setParentCommentId(404);
 
         when(postsRepository.findById(100)).thenReturn(Optional.of(post));
-
         when(commentsRepository.findById(404)).thenReturn(Optional.empty());
+        
         assertThatThrownBy(() -> commentsService.addCommentToPost(100, request, 10))
-        .isInstanceOf(ResponseStatusException.class)
-        .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+            .isInstanceOf(ResponseStatusException.class)
+            .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+        
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -269,8 +330,10 @@ public class CommentsServiceTest {
         when(commentsRepository.findById(1)).thenReturn(Optional.of(existingComment));
 
         assertThatThrownBy(() -> commentsService.addCommentToPost(100, request, 10))
-        .isInstanceOf(ResponseStatusException.class)
-        .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+            .isInstanceOf(ResponseStatusException.class)
+            .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+        
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -317,9 +380,11 @@ public class CommentsServiceTest {
     @Test
     void deleteCommentFromPost_commentNotFound_throwsNotFound(){
         when(commentsRepository.findById(1)).thenReturn(Optional.empty());
+        
         assertThatThrownBy(() -> commentsService.deleteCommentFromPost(100, 1, 10))
-        .isInstanceOf(ResponseStatusException.class)
-        .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+            .isInstanceOf(ResponseStatusException.class)
+            .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+        
         verify(commentsRepository, never()).delete(any());
     }
 
@@ -328,8 +393,8 @@ public class CommentsServiceTest {
         when(commentsRepository.findById(1)).thenReturn(Optional.of(existingComment));
 
         assertThatThrownBy(() -> commentsService.deleteCommentFromPost(999, 1, 10))
-        .isInstanceOf(ResponseStatusException.class)
-        .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
+            .isInstanceOf(ResponseStatusException.class)
+            .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
 
         verify(commentsRepository, never()).delete(any());
     }
