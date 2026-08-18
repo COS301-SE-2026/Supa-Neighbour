@@ -2,11 +2,14 @@ package com.app.api.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.sql.Date;
 
 import com.app.api.dtos.TaskDetailDTO;
+import com.app.api.events.TaskStartedEvent;
 import com.app.api.models.Analytics;
 import com.app.api.models.Chat;
 import com.app.api.models.Dependent;
@@ -49,6 +52,8 @@ public class TaskService {
     private final HelperRepository helperRepo;
 
     private final TaskInvitationRepository taskInvitationRepo;
+    @Autowired
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Constructs a TaskService with the required repositories.
@@ -61,7 +66,8 @@ public class TaskService {
      */
     public TaskService(TaskRepository taskRepo, AnalyticsRepository analyticsRepo,
             DependentRepository dependentRepo, ChatRepository chatRepo,
-            MessageRepository messageRepo, HelperRepository helperRepo, TaskInvitationRepository taskInvitationRepo) {
+            MessageRepository messageRepo, HelperRepository helperRepo, TaskInvitationRepository taskInvitationRepo,
+            ApplicationEventPublisher eventPublisher) {
         this.taskRepo = taskRepo;
         this.analyticsRepo = analyticsRepo;
         this.dependentRepo = dependentRepo;
@@ -69,6 +75,7 @@ public class TaskService {
         this.messageRepo = messageRepo;
         this.helperRepo = helperRepo;
         this.taskInvitationRepo = taskInvitationRepo;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -122,6 +129,7 @@ public class TaskService {
      * @param updates a task containing new values
      * @return the updated task, or null if not found
      */
+    @Transactional
     public Task updateTask(int taskId, Task updates) {
         Task targetTask = taskRepo.findById(taskId).orElse(null);
         if (targetTask == null) {
@@ -158,8 +166,17 @@ public class TaskService {
 
         if (updates.getStatus() != null) {
             targetTask.setStatus(updates.getStatus());
+            if("in_progress".equals(updates.getStatus())){
+                Dependent dependent = dependentRepo.findById(targetTask.getDependentId()).orElse(null);
+                Helper helper = helperRepo.findById(targetTask.getHelperId()).orElse(null);
+                if(dependent != null && dependent.getUserId() != null && helper != null && helper.getUserid() != null){
+                    int requesterUserId = dependent.getUserId().getUserid();
+                    String helperName = helper.getUserid().getFirstName();
+                    eventPublisher.publishEvent(new TaskStartedEvent(requesterUserId, taskId, helperName));
+                }
+                
+            }
         }
-
         return taskRepo.save(targetTask);
     }
 
