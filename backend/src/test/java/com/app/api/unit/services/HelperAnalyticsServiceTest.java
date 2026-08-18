@@ -134,9 +134,7 @@ public class HelperAnalyticsServiceTest {
         analytics.setUserid(mockUser);
         analytics.setTasktypeid(mockTaskType);
         analytics.setLocationid(mockLocation);
-        analytics.setCompatibilityid(mockCompatibility);
         analytics.setAverageRating(4.0f);
-        analytics.setAverageGivingRating(3.5f);
 
         when(helperAnalyticsRepository.save(analytics)).thenReturn(analytics);
 
@@ -147,9 +145,7 @@ public class HelperAnalyticsServiceTest {
         assertEquals(mockUser, result.getUserid());
         assertEquals(mockTaskType, result.getTasktypeid());
         assertEquals(mockLocation, result.getLocationid());
-        assertEquals(mockCompatibility, result.getCompatibilityid());
         assertEquals(4.0f, result.getAverageRating());
-        assertEquals(3.5f, result.getAverageGivingRating());
         verify(helperAnalyticsRepository, times(1)).save(analytics);
     }
 
@@ -172,9 +168,7 @@ public class HelperAnalyticsServiceTest {
         existing.setUserid(mockUser);
         existing.setTasktypeid(mockTaskType);
         existing.setLocationid(mockLocation);
-        existing.setCompatibilityid(mockCompatibility);
         existing.setAverageRating(2.0f);
-        existing.setAverageGivingRating(2.5f);
 
         User newUser = new User();
 
@@ -191,9 +185,7 @@ public class HelperAnalyticsServiceTest {
         updates.setUserid(newUser);
         updates.setTasktypeid(newTaskType);
         updates.setLocationid(newLocation);
-        updates.setCompatibilityid(newCompatibility);
         updates.setAverageRating(4.9f);
-        updates.setAverageGivingRating(4.7f);
 
         when(helperAnalyticsRepository.findById(id)).thenReturn(Optional.of(existing));
         when(helperAnalyticsRepository.save(existing)).thenReturn(existing);
@@ -204,9 +196,7 @@ public class HelperAnalyticsServiceTest {
         assertEquals(newUser, result.getUserid());
         assertEquals(3, result.getTasktypeid().getTasktypeid());
         assertEquals(4, result.getLocationid().getLocationid());
-        assertEquals(5, result.getCompatibilityid().getCompatibilityid());
         assertEquals(4.9f, result.getAverageRating());
-        assertEquals(4.7f, result.getAverageGivingRating());
         verify(helperAnalyticsRepository, times(1)).save(existing);
     }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../components/logo_placeholder.dart';  // Add this import
+import '../../components/logo_placeholder.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_text_files.dart';
 import '../../models/user_model.dart';
 import 'signup_other_details_screen.dart';
 
@@ -19,12 +21,19 @@ class SignupResidentialScreen extends StatefulWidget {
   State<SignupResidentialScreen> createState() => _SignupResidentialScreenState();
 }
 
-
 class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
   final TextEditingController _streetController = TextEditingController();
   final TextEditingController _townController = TextEditingController();
   final TextEditingController _zipCodeController = TextEditingController();
   final bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _streetController.dispose();
+    _townController.dispose();
+    _zipCodeController.dispose();
+    super.dispose();
+  }
 
   User _buildUpdatedUser() {
     return widget.user.copyWith(
@@ -34,66 +43,82 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
     );
   }
 
- void _handleNext() {
-  if (_streetController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please enter your street address'), backgroundColor: Color(0xFF1C9A89)),
-    );
-    return;
-  }
-  if (_townController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please enter your town/city'), backgroundColor: Color(0xFF1C9A89)),
-    );
-    return;
-  }
-  if (_zipCodeController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please enter your zip code'), backgroundColor: Color(0xFF1C9A89)),
-    );
-    return;
-  }
+  void _handleNext() {
+    if (_streetController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter your street address'),
+          backgroundColor: AppColors.primaryTeal(context),
+        ),
+      );
+      return;
+    }
+    if (_townController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter your town/city'),
+          backgroundColor: AppColors.primaryTeal(context),
+        ),
+      );
+      return;
+    }
+    if (_zipCodeController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter your zip code'),
+          backgroundColor: AppColors.primaryTeal(context),
+        ),
+      );
+      return;
+    }
 
-  final updatedUser = _buildUpdatedUser();
+    final updatedUser = _buildUpdatedUser();
 
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => SignupOtherDetailsScreen(
-        user: updatedUser,
-        idToken: widget.idToken,  
-        password: widget.password, 
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SignupOtherDetailsScreen(
+          user: updatedUser,
+          idToken: widget.idToken,  
+          password: widget.password, 
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    const logoSize = 100.0;
-    final titleSize = screenWidth * 0.08;
-    final subtitleSize = screenWidth * 0.045;
-    final buttonHeight = screenHeight * 0.07;
-    final fontSize = screenWidth * 0.04;
-    final smallFontSize = screenWidth * 0.035;
+    // Responsive sizing
+    final isSmallScreen = screenWidth < 400;
+    final isLargeScreen = screenWidth > 800;
+    
+    final logoSize = (screenWidth * 0.15).clamp(80.0, 150.0);
+    final titleSize = isSmallScreen ? 24.0 : (isLargeScreen ? 40.0 : 32.0);
+    final subtitleSize = isSmallScreen ? 14.0 : (isLargeScreen ? 24.0 : 18.0);
+    final buttonHeight = isSmallScreen ? 48.0 : 56.0;
+    
+    // Spacing
+    final spacing = screenHeight * 0.015;
+    final largeSpacing = screenHeight * 0.03;
 
     return Scaffold(
       body: SafeArea(
         child: Container(
           width: screenWidth,
           height: screenHeight,
-          color: Colors.white,
+          color: AppColors.background(context),
           child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: screenHeight * 0.03),
-                  
+                  SizedBox(height: screenHeight * 0.02),
+
                   // Back Button
                   Align(
                     alignment: Alignment.centerLeft,
@@ -102,56 +127,102 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
                       child: Container(
                         width: 50,
                         height: 50,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF1C9A89),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryTeal(context),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                        child: Icon(
+                          Icons.arrow_back,
+                          color: AppColors.textLight(context),
+                          size: 30,
+                        ),
                       ),
                     ),
                   ),
-                  
-                  SizedBox(height: screenHeight * 0.02),
-                  
-                  // Logo - Using LogoPlaceholder (replaced placeholder container)
-                  LogoPlaceholder(size: logoSize),
-                  
-                  SizedBox(height: screenHeight * 0.03),
-                  
-                  Text(
-                    'Residential Address',
-                    style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.w600, color: const Color(0xFF1C9A89)),
-                    textAlign: TextAlign.center,
+
+                  SizedBox(height: spacing),
+
+                  // Logo - Centered
+                  Center(
+                    child: LogoPlaceholder(size: logoSize),
                   ),
-                  
-                  SizedBox(height: screenHeight * 0.01),
-                  
-                  Text(
-                    'Where do you live?',
-                    style: TextStyle(fontSize: subtitleSize, fontWeight: FontWeight.w400, color: Colors.grey[600]),
-                    textAlign: TextAlign.center,
+
+                  SizedBox(height: largeSpacing),
+
+                  // Title
+                  Center(
+                    child: Text(
+                      'Residential Address',
+                      style: AppTextStyles.primaryHeader(context).copyWith(
+                        fontSize: titleSize,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                  
-                  SizedBox(height: screenHeight * 0.04),
-                  
+
+                  SizedBox(height: spacing * 0.5),
+
+                  // Subtitle
+                  Center(
+                    child: Text(
+                      'Where do you live?',
+                      style: AppTextStyles.secondaryHeader(context).copyWith(
+                        fontSize: subtitleSize,
+                        color: AppColors.textGrey(context),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+
+                  SizedBox(height: largeSpacing * 0.8),
+
+                  // Card Container
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.background(context),
                       borderRadius: BorderRadius.circular(30),
-                      boxShadow: [BoxShadow(color: Colors.grey.withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, 10))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.charcoal(context).withValues(alpha: 0.08),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(screenWidth * 0.07),
+                      padding: EdgeInsets.all(screenWidth * 0.05),
                       child: Column(
                         children: [
-                          _buildTextField('Street', _streetController, 'e.g. 23 Prospect Street'),
-                          SizedBox(height: screenHeight * 0.025),
-                          _buildTextField('Town', _townController, 'e.g. Hatfield, Pretoria'),
-                          SizedBox(height: screenHeight * 0.025),
-                          _buildTextField('Zip Code', _zipCodeController, 'e.g. 0001', isNumber: true),
-                          SizedBox(height: screenHeight * 0.04),
-                          
+                          // Street Field
+                          _buildTextField(
+                            'Street',
+                            _streetController,
+                            'Enter your street address',  // Updated placeholder
+                          ),
+
+                          SizedBox(height: spacing),
+
+                          // Town Field
+                          _buildTextField(
+                            'Town',
+                            _townController,
+                            'Enter your town',  // Updated placeholder
+                          ),
+
+                          SizedBox(height: spacing),
+
+                          // Zip Code Field
+                          _buildTextField(
+                            'Zip Code',
+                            _zipCodeController,
+                            '',  // Empty placeholder
+                            isNumber: true,
+                          ),
+
+                          SizedBox(height: spacing * 2.5),
+
+                          // Next Button
                           GestureDetector(
                             onTap: _isLoading ? null : _handleNext,
                             child: Container(
@@ -159,30 +230,33 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
                               height: buttonHeight,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(29),
-                                color: const Color(0xFF1C9A89),
+                                color: AppColors.primaryTeal(context),
                               ),
                               child: Center(
                                 child: _isLoading
-                                    ? SizedBox(width: buttonHeight * 0.4, height: buttonHeight * 0.4, child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                    : Text('Next', style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600, color: Colors.white)),
+                                    ? SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.textLight(context),
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Next',
+                                        style: AppTextStyles.buttonText(context).copyWith(
+                                          fontSize: isSmallScreen ? 16.0 : 20.0,
+                                        ),
+                                      ),
                               ),
-                            ),
-                          ),
-                          
-                          SizedBox(height: screenHeight * 0.02),
-                          
-                          Center(
-                            child: GestureDetector(
-                              onTap: () => Navigator.pop(context),
-                              child: Text('Back', style: TextStyle(fontSize: smallFontSize, color: const Color(0xFF1C9A89), fontWeight: FontWeight.w500)),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  
-                  SizedBox(height: screenHeight * 0.03),
+
+                  SizedBox(height: spacing * 2),
                 ],
               ),
             ),
@@ -192,34 +266,59 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, String hint, {bool isNumber = false}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    String hint, {
+    bool isNumber = false,
+  }) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    final fontSize = screenWidth * 0.04;
-    final buttonHeight = screenHeight * 0.07;
+    final isSmallScreen = screenWidth < 400;
+    final buttonHeight = isSmallScreen ? 48.0 : 56.0;
+    final spacing = screenHeight * 0.015;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w400, color: const Color(0xFF1C9A89))),
-        SizedBox(height: screenHeight * 0.01),
+        Text(
+          label,
+          style: AppTextStyles.bodyText(context).copyWith(
+            fontWeight: FontWeight.w500,
+            color: AppColors.primaryTeal(context),
+          ),
+        ),
+        SizedBox(height: spacing * 0.3),
         Container(
           width: double.infinity,
           height: buttonHeight,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(29),
-            color: Colors.white,
-            border: Border.all(color: const Color(0xFF1C9A89), width: 2),
+            color: AppColors.background(context),
+            border: Border.all(
+              color: AppColors.primaryTeal(context),
+              width: 2,
+            ),
           ),
           child: TextField(
             controller: controller,
-            style: TextStyle(fontSize: fontSize * 0.7),
+            style: AppTextStyles.bodyText(context).copyWith(
+              color: AppColors.charcoal(context),
+            ),
             keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+            cursorColor: AppColors.primaryTeal(context),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(fontSize: fontSize * 0.6, color: Colors.grey),
+              hintStyle: hint.isEmpty
+                  ? null
+                  : AppTextStyles.bodyText(context).copyWith(
+                      color: AppColors.textGrey(context),
+                    ),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.02),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.01,
+              ),
             ),
           ),
         ),

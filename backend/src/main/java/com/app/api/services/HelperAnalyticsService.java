@@ -87,9 +87,7 @@ public class HelperAnalyticsService {
         existing.setUserid(updated.getUserid());
         existing.setHelperid(updated.getHelperid());
         existing.setTasktypeid(updated.getTasktypeid());
-        existing.setAverageGivingRating(updated.getAverageGivingRating());
         existing.setAverageRating(updated.getAverageRating());
-        existing.setCompatibilityid(updated.getCompatibilityid());
         existing.setLocationid(updated.getLocationid());
 
 
