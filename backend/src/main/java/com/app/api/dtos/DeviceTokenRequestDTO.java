@@ -16,7 +16,7 @@ public class DeviceTokenRequestDTO {
      * create instances via reflection.
      */
     public DeviceTokenRequestDTO(){
-
+        // default constructor
     }
 
         /**
