@@ -40,6 +40,9 @@ import com.app.api.models.HelperAnalytics;
 import com.app.api.repositories.HelperAnalyticsRepository;
 
 import jakarta.transaction.Transactional;
+import com.app.api.models.Admin;
+import com.app.api.repositories.AdminRepository;
+import java.sql.Date;
 /**
  * REST controller responsible for user authentication and account management.
  * <p>
@@ -69,6 +72,7 @@ public class AuthController {
     private final HelperAnalyticsRepository helperAnalyticsRepository;
     
     private final RatingsRepository ratingsRepository;
+    private final AdminRepository adminRepository;
 
     /** rating_id of the default "Unranked" tier assigned to new users on registration. */
     private static final int DEFAULT_RATING_ID = 6;
@@ -79,7 +83,7 @@ public class AuthController {
      * @param firebaseAuthService the Firebase authentication service
      * @param userRepository the repository used to manage users
      */
-    public AuthController(FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository, SettingsRepository settingsRepository, HelperRepository helperRepository, DependentRepository dependentRepository, BadgesRepository badgesRepository,UserAchievementRepository userAchievementRepository, RatingsRepository ratingsRepository, HelperAnalyticsRepository helperAnalyticsRepository) {
+    public AuthController(FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository, SettingsRepository settingsRepository, HelperRepository helperRepository, DependentRepository dependentRepository, BadgesRepository badgesRepository,UserAchievementRepository userAchievementRepository, RatingsRepository ratingsRepository, HelperAnalyticsRepository helperAnalyticsRepository, AdminRepository adminRepository) {
             this.firebaseAuthService = firebaseAuthService;
             this.userRepository = userRepository;
             this.addressRepository = addressRepository;
@@ -90,6 +94,7 @@ public class AuthController {
             this.userAchievementRepository = userAchievementRepository;
             this.ratingsRepository = ratingsRepository;
             this.helperAnalyticsRepository = helperAnalyticsRepository;
+            this.adminRepository = adminRepository;
     }
 
     /**
@@ -227,21 +232,81 @@ public class AuthController {
     } 
 
     // POST /api/auth/logout
-/**
- * Logs the authenticated user out by revoking their Firebase refresh tokens.
- *
- * @param authHeader the Authorization header, expected as "Bearer <token>"
- * @return 200 OK on success, or 401 if the token is invalid
- */
-@PostMapping("/logout")
-public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader){
-    try{
-        String token = authHeader.replace("Bearer ", "");
-        String uid = firebaseAuthService.verifyIdToken(token).getUid();
-        firebaseAuthService.revokeUserSessions(uid);
-        return ResponseEntity.ok("Logged out successfully");
-    }catch(FirebaseAuthException e) {
-        return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(null);
+    /**
+     * Logs the authenticated user out by revoking their Firebase refresh tokens.
+     *
+     * @param authHeader the Authorization header, expected as "Bearer <token>"
+     * @return 200 OK on success, or 401 if the token is invalid
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader){
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            String uid = firebaseAuthService.verifyIdToken(token).getUid();
+            firebaseAuthService.revokeUserSessions(uid);
+            return ResponseEntity.ok("Logged out successfully");
+        }catch(FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(null);
+        }
     }
-}
+
+    @Transactional
+    @PostMapping("/admin/register")
+    public ResponseEntity<?> RegisterAdmin(@RequestHeader("Authorization") String idToken,@RequestBody RegisterRequest request) throws FirebaseAuthException{
+        String token = idToken.replace("Bearer ", "");
+        FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
+
+        User existingUser = userRepository.findByFirebaseUid(decodedToken.getUid()).orElse(null);
+
+        if(existingUser != null){
+            if("Admin".equals(existingUser.getUserType())){
+                return ResponseEntity.status(HttpStatus.SC_CONFLICT).body("This user is already an Admin");
+
+
+            }else{
+                return ResponseEntity.status(HttpStatus.SC_CONFLICT).body("This user already exists as a " + existingUser.getUserType() + ". To make them admin, you may have to use the role update endpoint");
+            }
+        }
+
+        Address address = null;
+        if(request.getAddressId() != null){
+            address = addressRepository.findById(request.getAddressId()).orElseThrow(() -> new RuntimeException("Address not found"));
+        }
+
+        User adminUser = new User();
+        adminUser.setFirebaseUid(decodedToken.getUid());
+        adminUser.setEmail(decodedToken.getEmail());
+        adminUser.setFirstName(request.getFirstName());
+        adminUser.setLastName(request.getLastName());
+        adminUser.setUsername(request.getUsername());
+        adminUser.setPhoneNumber(request.getPhoneNumber());
+        adminUser.setDateOfBirth(request.getDateOfBirth());
+        adminUser.setGender(request.getGender());
+        adminUser.setUserType("Admin");
+
+        Ratings defaultRating = ratingsRepository.findById(DEFAULT_RATING_ID).orElseThrow(() -> new RuntimeException("Default rating tier not found"));
+        adminUser.setRatingid(defaultRating);
+
+        if(address != null){
+            adminUser.setAddressid(address);
+        }
+
+        User savedAdmin = userRepository.save(adminUser);
+
+        Admin admin = new Admin();
+        admin.setUserid(savedAdmin);
+        admin.setAdminaccesslevel(1);
+        admin.setAdmincreatedate(new Date(System.currentTimeMillis()));
+        adminRepository.save(admin);
+
+        Settings adminSettings = new Settings();
+        adminSettings.setUser(savedAdmin);
+        adminSettings.setLastSeen(Instant.now());
+        adminSettings.setShowStatus(true);
+        adminSettings.setMode(ThemeMode.LIGHT);
+        adminSettings.setShowPhoneNo(false);
+        settingsRepository.save(adminSettings);
+
+        return ResponseEntity.ok(savedAdmin);
+    }
 }
