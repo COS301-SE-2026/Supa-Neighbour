@@ -88,7 +88,9 @@ class Task {
 
   return Task(
     id: (json['taskId'] as int).toString(),
-    title: _resolveCategoryName(json['taskTypeId'] as int?),
+    title: (json['title'] as String?)?.isNotEmpty == true
+    ? json['title'] as String
+    : _resolveCategoryName(json['taskTypeId'] as int?),
     category: _resolveCategoryName(json['taskTypeId'] as int?),
     date: startDate,
     time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),

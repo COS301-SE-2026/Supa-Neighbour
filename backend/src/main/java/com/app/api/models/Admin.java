@@ -30,21 +30,6 @@ public class Admin {
     @Column(name = "admin_id")
     private int adminid;
 
-    @Column(name = "admin_password")
-    private String adminpassword;
-
-    @Column(name = "admin_email")
-    private String email;
-
-    @Column(name = "admin_name")
-    private String adminname;
-
-    @Column(name = "admin_surname")
-    private String adminsurname;
-
-    @Column(name = "admin_phone_number")
-    private String adminphonenumber;
-
     @Column(name = "admin_create_date")
     private Date admincreatedate;
 
@@ -52,15 +37,9 @@ public class Admin {
     private int adminaccesslevel;
 
     @ManyToOne
-    @JoinColumn(name = "admin_address_id")
-    private Address adminaddressid;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User userid;
-
    
-
     /**
      * Gets the user id.
      *
@@ -99,96 +78,6 @@ public class Admin {
     }
 
     /**
-     * Gets the amdin password
-     *
-     * @return the amdin password
-     */
-    public String getAdminpassword() {
-        return adminpassword;
-    }
-
-    /**
-     * Sets the admin password.
-     *
-     * @param adminpassword the admin password
-     */
-    public void setAdminpassword(String adminpassword) {
-        this.adminpassword = adminpassword;
-    }
-
-    /**
-     * Gets the admin email
-     *
-     * @return the admin email
-     */
-    public String getAdminEmail() {
-        return email;
-    }   
-
-    /**
-     * Sets the amdin email
-     *
-     * @param email the amdin email
-     */
-    public void setAdminEmail(String email) {
-        this.email = email;
-    }
-
-    /**
-     * Gets the name associated with the amdin
-     *
-     * @return the admin name
-     */
-    public String getAdminname() {
-        return adminname;
-    }
-
-    /**
-     * Sets the name associated with the admin.
-     *
-     * @param adminname the admin name
-     */
-    public void setAdminname(String adminname) {
-        this.adminname = adminname;
-    }
-
-    /**
-     * Gets the surname associated with the admin.
-     *
-     * @return the admin surname
-     */
-    public String getAdminsurname() {
-        return adminsurname;
-    }
-
-    /**
-     * Sets the surname associated with the admin.
-     *
-     * @param adminsurname the admin surname
-     */
-    public void setAdminsurname(String adminsurname) {
-        this.adminsurname = adminsurname;
-    }
-
-    /**
-     * Gets the phone number associated with the admin.
-     *
-     * @return the admin phone number
-     */
-    public String getAdminphonenumber() {
-        return adminphonenumber;
-    }
-
-    /**
-     * Sets the phone number associated with the admin.
-     *
-     * @param adminphonenumber the admin phone number
-     */
-    public void setAdminphonenumber(String adminphonenumber) {
-        this.adminphonenumber = adminphonenumber;
-    }
-
-    /**
      * Gets the date the admin account was created.
      *
      * @return the admin creation date
@@ -222,24 +111,6 @@ public class Admin {
      */
     public void setAdminaccesslevel(int adminaccesslevel) {
         this.adminaccesslevel = adminaccesslevel;
-    }
-
-    /**
-     * Gets the address associated with the admin.
-     *
-     * @return the admin address
-     */
-    public Address getAdminaddressid() {
-        return adminaddressid;
-    }
-
-    /**
-     * Sets the address associated with the admin.
-     *
-     * @param adminaddressid the admin address
-     */
-    public void setAdminaddressid(Address adminaddressid) {
-        this.adminaddressid = adminaddressid;
     }
     
 }

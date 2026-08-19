@@ -12,13 +12,17 @@ abstract class ITaskService {
     int limit = 50,
     int offset = 0,
   });
+
   Future<Task> createTask({
     required int dependentId,
     required int taskTypeId,
     required DateTime startDate,
     required bool isImmediate,
     required bool needsSpecialist,
+    String? title,
+    String? instructions,
   });
+
   Future<Task> updateTask({
     required int taskId,
     int? taskTypeId,
@@ -119,6 +123,8 @@ class TaskService implements ITaskService {
     required DateTime startDate,
     required bool isImmediate,
     required bool needsSpecialist,
+    String? title,
+    String? instructions,
   }) async {
     try {
       final token = await _getToken();
@@ -130,6 +136,8 @@ class TaskService implements ITaskService {
           'startDate': startDate.toIso8601String().split('T').first,
           'isImmediate': isImmediate,
           'needsSpecialist': needsSpecialist,
+          'title': title,
+          'instructions': instructions,
         },
         options: token != null
             ? Options(headers: {'Authorization': 'Bearer $token'})
@@ -207,19 +215,45 @@ class TaskService implements ITaskService {
   }
 
   
-  
-
-@override
-Future<int?> getDependentIdForUser(int userId) async {
+  @override
+  Future<int?> getDependentIdForUser(int userId) async {
     try {
+  
       final prefs = await SharedPreferences.getInstance();
       final stored = prefs.getInt('current_dependent_id');
       if (stored != null) return stored;
+
+      // fall back
+      final token = await _getToken();
+      final Response<List<dynamic>> res = await _dio.get(
+        '/api/dependents',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        for (final d in res.data!) {
+          final user = d['userid'];
+          final uid = user is Map
+              ? (user['userid'] ?? user['userId'])
+              : d['userId'] ?? d['userid'];
+          if (uid == userId) {
+            final id = d['dependentId'] ?? d['dependent_id'] ?? d['dependentid'];
+            if (id != null) {
+              await prefs.setInt('current_dependent_id', id as int);
+              return id ;
+            }
+          }
+        }
+      }
       return null;
     } catch (_) {
       return null;
     }
   }
+
+
+
   @override
   Future<int?> getHelperIdForUser(int userId) async {
     try {
@@ -338,7 +372,5 @@ Future<void> declineTaskInvitation(int taskId) async {
       throw Exception("Couldn't match helpers for task: ${e.message}");
     }
   }
-
-
 
 }
