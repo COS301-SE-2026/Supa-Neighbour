@@ -95,7 +95,7 @@ class Task {
     date: startDate,
     time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
     xpReward: _resolveXpReward(json['taskTypeId'] as int?),
-    instructions: json['adminReview'] as String? ?? '',
+    instructions: json['instructions'] as String? ?? '',
     status: status,
     createdAt: startDate,
     createdBy: json['requesterUserId']?.toString() ?? 'unknown',
