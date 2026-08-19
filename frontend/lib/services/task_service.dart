@@ -241,7 +241,7 @@ class TaskService implements ITaskService {
             final id = d['dependentId'] ?? d['dependent_id'] ?? d['dependentid'];
             if (id != null) {
               await prefs.setInt('current_dependent_id', id as int);
-              return id as int;
+              return id ;
             }
           }
         }
@@ -372,7 +372,5 @@ Future<void> declineTaskInvitation(int taskId) async {
       throw Exception("Couldn't match helpers for task: ${e.message}");
     }
   }
-
-
 
 }

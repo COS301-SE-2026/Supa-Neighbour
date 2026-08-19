@@ -383,11 +383,36 @@ public class TaskDetailDTO {
         this.requesterUserId = requesterUserId;
     }
 
+    /**
+     *  Gets the title of the created task
+     * @return the title
+     */
+    public String getTitle() {
+         return title;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    /**
+     * Sets the title of the task
+     * @param title which is the title of task.
+     */
+    public void setTitle(String title) { 
+        this.title = title;
+     }
 
-    public String getInstructions() { return instructions; }
-    public void setInstructions(String instructions) { this.instructions = instructions; }
+    /**
+    * Gets the instructions set for a task
+    * @return the instructions 
+    */
+    public String getInstructions() {
+         return instructions; 
+        }
+
+    /**
+     * Sets the instructions associated with a task
+     * @param instructions the specified instructions
+     */
+    public void setInstructions(String instructions) {
+         this.instructions = instructions; 
+        }
 
 }
