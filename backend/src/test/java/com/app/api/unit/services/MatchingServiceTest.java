@@ -1,0 +1,322 @@
+// package com.app.api.unit.services;
+
+// import static org.assertj.core.api.Assertions.assertThat;
+// import static org.mockito.ArgumentMatchers.any;
+// import static org.mockito.ArgumentMatchers.anyInt;
+// import static org.mockito.Mockito.*;
+
+// import java.util.List;
+// import java.util.Optional;
+// import java.util.concurrent.atomic.AtomicInteger;
+
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.extension.ExtendWith;
+// import org.mockito.Mock;
+// import org.mockito.junit.jupiter.MockitoExtension;
+// import org.springframework.context.ApplicationEventPublisher;
+
+// import com.app.api.dtos.MatchedHelperDTO;
+// import com.app.api.events.HelperMatchedEvent;
+// import com.app.api.models.*;
+// import com.app.api.repositories.HelperRepository;
+// import com.app.api.repositories.HelperSkillRepository;
+// import com.app.api.repositories.TaskInvitationRepository;
+// import com.app.api.repositories.TaskInvoiceRepository;
+// import com.app.api.services.MatchingService;
+// import com.app.api.services.NotificationsService;
+// import com.app.api.services.LocationService;
+// /**
+//  * Unit tests for {@link MatchingService}.
+//  *
+//  * NOTE: Address only stores a neighbourhood id (foreign key). The actual
+//  * {@link Location} (which carries the neighbourhood name) is resolved via
+//  * {@link LocationService#getLocationById(int)} - that's the only supported
+//  * way to obtain a Location, so LocationService is mocked explicitly here
+//  * rather than assuming Address returns a fully-loaded Location.
+//  */
+// @ExtendWith(MockitoExtension.class)
+// class MatchingServiceTest {
+
+//     @Mock
+//     private HelperRepository helperRepo;
+
+//     @Mock
+//     private HelperSkillRepository helperSkillRepo;
+
+//     @Mock
+//     private TaskInvitationRepository taskInvitationRepo;
+
+//     @Mock
+//     private TaskInvoiceRepository taskInvoiceRepo;
+
+//     @Mock
+//     private NotificationsService notificationsService;
+
+//     @Mock
+//     private LocationService locationService;
+
+//     @Mock
+//     private ApplicationEventPublisher eventPublisher;
+
+//     private MatchingService matchingService;
+
+//     private static final int TASK_ID = 100;
+//     private static final int REQUESTER_USER_ID = 1;
+//     private static final String ZONE = "Sandton";
+//     private static final int TASK_TYPE_ID = 5;
+
+//     // Unique neighbourhood ids handed out per mocked user/address so each
+//     // zone lookup can be stubbed independently on the shared locationService mock.
+//     private final AtomicInteger neighbourhoodIdSeq = new AtomicInteger(1000);
+
+//     private TaskInvoice task;
+
+//     @BeforeEach
+//     void setUp() {
+//         matchingService = new MatchingService(
+//                 helperRepo, helperSkillRepo, taskInvitationRepo,
+//                 taskInvoiceRepo, notificationsService, locationService);
+//         // eventPublisher is @Autowired field-injected in MatchingService (not a
+//         // constructor arg), so it's wired in manually here via reflection.
+//         try {
+//             var field = MatchingService.class.getDeclaredField("eventPublisher");
+//             field.setAccessible(true);
+//             field.set(matchingService, eventPublisher);
+//         } catch (ReflectiveOperationException e) {
+//             throw new RuntimeException(e);
+//         }
+//     }
+
+//     // ---------- helpers to build mock object graphs ----------
+
+//     /**
+//      * Stubs locationService.getLocationById(id) to resolve to a Location
+//      * with the given neighbourhood name, and returns the id to wire onto
+//      * an Address.
+//      */
+//     private int stubZone(String zoneName) {
+//         int neighbourhoodId = neighbourhoodIdSeq.incrementAndGet();
+//         if (zoneName != null) {
+//             Location location = mock(Location.class);
+//             lenient().when(location.getNeighbourhoodName()).thenReturn(zoneName);
+//             lenient().when(locationService.getLocationById(neighbourhoodId)).thenReturn(location);
+//         } else {
+//             lenient().when(locationService.getLocationById(neighbourhoodId)).thenReturn(null);
+//         }
+//         return neighbourhoodId;
+//     }
+
+//     //ISSUESS here
+//     private User mockUser(int userId, String firstName, String lastName, String zoneName) {
+//         User user = mock(User.class);
+//         lenient().when(user.getUserid()).thenReturn(userId);
+//         lenient().when(user.getFirstName()).thenReturn(firstName);
+//         lenient().when(user.getLastName()).thenReturn(lastName);
+ 
+//         Address address = mock(Address.class);
+
+  
+//         lenient().when(user.getAddressid()).thenReturn(address);
+ 
+//         return user;
+//     }
+
+//     private TaskInvoice mockTask(int taskId, int requesterUserId, String zoneName, Integer taskTypeId) {
+//         TaskInvoice t = mock(TaskInvoice.class);
+//         User requesterUser = mockUser(requesterUserId, "Req", "User", zoneName);
+
+//         Dependent dependent = mock(Dependent.class);
+//         lenient().when(dependent.getUserId()).thenReturn(requesterUser);
+
+//         lenient().when(t.getDependentid()).thenReturn(dependent);
+
+//         if (taskTypeId != null) {
+//             TaskType taskType = mock(TaskType.class);
+//             lenient().when(taskType.getTasktypeid()).thenReturn(taskTypeId);
+//             lenient().when(t.getTasktypeid()).thenReturn(taskType);
+//         } else {
+//             lenient().when(t.getTasktypeid()).thenReturn(null);
+//         }
+//         return t;
+//     }
+
+//     private Helper mockHelper(int helperId, int userId, String zoneName, int xp) {
+//         Helper helper = mock(Helper.class);
+//         User user = mockUser(userId, "Helper", "Name" + helperId, zoneName);
+//         lenient().when(helper.getUserid()).thenReturn(user);
+//         lenient().when(helper.getHelperid()).thenReturn(helperId);
+//         lenient().when(helper.getHelperXp()).thenReturn(xp);
+//         return helper;
+//     }
+
+//     private HelperSkill mockSkill(int taskTypeId) {
+//         HelperSkill skill = mock(HelperSkill.class);
+//         TaskType taskType = mock(TaskType.class);
+//         lenient().when(taskType.getTasktypeid()).thenReturn(taskTypeId);
+//         lenient().when(skill.getTaskTypeId()).thenReturn(taskType);
+//         return skill;
+//     }
+
+//     // ---------- tests ----------
+
+//     @Test
+//     void returnsNull_whenTaskNotFound() {
+//         when(taskInvoiceRepo.findById(TASK_ID)).thenReturn(Optional.empty());
+
+//         List<MatchedHelperDTO> result = matchingService.matchHelpersForTask(TASK_ID);
+
+//         assertThat(result).isNull();
+//         verifyNoInteractions(helperRepo, helperSkillRepo, taskInvitationRepo, eventPublisher);
+//     }
+
+//     @Test
+//     void returnsEmptyList_whenRequesterZoneIsNull() {
+//         // Simulate the Location lookup returning null (e.g. a stale/unresolvable id).
+//         task = mockTask(TASK_ID, REQUESTER_USER_ID, null, TASK_TYPE_ID);
+//         when(taskInvoiceRepo.findById(TASK_ID)).thenReturn(Optional.of(task));
+
+//         List<MatchedHelperDTO> result = matchingService.matchHelpersForTask(TASK_ID);
+
+//         assertThat(result).isEmpty();
+//         verifyNoInteractions(helperRepo, helperSkillRepo, taskInvitationRepo, eventPublisher);
+//     }
+
+//     @Test
+//     void excludesHelper_whenHelperIsSameUserAsRequester() {
+//         task = mockTask(TASK_ID, REQUESTER_USER_ID, ZONE, TASK_TYPE_ID);
+//         when(taskInvoiceRepo.findById(TASK_ID)).thenReturn(Optional.of(task));
+
+//         Helper self = mockHelper(1, REQUESTER_USER_ID, ZONE, 50);
+//         when(helperRepo.findByAvailable(true)).thenReturn(List.of(self));
+
+//         List<MatchedHelperDTO> result = matchingService.matchHelpersForTask(TASK_ID);
+
+//         assertThat(result).isEmpty();
+//         verifyNoInteractions(helperSkillRepo, taskInvitationRepo, eventPublisher);
+//     }
+
+//     @Test
+//     void excludesHelper_whenHelperZoneIsNull() {
+//         task = mockTask(TASK_ID, REQUESTER_USER_ID, ZONE, TASK_TYPE_ID);
+//         when(taskInvoiceRepo.findById(TASK_ID)).thenReturn(Optional.of(task));
+
+//         Helper helper = mockHelper(2, 20, null, 50);
+//         when(helperRepo.findByAvailable(true)).thenReturn(List.of(helper));
+
+//         List<MatchedHelperDTO> result = matchingService.matchHelpersForTask(TASK_ID);
+
+//         assertThat(result).isEmpty();
+//     }
+
+//     @Test
+//     void excludesHelper_whenZoneDoesNotMatch() {
+//         task = mockTask(TASK_ID, REQUESTER_USER_ID, ZONE, TASK_TYPE_ID);
+//         when(taskInvoiceRepo.findById(TASK_ID)).thenReturn(Optional.of(task));
+
+//         Helper helper = mockHelper(2, 20, "Randburg", 50);
+//         when(helperRepo.findByAvailable(true)).thenReturn(List.of(helper));
+
+//         List<MatchedHelperDTO> result = matchingService.matchHelpersForTask(TASK_ID);
+
+//         assertThat(result).isEmpty();
+//     }
+
+//     @Test
+//     void excludesHelper_whenTaskTypeIsNull_becauseSkillNeverMatches() {
+//         // taskTypeId == null on the task means skillMatched stays false for every helper,
+//         // so every zone-matching helper is still filtered out.
+//         task = mockTask(TASK_ID, REQUESTER_USER_ID, ZONE, null);
+//         when(taskInvoiceRepo.findById(TASK_ID)).thenReturn(Optional.of(task));
+
+//         Helper helper = mockHelper(2, 20, ZONE, 50);
+//         when(helperRepo.findByAvailable(true)).thenReturn(List.of(helper));
+
+//         List<MatchedHelperDTO> result = matchingService.matchHelpersForTask(TASK_ID);
+
+//         assertThat(result).isEmpty();
+//         verifyNoInteractions(helperSkillRepo, taskInvitationRepo, eventPublisher);
+//     }
+
+//     @Test
+//     void excludesHelper_whenNoMatchingSkill() {
+//         task = mockTask(TASK_ID, REQUESTER_USER_ID, ZONE, TASK_TYPE_ID);
+//         when(taskInvoiceRepo.findById(TASK_ID)).thenReturn(Optional.of(task));
+
+//         Helper helper = mockHelper(2, 20, ZONE, 50);
+//         when(helperRepo.findByAvailable(true)).thenReturn(List.of(helper));
+//         when(helperSkillRepo.findHelperId(2)).thenReturn(List.of(mockSkill(TASK_TYPE_ID + 1)));
+
+//         List<MatchedHelperDTO> result = matchingService.matchHelpersForTask(TASK_ID);
+
+//         assertThat(result).isEmpty();
+//         verify(taskInvitationRepo, never()).save(any());
+//         verifyNoInteractions(eventPublisher);
+//     }
+
+//     @Test
+//     void matchesHelper_createsInvitation_andPublishesEvent_whenNewMatch() {
+//         task = mockTask(TASK_ID, REQUESTER_USER_ID, ZONE, TASK_TYPE_ID);
+//         when(taskInvoiceRepo.findById(TASK_ID)).thenReturn(Optional.of(task));
+
+//         Helper helper = mockHelper(2, 20, ZONE, 75);
+//         when(helperRepo.findByAvailable(true)).thenReturn(List.of(helper));
+//         when(helperSkillRepo.findHelperId(2)).thenReturn(List.of(mockSkill(TASK_TYPE_ID)));
+//         when(taskInvitationRepo.findByTaskId_TaskidAndHelperId_Helperid(TASK_ID, 2))
+//                 .thenReturn(Optional.empty());
+
+//         List<MatchedHelperDTO> result = matchingService.matchHelpersForTask(TASK_ID);
+
+//         assertThat(result).hasSize(1);
+//         MatchedHelperDTO dto = result.get(0);
+//         assertThat(dto.isSkillMatched()).isTrue();
+//         assertThat(dto.getHelperXp()).isEqualTo(75);
+
+//         verify(taskInvitationRepo, times(1)).save(any(TaskInvitation.class));
+//         verify(eventPublisher, times(1)).publishEvent(any(HelperMatchedEvent.class));
+//     }
+
+//     @Test
+//     void matchesHelper_butDoesNotCreateDuplicateInvitation_whenAlreadyExists() {
+//         task = mockTask(TASK_ID, REQUESTER_USER_ID, ZONE, TASK_TYPE_ID);
+//         when(taskInvoiceRepo.findById(TASK_ID)).thenReturn(Optional.of(task));
+
+//         Helper helper = mockHelper(2, 20, ZONE, 75);
+//         when(helperRepo.findByAvailable(true)).thenReturn(List.of(helper));
+//         when(helperSkillRepo.findHelperId(2)).thenReturn(List.of(mockSkill(TASK_TYPE_ID)));
+
+//         TaskInvitation existing = mock(TaskInvitation.class);
+//         when(taskInvitationRepo.findByTaskId_TaskidAndHelperId_Helperid(TASK_ID, 2))
+//                 .thenReturn(Optional.of(existing));
+
+//         List<MatchedHelperDTO> result = matchingService.matchHelpersForTask(TASK_ID);
+
+//         assertThat(result).hasSize(1);
+//         verify(taskInvitationRepo, never()).save(any());
+//         verifyNoInteractions(eventPublisher);
+//     }
+
+//     @Test
+//     void sortsResults_bySkillMatchedFirst_thenByXpDescending() {
+//         task = mockTask(TASK_ID, REQUESTER_USER_ID, ZONE, TASK_TYPE_ID);
+//         when(taskInvoiceRepo.findById(TASK_ID)).thenReturn(Optional.of(task));
+
+//         Helper lowXpMatched = mockHelper(2, 20, ZONE, 30);
+//         Helper highXpMatched = mockHelper(3, 30, ZONE, 90);
+
+//         when(helperRepo.findByAvailable(true))
+//                 .thenReturn(List.of(lowXpMatched, highXpMatched));
+
+//         when(helperSkillRepo.findHelperId(2)).thenReturn(List.of(mockSkill(TASK_TYPE_ID)));
+//         when(helperSkillRepo.findHelperId(3)).thenReturn(List.of(mockSkill(TASK_TYPE_ID)));
+
+//         when(taskInvitationRepo.findByTaskId_TaskidAndHelperId_Helperid(anyInt(), anyInt()))
+//                 .thenReturn(Optional.empty());
+
+//         List<MatchedHelperDTO> result = matchingService.matchHelpersForTask(TASK_ID);
+
+//         assertThat(result).hasSize(2);
+//         assertThat(result.get(0).getHelperXp()).isEqualTo(90);
+//         assertThat(result.get(1).getHelperXp()).isEqualTo(30);
+//     }
+// }
