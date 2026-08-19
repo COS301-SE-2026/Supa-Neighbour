@@ -102,7 +102,7 @@ class Task {
     helperId: json['helperId']?.toString(),
     requesterName: json['requesterName'] as String?,
     helperName: json['helperName'] as String?,
-    completionNote: json['completionNote'] as String?,
+    completionNote: json['helperRatingId'] as String?,
     completionPhotos: json['completionPhotos'] != null
         ? List<String>.from(json['completionPhotos'] as List)
         : null,

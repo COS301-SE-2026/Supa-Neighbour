@@ -27,8 +27,9 @@ abstract class ITaskService {
     required int taskId,
     int? taskTypeId,
     DateTime? startDate,
-    String? adminReview,
     String? status,
+    String? helperRatingId,      // was helperRatingReview
+    String? dependentRatingId, 
   });
   Future<void> deleteTask(int taskId);
   Future<Map<String, dynamic>> getUserById(int userId);
@@ -155,8 +156,9 @@ class TaskService implements ITaskService {
     required int taskId,
     int? taskTypeId,
     DateTime? startDate,
-    String? adminReview,
     String? status,
+    String? helperRatingId,      // was helperRatingReview
+    String? dependentRatingId,
   }) async {
     try {
       final token = await _getToken();
@@ -165,8 +167,9 @@ class TaskService implements ITaskService {
       if (startDate != null) {
         body['startDate'] = startDate.toIso8601String().split('T').first;
       }
-      if (adminReview != null) body['adminReview'] = adminReview;
       if (status != null) body['status'] = status;
+      if (helperRatingId != null) body['helperRatingId'] = helperRatingId;
+      if (dependentRatingId != null) body['dependentRatingId'] = dependentRatingId;
 
       final Response<Map<String, dynamic>> res = await _dio.put(
         '/tasks/$taskId',

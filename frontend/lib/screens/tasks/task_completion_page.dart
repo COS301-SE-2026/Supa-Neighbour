@@ -129,9 +129,7 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
       await taskService.updateTask(
         taskId: int.parse(widget.taskId),
         status: 'pending_approval',
-        adminReview: _noteController.text.isNotEmpty
-            ? _noteController.text
-            : null,
+        helperRatingId: _noteController.text.isNotEmpty ? _noteController.text : null,
       );
 
       Task.updateTaskStatus(widget.taskId, 'pending_approval');
