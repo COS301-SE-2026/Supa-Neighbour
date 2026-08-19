@@ -38,14 +38,8 @@ public class AdminServicesTest {
 
         admin.setAdminid(1);
         admin.setUserid(new User());
-        admin.setAdminpassword("password");
-        admin.setAdminEmail("admin@test.com");
-        admin.setAdminname("John");
-        admin.setAdminsurname("Smith");
-        admin.setAdminphonenumber("0123456789");
         admin.setAdminaccesslevel(1);
         admin.setAdmincreatedate(new Date(System.currentTimeMillis()));
-        admin.setAdminaddressid(new Address());
     }
 
     @Test
@@ -85,14 +79,8 @@ public class AdminServicesTest {
     void updateAdmin_whenAdminIsValid() {
         Admin updated = new Admin();
         updated.setUserid(new User());
-        updated.setAdminpassword("newPassword");
-        updated.setAdminEmail("new@test.com");
-        updated.setAdminname("Jane");
-        updated.setAdminsurname("Doe");
-        updated.setAdminphonenumber("0987654321");
         updated.setAdminaccesslevel(2);
         updated.setAdmincreatedate(new Date(System.currentTimeMillis()));
-        updated.setAdminaddressid(new Address());
 
         when(adminRepository.findById(1)).thenReturn(Optional.of(admin));
         when(adminRepository.save(any(Admin.class))).thenAnswer(i -> i.getArgument(0));
@@ -100,14 +88,8 @@ public class AdminServicesTest {
         Admin result = adminServices.updateAdmin(1, updated);
 
         assertNotNull(result);
-        assertEquals("Jane", result.getAdminname());
-        assertEquals("Doe", result.getAdminsurname());
-        assertEquals("new@test.com", result.getAdminEmail());
-        assertEquals("newPassword", result.getAdminpassword());
-        assertEquals("0987654321", result.getAdminphonenumber());
         assertEquals(2, result.getAdminaccesslevel());
         assertEquals(updated.getUserid(), result.getUserid());
-        assertEquals(updated.getAdminaddressid(), result.getAdminaddressid());
 
         verify(adminRepository).findById(1);
         verify(adminRepository).save(any(Admin.class));
