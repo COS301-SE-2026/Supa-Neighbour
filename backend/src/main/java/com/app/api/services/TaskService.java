@@ -179,6 +179,14 @@ public class TaskService {
                 
             }
         }
+
+        if (updates.getHelperRatingId() != null) {
+            targetTask.setHelperRatingId(updates.getHelperRatingId());
+        }
+
+        if (updates.getDependentRatingId() != null) {
+            targetTask.setDependentRatingId(updates.getDependentRatingId());
+        }
         Task saved = taskRepo.save(targetTask);
         Hibernate.initialize(saved.getImages()); // force-load while session is open
         return saved;
