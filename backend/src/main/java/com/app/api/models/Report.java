@@ -5,11 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-import java.sql.Date;
-
-import com.azure.core.annotation.Post;
-
-import graphql.language.Comment;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "report_table")
@@ -26,26 +22,26 @@ public class Report {
     @Column(name = "report_type", nullable = false, length = 20)
     private String reportType;
 
-    @Column(name = "report_user_id")
-    private User reporterUserId;
+    @Column(name = "reporter_user_id", nullable = false)
+    private Integer reporterUserId;
 
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    private String status = "submitted";
 
     @Column(name = "admin_id")
-    private Admin adminId;
+    private Integer adminId;
 
     @Column(name = "reported_user_id")
-    private User reportedUserId;
+    private Integer reportedUserId;
 
     @Column(name = "reported_post_id")
-    private Post reportedPostId;
+    private Integer reportedPostId;
 
     @Column(name = "reported_comment_id")
-    private Comment reportedCommentId;
+    private Integer reportedCommentId;
 
     @Column(name = "task_id")
-    private Task taskId;
+    private Integer taskId;
 
     @Column(name = "dispute_reason", length = 30)
     private String disputeReason;
@@ -53,7 +49,7 @@ public class Report {
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
 
-    @Column(name = "description,", columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "violation_type", length = 30)
@@ -69,9 +65,19 @@ public class Report {
     private String actualAction;
 
     @Column(name = "created_at")
-    private Date createdAt;
+    private Timestamp createdAt;
 
     @Column(name = "resolved_at")
-    private Date resolvedAt;
+    private Timestamp resolvedAt;
 
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = new Timestamp(System.currentTimeMillis());
+        }
+
+        if (status == null) {
+            status = "submitted";
+        }
+    }
 }
