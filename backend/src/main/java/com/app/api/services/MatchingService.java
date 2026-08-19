@@ -134,7 +134,7 @@ public class MatchingService {
                    eventPublisher.publishEvent(new HelperMatchedEvent(
                         helper.getUserid().getUserid(),
                         taskId,
-                        newTask //task.getTitle() - TODO: change back
+                        task.getTitle() 
                     ));
                 }
             }
