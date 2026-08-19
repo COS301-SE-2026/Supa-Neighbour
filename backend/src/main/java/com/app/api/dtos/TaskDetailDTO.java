@@ -65,6 +65,13 @@ public class TaskDetailDTO {
     /** User ID of the dependent who requested the task. */
     private Integer requesterUserId;
 
+    /** The task title. */
+    private String title;
+
+    /** The task instructions. */
+    private String instructions;
+
+
     /**
      * Default constructor required for serialization.
      */
@@ -375,4 +382,12 @@ public class TaskDetailDTO {
     public void setRequesterUserId(Integer requesterUserId) {
         this.requesterUserId = requesterUserId;
     }
+
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getInstructions() { return instructions; }
+    public void setInstructions(String instructions) { this.instructions = instructions; }
+
 }

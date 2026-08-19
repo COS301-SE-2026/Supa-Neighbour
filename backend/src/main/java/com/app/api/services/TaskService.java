@@ -240,6 +240,9 @@ public class TaskService {
         dto.setAdminReview(task.getAdminReview());
         dto.setCompatibilityId(task.getCompatibilityId());
         dto.setStatus(task.getStatus());
+        dto.setTitle(task.getTitle());
+        dto.setInstructions(task.getInstructions());
+
 
         if (task.getDependentId() != null) {
             Dependent dependent = dependentRepo.findById(task.getDependentId()).orElse(null);
