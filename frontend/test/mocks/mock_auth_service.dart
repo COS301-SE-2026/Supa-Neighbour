@@ -2,8 +2,6 @@ import 'package:supa_neighbour/models/user_model.dart';
 import 'package:supa_neighbour/services/auth_service.dart';
 
 class MockAuthService implements IAuthService {
-  bool _isLoggedIn = true;
-
   @override
   Future<User> login(String email, String password) async {
     return User.getMockUser();
@@ -16,12 +14,10 @@ class MockAuthService implements IAuthService {
 
   @override
   Future<void> logout() async {
-    _isLoggedIn = false;
   }
 
   @override
   Future<void> deleteAccount() async {
-    _isLoggedIn = false;
   }
 
   @override

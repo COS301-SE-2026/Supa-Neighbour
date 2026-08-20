@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supa_neighbour/providers/service_providers.dart';
-import 'package:supa_neighbour/providers/theme_mode_provider.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
 import 'package:supa_neighbour/screens/profile/privacy_settings_screen.dart';  
 import 'package:supa_neighbour/screens/help/help_menu_screen.dart';      

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supa_neighbour/models/user_profile_response.dart';
 import 'package:supa_neighbour/providers/service_providers.dart';
 import 'package:supa_neighbour/screens/profile/profile_screen.dart';
 import '../../mocks/mock_achievement_service.dart';
