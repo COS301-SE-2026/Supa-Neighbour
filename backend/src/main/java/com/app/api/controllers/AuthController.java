@@ -1,6 +1,7 @@
 package com.app.api.controllers;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,35 +15,31 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
+import com.app.api.models.Badges;
+import com.app.api.models.Dependent;
+import com.app.api.models.Helper;
+import com.app.api.models.HelperAnalytics;
+import com.app.api.models.Ratings;
 import com.app.api.models.Settings;
 import com.app.api.models.Settings.ThemeMode;
 import com.app.api.models.User;
-import com.app.api.models.Helper;
-import com.app.api.models.Dependent;
+import com.app.api.models.UserAchievement;
 import com.app.api.repositories.AddressRepository;
+import com.app.api.repositories.AdminRepository;
+import com.app.api.repositories.BadgesRepository;
 import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.HelperAnalyticsRepository;
 import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.RatingsRepository;
 import com.app.api.repositories.SettingsRepository;
+import com.app.api.repositories.UserAchievementRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.security.AuthenticatedUser;
 import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 
-import com.app.api.models.Badges;
-import com.app.api.models.UserAchievement;
-import com.app.api.repositories.BadgesRepository;
-import com.app.api.repositories.UserAchievementRepository;
-import java.util.List;
-import com.app.api.models.Ratings;
-import com.app.api.models.HelperAnalytics;
-import com.app.api.repositories.HelperAnalyticsRepository;
-
 import jakarta.transaction.Transactional;
-import com.app.api.models.Admin;
-import com.app.api.repositories.AdminRepository;
-import java.sql.Date;
 /**
  * REST controller responsible for user authentication and account management.
  * <p>
@@ -248,65 +245,5 @@ public class AuthController {
         }catch(FirebaseAuthException e) {
             return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(null);
         }
-    }
-
-    @Transactional
-    @PostMapping("/admin/register")
-    public ResponseEntity<?> RegisterAdmin(@RequestHeader("Authorization") String idToken,@RequestBody RegisterRequest request) throws FirebaseAuthException{
-        String token = idToken.replace("Bearer ", "");
-        FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
-
-        User existingUser = userRepository.findByFirebaseUid(decodedToken.getUid()).orElse(null);
-
-        if(existingUser != null){
-            if("Admin".equals(existingUser.getUserType())){
-                return ResponseEntity.status(HttpStatus.SC_CONFLICT).body("This user is already an Admin");
-
-
-            }else{
-                return ResponseEntity.status(HttpStatus.SC_CONFLICT).body("This user already exists as a " + existingUser.getUserType() + ". To make them admin, you may have to use the role update endpoint");
-            }
-        }
-
-        Address address = null;
-        if(request.getAddressId() != null){
-            address = addressRepository.findById(request.getAddressId()).orElseThrow(() -> new RuntimeException("Address not found"));
-        }
-
-        User adminUser = new User();
-        adminUser.setFirebaseUid(decodedToken.getUid());
-        adminUser.setEmail(decodedToken.getEmail());
-        adminUser.setFirstName(request.getFirstName());
-        adminUser.setLastName(request.getLastName());
-        adminUser.setUsername(request.getUsername());
-        adminUser.setPhoneNumber(request.getPhoneNumber());
-        adminUser.setDateOfBirth(request.getDateOfBirth());
-        adminUser.setGender(request.getGender());
-        adminUser.setUserType("Admin");
-
-        Ratings defaultRating = ratingsRepository.findById(DEFAULT_RATING_ID).orElseThrow(() -> new RuntimeException("Default rating tier not found"));
-        adminUser.setRatingid(defaultRating);
-
-        if(address != null){
-            adminUser.setAddressid(address);
-        }
-
-        User savedAdmin = userRepository.save(adminUser);
-
-        Admin admin = new Admin();
-        admin.setUserid(savedAdmin);
-        admin.setAdminaccesslevel(1);
-        admin.setAdmincreatedate(new Date(System.currentTimeMillis()));
-        adminRepository.save(admin);
-
-        Settings adminSettings = new Settings();
-        adminSettings.setUser(savedAdmin);
-        adminSettings.setLastSeen(Instant.now());
-        adminSettings.setShowStatus(true);
-        adminSettings.setMode(ThemeMode.LIGHT);
-        adminSettings.setShowPhoneNo(false);
-        settingsRepository.save(adminSettings);
-
-        return ResponseEntity.ok(savedAdmin);
     }
 }

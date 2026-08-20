@@ -66,7 +66,7 @@ class AuthService implements IAuthService {
     );
 
     if (res.statusCode == 200 && res.data != null) {
-      //await _registerFcmToken();
+      await _registerFcmToken();
       return User.fromJson(res.data!);
     }
 
