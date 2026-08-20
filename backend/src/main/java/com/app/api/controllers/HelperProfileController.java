@@ -62,4 +62,30 @@ public class HelperProfileController {
             return ResponseEntity.status(401).body("Invalid or expired Firebase Token");
         }
     }
+
+    /**
+     * Retrieves the public profile of a helper by their user ID.
+     *
+     * <p>Use this endpoint when you have a user ID rather than a helper ID.
+     * The backend resolves the user ID to the correct helper record.</p>
+     *
+     * @param authHeader the HTTP Authorization header containing a Bearer token
+     * @param userId the user identifier of the helper
+     * @return a {@link ResponseEntity} containing the helper's public profile
+     *         if the request is successful, or a 401/404 otherwise
+     */
+    @GetMapping("by-user/{userId}/profile")
+    public ResponseEntity<?> getHelperProfileByUserId(
+        @RequestHeader("Authorization") String authHeader,
+        @PathVariable int userId
+    ){
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            firebaseAuthService.verifyIdToken(token);
+            HelperProfileResponse response = helperProfileService.getProfileByUserId(userId);
+            return ResponseEntity.ok(response);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid or expired Firebase Token");
+        }
+    }
 }

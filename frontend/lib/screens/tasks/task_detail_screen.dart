@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
 import 'edit_task_screen.dart';
+import '../leaderboard/helper_profile_preview_screen.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class TaskDetailScreen extends ConsumerStatefulWidget {
@@ -142,7 +144,6 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   Text(
                     widget.task.category,
                     style: GoogleFonts.openSans(
-                      // CHANGE: Use AppColors.primaryTeal
                       color: AppColors.primaryTeal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -157,38 +158,72 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             Text(
               widget.task.title,
               style: GoogleFonts.poppins(
-                // CHANGE: Use AppColors.charcoal
                 color: AppColors.charcoal(context),
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 16),
-            
-            // Helper/Requester Info
-            if (widget.task.helperName != null && widget.task.helperName != 'You')
+
+            if (!widget.isRequesterView && widget.task.requesterName != null)
+              GestureDetector(
+                onTap: () {
+                  final requesterId = int.tryParse(widget.task.createdBy);
+                  if (requesterId != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HelperProfilePreviewScreen(
+                          helperId: requesterId,
+                          taskId: widget.task.id,
+                          showRequestButton: false,
+                          isUserId: true,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.person, color: AppColors.primaryTeal(context), size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Requester: ${widget.task.requesterName}',
+                          style: GoogleFonts.openSans(
+                            color: AppColors.charcoal(context),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, color: AppColors.primaryTeal(context), size: 20),
+                    ],
+                  ),
+                ),
+              ),
+
+            if (widget.isRequesterView &&
+                widget.task.helperName != null &&
+                widget.task.helperName != 'You')
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  // CHANGE: Use AppColors.primaryTeal with alpha
                   color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.person,
-                      // CHANGE: Use AppColors.primaryTeal
-                      color: AppColors.primaryTeal(context),
-                      size: 20,
-                    ),
+                    Icon(Icons.person, color: AppColors.primaryTeal(context), size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      widget.isRequesterView
-                          ? 'Helper: ${widget.task.helperName}'
-                          : 'Requester: ${widget.task.requesterName}',
+                      'Helper: ${widget.task.helperName}',
                       style: GoogleFonts.openSans(
-                        // CHANGE: Use AppColors.charcoal
                         color: AppColors.charcoal(context),
                         fontSize: 14,
                       ),
@@ -197,7 +232,8 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 ),
               ),
             const SizedBox(height: 16),
-            
+
+
             // XP Reward Container
             Container(
               padding: const EdgeInsets.all(16),

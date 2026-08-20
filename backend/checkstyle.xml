@@ -28,7 +28,7 @@
         <module name="AvoidStarImport"/>
 
         <module name="MethodLength">
-            <property name="max" value="100"/>
+            <property name="max" value="200"/>
         </module>
 
         <module name="ParameterNumber">

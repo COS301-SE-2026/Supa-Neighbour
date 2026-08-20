@@ -13,7 +13,6 @@ import '../../models/auth_session.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
-
 class MyTasksScreen extends ConsumerStatefulWidget {
   final int initialTab;
   
@@ -312,6 +311,7 @@ Widget _buildTaskCard(Task task, {required bool isRequesterView, bool isAvailabl
               builder: (context) => TaskDetailScreen(
                 task: task,
                 isAvailableTab: true,
+                isRequesterView: false,
               ),
             ),
           );
@@ -369,6 +369,7 @@ Widget _buildTaskCard(Task task, {required bool isRequesterView, bool isAvailabl
               builder: (context) => TaskDetailScreen(
                 task: task,
                 onTaskUpdated: () => _refreshTasks(),
+                isRequesterView: false,
               ),
             ),
           );

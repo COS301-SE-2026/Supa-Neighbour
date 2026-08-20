@@ -128,15 +128,18 @@ Future<void> _submitTask() async {
           return;
         }
 
-       final createdTask = await taskService.createTask(
-        dependentId: dependentId,
+        final createdTask = await taskService.createTask(
+          dependentId: dependentId,
+          taskTypeId: Task.resolveTaskTypeId(_selectedCategory!),
+          startDate: _selectedDate,
+          isImmediate: false,
+          needsSpecialist: false,
+          title: _titleController.text.trim(),
+          instructions: _instructionsController.text.trim().isEmpty
+              ? null
+              : _instructionsController.text.trim(),
+        );
 
-
-      taskTypeId: Task.resolveTaskTypeId(_selectedCategory!),
-      startDate: _selectedDate,
-      isImmediate: false,
-      needsSpecialist: false,
-    );
 
       final taskId = int.tryParse(createdTask.id);
       if (taskId != null) {

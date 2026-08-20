@@ -2,16 +2,20 @@ package com.app.api.unit.controllers;
 
 import com.app.api.controllers.UserController;
 import com.app.api.models.User;
+import com.app.api.repositories.UserDeviceRepository;
+import com.app.api.repositories.UserRepository;
+import com.app.api.security.FirebaseAuthenticationFilter;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.auth.FirebaseAuthException;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import com.app.api.repositories.UserRepository;
 import java.sql.Date;
 import java.util.List;
 
@@ -19,6 +23,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.app.api.dtos.DeviceTokenRequestDTO;
+import org.springframework.http.MediaType;
 
 @WebMvcTest(UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -37,6 +43,17 @@ class UserControllerTest {
 
     @MockitoBean
     private UserRepository userRepository;
+
+    @MockitoBean
+    private UserDeviceRepository userDeviceRepository;
+
+    @MockitoBean
+    private FirebaseAuthenticationFilter firebaseAuthenticationFilter;
+
+    private static final String VALID_AUTH_HEADER = "Bearer valid.jwt.token";
+    private static final String VALID_FCM_TOKEN = "fcm_token_12345";
+    private static final int USER_ID = 10;
+
     @Test
     void getAllUsers_returns200WithList() throws Exception {
         User user1 = new User();
@@ -165,5 +182,144 @@ class UserControllerTest {
                 .andExpect(status().isNotFound());
 
         verify(userService, never()).deleteUser(anyInt());
+    }
+
+    @Test
+    void registerDeviceToken_validToken_returns200() throws Exception {
+        DeviceTokenRequestDTO request = new DeviceTokenRequestDTO();
+        request.setFcmToken(VALID_FCM_TOKEN);
+
+        when(firebaseAuthService.getUserIdFromToken("valid.jwt.token")).thenReturn(USER_ID);
+
+        mockMvc.perform(post("/api/users/me/device-token")
+                .header("Authorization", VALID_AUTH_HEADER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        verify(firebaseAuthService).getUserIdFromToken("valid.jwt.token");
+        verify(userDeviceRepository).upsertToken(USER_ID, VALID_FCM_TOKEN);
+    }
+
+    @Test
+    void registerDeviceToken_invalidAuthHeader_returns401() throws Exception {
+        DeviceTokenRequestDTO request = new DeviceTokenRequestDTO();
+        request.setFcmToken(VALID_FCM_TOKEN);
+
+        String invalidAuthHeader = "InvalidHeader";
+        
+        // FirebaseAuthException is an abstract class, we need to mock it
+        FirebaseAuthException mockException = mock(FirebaseAuthException.class);
+        when(firebaseAuthService.getUserIdFromToken("InvalidHeader"))
+            .thenThrow(mockException);
+
+        mockMvc.perform(post("/api/users/me/device-token")
+                .header("Authorization", invalidAuthHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+
+        verify(userDeviceRepository, never()).upsertToken(anyInt(), anyString());
+    }
+
+     @Test
+    void registerDeviceToken_emptyAuthHeader_returns401() throws Exception {
+        DeviceTokenRequestDTO request = new DeviceTokenRequestDTO();
+        request.setFcmToken(VALID_FCM_TOKEN);
+
+        FirebaseAuthException mockException = mock(FirebaseAuthException.class);
+        when(firebaseAuthService.getUserIdFromToken(""))
+            .thenThrow(mockException);
+
+        mockMvc.perform(post("/api/users/me/device-token")
+                .header("Authorization", "Bearer ")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+
+        verify(userDeviceRepository, never()).upsertToken(anyInt(), anyString());
+    }
+
+    @Test
+    void registerDeviceToken_missingAuthHeader_returns401() throws Exception {
+        DeviceTokenRequestDTO request = new DeviceTokenRequestDTO();
+        request.setFcmToken(VALID_FCM_TOKEN);
+
+        mockMvc.perform(post("/api/users/me/device-token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(firebaseAuthService, userDeviceRepository);
+    }
+
+    @Test
+    void registerDeviceToken_malformedAuthHeader_returns401() throws Exception {
+        DeviceTokenRequestDTO request = new DeviceTokenRequestDTO();
+        request.setFcmToken(VALID_FCM_TOKEN);
+
+        String malformedHeader = "Bearer"; // Missing token part
+
+        FirebaseAuthException mockException = mock(FirebaseAuthException.class);
+        when(firebaseAuthService.getUserIdFromToken("Bearer"))
+            .thenThrow(mockException);
+
+        mockMvc.perform(post("/api/users/me/device-token")
+                .header("Authorization", malformedHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+
+        verify(userDeviceRepository, never()).upsertToken(anyInt(), anyString());
+    }
+
+    @Test
+    void registerDeviceToken_nullFcmToken_stillReturns200() throws Exception {
+        DeviceTokenRequestDTO request = new DeviceTokenRequestDTO();
+        request.setFcmToken(null);
+
+        when(firebaseAuthService.getUserIdFromToken("valid.jwt.token")).thenReturn(USER_ID);
+
+        mockMvc.perform(post("/api/users/me/device-token")
+                .header("Authorization", VALID_AUTH_HEADER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        verify(userDeviceRepository).upsertToken(USER_ID, null);
+    }
+
+    @Test
+    void registerDeviceToken_emptyFcmToken_stillReturns200() throws Exception {
+        DeviceTokenRequestDTO request = new DeviceTokenRequestDTO();
+        request.setFcmToken("");
+
+        when(firebaseAuthService.getUserIdFromToken("valid.jwt.token")).thenReturn(USER_ID);
+
+        mockMvc.perform(post("/api/users/me/device-token")
+                .header("Authorization", VALID_AUTH_HEADER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        verify(userDeviceRepository).upsertToken(USER_ID, "");
+    }
+
+    @Test
+    void registerDeviceToken_expiredToken_returns401() throws Exception {
+        DeviceTokenRequestDTO request = new DeviceTokenRequestDTO();
+        request.setFcmToken(VALID_FCM_TOKEN);
+
+        FirebaseAuthException mockException = mock(FirebaseAuthException.class);
+        when(firebaseAuthService.getUserIdFromToken("valid.jwt.token"))
+            .thenThrow(mockException);
+
+        mockMvc.perform(post("/api/users/me/device-token")
+                .header("Authorization", VALID_AUTH_HEADER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+
+        verify(userDeviceRepository, never()).upsertToken(anyInt(), anyString());
     }
 }

@@ -22,12 +22,22 @@ import com.app.api.models.Dependent;
 import com.app.api.repositories.AddressRepository;
 import com.app.api.repositories.DependentRepository;
 import com.app.api.repositories.HelperRepository;
+import com.app.api.repositories.RatingsRepository;
 import com.app.api.repositories.SettingsRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.security.AuthenticatedUser;
 import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+
+import com.app.api.models.Badges;
+import com.app.api.models.UserAchievement;
+import com.app.api.repositories.BadgesRepository;
+import com.app.api.repositories.UserAchievementRepository;
+import java.util.List;
+import com.app.api.models.Ratings;
+import com.app.api.models.HelperAnalytics;
+import com.app.api.repositories.HelperAnalyticsRepository;
 
 import jakarta.transaction.Transactional;
 /**
@@ -51,14 +61,17 @@ public class AuthController {
     private final SettingsRepository settingsRepository;
     private final HelperRepository helperRepository;
     private final DependentRepository dependentRepository;
-    /**
-     * Service responsible for verifying Firebase ID tokens.
-     */
     private final FirebaseAuthService firebaseAuthService;
-    /**
-     * Repository used to manage application users.
-     */
     private final UserRepository userRepository;
+
+    private final BadgesRepository badgesRepository;
+    private final UserAchievementRepository userAchievementRepository;
+    private final HelperAnalyticsRepository helperAnalyticsRepository;
+    
+    private final RatingsRepository ratingsRepository;
+
+    /** rating_id of the default "Unranked" tier assigned to new users on registration. */
+    private static final int DEFAULT_RATING_ID = 6;
 
     /**
      * Creates a new authentication controller.
@@ -66,15 +79,18 @@ public class AuthController {
      * @param firebaseAuthService the Firebase authentication service
      * @param userRepository the repository used to manage users
      */
-    public AuthController(FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository, SettingsRepository settingsRepository, HelperRepository helperRepository, DependentRepository dependentRepository) {
+    public AuthController(FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository, SettingsRepository settingsRepository, HelperRepository helperRepository, DependentRepository dependentRepository, BadgesRepository badgesRepository,UserAchievementRepository userAchievementRepository, RatingsRepository ratingsRepository, HelperAnalyticsRepository helperAnalyticsRepository) {
             this.firebaseAuthService = firebaseAuthService;
             this.userRepository = userRepository;
             this.addressRepository = addressRepository;
             this.settingsRepository = settingsRepository;
             this.helperRepository = helperRepository;
             this.dependentRepository = dependentRepository;
-
-        }
+            this.badgesRepository = badgesRepository;
+            this.userAchievementRepository = userAchievementRepository;
+            this.ratingsRepository = ratingsRepository;
+            this.helperAnalyticsRepository = helperAnalyticsRepository;
+    }
 
     /**
      * Registers a new user using a Firebase ID token.
@@ -122,6 +138,10 @@ public class AuthController {
         user.setGender(request.getGender());
         user.setUserType(request.getUserType());
 
+        Ratings defaultRating = ratingsRepository.findById(DEFAULT_RATING_ID)
+            .orElseThrow(() -> new RuntimeException("Default rating tier not found"));
+        user.setRatingid(defaultRating);
+
         user.setAddressid(address);
 
         User savedUser = userRepository.save(user);
@@ -135,6 +155,17 @@ public class AuthController {
 
         settingsRepository.save(defaultSettings);
 
+        List<Badges> allBadges = badgesRepository.findAll();
+        for(Badges badge: allBadges){
+            UserAchievement userAchievement = new UserAchievement();
+            userAchievement.setUserId(savedUser);
+            userAchievement.setBadgeId(badge);
+            userAchievement.setProgressCurrent(0);
+            userAchievement.setProgressTarget(badge.getXpReward());
+            userAchievement.setAwardedOn(null);
+            userAchievementRepository.save(userAchievement);
+        }
+
         if(!"Admin".equals(savedUser.getUserType())){
             Helper helper = new Helper();
             helper.setUserid(savedUser);
@@ -142,11 +173,21 @@ public class AuthController {
             helper.setAvailable(false);
             helperRepository.save(helper);
 
+            String analyticsId = "HELPER_" + savedUser.getFirstName().toUpperCase();
+            if(helperAnalyticsRepository.existsById(analyticsId)){
+                analyticsId = analyticsId + "_" + savedUser.getUserid();
+            }
+
+            HelperAnalytics helperAnalytics = new HelperAnalytics();
+            helperAnalytics.setHelperAnalyticsid(analyticsId);
+            helperAnalytics.setUserid(savedUser);
+            helperAnalytics.setAverageRating(0.0f);
+            helperAnalyticsRepository.save(helperAnalytics);
+
             Dependent dependent = new Dependent();
             dependent.setUserId(savedUser);
             dependentRepository.save(dependent);
         }
-
         return ResponseEntity.ok(user);
     }
 

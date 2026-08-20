@@ -88,7 +88,9 @@ class Task {
 
   return Task(
     id: (json['taskId'] as int).toString(),
-    title: _resolveCategoryName(json['taskTypeId'] as int?),
+    title: (json['title'] as String?)?.isNotEmpty == true
+    ? json['title'] as String
+    : _resolveCategoryName(json['taskTypeId'] as int?),
     category: _resolveCategoryName(json['taskTypeId'] as int?),
     date: startDate,
     time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
@@ -96,7 +98,7 @@ class Task {
     instructions: json['adminReview'] as String? ?? '',
     status: status,
     createdAt: startDate,
-    createdBy: json['dependentId']?.toString() ?? 'unknown',
+    createdBy: json['requesterUserId']?.toString() ?? 'unknown',
     helperId: json['helperId']?.toString(),
     requesterName: json['requesterName'] as String?,
     helperName: json['helperName'] as String?,
@@ -124,7 +126,7 @@ class Task {
       instructions: '', // not returned by this endpoint
       status: json['status'] as String? ?? 'open',
       createdAt: parsedDate,
-      createdBy: '', // dependentId not returned - see below
+      createdBy: json['requesterUserId']?.toString() ?? '',
       helperId: null, // this IS the helper's own task list; not relevant here
       requesterName: json['requesterName'] as String?,
       helperName: null,

@@ -2,18 +2,23 @@ package com.app.api.services;
 
 import java.sql.Timestamp;
 import java.util.List;
- 
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
  
 import com.app.api.dtos.CreatePostRequest;
 import com.app.api.dtos.PostFeedItemDTO;
 import com.app.api.dtos.PostFeedResponseDTO;
+import com.app.api.events.PostCreatedEvent;
 import com.app.api.models.Posts;
 import com.app.api.models.User;
 import com.app.api.repositories.BulletinFeedRepository;
 import com.app.api.repositories.PostsRepository;
 import com.app.api.repositories.UserRepository;
-import com.app.api.services.BlobStorageService;
+
+import jakarta.transaction.Transactional;
+
 import com.app.api.dtos.PostDetailDTO;
 
 
@@ -32,16 +37,20 @@ public class PostsService {
 
     private static final String EXPECTED_BLOB_HOST = "blob.core.windows.net";
     private static final String DEFAULT_CATEGORY = "general";
+    
+    @Autowired
+    private final ApplicationEventPublisher eventPublisher;
     /**
      * Constructs the repository with its required service dependency.
      *
      * @param postsRepository repository providing analytics data for posts
      */
-    public PostsService(PostsRepository postsRepository, UserRepository userRepository,  BulletinFeedRepository bulletinFeedRepository, BlobStorageService blobStorageService) {
+    public PostsService(PostsRepository postsRepository, UserRepository userRepository,  BulletinFeedRepository bulletinFeedRepository, BlobStorageService blobStorageService, ApplicationEventPublisher eventPublisher) {
         this.postsRepository = postsRepository;
         this.userRepository = userRepository;
         this.bulletinFeedRepository = bulletinFeedRepository;
         this.blobStorageService = blobStorageService;
+        this.eventPublisher = eventPublisher;
     }
 
     // Get all
@@ -103,6 +112,7 @@ public class PostsService {
      * @param request the validated request body
      * @return the saved post
      */
+    @Transactional
     public Posts createPost(int userId, CreatePostRequest request){
         User user = userRepository.findById(userId).orElse(null);
         if(user == null){
@@ -134,7 +144,19 @@ public class PostsService {
         post.setCreatedAt(now);
         post.setUpdatedAt(now);
 
-        return postsRepository.save(post);
+        Posts saved = postsRepository.save(post);
+        BulletinFeedRepository.CallerNeighbourhood neighbourhood = bulletinFeedRepository.findCallerNeighbourhood(userId);
+        if(neighbourhood != null){
+            List<Integer> recipients = bulletinFeedRepository.findUserIdsInNeighbourhood(
+                neighbourhood.getLocationId(), userId
+            );
+
+            if(recipients.isEmpty()){
+                String preview = request.getPostContent().length() > 80 ? request.getPostContent().substring(0, 80) + "..." : request.getPostContent();
+                eventPublisher.publishEvent(new PostCreatedEvent(recipients, saved.getPostid(), preview));
+            }
+        }
+        return saved;
     }
     // Update
     /**

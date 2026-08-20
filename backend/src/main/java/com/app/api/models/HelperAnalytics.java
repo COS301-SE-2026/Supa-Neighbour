@@ -34,15 +34,9 @@ public class HelperAnalytics {
     @JoinColumn(name = "location_id")
     private Location locationid;
 
-    @ManyToOne
-    @JoinColumn(name = "compatibility_id")
-    private Compatibility compatibilityid;
-
     @Column(name = "average_rating")
     private float averageRating;
 
-    @Column(name = "average_giving_rating")
-    private float averageGivingRating;
 
     /**
      * Default constructor.
@@ -63,14 +57,12 @@ public class HelperAnalytics {
     * @param averageRating      the average rating received by the helper
     * @param averageGivingRating the average rating given by the helper
     */
-    public HelperAnalytics(String helperAnalyticsid,User userid, TaskType taskTypeid, Location locationid, Compatibility compatibilityid, float averageRating, float averageGivingRating) {
+    public HelperAnalytics(String helperAnalyticsid,User userid, TaskType taskTypeid, Location locationid, float averageRating) {
         this.userid=userid;
         this.helperAnalyticsid = helperAnalyticsid;
         this.taskTypeid = taskTypeid;
         this.locationid = locationid;
-        this.compatibilityid = compatibilityid;
         this.averageRating = averageRating;
-        this.averageGivingRating = averageGivingRating;
     }
 
     /**
@@ -166,24 +158,6 @@ public class HelperAnalytics {
     }
 
     /**
-     * Gets the compatibility record associated with this helper.
-     *
-     * @return the compatibility record
-     */
-    public Compatibility getCompatibilityid() {
-        return compatibilityid;
-    }
-
-    /**
-     * Sets the compatibility record associated with this helper.
-     *
-     * @param compatibilityid the compatibility record
-     */
-    public void setCompatibilityid(Compatibility compatibilityid) {
-        this.compatibilityid = compatibilityid;
-    }
-
-    /**
      * Gets the average rating received by the helper.
      *
      * @return the average received rating
@@ -199,24 +173,5 @@ public class HelperAnalytics {
      */
     public void setAverageRating(float averageRating) {
         this.averageRating = averageRating;
-    }
-
-    /**
-     * Gets the average rating given by the helper.
-     *
-     * @return the average given rating
-     */
-    public float getAverageGivingRating() {
-        return averageGivingRating;
-    }
-
-    /**
-     * Sets the average rating given by the helper.
-     *
-     * @param averageGivingRating the average given rating
-     */
-    public void setAverageGivingRating(float averageGivingRating) {
-        this.averageGivingRating = averageGivingRating;
-    }
-    
+    }    
 }
