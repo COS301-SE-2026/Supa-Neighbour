@@ -107,7 +107,7 @@ public class HelperTasksRepository {
                     ti.start_date,
                     ti.end_date,
                     tt.xp_worth,
-                    ti.admin_review,
+                    ti.helper_rating_review,
                     u.user_name || ' ' || u.user_surname AS requester_name,
                     u.user_id AS requester_user_id
                 FROM task_invoice_table ti
