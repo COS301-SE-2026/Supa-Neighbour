@@ -116,7 +116,7 @@ void main() {
           'taskTypeId': 1,
           'startDate': now.toIso8601String(),
           'adminReview': 'Water all plants twice',
-          'dependentId': 'user_123',
+          'requesterUserId': 'user_123',
           'status': 'open',
           'helperId': null,
           'requesterName': 'John Doe',
@@ -141,7 +141,7 @@ void main() {
       test('should handle null values gracefully', () {
         final json = {
           'taskId': 2,
-          'startDate': null,
+          'startDate': now.toIso8601String(),
           'adminReview': null,
           'dependentId': null,
         };
@@ -234,7 +234,7 @@ void main() {
       test('should handle null values in helper task JSON', () {
         final json = {
           'taskId': 11,
-          'startDate': null,
+          'startDate': now.toIso8601String(),
         };
 
         final task = Task.fromHelperTaskJson(json);
