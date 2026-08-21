@@ -155,7 +155,6 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
     state = [];
   }
 
-  // ============ ADD THIS METHOD ============
   /// Add a new notification to the list (used for push notifications)
   void addNotification(AppNotification notification) {
     state = [notification, ...state];
@@ -387,8 +386,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         'Dec'
       ][m - 1];
 
-  String _formatTime(DateTime dt) =>
-      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 
   void _handleNotificationTap(AppNotification notification) {
     // Navigate based on notification type
@@ -437,15 +434,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         Navigator.pop(context);
         break;
 
-      default:
-        // Show a generic message for unknown notification types
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Notification: ${notification.title}'),
-            backgroundColor: AppColors.charcoal(context),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+      // REMOVED the default case since all enum values are covered
     }
   }
 }

@@ -37,7 +37,6 @@ class MyApp extends ConsumerWidget {
       navigatorKey: navigatorKey,
       title: 'Super Neighbour',
       debugShowCheckedModeBanner: false,
-      navigatorKey: navigatorKey,  // <-- ADD THIS - uses the global navigatorKey
       themeMode: themeMode,
       theme: ThemeData(
         useMaterial3: true,
