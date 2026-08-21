@@ -6,13 +6,24 @@ import 'firebase_options.dart';
 import 'providers/theme_mode_provider.dart'; 
 //import 'screens/style_guide/style_guide_page.dart';
 import 'screens/landing/landing_page.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const ProviderScope(child: MyApp()));
+
+  // Initialize notification service with a ProviderContainer
+  final container = ProviderContainer();
+  await NotificationService().init(container: container);
+
+  runApp(
+    ProviderScope(
+      parent: container,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends ConsumerWidget {
@@ -24,6 +35,7 @@ class MyApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Super Neighbour',
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,  // <-- ADD THIS - uses the global navigatorKey
       themeMode: themeMode,
       theme: ThemeData(
         useMaterial3: true,
