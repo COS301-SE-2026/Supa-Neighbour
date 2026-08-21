@@ -91,6 +91,52 @@ public class NotificationsService {
             String.valueOf(postId)
         );
     }
+    /**
+     * Send a test notification directly to a specific device token.
+     * This is used for development testing from the Flutter app.
+     * 
+     * @param fcmToken The device FCM token to send to
+     * @param title The notification title
+     * @param body The notification body
+     * @param type The notification type (TASK_CREATED, POST_CREATED, etc.)
+     * @param entityId The ID of the related entity
+     * @throws FirebaseMessagingException if sending fails
+     */
+    public void sendTestNotification(String fcmToken, String title, String body, 
+                                     String type, String entityId) throws FirebaseMessagingException {
+        
+        // Build the FCM message
+        Message message = Message.builder()
+            .setToken(fcmToken)
+            .setNotification(
+                Notification.builder()
+                    .setTitle(title)
+                    .setBody(body)
+                    .build()
+            )
+            .putData("type", type)
+            .putData("entityId", entityId)
+            .putData("click_action", "FLUTTER_NOTIFICATION_CLICK")
+            .build();
+
+        try {
+            // Send the message
+            String response = FirebaseMessaging.getInstance().send(message);
+            System.out.println("✅ Test notification sent successfully: " + response);
+        } catch (FirebaseMessagingException e) {
+            System.err.println("❌ FCM send failed: " + e.getMessage());
+            
+            // If the token is invalid, log it
+            if (e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED || 
+                e.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT) {
+                String tokenPreview = fcmToken.length() > 20 
+                    ? fcmToken.substring(0, 20) + "..." 
+                    : fcmToken;
+                System.err.println("⚠️ Invalid FCM token: " + tokenPreview);
+            }
+            throw e;
+        }
+    }
     
     /**
      * Core send: fans out one FCM message per registered device for the user.
