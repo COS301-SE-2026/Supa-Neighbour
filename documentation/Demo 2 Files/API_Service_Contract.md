@@ -2567,11 +2567,11 @@ Authorization: Bearer <Firebase ID Token>
 
 ---
 
-### 9.5 GET /api/suggestion
+### 9.5 GET /api/report/suggestion
 
 | Field | Details |
 |---|---|
-| **Endpoint** | `/api/suggestion` |
+| **Endpoint** | `/api/report/suggestion` |
 | **Method** | `GET` |
 | **Purpose** | Returns the system-suggested punishment for a given violation type + severity pair, for the admin to accept or override while reviewing a report |
 | **Authentication** | Firebase ID Token required; user must have `isAdmin = true` |
