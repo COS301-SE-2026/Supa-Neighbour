@@ -14,7 +14,7 @@ import '../profile/profile_screen.dart';
 import '../tasks/task_detail_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
-
+import '../notifications/notifications_screen.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -34,6 +34,13 @@ class _HomeScreenState extends State<HomeScreen> {
     const LeaderboardScreen(),
     const ProfileScreen(),
   ];
+
+  // Method to change tab from outside
+  void changeTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +132,9 @@ class _HomeContentState extends ConsumerState<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
+    // Get the parent HomeScreen state to call changeTab
+    final homeScreenState = context.findAncestorStateOfType<_HomeScreenState>();
+
     return Scaffold(
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
@@ -148,7 +158,19 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         actions: [
           IconButton(
             icon: Icon(Icons.notifications_none, color: AppColors.primaryTeal(context)),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationsScreen(
+                    onNotificationTap: (int tabIndex) {
+                      // Call the changeTab method on the parent HomeScreen
+                      homeScreenState?.changeTab(tabIndex);
+                    },
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
