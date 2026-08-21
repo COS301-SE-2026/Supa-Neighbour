@@ -118,9 +118,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       taskId: int.parse(widget.task.id),
       taskTypeId: Task.resolveTaskTypeId(_selectedCategory),
       startDate: _selectedDate,
-      adminReview: _instructionsController.text.isNotEmpty
-          ? _instructionsController.text
-          : 'No additional instructions',
       status: widget.task.status,
     );
 

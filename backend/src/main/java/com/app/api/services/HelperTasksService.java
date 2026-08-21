@@ -78,11 +78,10 @@ public class HelperTasksService {
         (String) row[2], 
         row[3] != null ? row[3].toString() : null, 
         row[4] != null ? row[4].toString() : null,
-        (String) row[5], 
-        row[6] != null ? ((Number) row[6]).intValue() : null,
+        row[5] != null ? ((Number) row[5]).intValue() : null,
+        row[6] != null ? (String) row[6] : null,
         row[7] != null ? (String) row[7] : null,
-        row[8] != null ? (String) row[8] : null,
-        row[9] != null ? ((Number) row[9]).intValue() : null);
+        row[8] != null ? ((Number) row[8]).intValue() : null);
     }
 
     /**

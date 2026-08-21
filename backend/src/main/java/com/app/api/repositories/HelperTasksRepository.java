@@ -106,14 +106,12 @@ public class HelperTasksRepository {
                     ti.status,
                     ti.start_date,
                     ti.end_date,
-                    l.neighbourhood_name,
                     tt.xp_worth,
-                    ti.admin_review,
+                    ti.helper_rating_review,
                     u.user_name || ' ' || u.user_surname AS requester_name,
                     u.user_id AS requester_user_id
                 FROM task_invoice_table ti
                 JOIN task_type_table tt ON tt.task_type_id = ti.task_type_id
-                JOIN location_table l ON l.location_id = ti.location_id
                 LEFT JOIN dependent_table d ON d.dependent_id = ti.dependent_id
                 LEFT JOIN user_table u ON u.user_id = d.user_id
                 WHERE ti.helper_id = :helperId
@@ -144,32 +142,29 @@ public class HelperTasksRepository {
     @SuppressWarnings("unchecked")
     public List<Object[]> findAssignedTasks(int helperId, String statusFilter,
             int limit, int offset) {
-String statusClause = statusFilter != null
-        ? " AND ti.status = :status "
-        : " AND ti.status IN ('assigned', 'in_progress', 'pending_approval', 'completed', 'cancelled') ";
-
-String sql = """
-        SELECT
-            ti.task_id,
-            tt.type_description AS task_type,
-            ti.status,
-            ti.start_date,
-            ti.end_date,
-            l.neighbourhood_name,
-            tt.xp_worth,
-            ti.admin_review,
-            u.user_name || ' ' || u.user_surname AS requester_name,
-            u.user_id AS requester_user_id
-        FROM task_invoice_table ti
-        JOIN task_type_table tt ON tt.task_type_id = ti.task_type_id
-        JOIN location_table l ON l.location_id = ti.location_id
-        LEFT JOIN dependent_table d ON d.dependent_id = ti.dependent_id
-        LEFT JOIN user_table u ON u.user_id = d.user_id
-        WHERE ti.helper_id = :helperId
-        """ + statusClause + """
-        ORDER BY ti.start_date DESC
-        LIMIT :limit OFFSET :offset
-        """;
+            String statusClause = statusFilter != null
+                    ? " AND ti.status = :status "
+                    : " AND ti.status IN ('assigned', 'in_progress', 'pending_approval', 'completed', 'cancelled') ";
+            String sql = """
+                    SELECT
+                        ti.task_id,
+                        tt.type_description AS task_type,
+                        ti.status,
+                        ti.start_date,
+                        ti.end_date,
+                        tt.xp_worth,
+                        ti.admin_review,
+                        u.user_name || ' ' || u.user_surname AS requester_name,
+                        u.user_id AS requester_user_id
+                    FROM task_invoice_table ti
+                    JOIN task_type_table tt ON tt.task_type_id = ti.task_type_id
+                    LEFT JOIN dependent_table d ON d.dependent_id = ti.dependent_id
+                    LEFT JOIN user_table u ON u.user_id = d.user_id
+                    WHERE ti.helper_id = :helperId
+                    """ + statusClause + """
+                    ORDER BY ti.start_date DESC
+                    LIMIT :limit OFFSET :offset
+                    """;
         var query = em.createNativeQuery(sql)
                     .setParameter("helperId", helperId)
                     .setParameter("limit", limit)
