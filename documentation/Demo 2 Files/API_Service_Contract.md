@@ -2758,17 +2758,26 @@ Authorization: Bearer <Firebase ID Token>
 #### Success Response — `200 OK`
 ```json
 [
+  [
   {
-    "reportId": 512,
-    "reportType": "TASK_DISPUTE",
-    "status": "reviewed",
-    "taskId": 301,
-    "disputeReason": "NO_SHOW",
-    "reason": "Helper never arrived",
-    "actualAction": "SUSPEND_7D",
-    "createdAt": "2026-08-14T10:03:00Z",
-    "resolvedAt": "2026-08-14T11:20:00Z"
+    "reportId": 501,
+    "reportType": "POST",
+    "status": "assigned",
+    "adminId": 7,
+    "reporterUserId": 42,
+    "reportedPostId": 88,
+    "reason": "Harassment",
+    "createdAt": "2026-08-14T09:12:00Z",
+    "details": {
+      "postId": 88,
+      "contentSnippet": "Check out this deal, click here to claim your prize...",
+      "category": "general",
+      "mediaURL": null,
+      "authorUserId": 15,
+      "createdAt": "2026-08-13T18:40:00Z"
+    }
   }
+]
 ]
 ```
  
