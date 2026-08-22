@@ -84,7 +84,7 @@ public class UserService {
         existing.setPhoneNumber(updated.getPhoneNumber());
         existing.setRatingid(updated.getRatingid());
         existing.setUserType(updated.getUserType());
-
+        existing.setIsAdmin(updated.getIsAdmin());
         return userRepository.save(existing);
     }
 

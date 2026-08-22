@@ -115,6 +115,7 @@ public class UserController {
         existing.setPhoneNumber(user.getPhoneNumber());
         existing.setDateOfBirth(user.getDateOfBirth());
         existing.setGender(user.getGender());
+        existing.setIsAdmin(user.getIsAdmin());
         User updated = userService.updateUser(id, user);
         return ResponseEntity.ok(updated);
     }
