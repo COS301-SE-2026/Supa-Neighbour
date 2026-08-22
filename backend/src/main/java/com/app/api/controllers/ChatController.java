@@ -1,5 +1,6 @@
 package com.app.api.controllers;
 
+import com.app.api.dtos.ChatResponseDTO;
 import com.app.api.services.ChatService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,12 +14,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PutMapping;
 
 
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.HashMap;
+import com.app.api.services.FirebaseAuthService;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 
 
 /**
@@ -31,12 +37,16 @@ public class ChatController {
     /** The chat service. */
     private final ChatService chatService;
 
+    private final FirebaseAuthService firebaseAuthService;
+
+
     /**
      * Constructs a ChatController with the given ChatService.
      * @param chatService  chat service
      */
-    public ChatController(ChatService chatService) {
+    public ChatController(ChatService chatService, FirebaseAuthService firebaseAuthService) {
         this.chatService = chatService;
+        this.firebaseAuthService = firebaseAuthService;
     }
 
     /**
@@ -140,6 +150,46 @@ public class ChatController {
         return ResponseEntity.ok(res);
     }
 
+    /**
+     * Gets the existing chat for a task, or creates one if none exists yet.
+     * Intended for the "Chat" button shown once a helper is assigned to a task.
+     *
+     * @param taskId the task to open/create a chat for
+     * @param authHeader the HTTP Authorization header containing a Bearer token
+     * @return the chat (200 if it already existed, 201 if newly created),
+     *         404 if the task doesn't exist, 409 if no helper/dependent is
+     *         assigned yet, 403 if the caller isn't part of this task, or
+     *         401 if the Firebase token is invalid or expired
+     */
+    @Operation(summary = "Get or create the chat for a task")
+    @ApiResponse(responseCode = "200", description = "Existing chat returned")
+    @ApiResponse(responseCode = "201", description = "New chat created")
+    @ApiResponse(responseCode = "403", description = "Caller is not a participant in this task")
+    @ApiResponse(responseCode = "404", description = "Task not found")
+    @ApiResponse(responseCode = "409", description = "Task has no assigned helper/dependent yet")
+    @PostMapping("/task/{taskId}")
+    public ResponseEntity<?> getCreateChatForTask(
+        @PathVariable int taskId, 
+        @RequestHeader("Authorization") String authHeader
+    ){
+        int userId;
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            userId = firebaseAuthService.getUserIdFromToken(token);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+        }
 
-    
+        try{
+            ChatResponseDTO result = chatService.getOrCreateChatForTask(taskId, userId);
+            return result.isAlreadyExisted() ? ResponseEntity.ok(result) : ResponseEntity.status(201).body(result);
+        }catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(e.getMessage());
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        }
+    }
+
 }

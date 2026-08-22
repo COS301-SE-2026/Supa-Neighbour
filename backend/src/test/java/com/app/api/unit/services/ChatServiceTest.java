@@ -2,12 +2,12 @@ package com.app.api.unit.services;
 
 import com.app.api.models.Chat;
 import com.app.api.models.Message;
-import com.app.api.models.Task;
 import com.app.api.models.User;
 import com.app.api.models.TaskInvoice;
 import com.app.api.repositories.ChatRepository;
 import com.app.api.services.ChatService;
 import com.app.api.repositories.MessageRepository;
+import com.app.api.repositories.TaskInvoiceRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -41,6 +40,9 @@ public class ChatServiceTest {
 
     private ChatService chatService;
 
+    @Mock
+    private TaskInvoiceRepository taskInvoiceRepository;
+
     private Chat chat;
     private TaskInvoice task;
     private User dependentUser;
@@ -48,7 +50,7 @@ public class ChatServiceTest {
 
     @BeforeEach
     void setup(){
-        chatService = new ChatService(chatRepo, msgRepo);
+        chatService = new ChatService(chatRepo, msgRepo, taskInvoiceRepository);
 
         task = mock(TaskInvoice.class);
         lenient().when(task.getTaskid()).thenReturn(500);
@@ -69,8 +71,6 @@ public class ChatServiceTest {
 
         lenient().when(chat.getDependentUser()).thenReturn(dependentUser);
         lenient().when(chat.getHelperUser()).thenReturn(helperUser);
-
-
     }
 
     @Test
