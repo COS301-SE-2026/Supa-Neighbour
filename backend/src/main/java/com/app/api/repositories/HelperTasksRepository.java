@@ -106,12 +106,14 @@ public class HelperTasksRepository {
                     ti.status,
                     ti.start_date,
                     ti.end_date,
+                    l.neighbourhood_name,
                     tt.xp_worth,
                     ti.helper_rating_review,
                     u.user_name || ' ' || u.user_surname AS requester_name,
                     u.user_id AS requester_user_id
                 FROM task_invoice_table ti
                 JOIN task_type_table tt ON tt.task_type_id = ti.task_type_id
+                LEFT JOIN location_table l ON l.location_id = ti.location_id
                 LEFT JOIN dependent_table d ON d.dependent_id = ti.dependent_id
                 LEFT JOIN user_table u ON u.user_id = d.user_id
                 WHERE ti.helper_id = :helperId
@@ -135,8 +137,8 @@ public class HelperTasksRepository {
      * </p>
      *
      * @param helperId the identifier of the helper
-     * @param limit    the maximum number of task records to return
-     * @param offset   the number of task records to skip for pagination
+     * @param limit the maximum number of task records to return
+     * @param offset the number of task records to skip for pagination
      * @return a list of accepted/assigned task records for the helper
      */
     @SuppressWarnings("unchecked")
@@ -152,12 +154,14 @@ public class HelperTasksRepository {
                         ti.status,
                         ti.start_date,
                         ti.end_date,
+                        l.neighbourhood_name,
                         tt.xp_worth,
                         ti.admin_review,
                         u.user_name || ' ' || u.user_surname AS requester_name,
                         u.user_id AS requester_user_id
                     FROM task_invoice_table ti
                     JOIN task_type_table tt ON tt.task_type_id = ti.task_type_id
+                    LEFT JOIN location_table l ON l.location_id = ti.location_id
                     LEFT JOIN dependent_table d ON d.dependent_id = ti.dependent_id
                     LEFT JOIN user_table u ON u.user_id = d.user_id
                     WHERE ti.helper_id = :helperId
