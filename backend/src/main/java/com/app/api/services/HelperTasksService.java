@@ -19,13 +19,6 @@ import com.app.api.repositories.HelperTasksRepository;
 public class HelperTasksService {
     private final HelperTasksRepository helperTasksRepository;
 
-    private static final List<String> VALID_STATUSES = List.of("Invited", "Declined", "assigned", "Rejected", "in_progress", "pending_approval", "completed", "cancelled");
-
-    private static final List<String> INVITATION_STATUSES = List.of("Invited", "Declined", "Rejected", "Accepted");
-
-    
-    private static final List<String> INVOICE_STATUSES = List.of("assigned", "in_progress", "pending_approval", "completed", "cancelled");
-
     /**
      * Constructs a {@code HelperTasksService} with the required repository.
      *
@@ -72,18 +65,24 @@ public class HelperTasksService {
         return new HelperTaskResponse(helperId, total, tasks);       
     }
 
+    
+    /**
+     * Maps a database row to a {@link HelperTaskDTO}.   
+     */
+
     private HelperTaskDTO mapRow(Object[] row){
         return new HelperTaskDTO(((Number) row[0]).intValue(),
         (String) row[1],
         (String) row[2],
         row[3] != null ? row[3].toString() : null,
         row[4] != null ? row[4].toString() : null,
-        row[5] != null ? (String) row[5] : null,
+        row[5] != null ? row[5].toString() : null,
         row[6] != null ? ((Number) row[6]).intValue() : null,
         row[7] != null ? (String) row[7] : null,
         row[8] != null ? (String) row[8] : null,
         row[9] != null ? ((Number) row[9]).intValue() : null);
     }
+
 
     /**
      * Retrieves a helper's completed tasks.
