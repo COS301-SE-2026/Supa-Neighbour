@@ -1,16 +1,12 @@
 package com.app.api.services;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.app.api.dtos.ReportResponseDTO;
 import com.app.api.models.Report;
 import com.app.api.repositories.ReportRepository;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import com.app.api.dtos.ReportResponseDTO;
-import com.app.api.services.ReportDetailService;
 
 @Service
 public class ReportService {
@@ -18,6 +14,12 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final ReportDetailService reportDetailService;
 
+    /**
+     * Constructs a new ReportService with the required dependencies.
+     * 
+     * @param reportRepository the repository for Report entity operations
+     * @param reportDetailService the service for ReportDetail business logic
+     */
     public ReportService(ReportRepository reportRepository, ReportDetailService reportDetailService){
         this.reportRepository = reportRepository;
         this.reportDetailService = reportDetailService;

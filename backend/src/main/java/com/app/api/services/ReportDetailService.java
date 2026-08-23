@@ -1,4 +1,8 @@
 package com.app.api.services;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
 import com.app.api.dtos.CommentSummaryDTO;
 import com.app.api.dtos.PostSummaryDTO;
 import com.app.api.dtos.TaskSummaryDTO;
@@ -12,9 +16,6 @@ import com.app.api.repositories.CommentsRepository;
 import com.app.api.repositories.PostsRepository;
 import com.app.api.repositories.TaskRepository;
 import com.app.api.repositories.UserRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class ReportDetailService {
@@ -25,6 +26,14 @@ public class ReportDetailService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
+    /**
+     * Constructs a new ReportDetailService with the required repository dependencies.
+     * 
+     * @param postsRepository the repository for Post entity operations
+     * @param commentsRepository the repository for Comment entity operations
+     * @param taskRepository the repository for Task entity operations
+     * @param userRepository the repository for User entity operations
+     */
     public ReportDetailService(PostsRepository postsRepository,  CommentsRepository commentsRepository, TaskRepository taskRepository, UserRepository userRepository){
         this.postsRepository = postsRepository;
         this.commentsRepository = commentsRepository;

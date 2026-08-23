@@ -1,24 +1,18 @@
 package com.app.api.controllers;
 
-import com.app.api.models.Report;
-import com.app.api.services.ReportService;
+import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.app.api.services.FirebaseAuthService;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
-import com.app.api.dtos.ReportResponseDTO;
 
-import java.util.List;
+import com.app.api.dtos.ReportResponseDTO;
+import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.ReportService;
+import com.google.firebase.auth.FirebaseAuthException;
 
 @RestController
 @RequestMapping("/api/report")
@@ -27,6 +21,12 @@ public class ReportController {
     private final ReportService reportService;
     private final FirebaseAuthService firebaseAuthService;
 
+    /**
+     * Constructor for ReportController with dependency injection.
+     * 
+     * @param reportService Report service for business operations
+     * @param firebaseAuthService Firebase authentication service
+     */
     public ReportController(ReportService reportService, FirebaseAuthService firebaseAuthService){
         this.reportService = reportService;
         this.firebaseAuthService = firebaseAuthService;
