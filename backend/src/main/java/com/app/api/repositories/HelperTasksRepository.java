@@ -225,8 +225,8 @@ public class HelperTasksRepository {
                     l.neighbourhood_name,
                     tt.xp_worth,
                     tit.admin_review,
-                    u.user_name || ' ' || u.user_surname AS requester_name
-                    u.User_id AS requester_user_id
+                    u.user_name || ' ' || u.user_surname AS requester_name,
+                    u.user_id AS requester_user_id
                 FROM task_invitation_table  ti
                 JOIN task_invoice_table     tit ON tit.task_id     = ti.task_id
                 JOIN task_type_table        tt  ON tt.task_type_id = tit.task_type_id
