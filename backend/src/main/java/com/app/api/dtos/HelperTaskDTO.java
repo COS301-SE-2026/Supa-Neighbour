@@ -37,20 +37,6 @@ public class HelperTaskDTO {
      * @param requesterName the name of the user who requested the task
      * @param requesterUserId the unique identifier of the user who requested the task
      */
-    /**
-     * Creates a helper task data transfer object.
-     *
-     * @param taskId the unique identifier of the task
-     * @param taskType the type of task
-     * @param status the current status of the task
-     * @param startDate the scheduled start date of the task
-     * @param endDate the completion or scheduled end date of the task
-     * @param neighbourhood the neighbourhood where the task is located
-     * @param xpAwarded the experience points awarded for the task, if applicable
-     * @param completionNote the note provided upon task completion, if any
-     * @param requesterName the name of the user who requested the task
-     * @param requesterUserId the unique identifier of the user who requested the task
-     */
     public HelperTaskDTO(int taskId, String taskType, String status, String startDate, String endDate, String neighbourhood, Integer xpAwarded, String completionNote, String requesterName, Integer requesterUserId){
         this.taskId = taskId;
         this.taskType = taskType;
@@ -131,8 +117,8 @@ public class HelperTaskDTO {
 
     /**
      * Returns the completion note provided for the task.
-     * 
-     * $@return the completion note
+     *
+     * @return the completion note
      */
     public String getCompletionNote(){
         return completionNote;
