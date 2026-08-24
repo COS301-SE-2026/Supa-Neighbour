@@ -6,10 +6,11 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.app.api.events.HelperMatchedEvent;
-import com.app.api.events.PostCreatedEvent;
-import com.app.api.services.NotificationsService;
-import com.app.api.events.TaskStartedEvent;
 import com.app.api.events.PostCommentEvent;
+import com.app.api.events.PostCreatedEvent;
+import com.app.api.events.TaskStartedEvent;
+import com.app.api.events.UserWarnedEvent;
+import com.app.api.services.NotificationsService;
 
 /**
  * Event listener component responsible for handling task-related domain events
@@ -65,7 +66,7 @@ public class TaskNotificationListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onTaskStarted(TaskStartedEvent event){
         notificationsService.sendTaskStartNotification(
-            event.getRequesterrUserId(),
+            event.getRequesterUserId(),
             event.getTaskId(), 
             event.getHelperName());
     }
@@ -109,4 +110,21 @@ public class TaskNotificationListener {
             event.getPostId(), 
             event.getCommentorName());
     }   
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onUserWarned(UserWarnedEvent event){
+        notificationsService.sendWarningNotification(event.getUserId(), event.getReportId(), event.getReason());
+    }
+
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onUserSuspended(UserWarnedEvent event){
+        notificationsService.sendSuspensionNotification(event.getUserId(), event.getReportId(), event.getReason());
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onUserBanned(UserWarnedEvent event){
+        notificationsService.sendBanNotification(event.getUserId(), event.getReportId(), event.getReason());
+    }
+
 }
