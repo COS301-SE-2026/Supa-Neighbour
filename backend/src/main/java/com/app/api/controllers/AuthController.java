@@ -108,10 +108,14 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String idToken,@RequestBody RegisterRequest request)
             throws FirebaseAuthException {
-
+        FirebaseToken decodedToken;
         String token = idToken.replace("Bearer ", "");
-
-        FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
+        try{
+            decodedToken = firebaseAuthService.verifyIdToken(token);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).build();
+        }
+        
 
         if (userRepository.findByFirebaseUid(decodedToken.getUid()).isPresent()) {
             return ResponseEntity.status(HttpStatus.SC_CONFLICT)
@@ -205,11 +209,10 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestHeader("Authorization") String idToken) throws FirebaseAuthException {
-        System.out.println("REGISTER ENDPOINT HIT");
         String token = idToken.replace("Bearer ", "");
         FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
 
-        User user =userRepository.findByFirebaseUid(decodedToken.getUid()).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByFirebaseUid(decodedToken.getUid()).orElseThrow(() -> new RuntimeException("User not found"));
 
         return ResponseEntity.ok(user);
     }
@@ -227,21 +230,64 @@ public class AuthController {
     } 
 
     // POST /api/auth/logout
-/**
- * Logs the authenticated user out by revoking their Firebase refresh tokens.
- *
- * @param authHeader the Authorization header, expected as "Bearer <token>"
- * @return 200 OK on success, or 401 if the token is invalid
- */
-@PostMapping("/logout")
-public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader){
-    try{
-        String token = authHeader.replace("Bearer ", "");
-        String uid = firebaseAuthService.verifyIdToken(token).getUid();
-        firebaseAuthService.revokeUserSessions(uid);
-        return ResponseEntity.ok("Logged out successfully");
-    }catch(FirebaseAuthException e) {
-        return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(null);
+    /**
+     * Logs the authenticated user out by revoking their Firebase refresh tokens.
+     *
+     * @param authHeader the Authorization header, expected as "Bearer <token>"
+     * @return 200 OK on success, or 401 if the token is invalid
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader){
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            String uid = firebaseAuthService.verifyIdToken(token).getUid();
+            firebaseAuthService.revokeUserSessions(uid);
+            return ResponseEntity.ok("Logged out successfully");
+        }catch(FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(null);
+        }
     }
-}
+
+    /**
+     * Authenticates an admin user using a Firebase ID token.
+     * <p>
+     * The authentication flow consists of:
+     * <ul>
+     *     <li>Extracting and validating the Firebase ID token from the Authorization header</li>
+     *     <li>Retrieving the user from the database using the Firebase UID</li>
+     *     <li>Verifying that the user has admin privileges</li>
+     * </ul>
+     * </p>
+     * 
+     * @param authHeader the Authorization header containing the Bearer token
+     *                   (format: "Bearer &lt;firebase-token&gt;")
+     * @return a {@link ResponseEntity} containing:
+     *         <ul>
+     *             <li><b>200 OK</b> with the authenticated admin {@link User} if successful</li>
+     *             <li><b>401 UNAUTHORIZED</b> with message "Invalid or expired token" 
+     *                 if the Firebase token is invalid or expired</li>
+     *             <li><b>404 NOT FOUND</b> with message "User not found" 
+     *                 if no user exists with the given Firebase UID</li>
+     *             <li><b>403 FORBIDDEN</b> with message "Not an admin" 
+     *                 if the authenticated user does not have admin privileges</li>
+     *         </ul>
+     */
+    @PostMapping("/admin/login")
+    public ResponseEntity<?> adminLogin(@RequestHeader("Authorization") String authHeader){
+        User user;
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
+            user = userRepository.findByFirebaseUid(decodedToken.getUid()).orElseThrow(() -> new RuntimeException("User not found"));
+        } catch (FirebaseAuthException e) {
+                return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body("Invalid or expired token");
+        } catch (RuntimeException e) {
+                return ResponseEntity.status(HttpStatus.SC_NOT_FOUND).body("User not found");
+        }
+        if(!Boolean.TRUE.equals(user.getIsAdmin())){
+            return ResponseEntity.status(HttpStatus.SC_FORBIDDEN).body("Not an admin");
+        }
+
+        return ResponseEntity.ok(user);
+    }
 }

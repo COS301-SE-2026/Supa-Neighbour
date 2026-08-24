@@ -98,25 +98,23 @@ public class UserController {
      *         an HTTP 200 (OK) status if the user exists, or
      *         HTTP 404 (Not Found) if no user with the specified ID exists.
      */
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable int id, @RequestBody User user) {
-        User existing = userService.getUserById(id);
-        if (existing == null) {
-            return ResponseEntity.notFound().build();
+    @PutMapping
+    public ResponseEntity<User> updateUser(
+        @RequestHeader("Authorization") String authHeader, 
+        @RequestBody User user
+    ) {
+        int userId;
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            userId = firebaseAuthService.getUserIdFromToken(token);
+            User updated = userService.updateUser(userId, user);
+            if(updated == null){
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(updated);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).build();
         }
-
-        existing.setFirebaseUid(user.getFirebaseUid());
-        existing.setEmailVerified(user.isEmailVerified());
-        existing.setPhoneVerified(user.isPhoneVerified());
-        existing.setUsername(user.getUsername());
-        existing.setFirstName(user.getFirstName());
-        existing.setLastName(user.getLastName());
-        existing.setEmail(user.getEmail());
-        existing.setPhoneNumber(user.getPhoneNumber());
-        existing.setDateOfBirth(user.getDateOfBirth());
-        existing.setGender(user.getGender());
-        User updated = userService.updateUser(id, user);
-        return ResponseEntity.ok(updated);
     }
 
     /**
