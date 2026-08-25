@@ -1,6 +1,7 @@
 package com.app.api.controllers;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,30 +15,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
+import com.app.api.models.Badges;
+import com.app.api.models.Dependent;
+import com.app.api.models.Helper;
+import com.app.api.models.HelperAnalytics;
+import com.app.api.models.Ratings;
 import com.app.api.models.Settings;
 import com.app.api.models.Settings.ThemeMode;
 import com.app.api.models.User;
-import com.app.api.models.Helper;
-import com.app.api.models.Dependent;
+import com.app.api.models.UserAchievement;
 import com.app.api.repositories.AddressRepository;
+import com.app.api.repositories.AdminRepository;
+import com.app.api.repositories.BadgesRepository;
 import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.HelperAnalyticsRepository;
 import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.RatingsRepository;
 import com.app.api.repositories.SettingsRepository;
+import com.app.api.repositories.UserAchievementRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.security.AuthenticatedUser;
 import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-
-import com.app.api.models.Badges;
-import com.app.api.models.UserAchievement;
-import com.app.api.repositories.BadgesRepository;
-import com.app.api.repositories.UserAchievementRepository;
-import java.util.List;
-import com.app.api.models.Ratings;
-import com.app.api.models.HelperAnalytics;
-import com.app.api.repositories.HelperAnalyticsRepository;
 
 import jakarta.transaction.Transactional;
 /**
@@ -69,6 +69,7 @@ public class AuthController {
     private final HelperAnalyticsRepository helperAnalyticsRepository;
     
     private final RatingsRepository ratingsRepository;
+    private final AdminRepository adminRepository;
 
     /** rating_id of the default "Unranked" tier assigned to new users on registration. */
     private static final int DEFAULT_RATING_ID = 6;
@@ -79,7 +80,7 @@ public class AuthController {
      * @param firebaseAuthService the Firebase authentication service
      * @param userRepository the repository used to manage users
      */
-    public AuthController(FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository, SettingsRepository settingsRepository, HelperRepository helperRepository, DependentRepository dependentRepository, BadgesRepository badgesRepository,UserAchievementRepository userAchievementRepository, RatingsRepository ratingsRepository, HelperAnalyticsRepository helperAnalyticsRepository) {
+    public AuthController(FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository, SettingsRepository settingsRepository, HelperRepository helperRepository, DependentRepository dependentRepository, BadgesRepository badgesRepository,UserAchievementRepository userAchievementRepository, RatingsRepository ratingsRepository, HelperAnalyticsRepository helperAnalyticsRepository, AdminRepository adminRepository) {
             this.firebaseAuthService = firebaseAuthService;
             this.userRepository = userRepository;
             this.addressRepository = addressRepository;
@@ -90,6 +91,7 @@ public class AuthController {
             this.userAchievementRepository = userAchievementRepository;
             this.ratingsRepository = ratingsRepository;
             this.helperAnalyticsRepository = helperAnalyticsRepository;
+            this.adminRepository = adminRepository;
     }
 
     /**

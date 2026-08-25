@@ -189,4 +189,3 @@ class HelperTasksServiceTest {
         assertThat(tasks.get(0).getRequesterUserId()).isEqualTo(104);
     }
 }
-
