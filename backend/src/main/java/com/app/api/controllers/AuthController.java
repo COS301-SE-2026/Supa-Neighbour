@@ -40,6 +40,7 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 
 import jakarta.transaction.Transactional;
+import com.app.api.services.ModerationActionService;
 /**
  * REST controller responsible for user authentication and account management.
  * <p>
@@ -70,6 +71,7 @@ public class AuthController {
     
     private final RatingsRepository ratingsRepository;
     private final AdminRepository adminRepository;
+    private final ModerationActionService moderationActionService;
 
     /** rating_id of the default "Unranked" tier assigned to new users on registration. */
     private static final int DEFAULT_RATING_ID = 6;
@@ -80,7 +82,7 @@ public class AuthController {
      * @param firebaseAuthService the Firebase authentication service
      * @param userRepository the repository used to manage users
      */
-    public AuthController(FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository, SettingsRepository settingsRepository, HelperRepository helperRepository, DependentRepository dependentRepository, BadgesRepository badgesRepository,UserAchievementRepository userAchievementRepository, RatingsRepository ratingsRepository, HelperAnalyticsRepository helperAnalyticsRepository, AdminRepository adminRepository) {
+    public AuthController(FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository, SettingsRepository settingsRepository, HelperRepository helperRepository, DependentRepository dependentRepository, BadgesRepository badgesRepository,UserAchievementRepository userAchievementRepository, RatingsRepository ratingsRepository, HelperAnalyticsRepository helperAnalyticsRepository, AdminRepository adminRepository, ModerationActionService moderationActionService) {
             this.firebaseAuthService = firebaseAuthService;
             this.userRepository = userRepository;
             this.addressRepository = addressRepository;
@@ -92,6 +94,7 @@ public class AuthController {
             this.ratingsRepository = ratingsRepository;
             this.helperAnalyticsRepository = helperAnalyticsRepository;
             this.adminRepository = adminRepository;
+            this.moderationActionService = moderationActionService;
     }
 
     /**
@@ -210,11 +213,21 @@ public class AuthController {
      * @throws RuntimeException if no user exists for the authenticated Firebase account
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestHeader("Authorization") String idToken) throws FirebaseAuthException {
+    public ResponseEntity<?> login(
+        @RequestHeader("Authorization") String idToken
+    ) throws FirebaseAuthException {
         String token = idToken.replace("Bearer ", "");
         FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
 
         User user = userRepository.findByFirebaseUid(decodedToken.getUid()).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if(moderationActionService.isBanned(user)){
+            return ResponseEntity.status(HttpStatus.SC_FORBIDDEN).body("Your account has been permanently banned");
+        }
+
+        if(moderationActionService.isSuspended(user)){
+            return ResponseEntity.status(HttpStatus.SC_FORBIDDEN).body("Your account is currently suspended");
+        }
 
         return ResponseEntity.ok(user);
     }

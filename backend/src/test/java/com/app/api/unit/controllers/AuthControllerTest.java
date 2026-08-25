@@ -49,6 +49,7 @@ import com.app.api.repositories.UserAchievementRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.security.AuthenticatedUser;
 import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.ModerationActionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -89,6 +90,9 @@ class AuthControllerTest {
 
     @InjectMocks
     private AuthController authController;
+
+    @Mock
+    private ModerationActionService moderationActionService;
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
@@ -210,14 +214,16 @@ void registerUser_WhenNewUser_ReturnsOkWithUser() throws Exception {
 
     @Test
     void login_WhenUserExists_ReturnsUser() throws Exception {
-
         FirebaseToken decodedToken = mock(FirebaseToken.class);
         when(decodedToken.getUid()).thenReturn("firebase-uid-1");
-
         when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
 
         User user = new User();
         when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.of(user));
+        
+        // ADD THESE MOCKS:
+        when(moderationActionService.isBanned(user)).thenReturn(false);
+        when(moderationActionService.isSuspended(user)).thenReturn(false);
 
         mockMvc.perform(post("/api/auth/login")
                 .header("Authorization", BEARER_TOKEN)
@@ -354,4 +360,65 @@ void registerUser_WhenNewUser_ReturnsOkWithUser() throws Exception {
                 .andExpect(status().isForbidden())
                 .andExpect(content().string("Not an admin"));
     }
+
+    @Test
+    void login_WhenUserIsBanned_ReturnsForbidden() throws Exception {
+        FirebaseToken decodedToken = mock(FirebaseToken.class);
+        when(decodedToken.getUid()).thenReturn("firebase-uid-1");
+        when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
+
+        User user = new User();
+        when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.of(user));
+        
+        when(moderationActionService.isBanned(user)).thenReturn(true);
+        //when(moderationActionService.isSuspended(user)).thenReturn(false);
+
+        mockMvc.perform(post("/api/auth/login")
+                .header("Authorization", BEARER_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("Your account has been permanently banned"));
+    }
+
+    @Test
+    void login_WhenUserIsSuspended_ReturnsForbidden() throws Exception {
+        FirebaseToken decodedToken = mock(FirebaseToken.class);
+        when(decodedToken.getUid()).thenReturn("firebase-uid-1");
+        when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
+
+        User user = new User();
+        when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.of(user));
+        
+        when(moderationActionService.isBanned(user)).thenReturn(false);
+        when(moderationActionService.isSuspended(user)).thenReturn(true);
+
+        mockMvc.perform(post("/api/auth/login")
+                .header("Authorization", BEARER_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("Your account is currently suspended"));
+    }
+
+    @Test
+    void login_WhenUserIsBannedAndSuspended_ReturnsForbiddenWithBanMessage() throws Exception {
+        
+        FirebaseToken decodedToken = mock(FirebaseToken.class);
+        when(decodedToken.getUid()).thenReturn("firebase-uid-1");
+        when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
+
+        User user = new User();
+        when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.of(user));
+        
+        when(moderationActionService.isBanned(user)).thenReturn(true);
+        //when(moderationActionService.isSuspended(user)).thenReturn(true);
+
+        mockMvc.perform(post("/api/auth/login")
+                .header("Authorization", BEARER_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("Your account has been permanently banned"));
+}
 }
