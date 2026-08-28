@@ -38,6 +38,12 @@ public class AnalyticsController {
         this.analyticsService = analyticsService;
     }
 
+    // GET /api/analytics
+    /**
+     * Retrieves all analytics records.
+     *
+     * @return a response containing the list of analytics records
+     */
     @GetMapping
     @Operation(summary = "Get all analytics records", description = "Retrieves a list of all analytics records")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved analytics records")
@@ -45,6 +51,13 @@ public class AnalyticsController {
         return ResponseEntity.ok(analyticsService.getAllAnalytics());
     }
 
+    // GET /api/analytics/1
+    /**
+     * Retrieves an analytics record by its ID.
+     *
+     * @param id the analytics ID
+     * @return a response containing the analytics record, or 404 if not found
+     */
     @GetMapping("/{id}")
     @Operation(summary = "Get analytics by ID", description = "Retrieves a single analytics record by its ID")
     @ApiResponses(value = {
@@ -62,6 +75,13 @@ public class AnalyticsController {
         return ResponseEntity.ok(analytics);
     }
 
+    // POST /api/analytics
+    /**
+     * Creates a new analytics record.
+     *
+     * @param analytics the analytics data to create
+     * @return a response containing the created analytics record
+     */
     @PostMapping
     @Operation(summary = "Create a new analytics record", description = "Creates a new analytics record")
     @ApiResponses(value = {
@@ -73,6 +93,14 @@ public class AnalyticsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    // PUT /api/analytics/1
+    /**
+     * Updates an existing analytics record.
+     *
+     * @param id the analytics ID
+     * @param analytics the updated analytics data
+     * @return a response containing the updated analytics record, or 404 if not found
+     */
     @PutMapping("/{id}")
     @Operation(summary = "Update an analytics record", description = "Updates an existing analytics record by its ID")
     @ApiResponses(value = {
@@ -92,6 +120,13 @@ public class AnalyticsController {
         return ResponseEntity.ok(updated);
     }
 
+    // DELETE /api/analytics/1
+    /**
+     * Deletes an analytics record by its ID.
+     *
+     * @param id the analytics ID
+     * @return a response with no content, or 404 if not found
+     */
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete an analytics record", description = "Deletes an analytics record by its ID")
     @ApiResponses(value = {

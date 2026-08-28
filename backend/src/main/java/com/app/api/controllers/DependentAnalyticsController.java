@@ -15,15 +15,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.models.DependentAnalytics;
 import com.app.api.services.DependentAnalyticsService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
- * 
  * DependentAnalyticsController
  */
 @RestController
 @RequestMapping("/api/dependent-analytics")
+@Tag(name = "Dependent Analytics", description = "Operations for managing dependent analytics records")
 public class DependentAnalyticsController {
 
-    
     private final DependentAnalyticsService dependentAnalyticsService;
 
     /**
@@ -42,6 +49,8 @@ public class DependentAnalyticsController {
      * @return a response containing the list of dependent analytics records
      */
     @GetMapping
+    @Operation(summary = "Get all dependent analytics", description = "Retrieves a list of all dependent analytics records")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved dependent analytics records")
     public ResponseEntity<List<DependentAnalytics>> getAllDependentAnalytics() {
         return ResponseEntity.ok(dependentAnalyticsService.getAllDependentAnalytics());
     }
@@ -54,7 +63,15 @@ public class DependentAnalyticsController {
      * @return a response containing the dependent analytics record, or 404 if not found
      */
     @GetMapping("/{id}")
-    public ResponseEntity<DependentAnalytics> getDependentAnalyticsById(@PathVariable String id) {
+    @Operation(summary = "Get dependent analytics by ID", description = "Retrieves a single dependent analytics record by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Dependent analytics record found"),
+        @ApiResponse(responseCode = "404", description = "Dependent analytics record not found", content = @Content)
+    })
+    public ResponseEntity<DependentAnalytics> getDependentAnalyticsById(
+        @Parameter(description = "ID of the dependent analytics record to retrieve", example = "DEP_001")
+        @PathVariable String id
+    ) {
         DependentAnalytics dependentAnalytics = dependentAnalyticsService.getDependentAnalyticsById(id);
         if (dependentAnalytics == null) {
             return ResponseEntity.notFound().build();
@@ -70,6 +87,11 @@ public class DependentAnalyticsController {
      * @return a response containing the created dependent analytics record
      */
     @PostMapping
+    @Operation(summary = "Create a new dependent analytics record", description = "Creates a new dependent analytics record")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Dependent analytics record created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid dependent analytics data", content = @Content)
+    })
     public ResponseEntity<DependentAnalytics> createDependentAnalytics(@RequestBody DependentAnalytics dependentAnalytics) {
         DependentAnalytics saved = dependentAnalyticsService.saveDependentAnalytics(dependentAnalytics);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -84,7 +106,17 @@ public class DependentAnalyticsController {
      * @return a response containing the updated dependent analytics record, or 404 if not found
      */
     @PutMapping("/{id}")
-    public ResponseEntity<DependentAnalytics> updateDependentAnalytics(@PathVariable String id, @RequestBody DependentAnalytics dependentAnalytics) {
+    @Operation(summary = "Update a dependent analytics record", description = "Updates an existing dependent analytics record by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Dependent analytics record updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Dependent analytics record not found", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid dependent analytics data", content = @Content)
+    })
+    public ResponseEntity<DependentAnalytics> updateDependentAnalytics(
+        @Parameter(description = "ID of the dependent analytics record to update", example = "DEP_001")
+        @PathVariable String id,
+        @RequestBody DependentAnalytics dependentAnalytics
+    ) {
         DependentAnalytics existing = dependentAnalyticsService.getDependentAnalyticsById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();
@@ -101,7 +133,15 @@ public class DependentAnalyticsController {
      * @return a response with no content, or 404 if not found
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDependentAnalytics(@PathVariable String id) {
+    @Operation(summary = "Delete a dependent analytics record", description = "Deletes a dependent analytics record by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Dependent analytics record deleted successfully", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Dependent analytics record not found", content = @Content)
+    })
+    public ResponseEntity<Void> deleteDependentAnalytics(
+        @Parameter(description = "ID of the dependent analytics record to delete", example = "DEP_001")
+        @PathVariable String id
+    ) {
         DependentAnalytics existing = dependentAnalyticsService.getDependentAnalyticsById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();

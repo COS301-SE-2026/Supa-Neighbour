@@ -16,18 +16,25 @@ import org.springframework.web.bind.annotation.RestController;
 import com.app.api.models.TaskType;
 import com.app.api.services.TaskTypeService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST controller for task type.
  */
 @RestController
 @RequestMapping("/api/tasktypes")
+@Tag(name = "Task Types", description = "Operations for managing task types")
 public class TaskTypeController {
-
 
     private final TaskTypeService taskTypeService;
 
     /**
-     * TaskType Contructor
+     * TaskType Constructor
      * @param taskTypeService taskTypeService
      */
     public TaskTypeController(TaskTypeService taskTypeService) {
@@ -39,21 +46,31 @@ public class TaskTypeController {
      * Retrieves all task type.
      *
      * @return a list of all task type
-     */ 
+     */
     @GetMapping
+    @Operation(summary = "Get all task types", description = "Retrieves a list of all task types")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved task types")
     public ResponseEntity<List<TaskType>> getAllTaskTypes() {
         return ResponseEntity.ok(taskTypeService.getAllTaskTypes());
     }
 
     // GET /api/tasktypes/1
-     /**
+    /**
      * Retrieves a task type by its ID.
      *
      * @param id the task type ID
      * @return the task type if found, otherwise 404 Not Found
      */
     @GetMapping("/{id}")
-    public ResponseEntity<TaskType> getTaskTypeById(@PathVariable int id) {
+    @Operation(summary = "Get task type by ID", description = "Retrieves a single task type by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Task type found"),
+        @ApiResponse(responseCode = "404", description = "Task type not found", content = @Content)
+    })
+    public ResponseEntity<TaskType> getTaskTypeById(
+        @Parameter(description = "ID of the task type to retrieve", example = "1")
+        @PathVariable int id
+    ) {
         TaskType taskType = taskTypeService.getTaskTypeById(id);
         if (taskType == null) {
             return ResponseEntity.notFound().build();
@@ -69,6 +86,11 @@ public class TaskTypeController {
      * @return the created task type with HTTP 201 status
      */
     @PostMapping
+    @Operation(summary = "Create a new task type", description = "Creates a new task type")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Task type created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid task type data", content = @Content)
+    })
     public ResponseEntity<TaskType> createTaskType(@RequestBody TaskType taskType) {
         TaskType saved = taskTypeService.saveTaskType(taskType);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -83,7 +105,17 @@ public class TaskTypeController {
      * @return the updated task type if found, otherwise 404 Not Found
      */
     @PutMapping("/{id}")
-    public ResponseEntity<TaskType> updateTaskType(@PathVariable int id, @RequestBody TaskType taskType) {
+    @Operation(summary = "Update a task type", description = "Updates an existing task type by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Task type updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Task type not found", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid task type data", content = @Content)
+    })
+    public ResponseEntity<TaskType> updateTaskType(
+        @Parameter(description = "ID of the task type to update", example = "1")
+        @PathVariable int id,
+        @RequestBody TaskType taskType
+    ) {
         TaskType existing = taskTypeService.getTaskTypeById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();
@@ -100,7 +132,15 @@ public class TaskTypeController {
      * @return 204 No Content if deleted, otherwise 404 Not Found
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTaskType(@PathVariable int id) {
+    @Operation(summary = "Delete a task type", description = "Deletes a task type by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Task type deleted successfully", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Task type not found", content = @Content)
+    })
+    public ResponseEntity<Void> deleteTaskType(
+        @Parameter(description = "ID of the task type to delete", example = "1")
+        @PathVariable int id
+    ) {
         TaskType existing = taskTypeService.getTaskTypeById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();

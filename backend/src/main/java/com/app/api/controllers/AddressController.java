@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.app.api.dtos.AddressInfoDTO;
 import com.app.api.models.Address;
 import com.app.api.services.AddressService;
-import com.app.api.dtos.AddressInfoDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -43,6 +43,11 @@ public class AddressController {
         this.addressService = addressService;
     }
 
+    /**
+     * Get all addresses.
+     *
+     * @return a list of all addresses
+     */
     @GetMapping
     @Operation(summary = "Get all addresses", description = "Retrieves a list of all addresses")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved addresses")
@@ -50,6 +55,12 @@ public class AddressController {
         return ResponseEntity.ok(addressService.getAllAddresses());
     }
 
+    /**
+     * Get a single address by its ID.
+     *
+     * @param id the address ID
+     * @return the matching address, or 404 if not found
+     */
     @GetMapping("/{id}")
     @Operation(summary = "Get address by ID", description = "Retrieves a single address by its ID")
     @ApiResponses(value = {
@@ -67,6 +78,12 @@ public class AddressController {
         return ResponseEntity.ok(address);
     }
 
+    /**
+     * Create a new address.
+     *
+     * @param address the address to create
+     * @return the saved address
+     */
     @PostMapping
     @Operation(summary = "Create a new address", description = "Creates a new address or resolves an existing one")
     @ApiResponses(value = {
@@ -74,10 +91,10 @@ public class AddressController {
         @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content)
     })
     public ResponseEntity<?> createAddress(
-        @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Address information to create or resolve",
             required = true
-        ) AddressInfoDTO request
+        ) @RequestBody AddressInfoDTO request
     ) {
         try{
             Address saved = addressService.resolveOrCreateAddress(request);
@@ -87,6 +104,13 @@ public class AddressController {
         }
     }
 
+    /**
+     * Update an existing address.
+     *
+     * @param id the ID of the address to update
+     * @param address the updated address data
+     * @return the updated address, or 404 if not found
+     */
     @PutMapping("/{id}")
     @Operation(summary = "Update an address", description = "Updates an existing address by its ID")
     @ApiResponses(value = {
@@ -106,6 +130,12 @@ public class AddressController {
         return ResponseEntity.ok(updated);
     }
 
+    /**
+     * Delete an address by its ID.
+     *
+     * @param id the ID of the address to delete
+     * @return 204 No Content, or 404 if not found
+     */
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete an address", description = "Deletes an address by its ID")
     @ApiResponses(value = {

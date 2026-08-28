@@ -39,6 +39,12 @@ public class AdminController {
         this.adminService = adminService;
     }
 
+    // GET /api/admins
+    /**
+     * Retrieves all admins.
+     *
+     * @return a response containing the list of admins
+     */
     @GetMapping
     @Operation(summary = "Get all admins", description = "Retrieves a list of all administrators")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved admins")
@@ -46,6 +52,13 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getAllAdmins());
     }
 
+    // GET /api/admins/1
+    /**
+     * Retrieves an admin by their ID.
+     *
+     * @param id the admin ID
+     * @return a response containing the admin, or 404 if not found
+     */
     @GetMapping("/{id}")
     @Operation(summary = "Get admin by ID", description = "Retrieves a single administrator by their ID")
     @ApiResponses(value = {
@@ -63,6 +76,13 @@ public class AdminController {
         return ResponseEntity.ok(admin);
     }
 
+    // POST /api/admins
+    /**
+     * Creates a new admin.
+     *
+     * @param admin the admin to create
+     * @return a response containing the created admin
+     */
     @PostMapping
     @Operation(summary = "Create a new admin", description = "Creates a new administrator")
     @ApiResponses(value = {
@@ -74,6 +94,14 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    // PUT /api/admins/1
+    /**
+     * Updates an existing admin.
+     *
+     * @param id the admin ID
+     * @param admin the updated admin details
+     * @return a response containing the updated admin, or 404 if not found
+     */
     @PutMapping("/{id}")
     @Operation(summary = "Update an admin", description = "Updates an existing administrator by their ID")
     @ApiResponses(value = {
@@ -93,6 +121,13 @@ public class AdminController {
         return ResponseEntity.ok(updated);
     }
 
+    // DELETE /api/admins/1
+    /**
+     * Deletes an admin by their ID.
+     *
+     * @param id the admin ID
+     * @return a response with no content, or 404 if not found
+     */
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete an admin", description = "Deletes an administrator by their ID")
     @ApiResponses(value = {
