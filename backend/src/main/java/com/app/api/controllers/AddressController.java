@@ -2,7 +2,6 @@ package com.app.api.controllers;
 
 import java.util.List;
 
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,13 +17,20 @@ import com.app.api.models.Address;
 import com.app.api.services.AddressService;
 import com.app.api.dtos.AddressInfoDTO;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST controller for managing addresses.
  */
 @RestController
 @RequestMapping("/api/addresses")
+@Tag(name = "Addresses", description = "Operations for managing addresses")
 public class AddressController {
-
 
     private final AddressService addressService;
 
@@ -37,26 +43,23 @@ public class AddressController {
         this.addressService = addressService;
     }
 
-    // GET /api/addresses
-    /**
-     * Get all addresses.
-     *
-     * @return a list of all addresses
-     */
     @GetMapping
+    @Operation(summary = "Get all addresses", description = "Retrieves a list of all addresses")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved addresses")
     public ResponseEntity<List<Address>> getAllAddresses() {
         return ResponseEntity.ok(addressService.getAllAddresses());
     }
 
-    // GET /api/addresses/1
-    /**
-     * Get a single address by its ID.
-     *
-     * @param id the address ID
-     * @return the matching address, or 404 if not found
-     */
     @GetMapping("/{id}")
-    public ResponseEntity<Address> getAddressById(@PathVariable int id) {
+    @Operation(summary = "Get address by ID", description = "Retrieves a single address by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Address found"),
+        @ApiResponse(responseCode = "404", description = "Address not found", content = @Content)
+    })
+    public ResponseEntity<Address> getAddressById(
+        @Parameter(description = "ID of the address to retrieve", example = "1")
+        @PathVariable int id
+    ) {
         Address address = addressService.getAddressById(id);
         if (address == null) {
             return ResponseEntity.notFound().build();
@@ -64,15 +67,18 @@ public class AddressController {
         return ResponseEntity.ok(address);
     }
 
-    // POST /api/addresses
-    /**
-     * Create a new address.
-     *
-     * @param address the address to create
-     * @return the saved address
-     */
     @PostMapping
-    public ResponseEntity<?> createAddress(@RequestBody AddressInfoDTO request) {
+    @Operation(summary = "Create a new address", description = "Creates a new address or resolves an existing one")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Address created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content)
+    })
+    public ResponseEntity<?> createAddress(
+        @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Address information to create or resolve",
+            required = true
+        ) AddressInfoDTO request
+    ) {
         try{
             Address saved = addressService.resolveOrCreateAddress(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -81,16 +87,17 @@ public class AddressController {
         }
     }
 
-    // PUT /api/addresses/1
-    /**
-     * Update an existing address.
-     *
-     * @param id the ID of the address to update
-     * @param address the updated address data
-     * @return the updated address, or 404 if not found
-     */
     @PutMapping("/{id}")
-    public ResponseEntity<Address> updateAddress(@PathVariable int id, @RequestBody Address address) {
+    @Operation(summary = "Update an address", description = "Updates an existing address by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Address updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Address not found", content = @Content)
+    })
+    public ResponseEntity<Address> updateAddress(
+        @Parameter(description = "ID of the address to update", example = "1")
+        @PathVariable int id,
+        @RequestBody Address address
+    ) {
         Address existing = addressService.getAddressById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();
@@ -99,15 +106,16 @@ public class AddressController {
         return ResponseEntity.ok(updated);
     }
 
-    // DELETE /api/addresses/1
-    /**
-     * Delete an address by its ID.
-     *
-     * @param id the ID of the address to delete
-     * @return 204 No Content, or 404 if not found
-     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAddress(@PathVariable int id) {
+    @Operation(summary = "Delete an address", description = "Deletes an address by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Address deleted successfully", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Address not found", content = @Content)
+    })
+    public ResponseEntity<Void> deleteAddress(
+        @Parameter(description = "ID of the address to delete", example = "1")
+        @PathVariable int id
+    ) {
         Address existing = addressService.getAddressById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();
