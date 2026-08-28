@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -73,7 +74,21 @@ public class SuggestionController {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Suggested action retrieved successfully"
+            description = "Suggested action retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = SuggestionResponseDTO.class),
+                examples = @ExampleObject(
+                    name = "Success Response",
+                    value = """
+                        {
+                          "violationType": "PRIVACY_VIOLATION",
+                          "severity": "SEVERE",
+                          "suggestedAction": "BAN"
+                        }
+                        """
+                )
+            )
         ),
         @ApiResponse(
             responseCode = "400",
@@ -81,6 +96,7 @@ public class SuggestionController {
             content = @Content(
                 mediaType = "text/plain",
                 examples = @ExampleObject(
+                    name = "Invalid Request",
                     value = "Invalid violationType or severity"
                 )
             )
@@ -91,6 +107,7 @@ public class SuggestionController {
             content = @Content(
                 mediaType = "text/plain",
                 examples = @ExampleObject(
+                    name = "Unauthorized",
                     value = "Invalid or expired Firebase token"
                 )
             )
@@ -101,7 +118,18 @@ public class SuggestionController {
         @RequestHeader("Authorization") String authHeader, 
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Violation type and severity to look up the suggested action",
-            required = true
+            required = true,
+            content = @Content(
+                examples = @ExampleObject(
+                    name = "Request Body",
+                    value = """
+                        {
+                          "violationType": "PRIVACY_VIOLATION",
+                          "severity": "SEVERE"
+                        }
+                        """
+                )
+            )
         )
         @RequestBody SuggestionRequestDTO suggestion
     ){
@@ -125,7 +153,7 @@ public class SuggestionController {
 
         SuggestionService.SuggestedAction suggestedAction = suggestionService.getSuggestedAction(parsedViolationType, parsedSeverity);
         if(suggestedAction == null){
-            return ResponseEntity.badRequest().body("No rule defined for this violationType/Sevetiry pair");
+            return ResponseEntity.badRequest().body("No rule defined for this violationType/Severity pair");
         }
 
         return ResponseEntity.ok(new SuggestionResponseDTO(parsedViolationType, parsedSeverity, suggestedAction));

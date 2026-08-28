@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.dtos.TaskDetailDTO;
@@ -31,7 +30,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * REST controller for task-related endpoints.
  */
 @RestController
-@RequestMapping("/api")
 @Tag(name = "Tasks", description = "Operations for managing tasks")
 public class TaskController {
 
