@@ -79,8 +79,14 @@ jobs:
           AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=https;AccountName=fakeaccount;AccountKey=ZmFrZWtleQ==;EndpointSuffix=core.windows.net"
         run: |
           nohup java -jar target/*.jar \
-            --azure.storage.connection-string=$AZURE_STORAGE_CONNECTION_STRING \
-            > app.log 2>&1 &
+            --spring.datasource.url=jdbc:postgresql://localhost:5432/supadb \
+            --spring.datasource.username=supauser \
+            --spring.datasource.password=supapassword \
+            --azure.storage.connection-string="$AZURE_STORAGE_CONNECTION_STRING" \
+            --azure.storage.posts-container=posts \
+            --azure.storage.profiles-container=profiles \
+            --azure.storage.task-images-container=task-images \
+            --azure.storage.chat-images-container=chat-images \
           echo $! > app.pid
         working-directory: backend
 
