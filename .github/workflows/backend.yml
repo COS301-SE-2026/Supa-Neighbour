@@ -117,7 +117,7 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/oasdiff/oasdiff/main/install.sh | sh
 
       - name: Diff against committed baseline
-        run: oasdiff breaking backend/openapi-baseline.yaml openapi-current.yaml --fail-on ERR
+        run: oasdiff breaking backend/openapi.yaml openapi-current.yaml --fail-on ERR
 
   docker: 
     name: Build and Push Docker image
