@@ -1,24 +1,26 @@
 package com.app.api.unit.services;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.*;
- 
-import java.util.List;
- 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.anyInt;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
  
 import com.app.api.dtos.HelperTaskDTO;
-import com.app.api.services.HelperTasksService;
 import com.app.api.dtos.HelperTaskResponse;
 import com.app.api.repositories.HelperTasksRepository;
+import com.app.api.services.HelperTasksService;
  
 @ExtendWith(MockitoExtension.class)
 class HelperTasksServiceTest {
@@ -34,13 +36,13 @@ class HelperTasksServiceTest {
     private static final int LIMIT = 10;
     private static final int OFFSET = 0;
  
-    /** 10-column row shape, matching findAcceptedTasks. */
-    private Object[] acceptedRow(int taskId, String taskType, String status, Object startDate, Object endDate,
-                                  String neighbourhood, Integer xpWorth, String adminReview,
-                                  String requesterName, Integer requesterUserId) {
+        /** 9-column row shape, matching HelperTaskDTO. */
+        private Object[] acceptedRow(int taskId, String taskType, String status, Object startDate, Object endDate,
+                      Integer xpWorth, String completionNote,
+                      String requesterName, Integer requesterUserId) {
         return new Object[] {
-                taskId, taskType, status, startDate, endDate, neighbourhood,
-                xpWorth, adminReview, requesterName, requesterUserId
+            taskId, taskType, status, startDate, endDate, xpWorth,
+            completionNote, requesterName, requesterUserId
         };
     }
 
@@ -62,8 +64,8 @@ class HelperTasksServiceTest {
         when(helperTasksRepository.findHelperByUserId(USER_ID))
             .thenReturn(HELPER_ID);
 
-        Object[] row1 = acceptedRow(1, "Lawn moving", "assigned", "2026-01-10", null, "Sandton", 20, null, "Sarah Johnson", 101);
-        Object[] row2 = acceptedRow(1, "Grocery", "completed", "2026-01-05", "2026-01-06", "Hatfield", 15, "Good and fast", "Sarah Johnson", 102);
+        Object[] row1 = acceptedRow(1, "Lawn moving", "assigned", "2026-01-10", null, 20, null, "Sarah Johnson", 101);
+        Object[] row2 = acceptedRow(1, "Grocery", "completed", "2026-01-05", "2026-01-06", 15, "Good and fast", "Sarah Johnson", 102);
 
         when(helperTasksRepository.findAcceptedTasks(HELPER_ID, LIMIT, OFFSET))
             .thenReturn(List.of(row1,row2));
@@ -83,7 +85,6 @@ class HelperTasksServiceTest {
         assertThat(dto1.getStatus()).isEqualTo("assigned");
         assertThat(dto1.getStartDate()).isEqualTo("2026-01-10");
         assertThat(dto1.getEndDate()).isNull();
-        assertThat(dto1.getNeighbourhood()).isEqualTo("Sandton");
         assertThat(dto1.getXpAwarded()).isEqualTo(20);
         assertThat(dto1.getCompletionNote()).isNull();
         assertThat(dto1.getRequesterName()).isEqualTo("Sarah Johnson");
@@ -142,13 +143,11 @@ class HelperTasksServiceTest {
 
         @Test
         void getCompletedTasks_returnsMappedTasks_whenRowHasAllTenColumns() {
-        // Uses a 10-column row (matching mapRow's expectations) so the
-        // "happy path" mapping logic itself is verified independently of
-        // the column-count bug documented below.
+        // Uses the same 9-column row shape as HelperTaskDTO.
         when(helperTasksRepository.findHelperByUserId(USER_ID)).thenReturn(HELPER_ID);
  
         Object[] row = acceptedRow(3, "Fence repair", "completed", "2025-12-01", "2025-12-02",
-                "Fourways", 25, "Fixed it perfectly", "Cara Lee", 103);
+            25, "Fixed it perfectly", "Cara Lee", 103);
             when(helperTasksRepository.findCompletedTasks(HELPER_ID, LIMIT, OFFSET))
                 .thenReturn(List.<Object[]>of(row));
  
@@ -182,7 +181,7 @@ class HelperTasksServiceTest {
         when(helperTasksRepository.findHelperByUserId(USER_ID))
             .thenReturn(HELPER_ID);
         
-        Object[] row = acceptedRow(4, "Fence repair", "completed", "2025-12-01", "2025-12-02", "Hatfield", 25, "Fixed", "James Bond", 104);
+        Object[] row = acceptedRow(4, "Fence repair", "completed", "2025-12-01", "2025-12-02", 25, "Fixed", "James Bond", 104);
         when(helperTasksRepository.findCompletedTasks(HELPER_ID, LIMIT, OFFSET))
             .thenReturn(List.<Object[]>of(row));
 
@@ -192,4 +191,3 @@ class HelperTasksServiceTest {
         assertThat(tasks.get(0).getRequesterUserId()).isEqualTo(104);
     }
 }
-

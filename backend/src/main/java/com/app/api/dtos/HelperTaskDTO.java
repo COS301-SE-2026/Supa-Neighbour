@@ -17,7 +17,6 @@ public class HelperTaskDTO {
     private String status;
     private String startDate;
     private String endDate;
-    private String neighbourhood;
     private Integer xpAwarded;
     private String completionNote;
     private String requesterName;
@@ -37,13 +36,12 @@ public class HelperTaskDTO {
      * @param requesterName the name of the user who requested the task
      * @param requesterUserId the unique identifier of the user who requested the task
      */
-    public HelperTaskDTO(int taskId, String taskType, String status, String startDate, String endDate, String neighbourhood, Integer xpAwarded, String completionNote, String requesterName, Integer requesterUserId){
+    public HelperTaskDTO(int taskId, String taskType, String status, String startDate, String endDate, Integer xpAwarded, String completionNote, String requesterName, Integer requesterUserId){
         this.taskId = taskId;
         this.taskType = taskType;
         this.status = status;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.neighbourhood = neighbourhood;
         this.xpAwarded = xpAwarded;
         this.completionNote = completionNote;
         this.requesterName = requesterName;
@@ -97,15 +95,6 @@ public class HelperTaskDTO {
     }
 
     /**
-     * Returns the neighbourhood where the task is located.
-     *
-     * @return the neighbourhood name
-     */
-    public String getNeighbourhood(){
-        return neighbourhood;
-    }
-
-    /**
      * Returns the experience points awarded for completing the task.
      *
      * @return the experience points awarded, or {@code null} if not applicable
@@ -117,8 +106,8 @@ public class HelperTaskDTO {
 
     /**
      * Returns the completion note provided for the task.
-     *
-     * @return the completion note
+     * 
+     * $@return the completion note
      */
     public String getCompletionNote(){
         return completionNote;
