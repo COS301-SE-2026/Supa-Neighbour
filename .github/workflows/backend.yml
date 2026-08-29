@@ -75,8 +75,12 @@ jobs:
         working-directory: backend
 
       - name: Start app in background
+        env:
+          AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=https;AccountName=fakeaccount;AccountKey=ZmFrZWtleQ==;EndpointSuffix=core.windows.net"
         run: |
-          nohup java -jar target/*.jar > app.log 2>&1 &
+          nohup java -jar target/*.jar \
+            --azure.storage.connection-string=$AZURE_STORAGE_CONNECTION_STRING \
+            > app.log 2>&1 &
           echo $! > app.pid
         working-directory: backend
 
