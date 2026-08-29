@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     )
 )
 @AutoConfigureMockMvc(addFilters = false)
-public class HelperTaskControllerTest {
+public class HelperTasksControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
