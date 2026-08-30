@@ -1,7 +1,10 @@
 package com.app.api.controllers;
 
-import com.app.api.dtos.UpdateReportDTO;
-import com.app.api.models.Report;
+import com.app.api.dtos.PatchReportDTO;
+import com.app.api.dtos.PatchReportResponseDTO;
+import com.app.api.dtos.ReportRequestDTO;
+import com.app.api.dtos.ReportResponseDTO;
+import com.app.api.repositories.AdminRepository;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.ReportService;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -9,149 +12,164 @@ import com.google.firebase.auth.FirebaseAuthException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * REST controller providing endpoints for managing reports.
- * <p>
- * All endpoints require a valid Firebase Bearer token in the
- * Authorization header. Endpoints are accessible under {@code /api/report}.
- * </p>
- */
+
+ REST controller providing endpoints for managing reports.
+*/
 @RestController
 @RequestMapping("/api/report")
 public class ReportController {
 
-    /** Service containing report business logic. */
     private final ReportService reportService;
-
-    /** Service used to authenticate Firebase tokens. */
     private final FirebaseAuthService firebaseAuthService;
+    private final AdminRepository adminRepository;
 
     /**
-     * Constructs a ReportController with the required services.
+     * Constructs a ReportController with its required dependencies.
      *
-     * @param reportService the report service
-     * @param firebaseAuthService the Firebase auth service
+     * @param reportService       the report service
+     * @param firebaseAuthService the Firebase authentication service
+     * @param adminRepository     used to verify the caller holds an admin record
      */
-    public ReportController(ReportService reportService, FirebaseAuthService firebaseAuthService) {
+    public ReportController(ReportService reportService,
+            FirebaseAuthService firebaseAuthService,
+            AdminRepository adminRepository) {
         this.reportService = reportService;
         this.firebaseAuthService = firebaseAuthService;
+        this.adminRepository = adminRepository;
     }
 
     /**
-     * Retrieves all reports, or a single report when an ID is provided.
-     * Without a path variable this returns the full list; calling
-     * {@code GET /api/report/{reportId}} returns one report.
+     * Returns all reports currently assigned to the requesting admin, with
+     * optional filtering by {@code status} and/or {@code reportType}.
      *
      * @param authHeader the Firebase Bearer token
-     * @return HTTP 200 with the list of all reports, or 401 on auth failure
+     * @param status optional filter — one of {@code submitted},
+     *                   {@code assigned}, {@code reviewed}
+     * @param reportType optional filter — one of {@code USER}, {@code POST},
+     *                   {@code COMMENT}, {@code TASK_DISPUTE}
+     * @return 200 with the filtered list, 401 on bad token, 403 if not admin
      */
-    @Operation(summary = "Get all reports")
+    @Operation(summary = "Get reports assigned to the calling admin (9.4)")
     @ApiResponse(responseCode = "200", description = "Reports retrieved successfully")
-    @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing token")
+    @ApiResponse(responseCode = "400", description = "Invalid filter value")
+    @ApiResponse(responseCode = "401", description = "Unauthorized — invalid or missing token")
+    @ApiResponse(responseCode = "403", description = "User is not an admin")
     @GetMapping
-    public ResponseEntity<?> getAllReports(
-            @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getAssignedReports(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String reportType) {
         try {
             String token = authHeader.replace("Bearer ", "");
-            firebaseAuthService.getUserIdFromToken(token);
-            List<Report> reports = reportService.getAllReports();
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            requireAdmin(userId);
+            List<ReportResponseDTO> reports =
+                    reportService.getReportsForAdmin(userId, status, reportType);
             return ResponseEntity.ok(reports);
         } catch (FirebaseAuthException e) {
-            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized"));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Map.of("error", e.getReason()));
         }
     }
 
     /**
-     * Retrieves a single report by its ID.
+     * Submits a new report on behalf of the authenticated user.
      *
      * @param authHeader the Firebase Bearer token
-     * @param reportId the ID of the report to retrieve
-     * @return HTTP 200 with the report, 404 if not found, or 401 on auth failure
+     * @param dto        the report payload
+     * @return 201 with the created report, 400 on validation failure,
+     *         401 on bad token, 404 if the referenced entity does not exist
      */
-    @Operation(summary = "Get a report by ID")
-    @ApiResponse(responseCode = "200", description = "Report found")
-    @ApiResponse(responseCode = "404", description = "Report not found")
-    @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing token")
-    @GetMapping("/{reportId}")
-    public ResponseEntity<?> getReportById(
+    @Operation(summary = "Submit a new report (9.6)")
+    @ApiResponse(responseCode = "201", description = "Report submitted successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid report payload for reportType")
+    @ApiResponse(responseCode = "401", description = "Unauthorized — invalid or missing token")
+    @ApiResponse(responseCode = "404", description = "Target entity not found")
+    @PutMapping
+    public ResponseEntity<?> submitReport(
             @RequestHeader("Authorization") String authHeader,
-            @PathVariable int reportId) {
+            @RequestBody ReportRequestDTO dto) {
         try {
             String token = authHeader.replace("Bearer ", "");
-            firebaseAuthService.getUserIdFromToken(token);
-            Report report = reportService.getReportById(reportId);
-            return ResponseEntity.ok(report);
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            ReportResponseDTO created = reportService.submitReport(userId, dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (FirebaseAuthException e) {
-            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized"));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Map.of("error", e.getReason()));
         }
     }
 
     /**
-     * Fully replaces the updatable fields of an existing report.
-     * Use this when submitting a complete updated version of a report
-     * (e.g. admin completes the review and sets all outcome fields at once).
+     * Admin updates the status and/or verdict of an existing report.
      *
      * @param authHeader the Firebase Bearer token
-     * @param reportId the ID of the report to update
-     * @param updates the report body containing the new values
-     * @return HTTP 200 with the updated report, 404 if not found, or 401 on auth failure
+     * @param dto        the patch payload — must include {@code reportId}
+     * @return 200 with the updated summary, 400 on invalid enum values,
+     *         401 on bad token, 403 if not admin or report not assigned to caller,
+     *         404 if report not found
      */
-    @Operation(summary = "Fully update a report by ID")
+    @Operation(summary = "Admin updates a report status/verdict (9.7)")
     @ApiResponse(responseCode = "200", description = "Report updated successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid field value")
+    @ApiResponse(responseCode = "401", description = "Unauthorized — invalid or missing token")
+    @ApiResponse(responseCode = "403", description = "Not authorized to update this report")
     @ApiResponse(responseCode = "404", description = "Report not found")
-    @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing token")
-    @PutMapping("/{reportId}")
-    public ResponseEntity<?> replaceReport(
-            @RequestHeader("Authorization") String authHeader,
-            @PathVariable int reportId,
-            @RequestBody Report updates) {
-        try {
-            String token = authHeader.replace("Bearer ", "");
-            firebaseAuthService.getUserIdFromToken(token);
-            Report updated = reportService.replaceReport(reportId, updates);
-            return ResponseEntity.ok(updated);
-        } catch (FirebaseAuthException e) {
-            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
-        }
-    }
-
-    /**
-     * Partially updates a report, applying only the fields present in the request body.
-     * Useful for single-field updates such as changing the status or assigning an admin.
-     *
-     * @param authHeader the Firebase Bearer token
-     * @param reportId the ID of the report to patch
-     * @param patch the DTO containing the fields to update
-     * @return HTTP 200 with the updated report, 404 if not found, or 401 on auth failure
-     */
-    @Operation(summary = "Partially update a report by ID")
-    @ApiResponse(responseCode = "200", description = "Report patched successfully")
-    @ApiResponse(responseCode = "404", description = "Report not found")
-    @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing token")
-    @PatchMapping("/{reportId}")
+    @PatchMapping
     public ResponseEntity<?> patchReport(
             @RequestHeader("Authorization") String authHeader,
-            @PathVariable int reportId,
-            @RequestBody UpdateReportDTO patch) {
+            @RequestBody PatchReportDTO dto) {
         try {
             String token = authHeader.replace("Bearer ", "");
-            firebaseAuthService.getUserIdFromToken(token);
-            Report updated = reportService.patchReport(reportId, patch);
-            return ResponseEntity.ok(updated);
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            requireAdmin(userId);
+            PatchReportResponseDTO result = reportService.patchReport(userId, dto);
+            return ResponseEntity.ok(result);
         } catch (FirebaseAuthException e) {
-            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized"));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Map.of("error", e.getReason()));
+        }
+    }
+
+    /**
+     * Verifies the given user ID has a row in {@code admin_table}.
+     * Throws 403 if not.
+     *
+     * @param userId the user ID to check
+     */
+    private void requireAdmin(int userId) {
+        boolean isAdmin = adminRepository.findAll()
+                .stream()
+                .anyMatch(a -> a.getUserid() != null
+                        && a.getUserid().getUserid() == userId);
+        if (!isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "User is not an admin");
         }
     }
 }
