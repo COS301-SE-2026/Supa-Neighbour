@@ -1,0 +1,47 @@
+name: supaneighbour_admin
+description: Admin dashboard for Supa Neighbour
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Shared package (models, services, constants)
+  shared:
+    path: ../shared
+
+  # UI
+  google_fonts: ^6.3.3
+  flutter_svg: ^2.0.9
+  
+  # State Management
+  flutter_riverpod: ^2.6.1
+  
+  # Navigation
+  go_router: ^14.8.1
+  
+  # Networking
+  dio: ^5.10.0
+  
+  # Firebase
+  firebase_core: ^4.11.0
+  firebase_auth: ^6.5.4
+  
+  # Charts (for dashboard)
+  fl_chart: ^0.70.2
+  
+  # Helpers
+  intl: ^0.19.0
+  shared_preferences: ^2.5.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.2
+
+flutter:
+  uses-material-design: true

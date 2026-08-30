@@ -1,4 +1,4 @@
-
+// shared/lib/models/user_model.dart
 
 class User {
   final String id;
@@ -14,6 +14,7 @@ class User {
   final String? zipCode;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final String? userType;
 
   User({
     required this.id,
@@ -29,6 +30,7 @@ class User {
     this.zipCode,
     required this.createdAt,
     this.updatedAt,
+    this.userType, 
   });
 
   String get fullName => '$firstName $lastName';
@@ -39,6 +41,10 @@ class User {
     }
     return 'Address not provided';
   }
+
+  
+  bool get isAdmin => userType == 'admin' || userType == 'super_admin';
+  bool get isSuperAdmin => userType == 'super_admin';
 
   // Create a copy with updated fields
   User copyWith({
@@ -55,6 +61,7 @@ class User {
     String? zipCode,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? userType, 
   }) {
     return User(
       id: id ?? this.id,
@@ -70,10 +77,11 @@ class User {
       zipCode: zipCode ?? this.zipCode,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
+      userType: userType ?? this.userType, 
     );
   }
 
-  // Convert to JSON (for future API integration)
+  // Convert to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -89,28 +97,27 @@ class User {
       'zipCode': zipCode,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
+      'userType': userType,
     };
   }
 
-  
-factory User.fromJson(Map<String, dynamic> json) {
-  return User(
-    id: json['userid'].toString(),
-    email: json['email'] as String? ?? '',
-    firstName: json['firstName'] as String? ?? '',
-    lastName: json['lastName'] as String? ?? '',
-    phone: json['phoneNumber'] as String?,
-    username: json['username'] as String?,
-    birthday: json['birthday'] != null ? DateTime.parse(json['birthday'].toString()) : null,
-    gender: json['user_gender'] as String?,
-    street: json['user_street'] as String?,      
-    town: json['user_town'] as String?,          
-    zipCode: json['user_zipcode'] as String?,
-    createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
-  );
-}
-
-
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['userid'].toString(),
+      email: json['email'] as String? ?? '',
+      firstName: json['firstName'] as String? ?? '',
+      lastName: json['lastName'] as String? ?? '',
+      phone: json['phoneNumber'] as String?,
+      username: json['username'] as String?,
+      birthday: json['birthday'] != null ? DateTime.parse(json['birthday'].toString()) : null,
+      gender: json['user_gender'] as String?,
+      street: json['user_street'] as String?,
+      town: json['user_town'] as String?,
+      zipCode: json['user_zipcode'] as String?,
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
+      userType: json['userType'] as String? ?? 'user',
+    );
+  }
 
   // Creates an empty user
   static User empty() {
@@ -120,6 +127,7 @@ factory User.fromJson(Map<String, dynamic> json) {
       firstName: '',
       lastName: '',
       createdAt: DateTime.now(),
+      userType: 'user',
     );
   }
 
@@ -138,6 +146,7 @@ factory User.fromJson(Map<String, dynamic> json) {
       town: 'Hatfield, Pretoria',
       zipCode: '0028',
       createdAt: DateTime.now(),
+      userType: 'user', 
     );
   }
 }

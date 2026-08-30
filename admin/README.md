@@ -1,7 +1,29 @@
+# Supa Neighbour Admin Dashboard
+
+This is the admin website for the Supa Neighbour platform. It provides administrative tools for managing the community.
+
+## Getting Started
+
+### Prerequisites
+- Flutter 3.24.0+
+- Dart 3.4.0+
+- Firebase project (for authentication)
+
+### Installation
+
+```bash
+# Navigate to admin folder
+cd admin
+
+# Get dependencies
+flutter pub get
+
+# Run the admin website
+flutter run -d chrome --web-port=3001
+```
 
 ## Admin Dashoboard Project Structure
-
-```text
+```
 admin/
 ├── lib/
 │   ├── main.dart                 # Entry point
@@ -58,4 +80,4 @@ This project depends on the `shared` package at `../shared` which contains:
 - It shares code via the `shared` package
 - The admin site is deployed separately from the mobile app
 - All admin endpoints should check for `user_type` before returning data
-```eof
+```
