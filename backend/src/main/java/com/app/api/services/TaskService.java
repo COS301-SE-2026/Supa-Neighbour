@@ -1,12 +1,15 @@
 package com.app.api.services;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.sql.Date;
 
 import com.app.api.dtos.TaskDetailDTO;
 import com.app.api.events.TaskStartedEvent;
@@ -23,9 +26,8 @@ import com.app.api.repositories.ChatRepository;
 import com.app.api.repositories.DependentRepository;
 import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.MessageRepository;
-import com.app.api.repositories.TaskRepository;
 import com.app.api.repositories.TaskInvitationRepository;
-import java.util.Optional;
+import com.app.api.repositories.TaskRepository;
 
 /**
  * Service layer for task-related business logic.
@@ -177,7 +179,17 @@ public class TaskService {
                 
             }
         }
-        return taskRepo.save(targetTask);
+
+        if (updates.getHelperRatingId() != null) {
+            targetTask.setHelperRatingId(updates.getHelperRatingId());
+        }
+
+        if (updates.getDependentRatingId() != null) {
+            targetTask.setDependentRatingId(updates.getDependentRatingId());
+        }
+        Task saved = taskRepo.save(targetTask);
+        Hibernate.initialize(saved.getImages()); // force-load while session is open
+        return saved;
     }
 
     /**

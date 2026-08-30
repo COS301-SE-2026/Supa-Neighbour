@@ -19,6 +19,7 @@ import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.HelperSkillRepository;
 import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
+import com.app.api.services.LocationService;
 
 /**
  * Service class responsible for matching helpers to tasks based on various criteria such as location and skills.
@@ -31,6 +32,7 @@ public class MatchingService {
     private final TaskInvitationRepository taskInvitationRepo;
     private final TaskInvoiceRepository taskInvoiceRepo;
     private final NotificationsService notificationsService;
+    private final LocationService locationService;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
@@ -42,18 +44,19 @@ public class MatchingService {
      * @param taskInvitationRepo the repository for managing task invitations
      * @param taskInvoiceRepo the repository for managing task invoices
      */
-    public MatchingService(HelperRepository helperRepo,
+        public MatchingService(HelperRepository helperRepo,
             HelperSkillRepository helperSkillRepo,
             TaskInvitationRepository taskInvitationRepo,
             TaskInvoiceRepository taskInvoiceRepo,
-            NotificationsService notificationsService) {
+            NotificationsService notificationsService,
+            LocationService locationService) {
         this.helperRepo = helperRepo;
         this.helperSkillRepo = helperSkillRepo;
         this.taskInvitationRepo = taskInvitationRepo;
         this.taskInvoiceRepo = taskInvoiceRepo;
-        this.notificationsService = notificationsService; 
+        this.notificationsService = notificationsService;
+        this.locationService = locationService;
     }
-
     /**
      * Matches helpers to a task based on location and skills.
      *
@@ -134,7 +137,7 @@ public class MatchingService {
                    eventPublisher.publishEvent(new HelperMatchedEvent(
                         helper.getUserid().getUserid(),
                         taskId,
-                        newTask //task.getTitle() - TODO: change back
+                        task.getTitle() 
                     ));
                 }
             }

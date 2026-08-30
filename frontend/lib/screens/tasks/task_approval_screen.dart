@@ -436,9 +436,9 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
       await taskService.updateTask(
         taskId: int.parse(widget.task.id),
         status: 'completed',
-        adminReview: _reviewController.text.isNotEmpty
-            ? '${_rating.toStringAsFixed(1)}/5 — ${_reviewController.text}'
-            : '${_rating.toStringAsFixed(1)}/5',
+        dependentRatingId: _reviewController.text.isNotEmpty
+          ? _reviewController.text
+          : null,
       );
 
       Task.updateTaskStatus(widget.task.id, 'completed');

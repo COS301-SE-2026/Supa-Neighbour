@@ -95,14 +95,14 @@ class Task {
     date: startDate,
     time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
     xpReward: _resolveXpReward(json['taskTypeId'] as int?),
-    instructions: json['adminReview'] as String? ?? '',
+    instructions: json['instructions'] as String? ?? '',
     status: status,
     createdAt: startDate,
     createdBy: json['requesterUserId']?.toString() ?? 'unknown',
     helperId: json['helperId']?.toString(),
     requesterName: json['requesterName'] as String?,
     helperName: json['helperName'] as String?,
-    completionNote: json['completionNote'] as String?,
+    completionNote: json['helperRatingId'] as String?,
     completionPhotos: json['completionPhotos'] != null
         ? List<String>.from(json['completionPhotos'] as List)
         : null,

@@ -115,7 +115,7 @@ void main() {
           'taskId': 1,
           'taskTypeId': 1,
           'startDate': now.toIso8601String(),
-          'adminReview': 'Water all plants twice',
+          'instructions': 'Water all plants twice',
           'requesterUserId': 'user_123',
           'status': 'open',
           'helperId': null,
@@ -141,8 +141,8 @@ void main() {
       test('should handle null values gracefully', () {
         final json = {
           'taskId': 2,
-          'startDate': now.toIso8601String(),
-          'adminReview': null,
+          'startDate': null,
+          'instructions': null,
           'dependentId': null,
         };
 
@@ -331,6 +331,17 @@ void main() {
 
         expect(Task.getMockTasks().length, initialCount - 1);
         expect(Task.getMockTasks().any((t) => t.id == taskId), false);
+      });
+      test('should map completionNote from helperRatingId', () {
+        final json = {
+          'taskId': 12,
+          'startDate': now.toIso8601String(),
+          'helperRatingId': 'Fixed the fence, all good!',
+        };
+
+        final task = Task.fromJson(json);
+
+        expect(task.completionNote, 'Fixed the fence, all good!');
       });
     });
   });

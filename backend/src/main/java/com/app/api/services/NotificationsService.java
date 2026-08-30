@@ -91,6 +91,60 @@ public class NotificationsService {
             String.valueOf(postId)
         );
     }
+
+    /**
+     * Notifies a user they've received a moderation warning.
+     *
+     * @param userId the user_id being warned
+     * @param reportId the report that triggered this warning, if any (empty string if none)
+     * @param reason short explanation shown in the notification body
+     */
+    public void sendWarningNotification(int userId, String reportId, String reason){
+        send(
+            userId, 
+            "You've recieved a warning",
+            reason,
+            "ACCOUNT_WARNING",
+            reportId
+        );
+    }
+
+    /**
+     * Notifies a user their account has been suspended.
+     *
+     * @param userId the user_id being suspended
+     * @param reportId the report that triggered this suspension, if any
+     * @param reason short explanation shown in the notification body
+     */
+    public void sendSuspensionNotification(int userId, String reportId, String reason){
+        send(
+            userId, 
+            "Your account has been suspended",
+            reason,
+            "ACCOUNT_SUSPENDED",
+            reportId
+        );
+    }
+
+    /**
+     * Notifies a user their account has been banned.
+     *
+     * @param userId the user_id being banned
+     * @param reportId the report that triggered this ban, if any
+     * @param reason short explanation shown in the notification body
+     */
+    public void sendBanNotification(int userId, String reportId, String reason){
+        send(
+            userId, 
+            "Your account has been banned",
+            reason,
+            "ACCOUNT_BANNED",
+            reportId
+        );
+    }
+
+
+
     
     /**
      * Core send: fans out one FCM message per registered device for the user.
@@ -129,8 +183,6 @@ public class NotificationsService {
                 System.err.println("FCM send failed for user " + userId + ": " + e.getMessage());
             }
         }
-
-        
     }
 
 }

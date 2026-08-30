@@ -6,10 +6,11 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.app.api.events.HelperMatchedEvent;
-import com.app.api.events.PostCreatedEvent;
-import com.app.api.services.NotificationsService;
-import com.app.api.events.TaskStartedEvent;
 import com.app.api.events.PostCommentEvent;
+import com.app.api.events.PostCreatedEvent;
+import com.app.api.events.TaskStartedEvent;
+import com.app.api.events.UserWarnedEvent;
+import com.app.api.services.NotificationsService;
 
 /**
  * Event listener component responsible for handling task-related domain events
@@ -65,7 +66,7 @@ public class TaskNotificationListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onTaskStarted(TaskStartedEvent event){
         notificationsService.sendTaskStartNotification(
-            event.getRequesterrUserId(),
+            event.getRequesterUserId(),
             event.getTaskId(), 
             event.getHelperName());
     }
@@ -109,4 +110,41 @@ public class TaskNotificationListener {
             event.getPostId(), 
             event.getCommentorName());
     }   
+
+    /**
+     * Handles the {@link UserWarnedEvent} after the current transaction has successfully committed.
+     * Sends a warning notification to the user who received a warning.
+     *
+     * @param event the user warned event containing the user ID, report ID, and reason for the warning
+     * @see TransactionPhase#AFTER_COMMIT
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onUserWarned(UserWarnedEvent event){
+        notificationsService.sendWarningNotification(event.getUserId(), event.getReportId(), event.getReason());
+    }
+
+    /**
+     * Handles the {@link UserWarnedEvent} after the current transaction has successfully committed.
+     * Sends a suspension notification to the user who has been suspended.
+     *
+     * @param event the user warned event containing the user ID, report ID, and reason for the suspension
+     * @see TransactionPhase#AFTER_COMMIT
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onUserSuspended(UserWarnedEvent event){
+        notificationsService.sendSuspensionNotification(event.getUserId(), event.getReportId(), event.getReason());
+    }
+
+    /**
+     * Handles the {@link UserWarnedEvent} after the current transaction has successfully committed.
+     * Sends a ban notification to the user who has been permanently banned.
+     *
+     * @param event the user warned event containing the user ID, report ID, and reason for the ban
+     * @see TransactionPhase#AFTER_COMMIT
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onUserBanned(UserWarnedEvent event){
+        notificationsService.sendBanNotification(event.getUserId(), event.getReportId(), event.getReason());
+    }
+
 }

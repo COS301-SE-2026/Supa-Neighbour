@@ -7,6 +7,7 @@ import 'providers/theme_mode_provider.dart';
 //import 'screens/style_guide/style_guide_page.dart';
 import 'screens/landing/landing_page.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -22,6 +23,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Super Neighbour',
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
