@@ -33,7 +33,7 @@ public class TaskStartedEvent {
      * @return The requester's user ID
      */
 
-    public int getRequesterrUserId() {
+    public int getRequesterUserId() {
         return requesterUserId;
     }
 
