@@ -5,8 +5,8 @@ import java.util.List;
  
 import org.springframework.stereotype.Repository;
 
-import com.app.api.dtos.PostDetailDTO;
 import com.app.api.dtos.CommentsDTO;
+import com.app.api.dtos.PostDetailDTO;
 import com.app.api.dtos.PostFeedItemDTO;
  
 import jakarta.persistence.EntityManager;
@@ -305,7 +305,7 @@ public class BulletinFeedRepository {
      */
     @SuppressWarnings("unchecked")
     public List<Integer> findUserIdsInNeighbourhood(int neighbourhoodId, int excludeUserId){
-        Query query = entityManager.createNamedQuery(
+        Query query = entityManager.createNativeQuery(
             "SELECT u.user_id " +
             "FROM user_table u " +
             "JOIN address_table a ON a.address_id = u.user_address_id " +
