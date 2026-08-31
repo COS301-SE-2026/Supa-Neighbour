@@ -1,13 +1,16 @@
 package com.app.api.unit.services;
 
+import com.app.api.dtos.ChatResponseDTO;
 import com.app.api.models.Chat;
+import com.app.api.models.Dependent;
+import com.app.api.models.Helper;
 import com.app.api.models.Message;
-import com.app.api.models.Task;
 import com.app.api.models.User;
 import com.app.api.models.TaskInvoice;
 import com.app.api.repositories.ChatRepository;
 import com.app.api.services.ChatService;
 import com.app.api.repositories.MessageRepository;
+import com.app.api.repositories.TaskInvoiceRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,6 +33,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +46,9 @@ public class ChatServiceTest {
 
     private ChatService chatService;
 
+    @Mock
+    private TaskInvoiceRepository taskInvoiceRepository;
+
     private Chat chat;
     private TaskInvoice task;
     private User dependentUser;
@@ -48,7 +56,7 @@ public class ChatServiceTest {
 
     @BeforeEach
     void setup(){
-        chatService = new ChatService(chatRepo, msgRepo);
+        chatService = new ChatService(chatRepo, msgRepo, taskInvoiceRepository);
 
         task = mock(TaskInvoice.class);
         lenient().when(task.getTaskid()).thenReturn(500);
@@ -69,8 +77,6 @@ public class ChatServiceTest {
 
         lenient().when(chat.getDependentUser()).thenReturn(dependentUser);
         lenient().when(chat.getHelperUser()).thenReturn(helperUser);
-
-
     }
 
     @Test
@@ -219,5 +225,273 @@ public class ChatServiceTest {
         assertThat(summary.get("otherUsername")).isEqualTo("Ble Neo");
         assertThat(summary.get("lastMessage")).isEqualTo("");
         assertThat(summary.get("lastMessageTimestamp")).isEqualTo("");
+    }
+
+    @Test
+    void getOrCreateChatForTask_whenTaskExistsAndChatExists_returnsExistingChat() {
+        int taskId = 500;
+        int requestingUserId = 1;
+        
+        // Mock task with helper and dependent
+        TaskInvoice task = mock(TaskInvoice.class);
+        when(task.getTaskid()).thenReturn(taskId);
+        
+        // Create real User objects for helper and dependent
+        User helperUser = new User();
+        helperUser.setUserid(2);
+        helperUser.setFirstName("Helper");
+        helperUser.setLastName("User");
+
+        Helper helper = new Helper();
+        helper.setUserid(helperUser);
+        
+        User dependentUser = new User();
+        dependentUser.setUserid(1);
+        dependentUser.setFirstName("Dependent");
+        dependentUser.setLastName("User");
+        
+        when(task.getHelperid()).thenReturn(helper);
+        Dependent dependent = new Dependent();
+        dependent.setUserId(dependentUser);
+        when(task.getDependentid()).thenReturn(dependent);
+        
+        // Mock existing chat
+        Chat existingChat = mock(Chat.class);
+        when(existingChat.getChatId()).thenReturn(10);
+        when(existingChat.getTask()).thenReturn(task);
+        when(existingChat.getDependentUser()).thenReturn(dependentUser);
+        when(existingChat.getHelperUser()).thenReturn(helperUser);
+        when(existingChat.getCreatedAt()).thenReturn(LocalDateTime.now());
+        
+        when(taskInvoiceRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(chatRepo.findByTask_Taskid(taskId)).thenReturn(List.of(existingChat));
+        
+        ChatResponseDTO result = chatService.getOrCreateChatForTask(taskId, requestingUserId);
+        
+        assertThat(result).isNotNull();
+        assertThat(result.getChatId()).isEqualTo(10);
+        assertThat(result.getTaskId()).isEqualTo(taskId);
+        assertThat(result.isAlreadyExisted()).isTrue();
+        
+        verify(chatRepo, never()).save(any(Chat.class));
+    }
+
+    @Test
+    void getOrCreateChatForTask_whenTaskExistsAndNoChatExists_createsNewChat() {
+        int taskId = 500;
+        int requestingUserId = 1;
+        
+        // Mock task with helper and dependent
+        TaskInvoice task = mock(TaskInvoice.class);
+        when(task.getTaskid()).thenReturn(taskId); 
+        
+        User helperUser = new User();
+        helperUser.setUserid(2);
+        helperUser.setFirstName("Helper");
+        helperUser.setLastName("User");
+
+        Helper helper = new Helper();
+        helper.setUserid(helperUser);
+        
+        User dependentUser = new User();
+        dependentUser.setUserid(1);
+        dependentUser.setFirstName("Dependent");
+        dependentUser.setLastName("User");
+        
+        when(task.getHelperid()).thenReturn(helper);
+        Dependent dependent = new Dependent();
+        dependent.setUserId(dependentUser);
+        when(task.getDependentid()).thenReturn(dependent);
+        
+        // Mock saved chat
+        Chat savedChat = mock(Chat.class);
+        when(savedChat.getChatId()).thenReturn(15);
+        when(savedChat.getTask()).thenReturn(task);
+        when(savedChat.getDependentUser()).thenReturn(dependentUser);
+        when(savedChat.getHelperUser()).thenReturn(helperUser);
+        when(savedChat.getCreatedAt()).thenReturn(LocalDateTime.now());
+        
+        when(taskInvoiceRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(chatRepo.findByTask_Taskid(taskId)).thenReturn(List.of());
+        when(chatRepo.save(any(Chat.class))).thenReturn(savedChat);
+        
+        ChatResponseDTO result = chatService.getOrCreateChatForTask(taskId, requestingUserId);
+        
+        assertThat(result).isNotNull();
+        assertThat(result.getChatId()).isEqualTo(15);
+        assertThat(result.getTaskId()).isEqualTo(taskId);
+        assertThat(result.isAlreadyExisted()).isFalse();
+        
+        verify(chatRepo, times(1)).save(any(Chat.class));
+    }
+
+    @Test
+    void getOrCreateChatForTask_whenTaskDoesNotExist_throwsNoSuchElementException() {
+        int taskId = 999;
+        int requestingUserId = 1;
+        
+        when(taskInvoiceRepository.findById(taskId)).thenReturn(Optional.empty());
+        
+        assertThatThrownBy(() -> chatService.getOrCreateChatForTask(taskId, requestingUserId))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("Task not found");
+        
+        verify(chatRepo, never()).findByTask_Taskid(anyInt());
+        verify(chatRepo, never()).save(any(Chat.class));
+    }
+
+    @Test
+    void getOrCreateChatForTask_whenTaskHasNoHelper_throwsIllegalStateException() {
+        int taskId = 500;
+        int requestingUserId = 1;
+        
+        TaskInvoice task = mock(TaskInvoice.class);
+        when(task.getHelperid()).thenReturn(null);
+        
+        when(taskInvoiceRepository.findById(taskId)).thenReturn(Optional.of(task));
+        
+        assertThatThrownBy(() -> chatService.getOrCreateChatForTask(taskId, requestingUserId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Task has no assigned helper and dependent");
+        
+        verify(chatRepo, never()).findByTask_Taskid(anyInt());
+        verify(chatRepo, never()).save(any(Chat.class));
+    }
+
+    @Test
+    void getOrCreateChatForTask_whenTaskHasNoDependent_throwsIllegalStateException() {
+        int taskId = 500;
+        int requestingUserId = 1;
+        
+        TaskInvoice task = mock(TaskInvoice.class);
+        when(task.getHelperid()).thenReturn(new Helper());
+        when(task.getDependentid()).thenReturn(null);
+        
+        when(taskInvoiceRepository.findById(taskId)).thenReturn(Optional.of(task));
+        
+        assertThatThrownBy(() -> chatService.getOrCreateChatForTask(taskId, requestingUserId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Task has no assigned helper and dependent");
+        
+        verify(chatRepo, never()).findByTask_Taskid(anyInt());
+        verify(chatRepo, never()).save(any(Chat.class));
+    }
+
+    @Test
+    void getOrCreateChatForTask_whenUserIsNotParticipant_throwsSecurityException() {
+        int taskId = 500;
+        int requestingUserId = 3;
+        
+        TaskInvoice task = mock(TaskInvoice.class);
+        
+        User helperUser = new User();
+        helperUser.setUserid(2);
+
+        Helper helper = new Helper();
+        helper.setUserid(helperUser);
+        
+        User dependentUser = new User();
+        dependentUser.setUserid(1);
+        
+        when(task.getHelperid()).thenReturn(helper);
+        Dependent dependent = new Dependent();
+        dependent.setUserId(dependentUser);
+        when(task.getDependentid()).thenReturn(dependent);
+        
+        when(taskInvoiceRepository.findById(taskId)).thenReturn(Optional.of(task));
+        
+        assertThatThrownBy(() -> chatService.getOrCreateChatForTask(taskId, requestingUserId))
+                .isInstanceOf(SecurityException.class)
+                .hasMessage("User is not participant in this task");
+        
+        verify(chatRepo, never()).findByTask_Taskid(anyInt());
+        verify(chatRepo, never()).save(any(Chat.class));
+    }
+
+    @Test
+    void getOrCreateChatForTask_whenRequestingUserIsHelper_createsChat() {
+        int taskId = 500;
+        int requestingUserId = 2;
+        
+        TaskInvoice task = mock(TaskInvoice.class);
+        when(task.getTaskid()).thenReturn(taskId);
+        
+        User helperUser = new User();
+        helperUser.setUserid(2);
+        helperUser.setFirstName("Helper");
+        helperUser.setLastName("User");
+
+        Helper helper = new Helper();
+        helper.setUserid(helperUser);
+        
+        User dependentUser = new User();
+        dependentUser.setUserid(1);
+        dependentUser.setFirstName("Dependent");
+        dependentUser.setLastName("User");
+        
+        when(task.getHelperid()).thenReturn(helper);
+        Dependent dependent = new Dependent();
+        dependent.setUserId(dependentUser);
+        when(task.getDependentid()).thenReturn(dependent);
+        
+        Chat savedChat = mock(Chat.class);
+        when(savedChat.getChatId()).thenReturn(15);
+        when(savedChat.getTask()).thenReturn(task);
+        when(savedChat.getDependentUser()).thenReturn(dependentUser);
+        when(savedChat.getHelperUser()).thenReturn(helperUser);
+        when(savedChat.getCreatedAt()).thenReturn(LocalDateTime.now());
+        
+        when(taskInvoiceRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(chatRepo.findByTask_Taskid(taskId)).thenReturn(List.of());
+        when(chatRepo.save(any(Chat.class))).thenReturn(savedChat);
+        
+        ChatResponseDTO result = chatService.getOrCreateChatForTask(taskId, requestingUserId);
+        
+        assertThat(result).isNotNull();
+        assertThat(result.getChatId()).isEqualTo(15);
+        assertThat(result.isAlreadyExisted()).isFalse();
+    }
+
+    @Test
+    void getOrCreateChatForTask_whenMultipleChatsExist_returnsFirstOne() {
+        int taskId = 500;
+        int requestingUserId = 1;
+        
+        TaskInvoice task = mock(TaskInvoice.class);
+        when(task.getTaskid()).thenReturn(taskId);
+        
+        User helperUser = new User();
+        helperUser.setUserid(2);
+
+        Helper helper = new Helper();
+        helper.setUserid(helperUser);
+        
+        User dependentUser = new User();
+        dependentUser.setUserid(1);
+        
+        when(task.getHelperid()).thenReturn(helper);
+        Dependent dependent = new Dependent();
+        dependent.setUserId(dependentUser);
+        when(task.getDependentid()).thenReturn(dependent);
+        
+        Chat firstChat = mock(Chat.class);
+        when(firstChat.getChatId()).thenReturn(10);
+        when(firstChat.getTask()).thenReturn(task);
+        when(firstChat.getDependentUser()).thenReturn(dependentUser);
+        when(firstChat.getHelperUser()).thenReturn(helperUser);
+        when(firstChat.getCreatedAt()).thenReturn(LocalDateTime.now());
+        
+        Chat secondChat = mock(Chat.class);
+        
+        when(taskInvoiceRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(chatRepo.findByTask_Taskid(taskId)).thenReturn(List.of(firstChat, secondChat));
+        
+        ChatResponseDTO result = chatService.getOrCreateChatForTask(taskId, requestingUserId);
+        
+        assertThat(result).isNotNull();
+        assertThat(result.getChatId()).isEqualTo(10);
+        assertThat(result.isAlreadyExisted()).isTrue();
+        
+        verify(chatRepo, never()).save(any(Chat.class));
     }
 }

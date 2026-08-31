@@ -116,10 +116,6 @@ class UserControllerTest {
 
     @Test
     void updateUser_whenFound_returns200() throws Exception {
-        User existing = new User();
-        existing.setUserid(1);
-        existing.setFirstName("OldName");
-
         User updateRequest = new User();
         updateRequest.setFirstName("NewName");
         updateRequest.setLastName("Smith");
@@ -134,29 +130,73 @@ class UserControllerTest {
         User updated = new User();
         updated.setUserid(1);
         updated.setFirstName("NewName");
+        updated.setLastName("Smith");
+        updated.setEmail("new@example.com");
 
-        when(userService.getUserById(1)).thenReturn(existing);
+        // Mock Firebase authentication
+        when(firebaseAuthService.getUserIdFromToken("valid-token")).thenReturn(1);
         when(userService.updateUser(eq(1), any(User.class))).thenReturn(updated);
 
-        mockMvc.perform(put("/api/users/1")
-                .contentType("application/json")
+        mockMvc.perform(put("/api/users")
+                .header("Authorization", "Bearer valid-token")
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userid").value(1))
-                .andExpect(jsonPath("$.firstName").value("NewName"));
+                .andExpect(jsonPath("$.firstName").value("NewName"))
+                .andExpect(jsonPath("$.lastName").value("Smith"))
+                .andExpect(jsonPath("$.email").value("new@example.com"));
+
+        verify(userService, times(1)).updateUser(eq(1), any(User.class));
     }
 
     @Test
     void updateUser_whenNotFound_returns404() throws Exception {
         User updateRequest = new User();
         updateRequest.setFirstName("NewName");
+        updateRequest.setLastName("Smith");
+        updateRequest.setEmail("new@example.com");
 
-        when(userService.getUserById(99)).thenReturn(null);
+        // Mock Firebase authentication
+        when(firebaseAuthService.getUserIdFromToken("valid-token")).thenReturn(1);
+        when(userService.updateUser(eq(1), any(User.class))).thenReturn(null);
 
-        mockMvc.perform(put("/api/users/99")
-                .contentType("application/json")
+        mockMvc.perform(put("/api/users")
+                .header("Authorization", "Bearer valid-token")
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isNotFound());
+
+        verify(userService, times(1)).updateUser(eq(1), any(User.class));
+    }
+
+    @Test
+    void updateUser_whenInvalidToken_returns401() throws Exception {
+        User updateRequest = new User();
+        updateRequest.setFirstName("NewName");
+
+        // Mock Firebase authentication failure
+        when(firebaseAuthService.getUserIdFromToken("invalid-token"))
+                .thenThrow(mock(FirebaseAuthException.class));
+
+        mockMvc.perform(put("/api/users")
+                .header("Authorization", "Bearer invalid-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isUnauthorized());
+
+        verify(userService, never()).updateUser(anyInt(), any(User.class));
+    }
+
+    @Test
+    void updateUser_whenAuthHeaderMissing_returns401() throws Exception {
+        User updateRequest = new User();
+        updateRequest.setFirstName("NewName");
+
+        mockMvc.perform(put("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isBadRequest());
 
         verify(userService, never()).updateUser(anyInt(), any(User.class));
     }
