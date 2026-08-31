@@ -8,7 +8,7 @@ spring:
       connection-timeout: 5000
       max-lifetime: 600000
   jpa:
-    hibernate:a
+    hibernate:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
