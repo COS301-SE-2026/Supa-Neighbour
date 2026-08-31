@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supa_neighbour/services/chat_service.dart';
 import '../../models/task_model.dart';
 import '../../models/chat_thread.dart';
 import '../../constants/app_colors.dart';
@@ -58,7 +57,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     try{
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
       if(token == null){
-        throw Exception("You need to be signed in to chat.");
+        throw Exception('You need to be signed in to chat.');
       }
 
       final chatService = ref.read(chatServiceProvider);
@@ -74,7 +73,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         final helperId = data['helperUserId'] as int?;
 
         if(helperId == null){
-          throw Exception("No helper assigned to this task yet.");
+          throw Exception('No helper assigned to this task yet.');
         }
       otherUserId = helperId;
       otherName = widget.task.helperName ?? 'Helper';

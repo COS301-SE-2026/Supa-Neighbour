@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supa_neighbour/services/chat_service.dart';
 import '../../models/task_model.dart';
 import '../../models/chat_thread.dart';
 import '../../components/custom_button.dart';
@@ -75,7 +74,7 @@ class _TaskStartScreenState extends ConsumerState<TaskStartScreen> {
     try{
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
       if(token == null){
-         throw Exception("You need to be signed in to chat.");
+         throw Exception('You need to be signed in to chat.');
       }
 
       final chatService = ref.read(chatServiceProvider);

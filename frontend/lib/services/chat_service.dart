@@ -92,15 +92,15 @@ class ChatService implements IChatService {
     }on DioException catch(e){
       switch(e.response?.statusCode){
         case 409: 
-          throw Exception("No helper has been assigned to this task yet.");
+          throw Exception('No helper has been assigned to this task yet.');
         case 403:
-          throw Exception("You're not part of this task.");
+          throw Exception('You\'re not part of this task.');
         case 404: 
-          throw Exception("Task not found");
+          throw Exception('Task not found');
         case 401:
-          throw Exception("Your session has expired - please sign in again");
+          throw Exception('Your session has expired - please sign in again');
         default:
-          throw Exception("Couldn't open chat: ${e.message}");
+          throw Exception('Couldn\'t open chat: ${e.message}');
       }
     }
   }
