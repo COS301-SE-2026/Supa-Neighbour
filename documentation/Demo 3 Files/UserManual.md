@@ -84,7 +84,6 @@ The Home screen is your dashboard for everything happening in your neighbourhood
 
 ![Home screen](/frontend/assets/screenshots/home-screen.png)
 
-**To view a task:** Tap on any task card to see full details and instructions.
 
 **To create a task:** Tap the **+ Button** on the Home screen.
 
@@ -106,7 +105,6 @@ Shows tasks you have created.
 
 From here you can:
 - **View task details** — Tap any task to see full information
-- **Edit a task** — If the task is still open, tap the edit icon (pencil) in the top right
 - **Find helpers** — For open tasks, tap the task to view and invite available helpers
 
   ![Available helpers screen](/frontend/assets/screenshots/available-helpers.png)
