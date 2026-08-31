@@ -44,7 +44,6 @@ class BlobStorageConfigTest {
         ReflectionTestUtils.setField(blobStorageConfig, "chatImagesContainer", CHAT_IMAGES_CONTAINER);
     }
 
-    // -----------postsContainerClient()---------------
 
     @Test
     void postsContainerClient_returnsClientForPostsContainer() {
@@ -65,8 +64,6 @@ class BlobStorageConfigTest {
         }
     }
 
-    // -------------profilesContainerClient()-----------------
-
     @Test
     void profilesContainerClient_returnsClientForProfilesContainer() {
         BlobServiceClient serviceClient = mock(BlobServiceClient.class);
@@ -86,7 +83,6 @@ class BlobStorageConfigTest {
         }
     }
 
-    // ----------------taskImagesContainerClient()----------------
 
     @Test
     void taskImagesContainerClient_returnsClientForTaskImagesContainer() {
@@ -107,8 +103,6 @@ class BlobStorageConfigTest {
         }
     }
 
-    // ----------------chatImagesContainerClient()-----------------
-
     @Test
     void chatImagesContainerClient_returnsClientForChatImagesContainer() {
         BlobServiceClient serviceClient = mock(BlobServiceClient.class);
@@ -128,7 +122,6 @@ class BlobStorageConfigTest {
         }
     }
 
-    // ----------Connection-string propagation--------------
 
     @Test
     void postsContainerClient_passesConnectionStringToBuilder() {
