@@ -1,8 +1,8 @@
 # User Manual
 ## SupaNeighbour — Parse&Co
 
-**Version:** 2.0  
-**Date:** July 2026  
+**Version:** 2.0
+**Date:** July 2026
 **Author:** Michelle W Njoroge (UI Engineer/Designer)
 
 ---
@@ -20,44 +20,53 @@ SupaNeighbour connects residents within the same neighbourhood by enabling them 
 ### 2.1 Creating an Account
 
 1. Open the SupaNeighbour app
+
+   ![Splash screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Spash%20Screen.png)
+
 2. Tap **"Create Account"** on the welcome screen
+
+   ![Login/Signup splash screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Splash%20-%20LoginSignup%20Screen.png)
+
 3. Enter your details:
    - **Email Address** — A valid email address for verification
    - **Phone Number** — For important notifications
    - **First and Last Name** — How you'll be known in the community
    - **Residential Address** — To match you with your neighbourhood zone
+
+   ![Sign up screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20Screen.png)
+
+   ![Sign up - user identity screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Identity%20Screen.png)
+
+   ![Sign up - residential address screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Residential%20Address%20Screen.png)
+
+   ![Sign up - other details screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Other%20Details%20Screen.png)
+
 4. Create a **password** (minimum 8 characters with a mix of letters, numbers, and special characters)
 5. Tap **"Sign Up"**
 6. Check your email/phone for the **OTP verification code**
 7. Enter the code to activate your account
 
-***Sign Up Screenshots:***
-- [View Sign Up Page a](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20Screen.png)
+   ![Sign up - confirm OTP screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20Confirm%20OTP%20Screen.png)
 
-- [View Sign Up Page b](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20Confirm%20OTP%20Screen.png)
+**Forgot your password?**
 
-- [View Sign Up Page c](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Identity%20Screen.png)
+- Tap **"Forgot Password"** on the login screen
 
-- [View Sign Up Page d](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Residential%20Address%20Screen.png)
+  ![Forgot password screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Forgot%20Password%20Screen.png)
 
-- [Vire Sign Up page e](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Other%20Details%20Screen.png)
+- Set a new password when prompted
 
-***Forgot password screenshots:***
-- [View Forgot Password a](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Forgot%20Password%20Screen.png)
-
-- [View Sign Up Password b](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Forgot%20Password%20-%20Set%20Password%20Screen.png)
+  ![Forgot password - set password screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Forgot%20Password%20-%20Set%20Password%20Screen.png)
 
 ### 2.2 Logging In
 
 1. Open the app
+
+   ![Login screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Login%20Screen.png)
+
 2. Enter your **Email** and **Password**
 3. Tap **"Login"**
-4. If you've forgotten your password, tap **"Forgot Password"** and follow the reset instructions
-
-***Screenshots:***
-- [View Login Page a](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Spash%20Screen.png)
-- [View Login Page b](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Splash%20-%20LoginSignup%20Screen.png)
-- [View Login Page c](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Login%20Screen.png)
+4. If you've forgotten your password, tap **"Forgot Password"** and follow the reset instructions (see [Section 2.1](#21-creating-an-account))
 
 ---
 
@@ -73,15 +82,15 @@ The Home screen is your dashboard for everything happening in your neighbourhood
 | **+ Button** | Create a new task |
 | **See All** | View all available tasks |
 
+![Home screen](/frontend/assets/screenshots/home-screen.png)
+
 **To view a task:** Tap on any task card to see full details and instructions.
 
+**To create a task:** Tap the **+ Button** on the Home screen.
+
+![Create task screen](/frontend/assets/screenshots/create-task.png)
+
 **To refresh the list:** Pull down from the top of the screen.
-
-***Screenshots:***
-
-- [View Home Page a](/frontend/assets/screenshots/home-screen.png)
-- [View Home Page b](/frontend/assets/screenshots/create-task.png)
-
 
 ---
 
@@ -90,41 +99,46 @@ The Home screen is your dashboard for everything happening in your neighbourhood
 The Tasks screen helps you manage all your tasks in one place. It has three tabs:
 
 ### 4.1 Posted Tab
-Shows tasks you have created. From here you can:
+
+Shows tasks you have created.
+
+![Posted tasks tab](/frontend/assets/screenshots/tasks-posted.png)
+
+From here you can:
 - **View task details** — Tap any task to see full information
 - **Edit a task** — If the task is still open, tap the edit icon (pencil) in the top right
 - **Find helpers** — For open tasks, tap the task to view and invite available helpers
+
+  ![Available helpers screen](/frontend/assets/screenshots/available-helpers.png)
+
 - **Approve completion** — For tasks marked as complete, review and approve
 
-***Screenshots:***
-
-- [View Posted Page a](/frontend/assets/screenshots/tasks-posted.png)
-
-- [View Posted Page b](/frontend/assets/screenshots/rating.png)
-
-- [View Posted Page c](/frontend/assets/screenshots/available-helpers.png)
+  ![Rating screen](/frontend/assets/screenshots/rating.png)
 
 ### 4.2 Accepted Tab
-Shows tasks you have accepted to help with. From here you can:
+
+Shows tasks you have accepted to help with.
+
+![Accepted tasks tab](/frontend/assets/screenshots/tasks-accepted.png)
+
+From here you can:
 - **Start a task** — Tap "Start" when you begin working on the task
 - **Mark as complete** — Tap "Complete" when you've finished the task
 - **Submit for approval** — After completion, the requester will review your work
 - **View task details** — Tap any task to see full information
 
-***Screenshots:***
-
-- [View Accepted Tab a](/frontend/assets/screenshots/tasks-accepted.png)
-
-
 ### 4.3 Available Tab
-Shows tasks from neighbours that you can help with. From here you can:
+
+Shows tasks from neighbours that you can help with.
+
+![Available tasks tab](/frontend/assets/screenshots/tasks-available.png)
+
+From here you can:
 - **Accept a task** — Swipe right on a task card or tap and select "Accept"
 - **Pass on a task** — Swipe left on a task card or tap and select "Pass"
 - **View task details** — Tap any task to see full information before deciding
 
-- [View Available Tab a](/frontend/assets/screenshots/tasks-available.png)
-
-- [View Available Tab b](/frontend/assets/screenshots/task-detail.png)
+  ![Task detail screen](/frontend/assets/screenshots/task-detail.png)
 
 ---
 
@@ -133,31 +147,31 @@ Shows tasks from neighbours that you can help with. From here you can:
 The Chat screen helps you communicate with neighbours and stay informed about your community.
 
 ### 5.1 Inbox Tab
+
 Shows your direct messages with neighbours.
+
+![Chat inbox](/frontend/assets/screenshots/chat-inbox.png)
+
 - **Tap a chat** to open it and view messages
 - **Send messages** — Type your message and tap the send button
 - **Share images** — Tap the attachment icon to send photos
 - **Real-time updates** — Messages appear instantly
 
-***Screenshots:***
-
-- [View Chat Page a](/frontend/assets/screenshots/chat-inbox.png)
-
-
 ### 5.2 Community Bulletin Tab
+
 Shows community announcements and updates.
+
+![Bulletin board feed](/frontend/assets/screenshots/bulletin-feed.png)
+
 - **View posts** — Browse announcements from neighbours
 - **Create a post** — Tap the + button to share news or ask for help
+
+  ![Create bulletin post screen](/frontend/assets/screenshots/create-bulletin.png)
+
 - **Filter posts** — Use the filter button to view specific categories
 - **Search posts** — Use the search bar to find specific content
 - **React to posts** — Tap "Helpful" to show appreciation for a post
 - **Report inappropriate content** — Tap the flag icon to report a post
-
-***Screenshots:***
-
-- [View Bulletin Board Page a](/frontend/assets/screenshots/bulletin-feed.png)
-
-- [View Bulletin Board Page b](/frontend/assets/screenshots/create-bulletin.png)
 
 ---
 
@@ -171,24 +185,24 @@ The Leaderboard shows the top helpers in your neighbourhood.
 | **This Week** | The current week's rankings |
 | **Your Rank Card** | Your current position and progress to the next rank |
 
+![Leaderboard screen](/frontend/assets/screenshots/leaderboard.png)
+
 **To view a helper's profile:** Tap on any helper in the list.
+
+![Helper profile screen](/frontend/assets/screenshots/helper-profile.png)
 
 **How rankings work:**
 - **Gold** — Trust score ≥ 4.8
 - **Silver** — Trust score ≥ 4.5
 - **Bronze** — Trust score ≥ 4.0
 
-***Screenshots:***
-
-- [View Leaderboard Page a](/frontend/assets/screenshots/leaderboard.png)
-
-- [View Leaderboard Page b](/frontend/assets/screenshots/helper-profile.png)
-
 ---
 
 ## 7. Profile Screen
 
 The Profile screen displays your community standing and allows you to manage your account.
+
+![Profile screen](/frontend/assets/screenshots/profile.png)
 
 ### 7.1 Your Profile Card
 - **Display Name** — Your name in the community
@@ -222,35 +236,27 @@ The Profile screen displays your community standing and allows you to manage you
 - Manage your privacy preferences
 - Control location and data sharing
 
-***Screenshots:***
+  ![Privacy settings screen](/frontend/assets/screenshots/privact-settings.png)
 
-- [View  rivacy settings Page](/frontend/assets/screenshots/privact-settings.png)
-
-- [View Serttings Page](/frontend/assets/screenshots/settings.png)
+  ![Settings screen](/frontend/assets/screenshots/settings.png)
 
 ### 7.8 Logout
 - Tap "Logout" to sign out of your account
-
-***Screenshots:***
-
-- [View Profile Page](/frontend/assets/screenshots/profile.png)
 
 ---
 
 ## 8. Help & Support
 
 Access help at any time by:
-- Tapping the **info icon ** on any main screen
+- Tapping the **info icon** on any main screen
 - Going to **Profile → Settings → Help Center**
+
+![Help and support screen](/frontend/assets/screenshots/help-and-support.png)
 
 The Help Menu includes:
 - **Frequently Asked Questions** — Common questions and answers
 - **User Manual** — This document
 - **Contact Support** — Reach out to our support team
-
-***Screenshots***
-
-- [View Help and Support Page a](/frontend/assets/screenshots/help-and-support.png)
 
 ---
 
@@ -299,5 +305,5 @@ Once a helper accepts your task, you can chat with them through the Chat tab.
 
 ---
 
-**Document Maintained by:** Parse&Co  
+**Document Maintained by:** Parse&Co
 **Last Updated:** July 2026

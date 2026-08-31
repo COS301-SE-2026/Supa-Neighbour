@@ -6,6 +6,7 @@ abstract class IChatService {
   Future<Map<String, dynamic>> getMessages(int chatId, {int page = 1, int limit = 50});
   Future<Map<String, dynamic>> sendMessage(int chatId, int senderId, String content, {String type = 'text'});
   Future<void> markAsRead(int chatId, int userId);
+  Future<Map<String, dynamic>> getOrCreateChatForTask(int taskId, String authToken);
 }
 
 /// Service responsible for all chat-related calls.
@@ -75,6 +76,32 @@ class ChatService implements IChatService {
       await _dio.put('/api/chats/$chatId/read', data: {'userID': userId});
     } on DioException catch (e) {
       throw Exception("Couldn't mark as read: ${e.message}");
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getOrCreateChatForTask(
+    int taskId, String authToken
+  ) async{
+    try{
+      final Response<Map<String, dynamic>> res = await _dio.post(
+        '/api/chats/task/$taskId',
+        options: Options(headers: {'Authorization': 'Bearer $authToken'}),
+      );
+      return res.data!;
+    }on DioException catch(e){
+      switch(e.response?.statusCode){
+        case 409: 
+          throw Exception("No helper has been assigned to this task yet.");
+        case 403:
+          throw Exception("You're not part of this task.");
+        case 404: 
+          throw Exception("Task not found");
+        case 401:
+          throw Exception("Your session has expired - please sign in again");
+        default:
+          throw Exception("Couldn't open chat: ${e.message}");
+      }
     }
   }
 

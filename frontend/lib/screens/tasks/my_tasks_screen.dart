@@ -380,7 +380,7 @@ Widget _buildTaskCard(Task task, {required bool isRequesterView, bool isAvailabl
 
       // CASE 2: REQUESTER VIEW (Posted Tab)
       if (isRequesterView) {
-        if (task.status == 'open' || task.status == 'assigned') {
+        if (task.status == 'open') {
           await Navigator.push(
             context,
             MaterialPageRoute(
