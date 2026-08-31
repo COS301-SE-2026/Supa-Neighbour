@@ -7,13 +7,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/test")
 public class TestNotificationController {
 
-    private static final Logger logger = LoggerFactory.getLogger(TestNotificationController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestNotificationController.class);
 
     @Autowired
     private NotificationsService notificationsService;
@@ -30,11 +34,11 @@ public class TestNotificationController {
     @PostMapping("/notification")
     public ResponseEntity<?> sendTestNotification(@RequestBody TestNotificationRequest request) {
         try {
-            logger.info(" Test notification request received");
+            LOGGER.info(" Test notification request received");
             
             // Validate request
             if (request.getFcmToken() == null || request.getFcmToken().isEmpty()) {
-                logger.warn(" Missing fcmToken in request");
+                LOGGER.warn(" Missing fcmToken in request");
                 return ResponseEntity.badRequest().body("Missing fcmToken");
             }
             
@@ -42,11 +46,11 @@ public class TestNotificationController {
             String tokenPreview = request.getFcmToken().length() > 20 
                 ? request.getFcmToken().substring(0, 20) + "..." 
                 : request.getFcmToken();
-            logger.info("FCM Token: {}", tokenPreview);
-            logger.info("Title: {}", request.getTitle());
-            logger.info("Body: {}", request.getBody());
-            logger.info("Type: {}", request.getType());
-            logger.info("EntityId: {}", request.getEntityId());
+            LOGGER.info("FCM Token: {}", tokenPreview);
+            LOGGER.info("Title: {}", request.getTitle());
+            LOGGER.info("Body: {}", request.getBody());
+            LOGGER.info("Type: {}", request.getType());
+            LOGGER.info("EntityId: {}", request.getEntityId());
             
             // Build the message using the existing send method
             // Since send() is private, we need to use the public methods or create a new one
@@ -60,15 +64,15 @@ public class TestNotificationController {
                 request.getEntityId() != null ? request.getEntityId() : "123"
             );
             
-            logger.info(" Test notification sent successfully");
+            LOGGER.info(" Test notification sent successfully");
             return ResponseEntity.ok().body("Notification sent successfully");
             
         } catch (FirebaseMessagingException e) {
-            logger.error(" Firebase error sending test notification: {}", e.getMessage());
+            LOGGER.error(" Firebase error sending test notification: {}", e.getMessage());
             return ResponseEntity.internalServerError()
                 .body("Firebase error: " + e.getMessage());
         } catch (Exception e) {
-            logger.error(" Error sending test notification: {}", e.getMessage());
+            LOGGER.error(" Error sending test notification: {}", e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError()
                 .body("Failed to send notification: " + e.getMessage());
