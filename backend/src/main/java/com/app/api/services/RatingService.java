@@ -89,6 +89,7 @@ public class RatingService {
                     "rating must be one of: Outstanding, Excellent, Very Good, Average");
         }
 
+        ratingRepository.submitRating(taskId, request.getRating(), request.getReviewSnippet());
         ratingRepository.recalculateAverageRating(helperId);
 
         return new RatingResponse(
