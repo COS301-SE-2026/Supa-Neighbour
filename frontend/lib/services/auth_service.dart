@@ -258,48 +258,4 @@ Future<User> loginWithToken(String idToken) async {
     await prefs.setBool('remember_me', false);
 
   }
-
-  Future<void> _postDeviceToken(String fcmToken) async{
-    final fb.User? firebaseUser = _firebaseAuth.currentUser;
-
-    if(firebaseUser == null) return;
-
-    final String? idToken = await firebaseUser.getIdToken(false);
-    if(idToken == null) return;
-
-    await _dio.post(
-      '/api/users/me/device-token',
-      data: {'fcmToken': fcmToken},
-      options: Options(
-        headers:{'Authorization': 'Bearer $idToken'},
-      )
-    );
-  }
-
-  Future<void> _registerFcmToken() async{
-    final messaging = FirebaseMessaging.instance;
-    try{
-      NotificationSettings settings = await messaging.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-
-      if(settings.authorizationStatus == AuthorizationStatus.authorized || settings.authorizationStatus == AuthorizationStatus.provisional){
-        String? token = await messaging.getToken();
-        if(token != null){
-          await _postDeviceToken(token);
-        }
-      
-        FirebaseMessaging.instance.onTokenRefresh.listen((newToken){
-          _postDeviceToken(newToken);
-        });
-      }else if(settings.authorizationStatus == AuthorizationStatus.denied){
-        debugPrint(' Push notification permission denied');
-      }
-    } catch(e){
-      debugPrint('Failed to register FCM token: $e');
-    }
-  }
-
 }
