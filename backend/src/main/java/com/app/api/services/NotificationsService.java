@@ -15,10 +15,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class NotificationsService {
 
-    private static final Logger logger = LoggerFactory.getLogger(NotificationsService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationsService.class);
 
     private final FirebaseMessaging firebaseMessaging;
 
+    /**
+     * Default constructor that initializes the FirebaseMessaging instance.
+     */
     public NotificationsService() {
         this.firebaseMessaging = FirebaseMessaging.getInstance();
     }
@@ -36,7 +39,7 @@ public class NotificationsService {
      */
     public void sendTestNotification(String fcmToken, String title, String body, String type, String entityId)
             throws FirebaseMessagingException {
-        logger.info("Preparing to send test notification to token: {}", maskToken(fcmToken));
+        LOGGER.info("Preparing to send test notification to token: {}", maskToken(fcmToken));
 
         // Build the notification
         Notification notification = Notification.builder()
@@ -56,12 +59,12 @@ public class NotificationsService {
         // Send the message
         try {
             String response = firebaseMessaging.send(message);
-            logger.info("Test notification sent successfully. Message ID: {}", response);
+            LOGGER.info("Test notification sent successfully. Message ID: {}", response);
         } catch (FirebaseMessagingException e) {
-            logger.error("Failed to send test notification: {}", e.getMessage(), e);
+            LOGGER.error("Failed to send test notification: {}", e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            logger.error("Unexpected error while sending test notification: {}", e.getMessage(), e);
+            LOGGER.error("Unexpected error while sending test notification: {}", e.getMessage(), e);
             throw new RuntimeException("Unexpected error sending test notification", e);
         }
     }
