@@ -1,0 +1,532 @@
+// shared/lib/models/task_model.dart
+
+
+// Custom TimeOfDay class (pure Dart)
+class CustomTimeOfDay {
+  final int hour;
+  final int minute;
+
+  const CustomTimeOfDay(this.hour, this.minute);
+
+  factory CustomTimeOfDay.fromDateTime(DateTime dateTime) {
+    return CustomTimeOfDay(dateTime.hour, dateTime.minute);
+  }
+
+  String toFormattedString() {
+    final ampm = hour >= 12 ? 'PM' : 'AM';
+    final hour12 = hour % 12 == 0 ? 12 : hour % 12;
+    return '$hour12:${minute.toString().padLeft(2, '0')} $ampm';
+  }
+
+  @override
+  String toString() => 'CustomTimeOfDay($hour:$minute)';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is CustomTimeOfDay &&
+        other.hour == hour &&
+        other.minute == minute;
+  }
+
+  @override
+  int get hashCode => hour.hashCode ^ minute.hashCode;
+}
+
+class Task {
+  final String id;
+  final String title;
+  final String category;
+  final DateTime date;
+  final CustomTimeOfDay time;
+  final int xpReward;
+  final String instructions;
+  final String status; //open, assigned, in_progress, pending_approval, completed, cancelled
+  final DateTime createdAt;
+  final String createdBy;  // User ID of who created the task
+  final String? helperId;  // User ID of who accepted (null if open)
+  final String? requesterName; // Name of requester for display
+  final String? helperName; // Name of helper for display (optional)
+  final String? completionNote;
+  final List<String>? completionPhotos;
+
+  Task({
+    required this.id,
+    required this.title,
+    required this.category,
+    required this.date,
+    required this.time,
+    required this.xpReward,
+    required this.instructions,
+    required this.status,
+    required this.createdAt,
+    required this.createdBy,
+    this.helperId,
+    this.requesterName,
+    this.helperName,
+    this.completionNote,
+    this.completionPhotos,
+  });
+
+  // Creates a new Task with updated fields
+  Task copyWith({
+    String? id,
+    String? title,
+    String? category,
+    DateTime? date,
+    CustomTimeOfDay? time,
+    int? xpReward,
+    String? instructions,
+    String? status,
+    DateTime? createdAt,
+    String? createdBy,
+    String? helperId,
+    String? requesterName,
+    String? helperName,
+    String? completionNote,
+    List<String>? completionPhotos,
+  }) {
+    return Task(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      category: category ?? this.category,
+      date: date ?? this.date,
+      time: time ?? this.time,
+      xpReward: xpReward ?? this.xpReward,
+      instructions: instructions ?? this.instructions,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      createdBy: createdBy ?? this.createdBy,
+      helperId: helperId ?? this.helperId,
+      requesterName: requesterName ?? this.requesterName,
+      helperName: helperName ?? this.helperName,
+      completionNote: completionNote ?? this.completionNote,
+      completionPhotos: completionPhotos ?? this.completionPhotos,
+    );
+  }
+
+  ////////////////////////
+  /// MAP RES TO A TASK
+  factory Task.fromJson(Map<String, dynamic> json) {
+    final DateTime startDate = json['startDate'] != null
+        ? DateTime.tryParse(json['startDate'].toString()) ?? DateTime.now()
+        : DateTime.now();
+
+    final String status = json['status'] as String? ??
+        (json['helperId'] != null ? 'in_progress' : 'open');
+
+    return Task(
+      id: (json['taskId'] as int).toString(),
+      title: (json['title'] as String?)?.isNotEmpty == true
+          ? json['title'] as String
+          : _resolveCategoryName(json['taskTypeId'] as int?),
+      category: _resolveCategoryName(json['taskTypeId'] as int?),
+      date: startDate,
+      time: CustomTimeOfDay(startDate.hour, startDate.minute),
+      xpReward: _resolveXpReward(json['taskTypeId'] as int?),
+      instructions: json['instructions'] as String? ?? '',
+      status: status,
+      createdAt: startDate,
+      createdBy: json['requesterUserId']?.toString() ?? 'unknown',
+      helperId: json['helperId']?.toString(),
+      requesterName: json['requesterName'] as String?,
+      helperName: json['helperName'] as String?,
+      completionNote: json['helperRatingId'] as String?,
+      completionPhotos: json['completionPhotos'] != null
+          ? List<String>.from(json['completionPhotos'] as List)
+          : null,
+    );
+  }
+
+  factory Task.fromHelperTaskJson(Map<String, dynamic> json) {
+    DateTime parsedDate;
+    try {
+      parsedDate = DateTime.parse(json['startDate'] as String);
+    } catch (_) {
+      parsedDate = DateTime.now();
+    }
+
+    return Task(
+      id: json['taskId'].toString(),
+      title: json['taskType'] as String? ?? 'Untitled Task',
+      category: json['taskType'] as String? ?? 'General',
+      date: parsedDate,
+      time: CustomTimeOfDay(parsedDate.hour, parsedDate.minute),
+      xpReward: json['xpAwarded'] as int? ?? 0,
+      instructions: '', // not returned by this endpoint
+      status: json['status'] as String? ?? 'open',
+      createdAt: parsedDate,
+      createdBy: json['requesterUserId']?.toString() ?? '',
+      helperId: null, // this IS the helper's own task list; not relevant here
+      requesterName: json['requesterName'] as String?,
+      helperName: null,
+      completionNote: json['completionNote'] as String?,
+      completionPhotos: null,
+    );
+  }
+
+  /// taskTypeId -> categoryName
+  static String _resolveCategoryName(int? taskTypeId) {
+    switch (taskTypeId) {
+      case 1:
+        return 'Medical Assistance';
+      case 2:
+        return 'Pet Care';
+      case 3:
+        return 'Technology Support';
+      case 4:
+        return 'Transportation Support';
+      case 5:
+        return 'Home Repair';
+      default:
+        return 'Other';
+    }
+  }
+
+  /// categoryName -> taskTypeId
+  static int resolveTaskTypeId(String category) {
+    switch (category) {
+      case 'Medical Assistance':
+        return 1;
+      case 'Pet Care':
+        return 2;
+      case 'Technology Support':
+        return 3;
+      case 'Transportation Support':
+        return 4;
+      case 'Home Repair':
+        return 5;
+      default:
+        return 1; // fallback to first valid type
+    }
+  }
+
+  /// taskTypeId -> flat XP reward per category.
+  static int _resolveXpReward(int? taskTypeId) {
+    switch (taskTypeId) {
+      case 1:
+        return 50; // Medical Assistance
+      case 2:
+        return 60; // Pet Care
+      case 3:
+        return 40; // Technology Support
+      case 4:
+        return 30; // Transportation Support
+      case 5:
+        return 45; // Home Repair
+      default:
+        return 25;
+    }
+  }
+
+  ////////////////////TEMP MCL DATA\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  /////////// wil remove as integration is being complete essentially
+  static List<Task> _mockTasks = [];
+
+  static List<Task> getMockTasks({String currentUserId = 'currentUser'}) {
+    if (_mockTasks.isEmpty) {
+      // Add some sample tasks
+      _mockTasks = [
+        Task(
+          id: '1',
+          title: 'Water my plants',
+          category: 'Plants',
+          date: DateTime.now(),
+          time: const CustomTimeOfDay(15, 0),
+          xpReward: 50,
+          instructions: 'Please water all indoor plants',
+          status: 'open',
+          createdAt: DateTime.now().subtract(const Duration(days: 1)),
+          createdBy: currentUserId,
+          requesterName: 'You',
+          helperId: null,
+          helperName: null,
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '2',
+          title: 'Collect package',
+          category: 'Packages',
+          date: DateTime.now().add(const Duration(days: 1)),
+          time: const CustomTimeOfDay(10, 0),
+          xpReward: 30,
+          instructions: 'Pick up from the post office',
+          status: 'in_progress',
+          createdAt: DateTime.now().subtract(const Duration(days: 2)),
+          createdBy: currentUserId,
+          requesterName: 'You',
+          helperId: 'helper123',
+          helperName: 'Sarah Johnson',
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '3',
+          title: 'Walk my dog',
+          category: 'Pets',
+          date: DateTime.now(),
+          time: const CustomTimeOfDay(8, 0),
+          xpReward: 60,
+          instructions: 'Take my dog for a 15 min walk',
+          status: 'completed',
+          createdAt: DateTime.now().subtract(const Duration(days: 3)),
+          createdBy: currentUserId,
+          requesterName: 'You',
+          helperId: 'helper456',
+          helperName: 'Mike Johnson',
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '4',
+          title: 'Take out bins',
+          category: 'Bins',
+          date: DateTime.now().subtract(const Duration(days: 1)),
+          time: const CustomTimeOfDay(19, 0),
+          xpReward: 20,
+          instructions: 'Take bins to the curb',
+          status: 'pending_approval',
+          createdAt: DateTime.now().subtract(const Duration(days: 4)),
+          createdBy: currentUserId,
+          requesterName: 'You',
+          helperId: 'helper789',
+          helperName: 'Lisa Wong',
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '5',
+          title: 'Bring in mail',
+          category: 'Packages',
+          date: DateTime.now().subtract(const Duration(days: 2)),
+          time: const CustomTimeOfDay(9, 0),
+          xpReward: 15,
+          instructions: 'Bring mail inside',
+          status: 'completed',
+          createdAt: DateTime.now().subtract(const Duration(days: 5)),
+          createdBy: currentUserId,
+          requesterName: 'You',
+          helperId: 'helper111',
+          helperName: 'Tom Brown',
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '6',
+          title: 'Walk my dog',
+          category: 'Pets',
+          date: DateTime.now(),
+          time: const CustomTimeOfDay(17, 0),
+          xpReward: 60,
+          instructions: 'Take my dog for a 15 minute walk',
+          status: 'assigned',
+          createdAt: DateTime.now().subtract(const Duration(days: 1)),
+          createdBy: 'neighbour123',
+          requesterName: 'Sarah Johnson',
+          helperId: currentUserId,
+          helperName: 'You',
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '7',
+          title: 'Water garden',
+          category: 'Plants',
+          date: DateTime.now(),
+          time: const CustomTimeOfDay(8, 0),
+          xpReward: 45,
+          instructions: 'Water the vegetable garden',
+          status: 'in_progress',
+          createdAt: DateTime.now().subtract(const Duration(days: 2)),
+          createdBy: 'neighbour456',
+          requesterName: 'Mike Johnson',
+          helperId: currentUserId,
+          helperName: 'You',
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '8',
+          title: 'Feed my cat',
+          category: 'Pets',
+          date: DateTime.now().subtract(const Duration(days: 1)),
+          time: const CustomTimeOfDay(12, 0),
+          xpReward: 35,
+          instructions: 'Feed the cat and change water',
+          status: 'pending_approval',
+          createdAt: DateTime.now().subtract(const Duration(days: 3)),
+          createdBy: 'neighbour789',
+          requesterName: 'Lisa Wong',
+          helperId: currentUserId,
+          helperName: 'You',
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '9',
+          title: 'Collect packages',
+          category: 'Packages',
+          date: DateTime.now().subtract(const Duration(days: 3)),
+          time: const CustomTimeOfDay(14, 0),
+          xpReward: 40,
+          instructions: 'Pick up packages from front door',
+          status: 'completed',
+          createdAt: DateTime.now().subtract(const Duration(days: 4)),
+          createdBy: 'neighbour111',
+          requesterName: 'Tom Brown',
+          helperId: currentUserId,
+          helperName: 'You',
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '10',
+          title: 'Fix the garden fence',
+          category: 'Home Check-in',
+          date: DateTime.now().subtract(const Duration(days: 2)),
+          time: const CustomTimeOfDay(10, 0),
+          xpReward: 80,
+          instructions: 'Fix the broken fence panel in the backyard',
+          status: 'pending_approval',
+          createdAt: DateTime.now().subtract(const Duration(days: 3)),
+          createdBy: currentUserId,
+          requesterName: 'You',
+          helperId: 'helper999',
+          helperName: 'John Carpenter',
+          completionNote: 'Fixed the fence panel. Replaced two broken slats and secured the hinges. Good as new!',
+          completionPhotos: [
+            'https://via.placeholder.com/150/2A9D8F/FFFFFF?text=Fence+After',
+            'https://via.placeholder.com/150/E9C46A/264653?text=Repair+Detail',
+          ],
+        ),
+        Task(
+          id: '11',
+          title: 'Water the garden',
+          category: 'Plants',
+          date: DateTime.now().add(const Duration(days: 2)),
+          time: const CustomTimeOfDay(9, 0),
+          xpReward: 40,
+          instructions: 'Water the vegetable garden and flower beds',
+          status: 'open',
+          createdAt: DateTime.now().subtract(const Duration(days: 1)),
+          createdBy: 'neighbour555',
+          requesterName: 'Alice Green',
+          helperId: null,
+          helperName: null,
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '12',
+          title: 'Collect my parcel',
+          category: 'Packages',
+          date: DateTime.now().add(const Duration(days: 1)),
+          time: const CustomTimeOfDay(14, 0),
+          xpReward: 25,
+          instructions: 'Pick up a parcel from the post office',
+          status: 'open',
+          createdAt: DateTime.now().subtract(const Duration(days: 2)),
+          createdBy: 'neighbour666',
+          requesterName: 'Bob Parcel',
+          helperId: null,
+          helperName: null,
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '13',
+          title: 'Feed my cat',
+          category: 'Pets',
+          date: DateTime.now().add(const Duration(days: 1)),
+          time: const CustomTimeOfDay(18, 0),
+          xpReward: 50,
+          instructions: 'Feed the cat and clean the litter box',
+          status: 'open',
+          createdAt: DateTime.now().subtract(const Duration(days: 1)),
+          createdBy: 'neighbour777',
+          requesterName: 'Carol Petlover',
+          helperId: null,
+          helperName: null,
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '14',
+          title: 'Take out the bins',
+          category: 'Bins',
+          date: DateTime.now().add(const Duration(days: 1)),
+          time: const CustomTimeOfDay(7, 0),
+          xpReward: 15,
+          instructions: 'Take the bins to the curb for collection',
+          status: 'open',
+          createdAt: DateTime.now().subtract(const Duration(days: 3)),
+          createdBy: 'neighbour888',
+          requesterName: 'Dave Bins',
+          helperId: null,
+          helperName: null,
+          completionNote: null,
+          completionPhotos: null,
+        ),
+        Task(
+          id: '15',
+          title: 'Check my mail',
+          category: 'Home Check-in',
+          date: DateTime.now().add(const Duration(days: 1)),
+          time: const CustomTimeOfDay(11, 0),
+          xpReward: 20,
+          instructions: 'Bring the mail inside the house',
+          status: 'open',
+          createdAt: DateTime.now().subtract(const Duration(days: 2)),
+          createdBy: 'neighbour999',
+          requesterName: 'Eve Mail',
+          helperId: null,
+          helperName: null,
+          completionNote: null,
+          completionPhotos: null,
+        ),
+      ];
+    }
+    return _mockTasks;
+  }
+
+  static void addMockTask(Task task) {
+    _mockTasks.insert(0, task);
+  }
+
+  static void updateTaskStatus(String taskId, String newStatus) {
+    final index = _mockTasks.indexWhere((task) => task.id == taskId);
+    if (index != -1) {
+      _mockTasks[index] = Task(
+        id: _mockTasks[index].id,
+        title: _mockTasks[index].title,
+        category: _mockTasks[index].category,
+        date: _mockTasks[index].date,
+        time: _mockTasks[index].time,
+        xpReward: _mockTasks[index].xpReward,
+        instructions: _mockTasks[index].instructions,
+        status: newStatus,
+        createdAt: _mockTasks[index].createdAt,
+        createdBy: _mockTasks[index].createdBy,
+        requesterName: _mockTasks[index].requesterName,
+        helperId: _mockTasks[index].helperId,
+        helperName: _mockTasks[index].helperName,
+        completionNote: _mockTasks[index].completionNote,
+        completionPhotos: _mockTasks[index].completionPhotos,
+      );
+    }
+  }
+
+  static void updateMockTask(Task updatedTask) {
+    final index = _mockTasks.indexWhere((task) => task.id == updatedTask.id);
+    if (index != -1) {
+      _mockTasks[index] = updatedTask;
+    }
+  }
+
+  static void deleteMockTask(String taskId) {
+    _mockTasks.removeWhere((task) => task.id == taskId);
+  }
+  /////////////////////////////////////////////
+  /////////////////////////////////////////////
+}

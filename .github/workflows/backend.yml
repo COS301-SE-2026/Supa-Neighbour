@@ -25,7 +25,7 @@ jobs:
         working-directory: backend
       
       - name: Run tests
-        run: mvn test
+        run: mvn clean test
         working-directory: backend
       
       - name: Lint
