@@ -1,24 +1,26 @@
 package com.app.api.unit.services;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.*;
- 
-import java.util.List;
- 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.anyInt;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
  
 import com.app.api.dtos.HelperTaskDTO;
-import com.app.api.services.HelperTasksService;
 import com.app.api.dtos.HelperTaskResponse;
 import com.app.api.repositories.HelperTasksRepository;
+import com.app.api.services.HelperTasksService;
  
 @ExtendWith(MockitoExtension.class)
 class HelperTasksServiceTest {
