@@ -61,7 +61,7 @@ public class UserProfileController {
      *         profile if the token is valid, or a 401 Unauthorized response
      *         if the token is invalid or expired
      */
-    @GetMapping("profile")
+    @GetMapping("/profile")
     @Operation(
         summary = "Get authenticated user's profile",
         description = "Retrieves the profile of the authenticated user. Helper-specific fields are null for non-helpers.",
@@ -107,7 +107,7 @@ public class UserProfileController {
      *         information if the request is successful, or a 401
      *         Unauthorized response if the token is invalid or expired
      */
-    @PatchMapping("profile")
+    @PatchMapping("/profile")
     @Operation(
         summary = "Update authenticated user's profile",
         description = "Updates the profile of the authenticated user with the provided fields",
