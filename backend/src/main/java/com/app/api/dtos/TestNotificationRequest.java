@@ -13,9 +13,10 @@ public class TestNotificationRequest {
     private String entityId;
 
     /**
-     * Default constructor.
+     * Default constructor required for JSON deserialization.
      */
     public TestNotificationRequest() {
+        // Intentionally empty – needed for Jackson/Firebase serialization.
     }
 
     /**
