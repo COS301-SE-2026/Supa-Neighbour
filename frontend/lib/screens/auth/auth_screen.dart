@@ -4,12 +4,12 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_text_files.dart';
 import 'login_screen.dart';
 import 'signup_screen.dart';
-
 class AuthScreen extends StatelessWidget {
   const AuthScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    //Responsive sizing
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
