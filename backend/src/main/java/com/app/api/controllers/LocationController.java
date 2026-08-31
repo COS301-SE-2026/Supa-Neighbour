@@ -16,13 +16,20 @@ import org.springframework.web.bind.annotation.RestController;
 import com.app.api.models.Location;
 import com.app.api.services.LocationService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST controller for Location.
  */
 @RestController
 @RequestMapping("/api/locations")
+@Tag(name = "Locations", description = "Operations for managing locations")
 public class LocationController {
-
 
     private final LocationService locationService;
 
@@ -41,6 +48,8 @@ public class LocationController {
      * @return a list of all locations
      */
     @GetMapping
+    @Operation(summary = "Get all locations", description = "Retrieves a list of all locations")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved locations")
     public ResponseEntity<List<Location>> getAllLocations() {
         return ResponseEntity.ok(locationService.getAllLocations());
     }
@@ -53,7 +62,15 @@ public class LocationController {
      * @return the location if found, otherwise 404 Not Found
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Location> getLocationById(@PathVariable int id) {
+    @Operation(summary = "Get location by ID", description = "Retrieves a single location by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Location found"),
+        @ApiResponse(responseCode = "404", description = "Location not found", content = @Content)
+    })
+    public ResponseEntity<Location> getLocationById(
+        @Parameter(description = "ID of the location to retrieve", example = "1")
+        @PathVariable int id
+    ) {
         Location location = locationService.getLocationById(id);
         if (location == null) {
             return ResponseEntity.notFound().build();
@@ -69,6 +86,11 @@ public class LocationController {
      * @return the created location with HTTP 201 status
      */
     @PostMapping
+    @Operation(summary = "Create a new location", description = "Creates a new location")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Location created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid location data", content = @Content)
+    })
     public ResponseEntity<Location> createLocation(@RequestBody Location location) {
         Location saved = locationService.saveLocation(location);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -83,7 +105,17 @@ public class LocationController {
      * @return the updated location if found, otherwise 404 Not Found
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Location> updateLocation(@PathVariable int id, @RequestBody Location location) {
+    @Operation(summary = "Update a location", description = "Updates an existing location by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Location updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Location not found", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid location data", content = @Content)
+    })
+    public ResponseEntity<Location> updateLocation(
+        @Parameter(description = "ID of the location to update", example = "1")
+        @PathVariable int id,
+        @RequestBody Location location
+    ) {
         Location existing = locationService.getLocationById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();
@@ -100,7 +132,15 @@ public class LocationController {
      * @return 204 No Content if deleted, otherwise 404 Not Found
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLocation(@PathVariable int id) {
+    @Operation(summary = "Delete a location", description = "Deletes a location by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Location deleted successfully", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Location not found", content = @Content)
+    })
+    public ResponseEntity<Void> deleteLocation(
+        @Parameter(description = "ID of the location to delete", example = "1")
+        @PathVariable int id
+    ) {
         Location existing = locationService.getLocationById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();
