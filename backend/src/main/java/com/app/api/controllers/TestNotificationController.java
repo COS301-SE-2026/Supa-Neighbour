@@ -38,7 +38,7 @@ public class TestNotificationController {
             
             // Validate request
             if (request.getFcmToken() == null || request.getFcmToken().isEmpty()) {
-                LOGGER.warn(" Missing fcmToken in request");
+                LOGGER.warn("Missing fcmToken in request");
                 return ResponseEntity.badRequest().body("Missing fcmToken");
             }
             
@@ -68,12 +68,11 @@ public class TestNotificationController {
             return ResponseEntity.ok().body("Notification sent successfully");
             
         } catch (FirebaseMessagingException e) {
-            LOGGER.error(" Firebase error sending test notification: {}", e.getMessage());
+            LOGGER.error(" Firebase error sending test notification: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError()
                 .body("Firebase error: " + e.getMessage());
         } catch (Exception e) {
-            LOGGER.error(" Error sending test notification: {}", e.getMessage());
-            e.printStackTrace();
+            LOGGER.error(" Error sending test notification: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError()
                 .body("Failed to send notification: " + e.getMessage());
         }
@@ -82,7 +81,7 @@ public class TestNotificationController {
     /**
      * Health check endpoint for testing the test controller is working.
      * GET /api/test/ping
-     * 
+     *
      * @return "pong" if the controller is working
      */
     @GetMapping("/ping")
