@@ -350,10 +350,3 @@ public class ReportService {
     }
 }
 
-
-    private List<ReportResponseDTO> toResponseList(List<Report> reports) {
-        return reports.stream()
-                .map(r -> this.toResponse(r))
-                .toList();
-    }
-}
