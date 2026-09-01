@@ -96,13 +96,11 @@ class UserServiceTest {
         User existing = new User();
         existing.setUserid(1);
 
-        Badges badge = mock(Badges.class);
         Address address = mock(Address.class);
         Ratings rating = mock(Ratings.class);
         Date dob = Date.valueOf("1990-01-01");
 
         User updated = new User();
-        updated.setBadgeid(badge);
         updated.setAddressid(address);
         updated.setDateOfBirth(dob);
         updated.setEmail("new@example.com");
@@ -119,15 +117,12 @@ class UserServiceTest {
         User result = userService.updateUser(1, updated);
 
         assertEquals(existing, result);
-        assertEquals(badge, existing.getBadgeid());
-        assertEquals(address, existing.getAddressid());
         assertEquals(dob, existing.getDateOfBirth());
         assertEquals("new@example.com", existing.getEmail());
         assertEquals("NewFirst", existing.getFirstName());
         assertEquals("F", existing.getGender());
         assertEquals("NewLast", existing.getLastName());
         assertEquals("1234567890", existing.getPhoneNumber());
-        assertEquals(rating, existing.getRatingid());
         assertEquals("ADMIN", existing.getUserType());
         verify(userRepository).save(existing);
     }

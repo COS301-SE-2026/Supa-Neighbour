@@ -1,0 +1,38 @@
+name: Admin CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'admin/**'
+      - 'shared/**'          # shared changes should trigger a rebuild too
+  pull_request:
+    branches: [main]
+    paths:
+      - 'admin/**'
+      - 'shared/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'   # pin to whatever you use for frontend/
+          channel: 'stable'
+
+      - name: Get dependencies
+        working-directory: admin
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: admin
+        run: flutter analyze
+
+      - name: Build web
+        working-directory: admin
+        run: flutter build web --release
+        # add --dart-define=API_BASE_URL=... here if the admin app
+        # needs a different backend URL flag than frontend/

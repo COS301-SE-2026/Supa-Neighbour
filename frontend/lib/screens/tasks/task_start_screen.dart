@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import '../../models/chat_thread.dart';
 import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'task_completion_page.dart';
 import '../leaderboard/helper_profile_preview_screen.dart';
+import '../chat/chat_detail_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
@@ -23,6 +26,7 @@ class TaskStartScreen extends ConsumerStatefulWidget {
 
 class _TaskStartScreenState extends ConsumerState<TaskStartScreen> {
   bool _isStarting = false;
+  bool _isOpeningChat = false;
 
   Future<void> _startTask() async {
     setState(() => _isStarting = true);
@@ -63,6 +67,56 @@ class _TaskStartScreenState extends ConsumerState<TaskStartScreen> {
     }
   }
 
+  Future<void> _openChat() async{
+    if(_isOpeningChat) return;
+    setState(() => _isOpeningChat = true);
+
+    try{
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if(token == null){
+         throw Exception('You need to be signed in to chat.');
+      }
+
+      final chatService = ref.read(chatServiceProvider);
+      final data = await chatService.getOrCreateChatForTask(
+        int.parse(widget.task.id),
+        token
+      );
+
+      final requesterId = int.tryParse(widget.task.createdBy) ?? data['dependentUserId'] as int;
+
+      final chatThread = ChatThread(
+        chatId: data['chatId'] as int,
+        otherUserId: requesterId, 
+        taskId: data['taskId'] as int,
+        name: widget.task.requesterName ?? 'Requester',
+        location: '',
+        lastMessage: '',
+        timestamp: '',
+        unreadCount: 0,
+        avatarColor: const Color(0xFF2A9D8F),
+      );
+
+      if(!mounted) return;
+      Navigator.push(
+        context, 
+        MaterialPageRoute(
+            builder: (context) => ChatDetailScreen(chat: chatThread),
+          ),
+      );
+    }catch (e) {
+      if(!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ' , '')),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
+    }finally{
+      if(mounted) setState(() => _isOpeningChat = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,6 +137,23 @@ class _TaskStartScreenState extends ConsumerState<TaskStartScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: _isOpeningChat ? 
+              SizedBox(
+                width: 20, 
+                height: 20, 
+                child: CircularProgressIndicator(
+                  strokeWidth: 2, 
+                  color: AppColors.primaryTeal(context),
+                ),
+              )
+              : Icon(Icons.chat_bubble_outline, 
+                  color: AppColors.charcoal(context)),
+            tooltip: 'Chat with Requester',
+            onPressed: _isOpeningChat ? null : _openChat,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

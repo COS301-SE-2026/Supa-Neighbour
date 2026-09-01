@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'firebase_options.dart';
 import 'providers/theme_mode_provider.dart'; 
 //import 'screens/style_guide/style_guide_page.dart';
+// one more change
 import 'screens/landing/landing_page.dart';
+import 'services/notification_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
@@ -13,7 +15,17 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const ProviderScope(child: MyApp()));
+
+  // Initialize notification service with a ProviderContainer
+  final container = ProviderContainer();
+  await NotificationService().init(container: container);
+
+  runApp(
+    ProviderScope(
+      parent: container,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends ConsumerWidget {

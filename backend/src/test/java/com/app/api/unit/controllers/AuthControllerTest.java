@@ -32,6 +32,7 @@ import com.app.api.controllers.AuthController;
 import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
 import com.app.api.models.Badges;
+import com.app.api.models.Dependent;
 import com.app.api.models.HelperAnalytics;
 import com.app.api.models.Ratings;
 import com.app.api.models.Settings;
@@ -48,9 +49,11 @@ import com.app.api.repositories.UserAchievementRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.security.AuthenticatedUser;
 import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.ModerationActionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.app.api.models.Helper;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
@@ -88,6 +91,9 @@ class AuthControllerTest {
     @InjectMocks
     private AuthController authController;
 
+    @Mock
+    private ModerationActionService moderationActionService;
+
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
 
@@ -104,8 +110,6 @@ class AuthControllerTest {
     private RegisterRequest buildValidRegisterRequest() {
         RegisterRequest request = new RegisterRequest();
         request.setAddressId(1);
-        request.setBadgeId(1);
-        request.setRatingId(1);
         request.setFirstName("Thabo");
         request.setLastName("Nkosi");
         request.setUsername("thabon");
@@ -117,8 +121,8 @@ class AuthControllerTest {
     }
 
     @Test
-    void registerUser_WhenNewUser_ReturnsOkWithUser() throws Exception {
-
+void registerUser_WhenNewUser_ReturnsOkWithUser() throws Exception {
+    try {
         RegisterRequest request = buildValidRegisterRequest();
 
         FirebaseToken decodedToken = mock(FirebaseToken.class);
@@ -139,11 +143,12 @@ class AuthControllerTest {
         when(badgesRepository.findAll()).thenReturn(List.of(badge));
         when(userAchievementRepository.save(any(UserAchievement.class))).thenReturn(new UserAchievement());
 
-        
         User savedUser = new User();
         savedUser.setFirstName("Thabo");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
         when(settingsRepository.save(any(Settings.class))).thenReturn(new Settings());
+        when(helperRepository.save(any())).thenReturn(new Helper());
+        when(dependentRepository.save(any())).thenReturn(new Dependent());
         when(helperAnalyticsRepository.existsById(anyString())).thenReturn(false);
         when(helperAnalyticsRepository.save(any(HelperAnalytics.class))).thenReturn(new HelperAnalytics());
 
@@ -160,7 +165,11 @@ class AuthControllerTest {
         verify(helperRepository, times(1)).save(any());
         verify(dependentRepository, times(1)).save(any());
         verify(helperAnalyticsRepository, times(1)).save(any(HelperAnalytics.class));
+    } catch (Exception e) {
+        e.printStackTrace(); // This will show the exact line causing the NullPointerException
+        throw e;
     }
+}
 
     @Test
     void registerUser_WhenUserAlreadyExists_ReturnsConflict() throws Exception {
@@ -205,14 +214,16 @@ class AuthControllerTest {
 
     @Test
     void login_WhenUserExists_ReturnsUser() throws Exception {
-
         FirebaseToken decodedToken = mock(FirebaseToken.class);
         when(decodedToken.getUid()).thenReturn("firebase-uid-1");
-
         when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
 
         User user = new User();
         when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.of(user));
+        
+        // ADD THESE MOCKS:
+        when(moderationActionService.isBanned(user)).thenReturn(false);
+        when(moderationActionService.isSuspended(user)).thenReturn(false);
 
         mockMvc.perform(post("/api/auth/login")
                 .header("Authorization", BEARER_TOKEN)
@@ -283,4 +294,131 @@ class AuthControllerTest {
 
         verify(firebaseAuthService, never()).revokeUserSessions(anyString());
     }
+
+    @Test
+    void registerUser_WhenInvalidToken_ReturnsUnauthorized() throws Exception {
+        RegisterRequest request = buildValidRegisterRequest();
+        
+        when(firebaseAuthService.verifyIdToken(RAW_TOKEN))
+            .thenThrow(mock(FirebaseAuthException.class));
+
+        mockMvc.perform(post("/api/auth/register")
+                .header("Authorization", BEARER_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void registerUser_WhenRatingNotFound_ThrowsException() throws FirebaseAuthException {
+        RegisterRequest request = buildValidRegisterRequest();
+        
+        FirebaseToken decodedToken = mock(FirebaseToken.class);
+        when(decodedToken.getUid()).thenReturn("firebase-uid-1");
+        when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
+        when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.empty());
+        
+        Address address = new Address();
+        when(addressRepository.findById(1)).thenReturn(Optional.of(address));
+        when(ratingsRepository.findById(DEFAULT_RATING_ID)).thenReturn(Optional.empty());
+
+        assertThrows(Exception.class, () -> mockMvc.perform(post("/api/auth/register")
+                .header("Authorization", BEARER_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))));
+    }
+
+    @Test
+    void adminLogin_WhenUserIsAdmin_ReturnsOk() throws Exception {
+        FirebaseToken decodedToken = mock(FirebaseToken.class);
+        when(decodedToken.getUid()).thenReturn("admin-uid");
+        when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
+
+        User adminUser = new User();
+        adminUser.setIsAdmin(true);
+        when(userRepository.findByFirebaseUid("admin-uid")).thenReturn(Optional.of(adminUser));
+
+        mockMvc.perform(post("/api/auth/admin/login")
+                .header("Authorization", BEARER_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void adminLogin_WhenUserIsNotAdmin_ReturnsForbidden() throws Exception {
+        FirebaseToken decodedToken = mock(FirebaseToken.class);
+        when(decodedToken.getUid()).thenReturn("user-uid");
+        when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
+
+        User regularUser = new User();
+        regularUser.setIsAdmin(false);
+        when(userRepository.findByFirebaseUid("user-uid")).thenReturn(Optional.of(regularUser));
+
+        mockMvc.perform(post("/api/auth/admin/login")
+                .header("Authorization", BEARER_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("Not an admin"));
+    }
+
+    @Test
+    void login_WhenUserIsBanned_ReturnsForbidden() throws Exception {
+        FirebaseToken decodedToken = mock(FirebaseToken.class);
+        when(decodedToken.getUid()).thenReturn("firebase-uid-1");
+        when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
+
+        User user = new User();
+        when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.of(user));
+        
+        when(moderationActionService.isBanned(user)).thenReturn(true);
+        //when(moderationActionService.isSuspended(user)).thenReturn(false);
+
+        mockMvc.perform(post("/api/auth/login")
+                .header("Authorization", BEARER_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("Your account has been permanently banned"));
+    }
+
+    @Test
+    void login_WhenUserIsSuspended_ReturnsForbidden() throws Exception {
+        FirebaseToken decodedToken = mock(FirebaseToken.class);
+        when(decodedToken.getUid()).thenReturn("firebase-uid-1");
+        when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
+
+        User user = new User();
+        when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.of(user));
+        
+        when(moderationActionService.isBanned(user)).thenReturn(false);
+        when(moderationActionService.isSuspended(user)).thenReturn(true);
+
+        mockMvc.perform(post("/api/auth/login")
+                .header("Authorization", BEARER_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("Your account is currently suspended"));
+    }
+
+    @Test
+    void login_WhenUserIsBannedAndSuspended_ReturnsForbiddenWithBanMessage() throws Exception {
+        
+        FirebaseToken decodedToken = mock(FirebaseToken.class);
+        when(decodedToken.getUid()).thenReturn("firebase-uid-1");
+        when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
+
+        User user = new User();
+        when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.of(user));
+        
+        when(moderationActionService.isBanned(user)).thenReturn(true);
+        //when(moderationActionService.isSuspended(user)).thenReturn(true);
+
+        mockMvc.perform(post("/api/auth/login")
+                .header("Authorization", BEARER_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("Your account has been permanently banned"));
+}
 }

@@ -32,7 +32,7 @@ class UserProfileService implements IProfileService {
     }
 
     final Response<Map<String, dynamic>> res = await _dio.get(
-      '/api/users/me',
+      '/api/users/me/profile',
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
 
