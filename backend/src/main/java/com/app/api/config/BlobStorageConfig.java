@@ -37,6 +37,18 @@ public class BlobStorageConfig {
     private String profilesContainer;
 
     /**
+     * Name of the Blob Storage Container for the task-images
+     */
+    @Value("${azure.storage.task-images-container}")
+    private String taskImagesContainer;
+
+    /**
+     * Name of the Blob Storage container for chat-images
+     */
+    @Value("${azure.storage.chat-images-container}")
+    private String chatImagesContainer;
+
+    /**
      * Creates an Azure {@link BlobServiceClient} using the configured
      * connection string.
      *
@@ -65,4 +77,25 @@ public class BlobStorageConfig {
     public BlobContainerClient profilesContainerClient() {
         return serviceClient().getBlobContainerClient(profilesContainer);
     }
+
+    /**
+     * Created a {@link BlobContainerClient} for the task Images container
+     * 
+     * @return Azure BlobStorage client for the task-images
+     */
+    @Bean(name = "taskImagesContainerClient")
+    public BlobContainerClient taskImagesContainerClient(){
+        return serviceClient().getBlobContainerClient(taskImagesContainer);
+    }
+
+    /**
+     * Created a {@link BlobContainerClient} for the chat Images container
+     * 
+     * @return Azure BlobStorage client for the chat-images
+     */
+    @Bean(name = "chatImagesContainerClient")
+    public BlobContainerClient chatImagesContainerClient(){
+        return serviceClient().getBlobContainerClient(chatImagesContainer);
+    }
+
 }

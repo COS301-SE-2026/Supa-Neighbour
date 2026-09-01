@@ -1,0 +1,73 @@
+import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+import '../models/leaderboard_model.dart';
+
+// INTERFACE (Contract)
+abstract class ILeaderboardService {
+  Future<LeaderboardData> getLeaderboard({
+    String period = 'week',
+    String rankBy = 'averageRating',
+    int limit = 20,
+  });
+}
+
+// IMPLEMENTATION
+class LeaderboardService implements ILeaderboardService {
+  final Dio _dio;
+  final fb.FirebaseAuth _firebaseAuth;
+
+  LeaderboardService({Dio? dio, fb.FirebaseAuth? firebaseAuth})
+      : _dio = dio ??
+            Dio(BaseOptions(
+              // baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
+              baseUrl: 'http://localhost:8080',
+              connectTimeout: const Duration(seconds: 30),
+              receiveTimeout: const Duration(seconds: 30),
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+            )),
+        _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
+
+  @override
+  Future<LeaderboardData> getLeaderboard({
+    String period = 'week',
+    String rankBy = 'averageRating',
+    int limit = 20,
+  }) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final idToken = await user.getIdToken();
+      if (idToken == null) {
+        throw Exception('Failed to get Firebase token');
+      }
+
+      final response = await _dio.get(
+        '/api/leaderboard',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $idToken',
+          },
+        ),
+        queryParameters: {
+          'rankBy': rankBy,
+          'limit': limit,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final leaderboardResponse = LeaderboardResponse.fromJson(response.data);
+        return leaderboardResponse.toLeaderboardData(period: period);
+      }
+
+      throw Exception('Failed to load leaderboard');
+    } on DioException catch (e) {
+      throw Exception('Connection error: ${e.message}');
+    }
+  }
+}

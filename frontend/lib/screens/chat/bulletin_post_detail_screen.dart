@@ -3,10 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../models/bulletin_post_model.dart';
 import '../../models/bulletin_comment_model.dart';
-import '../../services/bulletin_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class BulletinPostDetailScreen extends StatefulWidget {
-  final String postId;
+class BulletinPostDetailScreen extends ConsumerStatefulWidget {
+  final int postId;
 
   const BulletinPostDetailScreen({
     super.key,
@@ -14,11 +15,10 @@ class BulletinPostDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<BulletinPostDetailScreen> createState() => _BulletinPostDetailScreenState();
+  ConsumerState<BulletinPostDetailScreen> createState() => _BulletinPostDetailScreenState();
 }
 
-class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
-  final BulletinService _bulletinService = BulletinService();
+class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScreen> {
   final TextEditingController _commentController = TextEditingController();
   BulletinPost? _post;
   List<BulletinComment> _comments = [];
@@ -33,16 +33,23 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
     _loadData();
   }
 
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadData() async {
     try {
-      final post = await _bulletinService.getPost(widget.postId);
-      final comments = await _bulletinService.getComments(widget.postId);
+      final bulletinService = ref.read(bulletinServiceProvider);
+      final post = await bulletinService.getPost(widget.postId);
+      final comments = await bulletinService.getComments(widget.postId);
 
       setState(() {
         _post = post;
         _comments = comments;
         _isHelpful = post.isHelpfulByUser;
-        _helpfulCount = post.helpfulCount;
+        _helpfulCount = post.likeCount;
         _isLoading = false;
       });
     } catch (e) {
@@ -61,7 +68,8 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
     });
 
     try {
-      final newComment = await _bulletinService.addComment(widget.postId, content);
+      final bulletinService = ref.read(bulletinServiceProvider);
+      final newComment = await bulletinService.addComment(widget.postId, content);
       if (!mounted) return;
       setState(() {
         _comments.insert(0, newComment);
@@ -84,15 +92,16 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
 
   void _toggleHelpful() async {
     try {
+      final bulletinService = ref.read(bulletinServiceProvider);
       if (_isHelpful) {
-        await _bulletinService.removeHelpful(widget.postId);
+        await bulletinService.removeHelpful(widget.postId);
         if (!mounted) return;
         setState(() {
           _isHelpful = false;
           _helpfulCount--;
         });
       } else {
-        await _bulletinService.addHelpful(widget.postId);
+        await bulletinService.addHelpful(widget.postId);
         if (!mounted) return;
         setState(() {
           _isHelpful = true;
@@ -131,7 +140,8 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
 
     if (confirmed == true) {
       try {
-        await _bulletinService.deletePost(widget.postId);
+        final bulletinService = ref.read(bulletinServiceProvider);
+        await bulletinService.deletePost(widget.postId);
         if (mounted) {
           Navigator.pop(context, true);
         }
@@ -242,7 +252,7 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            post.authorName,
+                            post.authorUsername,
                             style: GoogleFonts.openSans(
                               color: AppColors.charcoal(context),
                               fontSize: 16,
@@ -282,43 +292,24 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    post.title,
+                    post.postContent,
                     style: GoogleFonts.poppins(
                       color: AppColors.charcoal(context),
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    post.body,
-                    style: GoogleFonts.openSans(
-                      color: AppColors.charcoal(context),
-                      fontSize: 16,
-                      height: 1.6,
-                    ),
-                  ),
                   const SizedBox(height: 16),
-                  if (post.imageUrls.isNotEmpty)
-                    SizedBox(
+                  if (post.mediaUrl != null)
+                    Container(
+                      width: double.infinity,
                       height: 200,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: post.imageUrls.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            width: 200,
-                            height: 200,
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              image: DecorationImage(
-                                image: NetworkImage(post.imageUrls[index]),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          );
-                        },
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        image: DecorationImage(
+                          image: NetworkImage(post.mediaUrl!),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   const SizedBox(height: 16),
@@ -366,7 +357,6 @@ class _BulletinPostDetailScreenState extends State<BulletinPostDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-
                   if (_comments.isEmpty)
                     Center(
                       child: Text(

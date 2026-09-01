@@ -78,46 +78,76 @@ class Task {
 
   ////////////////////////
   /// MAP RES TO A TASK
-  factory Task.fromJson(Map<String, dynamic> json){
+ factory Task.fromJson(Map<String, dynamic> json) {
+  final DateTime startDate = json['startDate'] != null
+      ? DateTime.tryParse(json['startDate'].toString()) ?? DateTime.now()
+      : DateTime.now();
 
-    final DateTime startDate = json['startDate'] != null ? DateTime.parse(json['startDate'] as String): DateTime.now();
+  final String status = json['status'] as String? ??
+      (json['helperId'] != null ? 'in_progress' : 'open');
+
+  return Task(
+    id: (json['taskId'] as int).toString(),
+    title: (json['title'] as String?)?.isNotEmpty == true
+    ? json['title'] as String
+    : _resolveCategoryName(json['taskTypeId'] as int?),
+    category: _resolveCategoryName(json['taskTypeId'] as int?),
+    date: startDate,
+    time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
+    xpReward: _resolveXpReward(json['taskTypeId'] as int?),
+    instructions: json['instructions'] as String? ?? '',
+    status: status,
+    createdAt: startDate,
+    createdBy: json['requesterUserId']?.toString() ?? 'unknown',
+    helperId: json['helperId']?.toString(),
+    requesterName: json['requesterName'] as String?,
+    helperName: json['helperName'] as String?,
+    completionNote: json['helperRatingId'] as String?,
+    completionPhotos: json['completionPhotos'] != null
+        ? List<String>.from(json['completionPhotos'] as List)
+        : null,
+  );
+  }
+  factory Task.fromHelperTaskJson(Map<String, dynamic> json) {
+    DateTime parsedDate;
+    try {
+      parsedDate = DateTime.parse(json['startDate'] as String);
+    } catch (_) {
+      parsedDate = DateTime.now();
+    }
 
     return Task(
-      id: (json['taskId'] as int).toString(),
-      title: _resolveCategoryName(json['taskTypeId'] as int?),
-      category: _resolveCategoryName(json['taskTypeId'] as int?),
-      date: startDate,
-      time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
-      xpReward: 0 ,
-      instructions: json['adminReview'] as String? ?? 'No instructions provided',
-      status: json['helperId'] != null ? 'in_progress' : 'pending',
-      createdAt: startDate,
-      createdBy: json['createdBy'] as String? ?? 'unknown',  
-      requesterName: json['requesterName'] as String?,       
-      helperId: json['helperId'] as String?,                 
-      helperName: json['helperName'] as String?,
+      id: json['taskId'].toString(),
+      title: json['taskType'] as String? ?? 'Untitled Task',
+      category: json['taskType'] as String? ?? 'General',
+      date: parsedDate,
+      time: TimeOfDay(hour: parsedDate.hour, minute: parsedDate.minute),
+      xpReward: json['xpAwarded'] as int? ?? 0,
+      instructions: '', // not returned by this endpoint
+      status: json['status'] as String? ?? 'open',
+      createdAt: parsedDate,
+      createdBy: json['requesterUserId']?.toString() ?? '',
+      helperId: null, // this IS the helper's own task list; not relevant here
+      requesterName: json['requesterName'] as String?,
+      helperName: null,
       completionNote: json['completionNote'] as String?,
-      completionPhotos: json['completionPhotos'] != null
-      ? List<String>.from(json['completionPhotos'] as List)
-      : null,             
+      completionPhotos: null,
     );
-  }
+}
 
   /// taskTypeId -> categoryName
   static String _resolveCategoryName(int? taskTypeId){
     switch(taskTypeId){
       case 1:
-        return 'Plants';
+        return 'Medical Assistance';
       case 2:
-        return 'Pets';
-         case 3:
-        return 'Bins';
+        return 'Pet Care';
+      case 3:
+        return 'Technology Support';
       case 4:
-        return 'Packages';
+        return 'Transportation Support';
       case 5:
-        return 'Home Check-in';
-      case 6:
-        return 'Pool Pump';
+        return 'Home Repair';
       default:
         return 'Other';
     }
@@ -126,24 +156,38 @@ class Task {
   /// categoryName -> taskTypeId
   static int resolveTaskTypeId(String category){
     switch (category) {
-      case 'Plants':
+      case 'Medical Assistance':
         return 1;
-      case 'Pets':
+      case 'Pet Care':
         return 2;
-      case 'Bins':
-      return 3;
-      case 'Packages':
+      case 'Technology Support':
+        return 3;
+      case 'Transportation Support':
         return 4;
-      case 'Home Check-in':
+      case 'Home Repair':
         return 5;
-      case 'Pool Pump':
-        return 6;
       default:
-        return 7;
-
+        return 1; // fallback to first valid type
     }
   }
 
+  /// taskTypeId -> flat XP reward per category.
+  static int _resolveXpReward(int? taskTypeId) {
+    switch (taskTypeId) {
+      case 1:
+        return 50; // Medical Assistance
+      case 2:
+        return 60; // Pet Care
+      case 3:
+        return 40; // Technology Support
+      case 4:
+        return 30; // Transportation Support
+      case 5:
+        return 45; // Home Repair
+      default:
+        return 25;
+    }
+  }
 
 
 
@@ -227,11 +271,11 @@ class Task {
           completionNote: null,
           completionPhotos: null,
         ),
-        
+
         // Task 5: Created by current user, completed
         Task(
           id: '5',
-          title: 'Check my mail',
+          title: 'Bring in mail',
           category: 'Packages',
           date: DateTime.now().subtract(const Duration(days: 2)),
           time: const TimeOfDay(hour: 9, minute: 0),

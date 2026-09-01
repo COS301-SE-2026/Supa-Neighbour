@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supa_neighbour/constants/app_colors.dart';
+import '../help/help_menu_screen.dart';
 import '../../models/auth_session.dart';
 import '../../models/task_model.dart';
 import '../../models/user_model.dart';
@@ -11,7 +12,14 @@ import '../chat/inbox_screen.dart';
 import '../tasks/my_tasks_screen.dart';
 import '../profile/profile_screen.dart';
 import '../tasks/task_detail_screen.dart';
-import '../../services/task_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
+import '../notifications/notifications_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/services.dart';
+import '../../models/notification_model.dart';
+import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 
 
 class HomeScreen extends StatefulWidget {
@@ -32,6 +40,13 @@ class _HomeScreenState extends State<HomeScreen> {
     const ProfileScreen(),
   ];
 
+  // Method to change tab from outside
+  void changeTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,56 +64,69 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class HomeContent extends StatefulWidget {
+class HomeContent extends ConsumerStatefulWidget {
   const HomeContent({super.key});
 
   @override
-  State<HomeContent> createState() => _HomeContentState();
+  ConsumerState<HomeContent> createState() => _HomeContentState();
 }
 
-class _HomeContentState extends State<HomeContent> {
+class _HomeContentState extends ConsumerState<HomeContent> {
   List<Task> _nearbyTasks = [];
+  List<Task> _availableTasks = [];
+   
   User? _currentUser;
-  //
-  static const int _currentUserId = 6;
-  final TaskService _taskService = TaskService();
-  //bool _isLoadingUser = false;
+  double _trustScore = 0.0;
+  bool _isLoadingStats = true;
+  int _helpsGiven = 0;
+  bool _isSendingTestNotification = false;
 
+  int? get _currentUserId {
+    final id = AuthSession.instance.currentUser?.id;
+    return id != null ? int.tryParse(id) : null;
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadCurrentUser();
-    _loadNearbyTasks();
+    _currentUser = AuthSession.instance.currentUser;
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoadingStats = true);
+    final userId = _currentUserId;
+    if (userId == null) {
+      setState(() => _isLoadingStats = false);
+      return;
     }
-
-
-  Future<void> _loadCurrentUser() async {
-  try {
-    final data = await _taskService.getUserById(_currentUserId);
-    final user = User.fromJson(data);
-    AuthSession.instance.login(user);
-    setState(() {
-      _currentUser = user;
-    });
-  } catch (e) {
-    // fallback to mock if API unavailable
-    setState(() {
-      _currentUser = AuthSession.instance.currentUser ?? User.getMockUser();
-    });
+    try {
+      final taskService = ref.read(taskServiceProvider);
+      final tasks = await taskService.getTasksByUserId(userId);
+      final profileService = ref.read(profileServiceProvider); 
+      final profile = await profileService.getMyProfile();
+      if (!mounted) return;
+      setState(() {
+        _nearbyTasks = tasks;
+        _helpsGiven = tasks.where((t) => t.status == 'completed').length;
+        _trustScore = profile.trustScore ?? 0.0;
+        _isLoadingStats = false;
+      });
+      final available = await taskService.getAvailableTasks(userId);
+      if (mounted) setState(() => _availableTasks = available);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _nearbyTasks = [];
+        _isLoadingStats = false;
+      });
+    }
   }
+
+ Future<void> _loadNearbyTasks() async {
+  await _loadData();
 }
 
-
-Future<void> _loadNearbyTasks() async {
-  //real api should be integrated, for now this is mock data
-  await Future.delayed(const Duration(milliseconds: 300));
-  if (mounted) {
-    setState(() {
-      _nearbyTasks = Task.getMockTasks();
-    });
-  }
-}
 
 
   String getGreeting() {
@@ -108,13 +136,228 @@ Future<void> _loadNearbyTasks() async {
     return 'Good evening';
   }
 
+  // ============ DEBUG METHODS ============
+
+  /// Show FCM token
+  Future<void> _showFcmToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      
+      if (token == null) {
+        _showInfoDialog(
+          title: ' No Token',
+          content: 'No FCM token found. Make sure you are logged in.',
+        );
+        return;
+      }
+      
+      _showInfoDialog(
+        title: '📱 FCM Token',
+        content: token,
+        isToken: true,
+      );
+    } catch (e) {
+      _showInfoDialog(
+        title: ' Error',
+        content: 'Failed to get FCM token: $e',
+      );
+    }
+  }
+
+  void _showInfoDialog({
+    required String title, 
+    required String content,
+    bool isToken = false,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          title,
+          style: GoogleFonts.poppins(
+            color: AppColors.primaryTeal(context),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: isToken
+              ? SelectableText(
+                  content,
+                  style: GoogleFonts.openSans(
+                    fontSize: 13,
+                    color: AppColors.charcoal(context),
+                  ),
+                )
+              : Text(
+                  content,
+                  style: GoogleFonts.openSans(
+                    fontSize: 14,
+                    color: AppColors.charcoal(context),
+                  ),
+                ),
+        ),
+        actions: [
+          if (isToken)
+            TextButton(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: content));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Token copied to clipboard!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              child: Text(
+                'Copy',
+                style: GoogleFonts.openSans(
+                  color: AppColors.primaryTeal(context),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Close',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Send test notification via backend
+  Future<void> _sendTestNotification() async {
+    setState(() => _isSendingTestNotification = true);
+
+    try {
+      // Get FCM token
+      final token = await FirebaseMessaging.instance.getToken();
+      
+      if (token == null) {
+        _showInfoDialog(
+          title: ' Error',
+          content: 'No FCM token found. Please login again.',
+        );
+        setState(() => _isSendingTestNotification = false);
+        return;
+      }
+
+      // Get Firebase ID token
+      final user = fb.FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _showInfoDialog(
+          title: ' Error',
+          content: 'No Firebase user found. Please login again.',
+        );
+        setState(() => _isSendingTestNotification = false);
+        return;
+      }
+
+      final idToken = await user.getIdToken();
+      if (idToken == null) {
+        _showInfoDialog(
+          title: ' Error',
+          content: 'Failed to get ID token.',
+        );
+        setState(() => _isSendingTestNotification = false);
+        return;
+      }
+
+      // Send notification via backend
+      final dio = Dio();
+      dio.options.baseUrl = 'http://localhost:8080';
+      dio.options.connectTimeout = const Duration(seconds: 10);
+      dio.options.receiveTimeout = const Duration(seconds: 10);
+
+      final response = await dio.post(
+        '/api/test/notification',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $idToken',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'fcmToken': token,
+          'title': ' Test Notification',
+          'body': 'Supa Neighbour is working! 🎉',
+          'type': 'TASK_CREATED',
+          'entityId': '123',
+        },
+      );
+
+      setState(() => _isSendingTestNotification = false);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _showInfoDialog(
+          title: ' Success!',
+          content: 'Test notification sent!\n\n'
+                   'Check your device:\n'
+                   '• Foreground: SnackBar appears\n'
+                   '• Background: System notification\n'
+                   '• Terminated: System notification',
+        );
+        
+        // Add to in-app list
+        final now = DateTime.now();
+        final testNotification = AppNotification(
+          id: now.millisecondsSinceEpoch.toString(),
+          timestamp: now,
+          category: NotificationCategory.newTask,
+          title: ' Test Notification',
+          body: 'Supa Neighbour is working! 🎉',
+          isRead: false,
+        );
+        ref.read(notificationsProvider.notifier).addNotification(testNotification);
+        
+      } else {
+        _showInfoDialog(
+          title: ' Error',
+          content: 'Backend returned: ${response.statusCode}',
+        );
+      }
+      
+    } catch (e) {
+      setState(() => _isSendingTestNotification = false);
+      
+      if (e.toString().contains('Connection refused')) {
+        _showInfoDialog(
+          title: ' Connection Error',
+          content: 'Make sure:\n\n'
+                   '1. Backend is running\n'
+                   '2. ADB reverse is set:\n'
+                   '   adb reverse tcp:8080 tcp:8080',
+        );
+      } else {
+        _showInfoDialog(
+          title: ' Error',
+          content: 'Failed: $e',
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Get the parent HomeScreen state to call changeTab
+    final homeScreenState = context.findAncestorStateOfType<_HomeScreenState>();
+
     return Scaffold(
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
         backgroundColor: AppColors.background(context),
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
+          onPressed: () {
+            HelpMenuScreen.showHelpModal(context, 'home');
+          },
+        ),
         title: Text(
           'Supa Neighbour',
           style: GoogleFonts.poppins(
@@ -128,7 +371,51 @@ Future<void> _loadNearbyTasks() async {
           IconButton(
             icon: Icon(Icons.notifications_none, color: AppColors.primaryTeal(context)),
             onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationsScreen(
+                    onNotificationTap: (int tabIndex) {
+                      // Call the changeTab method on the parent HomeScreen
+                      homeScreenState?.changeTab(tabIndex);
+                    },
+                  ),
+                ),
+              );
             },
+          ),
+          //  DEBUG MENU
+          PopupMenuButton<String>(
+            icon: Icon(Icons.developer_mode, color: AppColors.primaryTeal(context)),
+            onSelected: (value) {
+              if (value == 'token') {
+                _showFcmToken();
+              } else if (value == 'test') {
+                _sendTestNotification();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'token',
+                child: Row(
+                  children: [
+                    Icon(Icons.key, size: 20),
+                    SizedBox(width: 8),
+                    Text('Show FCM Token'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'test',
+                child: Row(
+                  children: [
+                    Icon(Icons.notifications_active, size: 20),
+                    SizedBox(width: 8),
+                    Text(' Test Notification'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -137,34 +424,57 @@ Future<void> _loadNearbyTasks() async {
          await  _loadNearbyTasks();
           return Future.value();
         },
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildWelcomeSection(),
-              const SizedBox(height: 24),
-              _buildStatsRow(),
-              const SizedBox(height: 24),
-              _buildNearbyTasksSection(context),
-              const SizedBox(height: 12),
-              _nearbyTasks.isEmpty
-                  ? _buildEmptyState()
-                  : _buildNearbyTaskList(context),
-              const SizedBox(height: 80),
-            ],
-          ),
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildWelcomeSection(),
+                  const SizedBox(height: 24),
+                  _buildStatsRow(),
+                  const SizedBox(height: 24),
+                  _buildNearbyTasksSection(context),
+                  const SizedBox(height: 12),
+                  _nearbyTasks.isEmpty && _availableTasks.isEmpty
+                      ? _buildEmptyState()
+                      : _buildNearbyTaskList(context),
+                  const SizedBox(height: 80),
+                ],
+              ),
+            ),
+            // Loading overlay when sending test notification
+            if (_isSendingTestNotification)
+              Container(
+                color: Colors.black.withOpacity(0.3),
+                child: const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: Colors.white),
+                      SizedBox(height: 16),
+                      Text(
+                        'Sending test notification...',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.push(
+          final result = await Navigator.push<dynamic>(
             context,
-            MaterialPageRoute(
-              builder: (_) => const CreateTaskScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const CreateTaskScreen()),
           );
-          await _loadNearbyTasks();
+          if (!mounted) return;
+          if (result != null) {
+            _loadNearbyTasks();
+          }
         },
         backgroundColor: AppColors.primaryTeal(context),
         child: const Icon(Icons.add, color: Colors.white),
@@ -219,7 +529,9 @@ Future<void> _loadNearbyTasks() async {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '⭐ 4.8 Trust Score',
+                    _isLoadingStats
+                        ? '⭐ -- Trust Score'
+                        : '⭐ ${_trustScore.toStringAsFixed(1)} Trust Score',
                     style: GoogleFonts.openSans(
                       color: AppColors.charcoal(context),
                       fontSize: 12,
@@ -282,14 +594,16 @@ Future<void> _loadNearbyTasks() async {
   }
 
   Widget _buildStatsRow() {
-    final tasksCount = _nearbyTasks.length;
-    final activeCount = _nearbyTasks.where((t) => t.status == 'pending').length;
-    
+    final tasksPosted = _nearbyTasks.length;
+    final activeCount = _nearbyTasks
+        .where((t) => t.status == 'open' || t.status == 'assigned' || t.status == 'in_progress')
+        .length;
+
     return Row(
       children: [
-        _buildStatCard('5', 'Helps Given', AppColors.primaryTeal(context)),
+        _buildStatCard(_helpsGiven.toString(), 'Completed', const Color(0xFF2A9D8F)),
         const SizedBox(width: 12),
-        _buildStatCard(tasksCount.toString(), 'Tasks Posted', AppColors.citrusYellow(context)),
+        _buildStatCard(tasksPosted.toString(), 'Tasks Posted', const Color(0xFFE9C46A)),
         const SizedBox(width: 12),
         _buildStatCard(activeCount.toString(), 'Active', const Color(0xFF69B578)),
       ],
@@ -353,7 +667,7 @@ Future<void> _loadNearbyTasks() async {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const MyTasksScreen(initialTab: 2),
+              builder: (context) => const MyTasksScreen(initialTab: 0),
             ),
           );
         },
@@ -371,8 +685,9 @@ Future<void> _loadNearbyTasks() async {
 }
 
   Widget _buildNearbyTaskList(BuildContext context) {
+    final displayTasks = _availableTasks.isNotEmpty ? _availableTasks : _nearbyTasks;
     return Column(
-      children: _nearbyTasks.map((task) {
+      children: displayTasks.take(5).map((task) {
         return _buildTaskCard(
           context: context,
           task: task,
@@ -485,18 +800,16 @@ Future<void> _loadNearbyTasks() async {
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
-      case 'Plants':
-        return Icons.eco;
-      case 'Pets':
+      case 'Medical Assistance':
+        return Icons.medical_services;
+      case 'Pet Care':
         return Icons.pets;
-      case 'Bins':
-        return Icons.delete;
-      case 'Packages':
-        return Icons.inventory;
-      case 'Home Check-in':
-        return Icons.home;
-      case 'Pool Pump':
-        return Icons.water;
+      case 'Technology Support':
+        return Icons.computer;
+      case 'Transportation Support':
+        return Icons.directions_car;
+      case 'Home Repair':
+        return Icons.home_repair_service;
       default:
         return Icons.assignment;
     }

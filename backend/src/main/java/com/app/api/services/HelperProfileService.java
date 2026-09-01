@@ -69,6 +69,26 @@ public class HelperProfileService {
              row[2] != null ? row[2].toString(): null))
             .toList();
         
-            return new HelperProfileResponse(helperId, displayName, level, trustScore, completedTasks, neighboursHelped, skills, reviews);
+        return new HelperProfileResponse(helperId, displayName, level, trustScore, completedTasks, neighboursHelped, skills, reviews);
+    }
+
+    /**
+     * Retrieves the public profile of a helper by their user ID.
+     *
+     * <p>Resolves the user ID to a helper ID, then delegates to
+     * {@link #getProfile(int)}. Throws {@code 404 Not Found} if the
+     * user has no associated helper record.</p>
+     *
+     * @param userId the user identifier
+     * @return a {@link HelperProfileResponse} containing the helper's
+     *         public profile information
+     * @throws ResponseStatusException if no helper record exists for the user
+     */
+    public HelperProfileResponse getProfileByUserId(int userId) {
+        Integer helperId = helperProfileRepository.findHelperIdByUserId(userId);
+        if (helperId == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No helper profile found for this user");
+        }
+        return getProfile(helperId);
     }
 }

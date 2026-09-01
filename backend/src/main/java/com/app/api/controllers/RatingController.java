@@ -1,20 +1,28 @@
 package com.app.api.controllers;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.app.api.dtos.RatingRequest;
 import com.app.api.dtos.RatingResponse;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.RatingService;
 import com.google.firebase.auth.FirebaseAuthException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestHeader;
-
 
 /**
  * REST controller that provides endpoints for submitting ratings
@@ -22,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
  */
 @RestController
 @RequestMapping("/api/tasks")
+@Tag(name = "Ratings", description = "Endpoints for submitting task ratings")
 public class RatingController {
 
     private final RatingService ratingService;
@@ -55,8 +64,61 @@ public class RatingController {
      *         the Firebase token is invalid or expired
      */
     @PostMapping("/{taskId}/rate")
+    @Operation(
+        summary = "Rate a completed task",
+        description = "Submits a rating for a completed task. The helper's average rating is recalculated after submission.",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Rating submitted successfully"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid rating data",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"error\": \"Rating must be between 1 and 5\"}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Invalid or expired Firebase token",
+            content = @Content(
+                mediaType = "text/plain",
+                examples = @ExampleObject(
+                    value = "Invalid or expired Firebase token"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Not authorized to rate this task",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"error\": \"You are not authorized to rate this task\"}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Task not found or not completed",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"error\": \"Task not found or not completed\"}"
+                )
+            )
+        )
+    })
     public ResponseEntity<?> rateTask(
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
         @RequestHeader("Authorization") String authHeader,
+        @Parameter(description = "ID of the task being rated", example = "1")
         @PathVariable int taskId,
         @Valid @RequestBody RatingRequest request
     ){

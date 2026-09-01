@@ -1,6 +1,7 @@
 package com.app.api.unit.services;
 
 import com.app.api.models.*;
+import com.app.api.repositories.DependentRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.services.TaskInvoiceService;
 
@@ -26,6 +27,9 @@ public class TaskInvoiceServiceTest {
 
     @InjectMocks
     private TaskInvoiceService taskInvoiceService;
+
+    @Mock
+    private DependentRepository dependentRepository;
 
     private Helper mockHelper;
     private TaskType mockTaskType;
@@ -138,6 +142,7 @@ public class TaskInvoiceServiceTest {
     @Test
     void saveTaskInvoice_SaveAndReturnInvoice() {
         
+        int userId = 1;
         TaskInvoice invoice = new TaskInvoice();
         invoice.setTaskid(1001);
         invoice.setAdminreview("New Invoice");
@@ -146,22 +151,26 @@ public class TaskInvoiceServiceTest {
         invoice.setHelperid(mockHelper);
         invoice.setTasktypeid(mockTaskType);
 
+        
+        when(dependentRepository.findByUserId_Userid(userId)).thenReturn(mockDependent);
+
         when(taskInvoiceRepository.save(invoice)).thenReturn(invoice);
 
-        TaskInvoice result = taskInvoiceService.saveTaskInvoice(invoice);
+        TaskInvoice result = taskInvoiceService.saveTaskInvoice(userId, invoice);
 
         assertNotNull(result);
         assertEquals(1001, result.getTaskid());
         assertEquals("New Invoice", result.getAdminReview());
         assertTrue(result.getImmediate());
         assertFalse(result.isNeedsspecialist());
+        verify(dependentRepository, times(1)).findByUserId_Userid(userId);
         verify(taskInvoiceRepository, times(1)).save(invoice);
     }
 
     @Test
     void saveTaskInvoice_InvoiceIsNull() {
         
-        TaskInvoice result = taskInvoiceService.saveTaskInvoice(null);
+        TaskInvoice result = taskInvoiceService.saveTaskInvoice(1, null);
 
         assertNull(result);
         verify(taskInvoiceRepository, never()).save(any(TaskInvoice.class));
@@ -170,6 +179,7 @@ public class TaskInvoiceServiceTest {
     @Test
     void saveTaskInvoice_HandleInvoiceFields() {
         
+        int userId = 1;
         TaskInvoice invoice = new TaskInvoice();
         invoice.setTaskid(2001);
         invoice.setHelperid(mockHelper);
@@ -186,11 +196,13 @@ public class TaskInvoiceServiceTest {
         invoice.setHelperbadgeid(mockBadges);
         invoice.setStartdate(LocalDate.parse("2026-06-30"));
         invoice.setEnddate(LocalDate.parse("2026-07-05"));
+        
+        when(dependentRepository.findByUserId_Userid(userId)).thenReturn(mockDependent);
 
         when(taskInvoiceRepository.save(invoice)).thenReturn(invoice);
 
         
-        TaskInvoice result = taskInvoiceService.saveTaskInvoice(invoice);
+        TaskInvoice result = taskInvoiceService.saveTaskInvoice(userId, invoice);
 
         
         assertNotNull(result);
@@ -202,6 +214,8 @@ public class TaskInvoiceServiceTest {
         assertEquals("Great", result.getDependentRatingreview());
         assertEquals("Excellent", result.getHelperRatingreview());
         assertEquals(mockBadges, result.getHelperbadgeid());
+        
+        verify(dependentRepository, times(1)).findByUserId_Userid(userId);
         verify(taskInvoiceRepository, times(1)).save(invoice);
     }
 
@@ -408,22 +422,22 @@ public class TaskInvoiceServiceTest {
 
     @Test
     void saveTaskInvoice_HandleInvoiceWithNullFields() {
-        
+        int userId = 1;
         TaskInvoice invoice = new TaskInvoice();
         invoice.setTaskid(1001);
-        // Leave other fields null
 
+        when(dependentRepository.findByUserId_Userid(userId)).thenReturn(mockDependent);
         when(taskInvoiceRepository.save(invoice)).thenReturn(invoice);
 
-        TaskInvoice result = taskInvoiceService.saveTaskInvoice(invoice);
+        TaskInvoice result = taskInvoiceService.saveTaskInvoice(userId, invoice);
 
         assertNotNull(result);
         assertEquals(1001, result.getTaskid());
         assertNull(result.getAdminReview());
         assertNull(result.getHelperid());
+
+        assertEquals(mockDependent, result.getDependentid());
+        verify(dependentRepository, times(1)).findByUserId_Userid(userId);
         verify(taskInvoiceRepository, times(1)).save(invoice);
     }
 }
-
-// The service doesn't check if the updated parameter is null before calling methods on it.
-// The service sets adminReview to whatever is in the updated object without checking if it's null

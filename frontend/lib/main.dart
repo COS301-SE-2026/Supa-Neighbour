@@ -1,16 +1,31 @@
 import 'package:flutter/material.dart';
-import 'screens/auth/splash_screen.dart';
+//import 'screens/auth/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import 'firebase_options.dart';
 import 'providers/theme_mode_provider.dart'; 
+//import 'screens/style_guide/style_guide_page.dart';
+// one more change
+import 'screens/landing/landing_page.dart';
+import 'services/notification_service.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const ProviderScope(child: MyApp()));
+
+  // Initialize notification service with a ProviderContainer
+  final container = ProviderContainer();
+  await NotificationService().init(container: container);
+
+  runApp(
+    ProviderScope(
+      parent: container,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends ConsumerWidget {
@@ -20,6 +35,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Super Neighbour',
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
@@ -27,12 +43,13 @@ class MyApp extends ConsumerWidget {
         useMaterial3: true,
         fontFamily: 'Google Sans Flex',
       ),
-      darkTheme: ThemeData(                                   // ADD THIS BLOCK
+      darkTheme: ThemeData(                         
         useMaterial3: true,
         fontFamily: 'Google Sans Flex',
         brightness: Brightness.dark,
       ),
-      home: const SplashScreen(),
+      //home: const SplashScreen(),
+      home: LandingPage(),
     );
   }
 }

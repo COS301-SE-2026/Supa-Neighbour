@@ -1,0 +1,5079 @@
+openapi: 3.1.0
+info:
+  title: Social App API
+  description: API documentation for the Social App backend
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+tags:
+- name: Admins
+  description: Operations for managing administrators
+- name: Authentication
+  description: Endpoints for user authentication and account management
+- name: Compatibility
+  description: Operations for managing compatibility records
+- name: Reactions
+  description: Operations for managing post and comment reactions (likes/dislikes)
+- name: Ratings
+  description: Endpoints for submitting task ratings
+- name: Image Upload
+  description: Endpoints for uploading images to Azure Blob Storage
+- name: Task Types
+  description: Operations for managing task types
+- name: Dependent Analytics
+  description: Operations for managing dependent analytics records
+- name: User Achievements
+  description: Operations for managing user achievement records
+- name: Helper Skills
+  description: Operations for managing helper skills
+- name: Suggestions
+  description: Endpoints for retrieving suggested actions based on violation rules
+- name: Swagger UI
+  description: Redirect to Swagger UI documentation
+- name: Task Invitations
+  description: "Operations for managing task invitations, acceptances, and declines"
+- name: Addresses
+  description: Operations for managing addresses
+- name: Analytics
+  description: Operations for managing analytics records
+- name: Tasks
+  description: Operations for managing tasks
+- name: Users
+  description: Endpoints for managing user accounts
+- name: User Profile
+  description: Endpoints for retrieving and updating the authenticated user's profile
+- name: Bulletin Posts
+  description: Operations for managing bulletin board posts and comments
+- name: Dependents
+  description: Operations for managing dependents
+- name: Locations
+  description: Operations for managing locations
+- name: Task Invoices
+  description: Operations for managing task invoices
+- name: Helper Profiles
+  description: Endpoints for retrieving public helper profile information
+- name: Leaderboard
+  description: Endpoints for retrieving the application leaderboard
+- name: Settings
+  description: Endpoints for managing user application settings
+- name: Badges
+  description: Operations for managing badges
+- name: Availability
+  description: Operations for managing helper availability records
+- name: Comments
+  description: Operations for managing comments and reactions on bulletin posts
+- name: Chats
+  description: Operations for managing chat messages and threads
+- name: Helper Analytics
+  description: Operations for managing helper analytics records
+- name: Helper Tasks
+  description: Endpoints for retrieving helper task history
+- name: Helpers
+  description: Operations for managing helpers
+paths:
+  /tasks/{taskId}:
+    get:
+      tags:
+      - Tasks
+      summary: Get a task by ID
+      description: "Retrieves a task by its ID, including resolved requester and helper\
+        \ names"
+      operationId: getTaskById
+      parameters:
+      - name: taskId
+        in: path
+        description: ID of the task to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Task found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskDetailDTO"
+        "404":
+          description: Task not found
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Tasks
+      summary: Update task by ID
+      description: Updates an existing task by its ID
+      operationId: updateTask
+      parameters:
+      - name: taskId
+        in: path
+        description: ID of the task to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Task"
+        required: true
+      responses:
+        "200":
+          description: Task updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Task not found
+        "400":
+          description: Invalid task data
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Tasks
+      summary: Delete a task by ID
+      description: Deletes a task by its ID
+      operationId: deleteTask
+      parameters:
+      - name: taskId
+        in: path
+        description: ID of the task to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Task deleted successfully
+          content:
+            '*/*':
+              schema:
+                type: string
+        "404":
+          description: Task not found
+      security:
+      - BearerAuth: []
+  /api/users:
+    get:
+      tags:
+      - Users
+      summary: Get all users
+      description: Retrieves a list of all users
+      operationId: getAllUsers
+      responses:
+        "200":
+          description: Successfully retrieved users
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    put:
+      tags:
+      - Users
+      summary: Update authenticated user
+      description: Updates the authenticated user's information
+      operationId: updateUser
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+        required: true
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: User not found
+        "400":
+          description: Invalid user data
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Users
+      summary: Create a new user
+      description: Creates a new user
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+        required: true
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid user data
+  /api/userAchievement/{id}:
+    get:
+      tags:
+      - User Achievements
+      summary: Get user achievement by ID
+      description: Retrieves a single user achievement record by its ID
+      operationId: getUserAchievementById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the user achievement to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: User achievement found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserAchievement"
+        "404":
+          description: User achievement not found
+    put:
+      tags:
+      - User Achievements
+      summary: Update a user achievement
+      description: Updates an existing user achievement record by its ID
+      operationId: updateAchievements
+      parameters:
+      - name: id
+        in: path
+        description: ID of the user achievement to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserAchievement"
+        required: true
+      responses:
+        "200":
+          description: User achievement updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserAchievement"
+        "404":
+          description: User achievement not found
+        "400":
+          description: Invalid user achievement data
+    delete:
+      tags:
+      - User Achievements
+      summary: Delete a user achievement
+      description: Deletes a user achievement record by its ID
+      operationId: deleteAchievements
+      parameters:
+      - name: id
+        in: path
+        description: ID of the user achievement to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: User achievement deleted successfully
+        "404":
+          description: User achievement not found
+  /api/tasktypes/{id}:
+    get:
+      tags:
+      - Task Types
+      summary: Get task type by ID
+      description: Retrieves a single task type by its ID
+      operationId: getTaskTypeById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the task type to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Task type found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskType"
+        "404":
+          description: Task type not found
+    put:
+      tags:
+      - Task Types
+      summary: Update a task type
+      description: Updates an existing task type by its ID
+      operationId: updateTaskType
+      parameters:
+      - name: id
+        in: path
+        description: ID of the task type to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskType"
+        required: true
+      responses:
+        "200":
+          description: Task type updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskType"
+        "404":
+          description: Task type not found
+        "400":
+          description: Invalid task type data
+    delete:
+      tags:
+      - Task Types
+      summary: Delete a task type
+      description: Deletes a task type by its ID
+      operationId: deleteTaskType
+      parameters:
+      - name: id
+        in: path
+        description: ID of the task type to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Task type deleted successfully
+        "404":
+          description: Task type not found
+  /api/taskinvoices/{id}:
+    get:
+      tags:
+      - Task Invoices
+      summary: Get task invoice by ID
+      description: Retrieves a single task invoice by its ID
+      operationId: getTaskInvoiceById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the task invoice to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Task invoice found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskInvoice"
+        "404":
+          description: Task invoice not found
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Task Invoices
+      summary: Update a task invoice
+      description: Updates an existing task invoice by its ID
+      operationId: updateTaskInvoice
+      parameters:
+      - name: id
+        in: path
+        description: ID of the task invoice to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInvoice"
+        required: true
+      responses:
+        "200":
+          description: Task invoice updated successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "404":
+          description: Task invoice not found
+        "400":
+          description: Invalid task invoice data
+        "401":
+          description: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Task Invoices
+      summary: Delete a task invoice
+      description: Deletes a task invoice by its ID
+      operationId: deleteTaskInvoice
+      parameters:
+      - name: id
+        in: path
+        description: ID of the task invoice to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Task invoice deleted successfully
+        "404":
+          description: Task invoice not found
+      security:
+      - BearerAuth: []
+  /api/task-invitations/{id}:
+    get:
+      tags:
+      - Task Invitations
+      summary: Get task invitation by ID
+      description: Retrieves a single task invitation by its ID
+      operationId: getTaskInvitationById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the task invitation to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Task invitation found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskInvitation"
+        "404":
+          description: Task invitation not found
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Task Invitations
+      summary: Update a task invitation
+      description: Updates an existing task invitation by its ID
+      operationId: updateTaskInvitation
+      parameters:
+      - name: id
+        in: path
+        description: ID of the task invitation to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInvitation"
+        required: true
+      responses:
+        "200":
+          description: Task invitation updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskInvitation"
+        "404":
+          description: Task invitation not found
+        "400":
+          description: Invalid invitation data
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Task Invitations
+      summary: Delete a task invitation
+      description: Deletes a task invitation by its ID
+      operationId: deleteTaskInvitation
+      parameters:
+      - name: id
+        in: path
+        description: ID of the task invitation to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Task invitation deleted successfully
+        "404":
+          description: Task invitation not found
+      security:
+      - BearerAuth: []
+  /api/settings/{userId}:
+    put:
+      tags:
+      - Settings
+      summary: Update user settings
+      description: Updates settings for the specified user
+      operationId: updateSettings
+      parameters:
+      - name: userId
+        in: path
+        description: ID of the user to update settings for
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSettingsDTO"
+        required: true
+      responses:
+        "200":
+          description: User settings updated successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid Firebase token
+        "404":
+          description: User not found
+        "400":
+          description: Invalid settings data
+      security:
+      - BearerAuth: []
+  /api/reaction/{id}:
+    get:
+      tags:
+      - Reactions
+      summary: Get reaction by ID
+      description: Retrieves a single reaction by its ID
+      operationId: getreactionById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the reaction to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Reaction found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Reaction"
+        "404":
+          description: Reaction not found
+    put:
+      tags:
+      - Reactions
+      summary: Update a reaction
+      description: Updates an existing reaction by its ID
+      operationId: updatereaction
+      parameters:
+      - name: id
+        in: path
+        description: ID of the reaction to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Reaction"
+        required: true
+      responses:
+        "200":
+          description: Reaction updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Reaction"
+        "404":
+          description: Reaction not found
+        "400":
+          description: Invalid reaction data
+      security:
+      - BearerAuth: []
+  /api/ratings/{id}:
+    get:
+      tags:
+      - ratings-controller
+      operationId: getRatingsById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Ratings"
+    put:
+      tags:
+      - ratings-controller
+      operationId: updateRatings
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Ratings"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Ratings"
+    delete:
+      tags:
+      - ratings-controller
+      operationId: deleteRatings
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+  /api/locations/{id}:
+    get:
+      tags:
+      - Locations
+      summary: Get location by ID
+      description: Retrieves a single location by its ID
+      operationId: getLocationById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the location to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Location found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Location"
+        "404":
+          description: Location not found
+    put:
+      tags:
+      - Locations
+      summary: Update a location
+      description: Updates an existing location by its ID
+      operationId: updateLocation
+      parameters:
+      - name: id
+        in: path
+        description: ID of the location to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Location"
+        required: true
+      responses:
+        "200":
+          description: Location updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Location"
+        "404":
+          description: Location not found
+        "400":
+          description: Invalid location data
+    delete:
+      tags:
+      - Locations
+      summary: Delete a location
+      description: Deletes a location by its ID
+      operationId: deleteLocation
+      parameters:
+      - name: id
+        in: path
+        description: ID of the location to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Location deleted successfully
+        "404":
+          description: Location not found
+  /api/helpers/{id}:
+    get:
+      tags:
+      - Helpers
+      summary: Get helper by ID
+      description: Retrieves a single helper by their ID
+      operationId: getHelperById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the helper to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Helper found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Helper"
+        "404":
+          description: Helper not found
+    put:
+      tags:
+      - Helpers
+      summary: Update a helper
+      description: Updates an existing helper by their ID
+      operationId: updateHelper
+      parameters:
+      - name: id
+        in: path
+        description: ID of the helper to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Helper"
+        required: true
+      responses:
+        "200":
+          description: Helper updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Helper"
+        "404":
+          description: Helper not found
+        "400":
+          description: Invalid helper data
+    delete:
+      tags:
+      - Helpers
+      summary: Delete a helper
+      description: Deletes a helper by their ID
+      operationId: deleteHelper
+      parameters:
+      - name: id
+        in: path
+        description: ID of the helper to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Helper deleted successfully
+        "404":
+          description: Helper not found
+  /api/helper-skills/{id}:
+    get:
+      tags:
+      - Helper Skills
+      summary: Get helper skill by ID
+      description: Retrieves a single helper skill by its ID
+      operationId: getHelperSkillById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the helper skill to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Helper skill found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HelperSkill"
+        "404":
+          description: Helper skill not found
+    put:
+      tags:
+      - Helper Skills
+      summary: Update a helper skill
+      description: Updates an existing helper skill by its ID
+      operationId: updateHelperSkill
+      parameters:
+      - name: id
+        in: path
+        description: ID of the helper skill to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HelperSkill"
+        required: true
+      responses:
+        "200":
+          description: Helper skill updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HelperSkill"
+        "404":
+          description: Helper skill not found
+        "400":
+          description: Invalid helper skill data
+    delete:
+      tags:
+      - Helper Skills
+      summary: Delete a helper skill
+      description: Deletes a helper skill by its ID
+      operationId: deleteHelperSkill
+      parameters:
+      - name: id
+        in: path
+        description: ID of the helper skill to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Helper skill deleted successfully
+        "404":
+          description: Helper skill not found
+  /api/helper-analytics/{id}:
+    get:
+      tags:
+      - Helper Analytics
+      summary: Get helper analytics by ID
+      description: Retrieves a single helper analytics record by its ID
+      operationId: getHelperAnalyticsById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the helper analytics record to retrieve
+        required: true
+        schema:
+          type: string
+        example: HELPER_001
+      responses:
+        "200":
+          description: Helper analytics record found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HelperAnalytics"
+        "404":
+          description: Helper analytics record not found
+    put:
+      tags:
+      - Helper Analytics
+      summary: Update a helper analytics record
+      description: Updates an existing helper analytics record by its ID
+      operationId: updateHelperAnalytics
+      parameters:
+      - name: id
+        in: path
+        description: ID of the helper analytics record to update
+        required: true
+        schema:
+          type: string
+        example: HELPER_001
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HelperAnalytics"
+        required: true
+      responses:
+        "200":
+          description: Helper analytics record updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HelperAnalytics"
+        "404":
+          description: Helper analytics record not found
+        "400":
+          description: Invalid helper analytics data
+    delete:
+      tags:
+      - Helper Analytics
+      summary: Delete a helper analytics record
+      description: Deletes a helper analytics record by its ID
+      operationId: deleteHelperAnalytics
+      parameters:
+      - name: id
+        in: path
+        description: ID of the helper analytics record to delete
+        required: true
+        schema:
+          type: string
+        example: HELPER_001
+      responses:
+        "204":
+          description: Helper analytics record deleted successfully
+        "404":
+          description: Helper analytics record not found
+  /api/dependents/{id}:
+    get:
+      tags:
+      - Dependents
+      summary: Get dependent by ID
+      description: Retrieves a single dependent by their ID
+      operationId: getDependentById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the dependent to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Dependent found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Dependent"
+        "404":
+          description: Dependent not found
+    put:
+      tags:
+      - Dependents
+      summary: Update a dependent
+      description: Updates an existing dependent by their ID
+      operationId: updateDependent
+      parameters:
+      - name: id
+        in: path
+        description: ID of the dependent to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Dependent"
+        required: true
+      responses:
+        "200":
+          description: Dependent updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Dependent"
+        "404":
+          description: Dependent not found
+        "400":
+          description: Invalid dependent data
+    delete:
+      tags:
+      - Dependents
+      summary: Delete a dependent
+      description: Deletes a dependent by their ID
+      operationId: deleteDependent
+      parameters:
+      - name: id
+        in: path
+        description: ID of the dependent to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Dependent deleted successfully
+        "404":
+          description: Dependent not found
+  /api/dependent-analytics/{id}:
+    get:
+      tags:
+      - Dependent Analytics
+      summary: Get dependent analytics by ID
+      description: Retrieves a single dependent analytics record by its ID
+      operationId: getDependentAnalyticsById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the dependent analytics record to retrieve
+        required: true
+        schema:
+          type: string
+        example: DEP_001
+      responses:
+        "200":
+          description: Dependent analytics record found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DependentAnalytics"
+        "404":
+          description: Dependent analytics record not found
+    put:
+      tags:
+      - Dependent Analytics
+      summary: Update a dependent analytics record
+      description: Updates an existing dependent analytics record by its ID
+      operationId: updateDependentAnalytics
+      parameters:
+      - name: id
+        in: path
+        description: ID of the dependent analytics record to update
+        required: true
+        schema:
+          type: string
+        example: DEP_001
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DependentAnalytics"
+        required: true
+      responses:
+        "200":
+          description: Dependent analytics record updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DependentAnalytics"
+        "404":
+          description: Dependent analytics record not found
+        "400":
+          description: Invalid dependent analytics data
+    delete:
+      tags:
+      - Dependent Analytics
+      summary: Delete a dependent analytics record
+      description: Deletes a dependent analytics record by its ID
+      operationId: deleteDependentAnalytics
+      parameters:
+      - name: id
+        in: path
+        description: ID of the dependent analytics record to delete
+        required: true
+        schema:
+          type: string
+        example: DEP_001
+      responses:
+        "204":
+          description: Dependent analytics record deleted successfully
+        "404":
+          description: Dependent analytics record not found
+  /api/compatibility/{id}:
+    get:
+      tags:
+      - Compatibility
+      summary: Get compatibility by ID
+      description: Retrieves a single compatibility record by its ID
+      operationId: getCompatibilityById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the compatibility record to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Compatibility record found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Compatibility"
+        "404":
+          description: Compatibility record not found
+    put:
+      tags:
+      - Compatibility
+      summary: Update a compatibility record
+      description: Updates an existing compatibility record by its ID
+      operationId: updateCompatibility
+      parameters:
+      - name: id
+        in: path
+        description: ID of the compatibility record to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Compatibility"
+        required: true
+      responses:
+        "200":
+          description: Compatibility record updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Compatibility"
+        "404":
+          description: Compatibility record not found
+        "400":
+          description: Invalid compatibility data
+    delete:
+      tags:
+      - Compatibility
+      summary: Delete a compatibility record
+      description: Deletes a compatibility record by its ID
+      operationId: deleteCompatibility
+      parameters:
+      - name: id
+        in: path
+        description: ID of the compatibility record to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Compatibility record deleted successfully
+        "404":
+          description: Compatibility record not found
+  /api/comments/{id}:
+    get:
+      tags:
+      - Comments
+      summary: Get comment by ID
+      description: Retrieves a single comment by its ID
+      operationId: getCommentsById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the comment to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Comment found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Comments"
+        "404":
+          description: Comment not found
+    put:
+      tags:
+      - Comments
+      summary: Update a comment
+      description: Updates an existing comment by its ID
+      operationId: updateComments
+      parameters:
+      - name: id
+        in: path
+        description: ID of the comment to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Comments"
+        required: true
+      responses:
+        "200":
+          description: Comment updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Comments"
+        "404":
+          description: Comment not found
+        "400":
+          description: Invalid comment data
+  /api/chats/{chatId}/read:
+    put:
+      tags:
+      - Chats
+      summary: Mark all messages as read
+      description: "Marks all messages in a chat as read, excluding messages sent\
+        \ by the given user"
+      operationId: markAsRead
+      parameters:
+      - name: chatId
+        in: path
+        description: ID of the chat thread
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+        required: true
+      responses:
+        "200":
+          description: Messages marked as read successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {}
+        "400":
+          description: Invalid request data
+  /api/bulletin/{id}:
+    put:
+      tags:
+      - Bulletin Posts
+      summary: Update a post
+      description: Updates an existing post by its ID
+      operationId: updatePosts
+      parameters:
+      - name: id
+        in: path
+        description: ID of the post to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Posts"
+        required: true
+      responses:
+        "200":
+          description: Post updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Posts"
+        "404":
+          description: Post not found
+        "400":
+          description: Invalid post data
+      security:
+      - BearerAuth: []
+  /api/badges/{id}:
+    get:
+      tags:
+      - Badges
+      summary: Get badge by ID
+      description: Retrieves a single badge by its ID
+      operationId: getBadgeById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the badge to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Badge found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Badges"
+        "404":
+          description: Badge not found
+    put:
+      tags:
+      - Badges
+      summary: Update a badge
+      description: Updates an existing badge by its ID
+      operationId: updateBadge
+      parameters:
+      - name: id
+        in: path
+        description: ID of the badge to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Badges"
+        required: true
+      responses:
+        "200":
+          description: Badge updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Badges"
+        "404":
+          description: Badge not found
+    delete:
+      tags:
+      - Badges
+      summary: Delete a badge
+      description: Deletes a badge by its ID
+      operationId: deleteBadge
+      parameters:
+      - name: id
+        in: path
+        description: ID of the badge to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Badge deleted successfully
+        "404":
+          description: Badge not found
+  /api/availability/{id}:
+    get:
+      tags:
+      - Availability
+      summary: Get availability by ID
+      description: Retrieves a single availability record by its ID
+      operationId: getAvailabilityById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the availability record to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Availability record found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Availability"
+        "404":
+          description: Availability record not found
+    put:
+      tags:
+      - Availability
+      summary: Update an availability record
+      description: Updates an existing availability record by its ID
+      operationId: updateAvailability
+      parameters:
+      - name: id
+        in: path
+        description: ID of the availability record to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Availability"
+        required: true
+      responses:
+        "200":
+          description: Availability record updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Availability"
+        "404":
+          description: Availability record not found
+    delete:
+      tags:
+      - Availability
+      summary: Delete an availability record
+      description: Deletes an availability record by its ID
+      operationId: deleteAvailability
+      parameters:
+      - name: id
+        in: path
+        description: ID of the availability record to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Availability record deleted successfully
+        "404":
+          description: Availability record not found
+  /api/analytics/{id}:
+    get:
+      tags:
+      - Analytics
+      summary: Get analytics by ID
+      description: Retrieves a single analytics record by its ID
+      operationId: getAnalyticsById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the analytics record to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Analytics record found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Analytics"
+        "404":
+          description: Analytics record not found
+    put:
+      tags:
+      - Analytics
+      summary: Update an analytics record
+      description: Updates an existing analytics record by its ID
+      operationId: updateAnalytics
+      parameters:
+      - name: id
+        in: path
+        description: ID of the analytics record to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Analytics"
+        required: true
+      responses:
+        "200":
+          description: Analytics record updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Analytics"
+        "404":
+          description: Analytics record not found
+    delete:
+      tags:
+      - Analytics
+      summary: Delete an analytics record
+      description: Deletes an analytics record by its ID
+      operationId: deleteAnalytics
+      parameters:
+      - name: id
+        in: path
+        description: ID of the analytics record to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Analytics record deleted successfully
+        "404":
+          description: Analytics record not found
+  /api/admins/{id}:
+    get:
+      tags:
+      - Admins
+      summary: Get admin by ID
+      description: Retrieves a single administrator by their ID
+      operationId: getAdminById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the admin to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Admin found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Admin"
+        "404":
+          description: Admin not found
+    put:
+      tags:
+      - Admins
+      summary: Update an admin
+      description: Updates an existing administrator by their ID
+      operationId: updateAdmin
+      parameters:
+      - name: id
+        in: path
+        description: ID of the admin to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Admin"
+        required: true
+      responses:
+        "200":
+          description: Admin updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Admin"
+        "404":
+          description: Admin not found
+    delete:
+      tags:
+      - Admins
+      summary: Delete an admin
+      description: Deletes an administrator by their ID
+      operationId: deleteAdmin
+      parameters:
+      - name: id
+        in: path
+        description: ID of the admin to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Admin deleted successfully
+        "404":
+          description: Admin not found
+  /api/addresses/{id}:
+    get:
+      tags:
+      - Addresses
+      summary: Get address by ID
+      description: Retrieves a single address by its ID
+      operationId: getAddressById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the address to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Address found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Address"
+        "404":
+          description: Address not found
+    put:
+      tags:
+      - Addresses
+      summary: Update an address
+      description: Updates an existing address by its ID
+      operationId: updateAddress
+      parameters:
+      - name: id
+        in: path
+        description: ID of the address to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Address"
+        required: true
+      responses:
+        "200":
+          description: Address updated successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Address"
+        "404":
+          description: Address not found
+    delete:
+      tags:
+      - Addresses
+      summary: Delete an address
+      description: Deletes an address by its ID
+      operationId: deleteAddress
+      parameters:
+      - name: id
+        in: path
+        description: ID of the address to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: Address deleted successfully
+        "404":
+          description: Address not found
+  /tasks/create:
+    post:
+      tags:
+      - Tasks
+      summary: Create a new task
+      description: Creates a new task
+      operationId: createTask
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Task"
+        required: true
+      responses:
+        "201":
+          description: Task created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Invalid task data
+        "500":
+          description: "Server error, task not created"
+      security:
+      - BearerAuth: []
+  /api/users/me/device-token:
+    post:
+      tags:
+      - Users
+      summary: Register device token for push notifications
+      description: Registers or updates a device's Firebase Cloud Messaging (FCM)
+        token for the authenticated user
+      operationId: registerDeviceToken
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceTokenRequestDTO"
+        required: true
+      responses:
+        "200":
+          description: Device token registered successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "400":
+          description: Invalid request data
+      security:
+      - BearerAuth: []
+  /api/userAchievement:
+    get:
+      tags:
+      - User Achievements
+      summary: Get all user achievements
+      description: Retrieves a list of all user achievement records
+      operationId: getAllUserAchievement
+      responses:
+        "200":
+          description: Successfully retrieved user achievements
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserAchievement"
+    post:
+      tags:
+      - User Achievements
+      summary: Create a new user achievement
+      description: Creates a new user achievement record
+      operationId: createAnalytics
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserAchievement"
+        required: true
+      responses:
+        "201":
+          description: User achievement created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserAchievement"
+        "400":
+          description: Invalid user achievement data
+  /api/upload/task/image:
+    post:
+      tags:
+      - Image Upload
+      summary: Upload task image
+      description: Uploads an image file associated with a task to Azure Blob Storage
+      operationId: uploadTaskImage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "The image file to upload (JPEG, PNG, or GIF)"
+              required:
+              - file
+      responses:
+        "201":
+          description: Image uploaded successfully
+          content:
+            application/json:
+              example:
+                imageUrl: https://storageaccount.blob.core.windows.net/container/tasks/image-123456.jpg
+        "400":
+          description: Invalid image file
+          content:
+            application/json:
+              example:
+                error: "File must be an image (JPEG, PNG, or GIF)"
+        "500":
+          description: Unexpected error during upload
+          content:
+            application/json:
+              example:
+                error: An unexpected error occurred. Please try again.
+  /api/upload/post/image:
+    post:
+      tags:
+      - Image Upload
+      summary: Upload post image
+      description: Uploads an image file associated with a post to Azure Blob Storage
+      operationId: uploadImage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "The image file to upload (JPEG, PNG, or GIF)"
+              required:
+              - file
+      responses:
+        "201":
+          description: Image uploaded successfully
+          content:
+            application/json:
+              example:
+                imageUrl: https://storageaccount.blob.core.windows.net/container/posts/image-123456.jpg
+        "400":
+          description: Invalid image file
+          content:
+            application/json:
+              example:
+                error: "File must be an image (JPEG, PNG, or GIF)"
+        "500":
+          description: Unexpected error during upload
+          content:
+            application/json:
+              example:
+                error: An unexpected error occurred. Please try again.
+  /api/upload/chat/image:
+    post:
+      tags:
+      - Image Upload
+      summary: Upload chat image
+      description: Uploads an image file associated with a chat message to Azure Blob
+        Storage
+      operationId: uploadChatImage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "The image file to upload (JPEG, PNG, or GIF)"
+              required:
+              - file
+      responses:
+        "201":
+          description: Image uploaded successfully
+          content:
+            application/json:
+              example:
+                imageUrl: https://storageaccount.blob.core.windows.net/container/chats/image-123456.jpg
+        "400":
+          description: Invalid image file
+          content:
+            application/json:
+              example:
+                error: "File must be an image (JPEG, PNG, or GIF)"
+        "500":
+          description: Unexpected error during upload
+          content:
+            application/json:
+              example:
+                error: An unexpected error occurred. Please try again.
+  /api/tasktypes:
+    get:
+      tags:
+      - Task Types
+      summary: Get all task types
+      description: Retrieves a list of all task types
+      operationId: getAllTaskTypes
+      responses:
+        "200":
+          description: Successfully retrieved task types
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskType"
+    post:
+      tags:
+      - Task Types
+      summary: Create a new task type
+      description: Creates a new task type
+      operationId: createTaskType
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskType"
+        required: true
+      responses:
+        "201":
+          description: Task type created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskType"
+        "400":
+          description: Invalid task type data
+  /api/tasks/{taskId}/rate:
+    post:
+      tags:
+      - Ratings
+      summary: Rate a completed task
+      description: Submits a rating for a completed task. The helper's average rating
+        is recalculated after submission.
+      operationId: rateTask
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      - name: taskId
+        in: path
+        description: ID of the task being rated
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RatingRequest"
+        required: true
+      responses:
+        "200":
+          description: Rating submitted successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: Invalid rating data
+          content:
+            application/json:
+              example:
+                error: Rating must be between 1 and 5
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            text/plain:
+              example: Invalid or expired Firebase token
+        "403":
+          description: Not authorized to rate this task
+          content:
+            application/json:
+              example:
+                error: You are not authorized to rate this task
+        "404":
+          description: Task not found or not completed
+          content:
+            application/json:
+              example:
+                error: Task not found or not completed
+      security:
+      - BearerAuth: []
+  /api/taskinvoices:
+    get:
+      tags:
+      - Task Invoices
+      summary: Get all task invoices
+      description: Retrieves a list of all task invoices
+      operationId: getAllTaskInvoices
+      responses:
+        "200":
+          description: Successfully retrieved task invoices
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskInvoice"
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Task Invoices
+      summary: Create a new task invoice
+      description: Creates a new task invoice for the authenticated user
+      operationId: createTaskInvoice
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInvoice"
+      responses:
+        "201":
+          description: Task invoice created successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: Invalid task invoice data
+        "401":
+          description: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+  /api/task-invitations:
+    get:
+      tags:
+      - Task Invitations
+      summary: Get all task invitations
+      description: Retrieves all task invitations for the authenticated user
+      operationId: getAllTaskInvitations
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Task invitations retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Task Invitations
+      summary: Create a new task invitation
+      description: Creates a new task invitation
+      operationId: createTaskInvitation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInvitation"
+        required: true
+      responses:
+        "201":
+          description: Task invitation created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TaskInvitation"
+        "400":
+          description: Invalid invitation data
+      security:
+      - BearerAuth: []
+  /api/task-invitations/{taskId}/match:
+    post:
+      tags:
+      - Task Invitations
+      summary: Match and invite helpers for a task
+      description: Matches and invites helpers for a task based on compatibility
+      operationId: matchHelpers
+      parameters:
+      - name: taskId
+        in: path
+        description: ID of the task to match helpers for
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Helpers matched and invited successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "404":
+          description: Task not found
+      security:
+      - BearerAuth: []
+  /api/task-invitations/{taskId}/invite:
+    post:
+      tags:
+      - Task Invitations
+      summary: Invite a helper to a task
+      description: Invites a helper to a specific task. Only the requester who owns
+        the task may send invitations.
+      operationId: inviteHelper
+      parameters:
+      - name: taskId
+        in: path
+        description: ID of the task to invite a helper to
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: integer
+                format: int32
+        required: true
+      responses:
+        "201":
+          description: Invitation sent successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: helperId is required
+        "401":
+          description: Invalid or expired Firebase token
+        "403":
+          description: Caller does not own the task
+        "404":
+          description: Task or helper not found
+        "409":
+          description: Task is not open or helper already invited
+      security:
+      - BearerAuth: []
+  /api/task-invitations/{taskId}/decline:
+    post:
+      tags:
+      - Task Invitations
+      summary: Decline a task invitation
+      description: Declines a task invitation on behalf of the calling helper
+      operationId: declineTask
+      parameters:
+      - name: taskId
+        in: path
+        description: ID of the task to decline
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Task declined successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "403":
+          description: User is not a registered helper
+        "404":
+          description: Task not found
+        "409":
+          description: Task cannot be declined in its current state
+        "422":
+          description: Task is not available for declining
+      security:
+      - BearerAuth: []
+  /api/task-invitations/{taskId}/accept:
+    post:
+      tags:
+      - Task Invitations
+      summary: Accept a task invitation
+      description: Accepts a task invitation on behalf of the calling helper
+      operationId: acceptTask
+      parameters:
+      - name: taskId
+        in: path
+        description: ID of the task to accept
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "201":
+          description: Task accepted successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "403":
+          description: User is not a registered helper
+        "404":
+          description: Task not found
+        "409":
+          description: Task has already been accepted
+        "422":
+          description: Task is not available for acceptance
+      security:
+      - BearerAuth: []
+  /api/settings/users/show-status:
+    get:
+      tags:
+      - Settings
+      summary: Get user visibility status
+      description: Retrieves the authenticated user's visibility status
+      operationId: getStatus
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Visibility status retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Settings
+      summary: Update user visibility status
+      description: Updates the authenticated user's visibility status
+      operationId: updateStatus
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShowStatusRequest"
+        required: true
+      responses:
+        "200":
+          description: Visibility status updated successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "400":
+          description: Invalid request data
+      security:
+      - BearerAuth: []
+  /api/settings/users/mode:
+    get:
+      tags:
+      - Settings
+      summary: Get user application mode
+      description: Retrieves the authenticated user's current application mode (LIGHT
+        or DARK)
+      operationId: getMode
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Application mode retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Settings
+      summary: Update user application mode
+      description: Updates the authenticated user's application mode (LIGHT or DARK)
+      operationId: setMode
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModeResponse"
+        required: true
+      responses:
+        "200":
+          description: Application mode updated successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "400":
+          description: Invalid mode value
+      security:
+      - BearerAuth: []
+  /api/reaction/posts/{postId}/dislike:
+    post:
+      tags:
+      - Reactions
+      summary: Add dislike to post
+      description: Adds a dislike reaction to a post by the authenticated user
+      operationId: createreaction
+      parameters:
+      - name: postId
+        in: path
+        description: ID of the post to dislike
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "201":
+          description: Dislike added successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReactionResponseDTO"
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Post not found
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Reactions
+      summary: Remove dislike from post
+      description: Removes a dislike reaction from a post by the authenticated user
+      operationId: removeDislike
+      parameters:
+      - name: postId
+        in: path
+        description: ID of the post to remove dislike from
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Dislike removed successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReactionRemovedResponseDTO"
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Post or reaction not found
+      security:
+      - BearerAuth: []
+  /api/reaction/comments/{commentId}/dislike:
+    post:
+      tags:
+      - Reactions
+      summary: Add dislike to comment
+      description: Adds a dislike reaction to a comment by the authenticated user
+      operationId: addDislikedToComment
+      parameters:
+      - name: commentId
+        in: path
+        description: ID of the comment to dislike
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "201":
+          description: Dislike added to comment successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommentReactionResponseDTO"
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Comment not found
+      security:
+      - BearerAuth: []
+  /api/ratings:
+    get:
+      tags:
+      - ratings-controller
+      operationId: getAllRatings
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ratings"
+    post:
+      tags:
+      - ratings-controller
+      operationId: createRatings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Ratings"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Ratings"
+  /api/locations:
+    get:
+      tags:
+      - Locations
+      summary: Get all locations
+      description: Retrieves a list of all locations
+      operationId: getAllLocations
+      responses:
+        "200":
+          description: Successfully retrieved locations
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Location"
+    post:
+      tags:
+      - Locations
+      summary: Create a new location
+      description: Creates a new location
+      operationId: createLocation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Location"
+        required: true
+      responses:
+        "201":
+          description: Location created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Location"
+        "400":
+          description: Invalid location data
+  /api/helpers:
+    get:
+      tags:
+      - Helpers
+      summary: Get all helpers
+      description: Retrieves a list of all helpers
+      operationId: getAllHelpers
+      responses:
+        "200":
+          description: Successfully retrieved helpers
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Helper"
+    post:
+      tags:
+      - Helpers
+      summary: Create a new helper
+      description: Creates a new helper
+      operationId: createHelper
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Helper"
+        required: true
+      responses:
+        "201":
+          description: Helper created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Helper"
+        "400":
+          description: Invalid helper data
+  /api/helper-skills:
+    get:
+      tags:
+      - Helper Skills
+      summary: Get all helper skills
+      description: Retrieves a list of all helper skills
+      operationId: getAllHelperSkills
+      responses:
+        "200":
+          description: Successfully retrieved helper skills
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HelperSkill"
+    post:
+      tags:
+      - Helper Skills
+      summary: Create a new helper skill
+      description: Creates a new helper skill
+      operationId: createHelperSkill
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HelperSkill"
+        required: true
+      responses:
+        "201":
+          description: Helper skill created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HelperSkill"
+        "400":
+          description: Invalid helper skill data
+  /api/helper-analytics:
+    get:
+      tags:
+      - Helper Analytics
+      summary: Get all helper analytics
+      description: Retrieves a list of all helper analytics records
+      operationId: getAllHelperAnalytics
+      responses:
+        "200":
+          description: Successfully retrieved helper analytics records
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HelperAnalytics"
+    post:
+      tags:
+      - Helper Analytics
+      summary: Create a new helper analytics record
+      description: Creates a new helper analytics record
+      operationId: createHelperAnalytics
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HelperAnalytics"
+        required: true
+      responses:
+        "201":
+          description: Helper analytics record created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HelperAnalytics"
+        "400":
+          description: Invalid helper analytics data
+  /api/dependents:
+    get:
+      tags:
+      - Dependents
+      summary: Get all dependents
+      description: Retrieves a list of all dependents
+      operationId: getAllDependents
+      responses:
+        "200":
+          description: Successfully retrieved dependents
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dependent"
+    post:
+      tags:
+      - Dependents
+      summary: Create a new dependent
+      description: Creates a new dependent
+      operationId: createDependent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Dependent"
+        required: true
+      responses:
+        "201":
+          description: Dependent created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Dependent"
+        "400":
+          description: Invalid dependent data
+  /api/dependent-analytics:
+    get:
+      tags:
+      - Dependent Analytics
+      summary: Get all dependent analytics
+      description: Retrieves a list of all dependent analytics records
+      operationId: getAllDependentAnalytics
+      responses:
+        "200":
+          description: Successfully retrieved dependent analytics records
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DependentAnalytics"
+    post:
+      tags:
+      - Dependent Analytics
+      summary: Create a new dependent analytics record
+      description: Creates a new dependent analytics record
+      operationId: createDependentAnalytics
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DependentAnalytics"
+        required: true
+      responses:
+        "201":
+          description: Dependent analytics record created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DependentAnalytics"
+        "400":
+          description: Invalid dependent analytics data
+  /api/compatibility:
+    get:
+      tags:
+      - Compatibility
+      summary: Get all compatibility records
+      description: Retrieves a list of all compatibility records
+      operationId: getAllCompatibility
+      responses:
+        "200":
+          description: Successfully retrieved compatibility records
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Compatibility"
+    post:
+      tags:
+      - Compatibility
+      summary: Create a new compatibility record
+      description: Creates a new compatibility record
+      operationId: createCompatibility
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Compatibility"
+        required: true
+      responses:
+        "201":
+          description: Compatibility record created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Compatibility"
+        "400":
+          description: Invalid compatibility data
+  /api/comments/bulletin/{postId}:
+    post:
+      tags:
+      - Comments
+      summary: Create a new comment
+      description: Creates a new comment on a bulletin post
+      operationId: createComments
+      parameters:
+      - name: postId
+        in: path
+        description: ID of the bulletin post
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentRequestDTO"
+        required: true
+      responses:
+        "201":
+          description: Comment created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommentResponseDTO"
+        "401":
+          description: Invalid or expired Firebase token
+        "400":
+          description: Invalid comment data
+  /api/comments/bulletin/posts/{postId}/like:
+    post:
+      tags:
+      - Comments
+      summary: Add helpful reaction to post
+      description: Adds a helpful reaction to a bulletin post
+      operationId: postHelpfulReation
+      parameters:
+      - name: postId
+        in: path
+        description: ID of the bulletin post
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "201":
+          description: Reaction added successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommentReactionResponseDTO"
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Post not found
+    delete:
+      tags:
+      - Comments
+      summary: Remove helpful reaction from post
+      description: Removes a helpful reaction from a bulletin post
+      operationId: deleteCommentsUnderPost
+      parameters:
+      - name: postId
+        in: path
+        description: ID of the bulletin post
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "204":
+          description: Reaction removed successfully
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Post or reaction not found
+  /api/chats/{chatId}/messages:
+    get:
+      tags:
+      - Chats
+      summary: Get messages for a chat thread
+      description: Retrieves paginated messages for a specific chat thread
+      operationId: getMessages
+      parameters:
+      - name: chatId
+        in: path
+        description: ID of the chat thread
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: page
+        in: query
+        description: Page number for pagination
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+        example: 1
+      - name: limit
+        in: query
+        description: Number of messages per page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+        example: 50
+      responses:
+        "200":
+          description: Messages retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {}
+        "404":
+          description: Chat not found
+    post:
+      tags:
+      - Chats
+      summary: Send a message to a chat thread
+      description: Sends a new message to a specific chat thread
+      operationId: postMessage
+      parameters:
+      - name: chatId
+        in: path
+        description: ID of the chat thread
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+        required: true
+      responses:
+        "201":
+          description: Message sent successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {}
+        "404":
+          description: Chat not found
+        "400":
+          description: Invalid request data
+  /api/chats/task/{taskId}:
+    post:
+      tags:
+      - Chats
+      summary: Get or create chat for task
+      description: "Gets the existing chat for a task, or creates one if none exists\
+        \ yet"
+      operationId: getCreateChatForTask
+      parameters:
+      - name: taskId
+        in: path
+        description: ID of the task
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Existing chat returned
+          content:
+            '*/*':
+              schema:
+                type: object
+        "201":
+          description: New chat created
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "403":
+          description: Caller is not a participant in this task
+        "404":
+          description: Task not found
+        "409":
+          description: Task has no assigned helper/dependent yet
+  /api/bulletin/posts:
+    get:
+      tags:
+      - Bulletin Posts
+      summary: Get bulletin feed
+      description: Returns the bulletin board feed for the caller's neighbourhood
+        zone with optional filtering and pagination
+      operationId: getAllPosts
+      parameters:
+      - name: category
+        in: query
+        description: Optional category filter
+        required: false
+        schema:
+          type: string
+        example: General
+      - name: search
+        in: query
+        description: Optional keyword search against post content
+        required: false
+        schema:
+          type: string
+        example: help
+      - name: page
+        in: query
+        description: Page number for pagination
+        required: false
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: limit
+        in: query
+        description: Number of posts per page
+        required: false
+        schema:
+          type: integer
+          format: int32
+        example: 20
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Feed retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Bulletin Posts
+      summary: Create a new post
+      description: Creates a new bulletin post by an authenticated user
+      operationId: createPosts
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePostRequest"
+        required: true
+      responses:
+        "201":
+          description: Post created successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "400":
+          description: Invalid post data
+      security:
+      - BearerAuth: []
+  /api/badges:
+    get:
+      tags:
+      - Badges
+      summary: Get all badges
+      description: Retrieves a list of all badges
+      operationId: getAllBadges
+      responses:
+        "200":
+          description: Successfully retrieved badges
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Badges"
+    post:
+      tags:
+      - Badges
+      summary: Create a new badge
+      description: Creates a new badge
+      operationId: createBadge
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Badges"
+        required: true
+      responses:
+        "201":
+          description: Badge created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Badges"
+        "400":
+          description: Invalid badge data
+  /api/availability:
+    get:
+      tags:
+      - Availability
+      summary: Get all availability records
+      description: Retrieves a list of all availability records
+      operationId: getAllAvailability
+      responses:
+        "200":
+          description: Successfully retrieved availability records
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Availability"
+    post:
+      tags:
+      - Availability
+      summary: Create a new availability record
+      description: Creates a new availability record
+      operationId: createAvailability
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Availability"
+        required: true
+      responses:
+        "201":
+          description: Availability record created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Availability"
+        "400":
+          description: Invalid availability data
+  /api/auth/register:
+    post:
+      tags:
+      - Authentication
+      summary: Register a new user
+      description: Registers a new user using a Firebase ID token and registration
+        details
+      operationId: registerUser
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        "200":
+          description: User registered successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid Firebase token
+        "409":
+          description: User already exists
+  /api/auth/logout:
+    post:
+      tags:
+      - Authentication
+      summary: Logout current user
+      description: Logs the authenticated user out by revoking their Firebase refresh
+        tokens
+      operationId: logout
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Logged out successfully
+          content:
+            '*/*':
+              schema:
+                type: string
+        "401":
+          description: Invalid Firebase token
+  /api/auth/login:
+    post:
+      tags:
+      - Authentication
+      summary: Login an existing user
+      description: Authenticates an existing user using a Firebase ID token
+      operationId: login
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Login successful
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid Firebase token
+        "403":
+          description: Account is banned or suspended
+        "404":
+          description: User not found
+  /api/auth/admin/login:
+    post:
+      tags:
+      - Authentication
+      summary: Admin login
+      description: Authenticates an admin user using a Firebase ID token
+      operationId: adminLogin
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Admin login successful
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired token
+        "403":
+          description: Not an admin
+        "404":
+          description: User not found
+  /api/analytics:
+    get:
+      tags:
+      - Analytics
+      summary: Get all analytics records
+      description: Retrieves a list of all analytics records
+      operationId: getAllAnalytics
+      responses:
+        "200":
+          description: Successfully retrieved analytics records
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Analytics"
+    post:
+      tags:
+      - Analytics
+      summary: Create a new analytics record
+      description: Creates a new analytics record
+      operationId: createAnalytics_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Analytics"
+        required: true
+      responses:
+        "201":
+          description: Analytics record created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Analytics"
+        "400":
+          description: Invalid analytics data
+  /api/admins:
+    get:
+      tags:
+      - Admins
+      summary: Get all admins
+      description: Retrieves a list of all administrators
+      operationId: getAllAdmins
+      responses:
+        "200":
+          description: Successfully retrieved admins
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Admin"
+    post:
+      tags:
+      - Admins
+      summary: Create a new admin
+      description: Creates a new administrator
+      operationId: createAdmin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Admin"
+        required: true
+      responses:
+        "201":
+          description: Admin created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Admin"
+        "400":
+          description: Invalid admin data
+  /api/addresses:
+    get:
+      tags:
+      - Addresses
+      summary: Get all addresses
+      description: Retrieves a list of all addresses
+      operationId: getAllAddresses
+      responses:
+        "200":
+          description: Successfully retrieved addresses
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Address"
+    post:
+      tags:
+      - Addresses
+      summary: Create a new address
+      description: Creates a new address or resolves an existing one
+      operationId: createAddress
+      requestBody:
+        description: Address information to create or resolve
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddressInfoDTO"
+        required: true
+      responses:
+        "201":
+          description: Address created successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: Invalid request data
+  /api/users/me/profile:
+    get:
+      tags:
+      - User Profile
+      summary: Get authenticated user's profile
+      description: Retrieves the profile of the authenticated user. Helper-specific
+        fields are null for non-helpers.
+      operationId: getMyProfile
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Profile retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            text/plain:
+              example: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+    patch:
+      tags:
+      - User Profile
+      summary: Update authenticated user's profile
+      description: Updates the profile of the authenticated user with the provided
+        fields
+      operationId: updateProfile
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+        required: true
+      responses:
+        "200":
+          description: Profile updated successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            text/plain:
+              example: Invalid or expired Firebase token
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              example:
+                error: Invalid profile data provided
+      security:
+      - BearerAuth: []
+  /users/{userId}/tasks:
+    get:
+      tags:
+      - Tasks
+      summary: Get all tasks for a specific user
+      description: "Retrieves all tasks for a specific user, including resolved requester\
+        \ and helper names"
+      operationId: getTasksByUserId
+      parameters:
+      - name: userId
+        in: path
+        description: ID of the user to retrieve tasks for
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: helperId
+        in: query
+        description: Optional helper ID filter
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Tasks retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskDetailDTO"
+        "404":
+          description: No dependent profile found for user
+      security:
+      - BearerAuth: []
+  /tasks:
+    get:
+      tags:
+      - Tasks
+      summary: Get all tasks for authenticated user
+      description: "Retrieves all tasks for the authenticated user, including resolved\
+        \ requester and helper names"
+      operationId: getAllTasks
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Tasks retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+  /swagger-ui:
+    get:
+      tags:
+      - Swagger UI
+      summary: Redirect to Swagger UI
+      description: Redirects requests to /swagger-ui or /swagger-ui/ to /swagger-ui/index.html
+      operationId: redirectToSwaggerUi
+      responses:
+        "302":
+          description: Redirect to Swagger UI index.html
+          content:
+            '*/*':
+              schema:
+                type: string
+  /swagger-ui/:
+    get:
+      tags:
+      - Swagger UI
+      summary: Redirect to Swagger UI
+      description: Redirects requests to /swagger-ui or /swagger-ui/ to /swagger-ui/index.html
+      operationId: redirectToSwaggerUi_1
+      responses:
+        "302":
+          description: Redirect to Swagger UI index.html
+          content:
+            '*/*':
+              schema:
+                type: string
+  /api/users/{id}:
+    get:
+      tags:
+      - Users
+      summary: Get user by ID
+      description: Retrieves a single user by their ID
+      operationId: getUserById
+      parameters:
+      - name: id
+        in: path
+        description: ID of the user to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: User found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+    delete:
+      tags:
+      - Users
+      summary: Delete a user
+      description: Deletes a user by their ID
+      operationId: deleteUser
+      parameters:
+      - name: id
+        in: path
+        description: ID of the user to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "204":
+          description: User deleted successfully
+        "404":
+          description: User not found
+      security:
+      - BearerAuth: []
+  /api/users/me/achievements:
+    get:
+      tags:
+      - Achievements
+      summary: Get authenticated user's achievements
+      description: Retrieves all achievements earned by the currently authenticated
+        user. Requires a valid Firebase authentication token.
+      operationId: getAchievements
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully retrieved user achievements
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AchievementResponse"
+              examples:
+                Achievements Response:
+                  description: Achievements Response
+                  value: |
+                    {
+                        "achievements": [
+                            {
+                                "id": 1,
+                                "name": "First Milestone",
+                                "description": "Completed your first task",
+                                "earnedDate": "2026-08-28T10:30:00Z",
+                            }
+                        ],
+                        "total": 1
+                    }
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            text/plain:
+              example: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+  /api/suggestion:
+    get:
+      tags:
+      - Suggestions
+      summary: Get suggested action for violation
+      description: Returns the suggested action for a given violation type and severity.
+        Requires admin authentication.
+      operationId: getSuggestion
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        description: Violation type and severity to look up the suggested action
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuggestionRequestDTO"
+            examples:
+              Request Body:
+                description: Request Body
+                value:
+                  violationType: PRIVACY_VIOLATION
+                  severity: SEVERE
+        required: true
+      responses:
+        "200":
+          description: Suggested action retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuggestionResponseDTO"
+              examples:
+                Success Response:
+                  description: Success Response
+                  value:
+                    violationType: PRIVACY_VIOLATION
+                    severity: SEVERE
+                    suggestedAction: BAN
+        "400":
+          description: "Invalid violation type, severity, or no rule defined for the\
+            \ pair"
+          content:
+            text/plain:
+              examples:
+                Invalid Request:
+                  description: Invalid Request
+                  value: Invalid violationType or severity
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            text/plain:
+              examples:
+                Unauthorized:
+                  description: Unauthorized
+                  value: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+  /api/settings/users/{userId}/status:
+    get:
+      tags:
+      - Settings
+      summary: Get user status by ID
+      description: Retrieves the online status information for a specified user
+      operationId: getStatusForUser
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      - name: userId
+        in: path
+        description: ID of the user to retrieve status for
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: User status retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: User not found
+      security:
+      - BearerAuth: []
+  /api/settings/users/information/{userId}:
+    get:
+      tags:
+      - Settings
+      summary: Get user settings information
+      description: Retrieves settings and profile information for the specified user
+      operationId: getUserInfo
+      parameters:
+      - name: userId
+        in: path
+        description: ID of the user to retrieve settings for
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: User settings retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid Firebase token
+        "404":
+          description: User not found
+      security:
+      - BearerAuth: []
+  /api/report/me:
+    get:
+      tags:
+      - report-controller
+      operationId: getReports
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: reportType
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/report/dashboard:
+    get:
+      tags:
+      - report-controller
+      operationId: getDashboard
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/reaction:
+    get:
+      tags:
+      - Reactions
+      summary: Get all reactions
+      description: Retrieves a list of all reactions
+      operationId: getAllreaction
+      responses:
+        "200":
+          description: Successfully retrieved reactions
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reaction"
+  /api/leaderboard:
+    get:
+      tags:
+      - Leaderboard
+      summary: Get leaderboard
+      description: Retrieves the application leaderboard for authenticated users.
+        The leaderboard can be ranked by average rating or XP.
+      operationId: getLeaderboard
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      - name: rankBy
+        in: query
+        description: "Ranking criterion: 'averageRating' or 'xp'"
+        required: false
+        schema:
+          type: string
+          default: averageRating
+        example: averageRating
+      - name: limit
+        in: query
+        description: Maximum number of leaderboard entries to return
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+        example: 10
+      responses:
+        "200":
+          description: Leaderboard retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: Invalid rankBy parameter
+          content:
+            application/json:
+              example:
+                error: "rankBy must be one of: averageRating, xp"
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            text/plain:
+              example: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+  /api/helpers/{helperId}/profile:
+    get:
+      tags:
+      - Helper Profiles
+      summary: Get helper profile by helper ID
+      description: Retrieves the public profile of a helper using their helper ID.
+        Sensitive information such as addresses and contact details is excluded.
+      operationId: getHelperProfile
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      - name: helperId
+        in: path
+        description: ID of the helper
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Helper profile retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Helper not found
+      security:
+      - BearerAuth: []
+  /api/helpers/me/tasks:
+    get:
+      tags:
+      - Helper Tasks
+      summary: Get authenticated helper's task history
+      description: Retrieves the task history of the authenticated helper. Results
+        can be filtered by status and paginated using limit and offset parameters.
+      operationId: getMyTasks
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      - name: statusFilter
+        in: query
+        description: "Optional task status filter (e.g., 'pending', 'completed', 'in-progress')"
+        required: false
+        schema:
+          type: string
+        example: completed
+      - name: limit
+        in: query
+        description: Maximum number of task records to return
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+        example: 20
+      - name: offset
+        in: query
+        description: Number of task records to skip for pagination
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+        example: 0
+      responses:
+        "200":
+          description: Task history retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
+  /api/helpers/by-user/{userId}/profile:
+    get:
+      tags:
+      - Helper Profiles
+      summary: Get helper profile by user ID
+      description: Retrieves the public profile of a helper using their user ID. Use
+        this endpoint when you have a user ID rather than a helper ID.
+      operationId: getHelperProfileByUserId
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      - name: userId
+        in: path
+        description: User ID of the helper
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Helper profile retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Helper not found
+      security:
+      - BearerAuth: []
+  /api/helpers/available:
+    get:
+      tags:
+      - Helpers
+      summary: Get available helpers
+      description: Retrieves all helpers who are currently available
+      operationId: getAllAvailableHelpers
+      responses:
+        "200":
+          description: Successfully retrieved available helpers
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Helper"
+  /api/comments:
+    get:
+      tags:
+      - Comments
+      summary: Get all comments
+      description: Retrieves a list of all comments
+      operationId: getAllComments
+      responses:
+        "200":
+          description: Successfully retrieved comments
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {}
+  /api/chats/{userId}:
+    get:
+      tags:
+      - Chats
+      summary: Get all chats for a user
+      description: Retrieves all chat threads for a specific user with last message
+        and unread count
+      operationId: getChatsByUser
+      parameters:
+      - name: userId
+        in: path
+        description: ID of the user
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      responses:
+        "200":
+          description: Chats retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {}
+        "404":
+          description: No chats found for user
+  /api/bulletin/posts/{postId}:
+    get:
+      tags:
+      - Bulletin Posts
+      summary: Get post details
+      description: Returns a single post's detail view including its full comments
+        list
+      operationId: getPostsById
+      parameters:
+      - name: postId
+        in: path
+        description: ID of the post to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Post details retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Post not found
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Bulletin Posts
+      summary: Delete a post
+      description: Deletes a post by its ID if the authenticated user is the owner
+      operationId: deletePosts
+      parameters:
+      - name: postId
+        in: path
+        description: ID of the post to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Post deleted successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "403":
+          description: Not authorized to delete this post
+        "404":
+          description: Post not found
+      security:
+      - BearerAuth: []
+  /api/bulletin/posts/{postId}/comments:
+    get:
+      tags:
+      - Bulletin Posts
+      summary: Get comments for a post
+      description: Returns all comments for a specific post
+      operationId: getPostComments
+      parameters:
+      - name: postId
+        in: path
+        description: ID of the post to get comments for
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: Comments retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Post not found
+      security:
+      - BearerAuth: []
+  /api/auth/profile:
+    get:
+      tags:
+      - Authentication
+      summary: Get current user profile
+      description: Returns the profile of the currently authenticated user
+      operationId: getProfile
+      responses:
+        "200":
+          description: Profile retrieved successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+  /api/settings/me/user:
+    delete:
+      tags:
+      - Settings
+      summary: Delete user account
+      description: Permanently deletes the authenticated user's account and all associated
+        data
+      operationId: deleteUser_1
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "204":
+          description: Account deleted successfully
+        "401":
+          description: Invalid Firebase token
+        "404":
+          description: User not found
+      security:
+      - BearerAuth: []
+  /api/comments/bulletin/posts/{postId}/{commentId}:
+    delete:
+      tags:
+      - Comments
+      summary: Delete a comment from a post
+      description: Deletes a comment from a specific bulletin post
+      operationId: deleteCommentsUnderPost_1
+      parameters:
+      - name: postId
+        in: path
+        description: ID of the bulletin post
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: commentId
+        in: path
+        description: ID of the comment to delete
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "204":
+          description: Comment deleted successfully
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Comment or post not found
+components:
+  schemas:
+    Address:
+      type: object
+      properties:
+        addressid:
+          type: integer
+          format: int32
+        streetNumber:
+          type: integer
+          format: int32
+        street:
+          type: string
+        zipcode:
+          type: integer
+          format: int32
+        neighbourhoodid:
+          $ref: "#/components/schemas/Location"
+    Admin:
+      type: object
+      properties:
+        adminid:
+          type: integer
+          format: int32
+        admincreatedate:
+          type: string
+          format: date-time
+        adminaccesslevel:
+          type: integer
+          format: int32
+        userid:
+          $ref: "#/components/schemas/User"
+    Badges:
+      type: object
+      properties:
+        badgeid:
+          type: integer
+          format: int32
+        badgeName:
+          type: string
+        badge_description:
+          type: string
+        isSpecialist:
+          type: boolean
+        xpReward:
+          type: integer
+          format: int32
+        ratingid:
+          $ref: "#/components/schemas/Ratings"
+        badgeDescription:
+          type: string
+    Compatibility:
+      type: object
+      properties:
+        compatibilityid:
+          type: integer
+          format: int32
+        helperid:
+          $ref: "#/components/schemas/Helper"
+        dependentid:
+          $ref: "#/components/schemas/Dependent"
+        compatibilityScore:
+          type: integer
+          format: int32
+        compatibilityColour:
+          type: string
+        compadibilityid:
+          type: integer
+          format: int32
+          writeOnly: true
+    Dependent:
+      type: object
+      properties:
+        dependentId:
+          type: integer
+          format: int32
+        userId:
+          $ref: "#/components/schemas/User"
+        taskTypeId:
+          $ref: "#/components/schemas/TaskType"
+    Helper:
+      type: object
+      properties:
+        helperid:
+          type: integer
+          format: int32
+        userid:
+          $ref: "#/components/schemas/User"
+        taskTypeid:
+          $ref: "#/components/schemas/TaskType"
+        badgeid:
+          $ref: "#/components/schemas/Badges"
+        helperXp:
+          type: integer
+          format: int32
+        available:
+          type: boolean
+    Location:
+      type: object
+      properties:
+        locationid:
+          type: integer
+          format: int32
+        locationCenterPoint:
+          type: integer
+          format: int32
+        locationRadius:
+          type: integer
+          format: int32
+        neighbourhoodid:
+          type: integer
+          format: int32
+        neighbourhoodName:
+          type: string
+    Ratings:
+      type: object
+      properties:
+        ratingid:
+          type: integer
+          format: int32
+        ratingReview:
+          type: string
+        totalXpLevel:
+          type: integer
+          format: int32
+        currentGroup:
+          type: string
+    Task:
+      type: object
+      properties:
+        taskId:
+          type: integer
+          format: int32
+        helperId:
+          type: integer
+          format: int32
+        dependentId:
+          type: integer
+          format: int32
+        locationId:
+          type: integer
+          format: int32
+        taskTypeId:
+          type: integer
+          format: int32
+        needsSpecialist:
+          type: boolean
+        signedAdminId:
+          type: integer
+          format: int32
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        helperBadgeId:
+          type: integer
+          format: int32
+        dependentRatingId:
+          type: string
+        helperRatingId:
+          type: string
+        adminReview:
+          type: string
+        compatibilityId:
+          type: integer
+          format: int32
+        status:
+          type: string
+        title:
+          type: string
+        instructions:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskImage"
+        immediate:
+          type: boolean
+    TaskImage:
+      type: object
+      properties:
+        taskImageId:
+          type: integer
+          format: int32
+        taskid:
+          $ref: "#/components/schemas/TaskInvoice"
+        imageUrl:
+          type: string
+        uploadedAt:
+          type: string
+          format: date-time
+    TaskInvoice:
+      type: object
+      properties:
+        taskid:
+          type: integer
+          format: int32
+        helperid:
+          $ref: "#/components/schemas/Helper"
+        dependentid:
+          $ref: "#/components/schemas/Dependent"
+        locationid:
+          $ref: "#/components/schemas/Location"
+        tasktypeid:
+          $ref: "#/components/schemas/TaskType"
+        needsspecialist:
+          type: boolean
+        signedadminid:
+          $ref: "#/components/schemas/Admin"
+        startdate:
+          type: string
+          format: date
+        enddate:
+          type: string
+          format: date
+        helperbadgeid:
+          $ref: "#/components/schemas/Badges"
+        dependentRatingreview:
+          type: string
+        helperRatingreview:
+          type: string
+        adminReview:
+          type: string
+        status:
+          type: string
+        compatibilityid:
+          $ref: "#/components/schemas/Compatibility"
+        title:
+          type: string
+        instructions:
+          type: string
+        adminreview:
+          type: string
+          writeOnly: true
+        immediate:
+          type: boolean
+        isImmediate:
+          type: boolean
+    TaskType:
+      type: object
+      properties:
+        tasktypeid:
+          type: integer
+          format: int32
+        badgeid:
+          $ref: "#/components/schemas/Badges"
+        description:
+          type: string
+        needsSpecialist:
+          type: boolean
+        xpWorth:
+          type: integer
+          format: int32
+    User:
+      type: object
+      properties:
+        userid:
+          type: integer
+          format: int32
+        firebaseUid:
+          type: string
+        emailVerified:
+          type: boolean
+        phoneVerified:
+          type: boolean
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date-time
+        gender:
+          type: string
+        addressid:
+          $ref: "#/components/schemas/Address"
+        badgeid:
+          $ref: "#/components/schemas/Badges"
+        ratingid:
+          $ref: "#/components/schemas/Ratings"
+        userType:
+          type: string
+        isAdmin:
+          type: boolean
+    UserAchievement:
+      type: object
+      properties:
+        userAchievementId:
+          type: integer
+          format: int32
+        userId:
+          $ref: "#/components/schemas/User"
+        badgeId:
+          $ref: "#/components/schemas/Badges"
+        awardedOn:
+          type: string
+          format: date
+        progressCurrent:
+          type: integer
+          format: int32
+        progressTarget:
+          type: integer
+          format: int32
+    TaskInvitation:
+      type: object
+      properties:
+        taskInvitationId:
+          type: integer
+          format: int32
+        taskId:
+          $ref: "#/components/schemas/TaskInvoice"
+        helperId:
+          $ref: "#/components/schemas/Helper"
+        status:
+          type: string
+        invitedAt:
+          type: string
+          format: date-time
+    UpdateSettingsDTO:
+      type: object
+      properties:
+        showStatus:
+          type: boolean
+        showPhoneNo:
+          type: boolean
+        mode:
+          type: string
+    Comments:
+      type: object
+      properties:
+        commentid:
+          type: integer
+          format: int32
+        userid:
+          $ref: "#/components/schemas/User"
+        postid:
+          $ref: "#/components/schemas/Posts"
+        parentCommentid:
+          type: integer
+          format: int32
+        commentContent:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Posts:
+      type: object
+      properties:
+        postid:
+          type: integer
+          format: int32
+        userid:
+          $ref: "#/components/schemas/User"
+        postContent:
+          type: string
+        mediaURL:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        category:
+          type: string
+    Reaction:
+      type: object
+      properties:
+        getreactionid:
+          type: integer
+          format: int32
+        userid:
+          $ref: "#/components/schemas/User"
+        postid:
+          $ref: "#/components/schemas/Posts"
+        commentid:
+          $ref: "#/components/schemas/Comments"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        reactionType:
+          type: string
+    HelperSkill:
+      type: object
+      properties:
+        helperSkillId:
+          type: integer
+          format: int32
+        helperId:
+          $ref: "#/components/schemas/Helper"
+        taskTypeId:
+          $ref: "#/components/schemas/TaskType"
+    HelperAnalytics:
+      type: object
+      properties:
+        helperAnalyticsid:
+          type: string
+        userid:
+          $ref: "#/components/schemas/User"
+        locationid:
+          $ref: "#/components/schemas/Location"
+        averageRating:
+          type: number
+          format: float
+        helperid:
+          $ref: "#/components/schemas/User"
+        tasktypeid:
+          $ref: "#/components/schemas/TaskType"
+    DependentAnalytics:
+      type: object
+      properties:
+        dependentanalyticsid:
+          type: string
+        userid:
+          $ref: "#/components/schemas/User"
+        tasktypeid:
+          $ref: "#/components/schemas/TaskType"
+        totaltasks:
+          type: integer
+          format: int32
+        locationid:
+          $ref: "#/components/schemas/Location"
+        aveeragerating:
+          type: number
+          format: float
+        averagegivingrating:
+          type: number
+          format: float
+    Availability:
+      type: object
+      properties:
+        availabilityid:
+          type: integer
+          format: int32
+        user_id:
+          $ref: "#/components/schemas/User"
+        dayofweek:
+          type: string
+        timewindow:
+          type: string
+        isactive:
+          type: boolean
+    Analytics:
+      type: object
+      properties:
+        analyticsid:
+          type: integer
+          format: int32
+        taskid:
+          $ref: "#/components/schemas/TaskInvoice"
+        adminid:
+          $ref: "#/components/schemas/Admin"
+        helpertypeid:
+          $ref: "#/components/schemas/HelperAnalytics"
+        dependenttypeid:
+          $ref: "#/components/schemas/DependentAnalytics"
+    DeviceTokenRequestDTO:
+      type: object
+      properties:
+        fcmToken:
+          type: string
+    RatingRequest:
+      type: object
+      properties:
+        rating:
+          type: string
+          minLength: 1
+        reviewSnippet:
+          type: string
+      required:
+      - rating
+    ShowStatusRequest:
+      type: object
+      properties:
+        getshowStatus:
+          type: boolean
+    ModeResponse:
+      type: object
+      properties:
+        mode:
+          type: string
+    ReactionResponseDTO:
+      type: object
+      properties:
+        message:
+          type: string
+        postId:
+          type: integer
+          format: int32
+        reactionType:
+          type: string
+        getdislikeCount:
+          type: integer
+          format: int64
+    CommentReactionResponseDTO:
+      type: object
+      properties:
+        message:
+          type: string
+        commentId:
+          type: integer
+          format: int32
+        reactionType:
+          type: string
+        disLikeCount:
+          type: integer
+          format: int64
+    CommentRequestDTO:
+      type: object
+      properties:
+        commentContent:
+          type: string
+        parentCommentId:
+          type: integer
+          format: int32
+    CommentResponseDTO:
+      type: object
+      properties:
+        commentId:
+          type: integer
+          format: int32
+        postId:
+          type: integer
+          format: int32
+        getuserId:
+          type: integer
+          format: int32
+        parentCommentId:
+          type: integer
+          format: int32
+        commentContent:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CreatePostRequest:
+      type: object
+      properties:
+        postContent:
+          type: string
+        mediaUrl:
+          type: string
+        category:
+          type: string
+    RegisterRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        password:
+          type: string
+        phoneNumber:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date-time
+        gender:
+          type: string
+        userType:
+          type: string
+        username:
+          type: string
+        addressId:
+          type: integer
+          format: int32
+        badgeId:
+          type: integer
+          format: int32
+        ratingId:
+          type: integer
+          format: int32
+    AddressInfoDTO:
+      type: object
+      properties:
+        street:
+          type: string
+        zip:
+          type: integer
+          format: int32
+        town:
+          type: string
+    UpdateProfileRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        empty:
+          type: boolean
+    TaskDetailDTO:
+      type: object
+      properties:
+        taskId:
+          type: integer
+          format: int32
+        helperId:
+          type: integer
+          format: int32
+        dependentId:
+          type: integer
+          format: int32
+        locationId:
+          type: integer
+          format: int32
+        taskTypeId:
+          type: integer
+          format: int32
+        needsSpecialist:
+          type: boolean
+        signedAdminId:
+          type: integer
+          format: int32
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        helperBadgeId:
+          type: integer
+          format: int32
+        dependentRatingId:
+          type: string
+        helperRatingId:
+          type: string
+        adminReview:
+          type: string
+        compatibilityId:
+          type: integer
+          format: int32
+        status:
+          type: string
+        requesterName:
+          type: string
+        helperName:
+          type: string
+        requesterUserId:
+          type: integer
+          format: int32
+        title:
+          type: string
+        instructions:
+          type: string
+        immediate:
+          type: boolean
+    AchievementDTO:
+      type: object
+      properties:
+        badgeId:
+          type: integer
+          format: int32
+        name:
+          type: string
+        description:
+          type: string
+        awardedOn:
+          type: string
+        progress:
+          type: string
+    AchievementResponse:
+      type: object
+      properties:
+        earned:
+          type: array
+          items:
+            $ref: "#/components/schemas/AchievementDTO"
+        unearned:
+          type: array
+          items:
+            $ref: "#/components/schemas/AchievementDTO"
+    SuggestionRequestDTO:
+      type: object
+      properties:
+        violationType:
+          type: string
+        severity:
+          type: string
+    SuggestionResponseDTO:
+      type: object
+      properties:
+        violationType:
+          type: string
+          enum:
+          - HARASSMENT
+          - HATE_SPEECH
+          - INAPPROPRIATE_CONTENT
+          - SPAM_SCAM
+          - PRIVACY_VIOLATION
+          - IMPERSONATION
+          - TASK_NO_SHOW
+          - TASK_POOR_QUALITY
+          - TASK_PROPERTY_DAMAGE
+          - TASK_UNSAFE_CONDITIONS
+          - THREATS_VIOLENCE
+        severity:
+          type: string
+          enum:
+          - MINOR
+          - MODERATE
+          - SEVERE
+        suggestedAction:
+          type: string
+          enum:
+          - WARNING
+          - SUSPEND_7D
+          - SUSPEND_14D
+          - SUSPEND_30D
+          - BAN
+    ReactionRemovedResponseDTO:
+      type: object
+      properties:
+        message:
+          type: string
+        postId:
+          type: integer
+          format: int32
+        dislikedCount:
+          type: integer
+          format: int64

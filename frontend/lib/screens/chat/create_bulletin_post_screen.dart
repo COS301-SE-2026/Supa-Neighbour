@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 import '../../components/custom_button.dart';
 import '../../components/custom_field_input.dart';
 import '../../constants/app_colors.dart';
-import '../../services/bulletin_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class CreateBulletinPostScreen extends StatefulWidget {
+class CreateBulletinPostScreen extends ConsumerStatefulWidget {
   const CreateBulletinPostScreen({super.key});
 
   @override
-  State<CreateBulletinPostScreen> createState() => _CreateBulletinPostScreenState();
+  ConsumerState<CreateBulletinPostScreen> createState() => _CreateBulletinPostScreenState();
 }
 
-class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
-  final TextEditingController _titleController = TextEditingController();
+class _CreateBulletinPostScreenState extends ConsumerState<CreateBulletinPostScreen> {
   final TextEditingController _bodyController = TextEditingController();
   String _selectedCategory = 'general';
-  final List<File> _selectedImages = [];
+  final List<XFile> _selectedImages = [];
   bool _isSubmitting = false;
 
   final List<Map<String, String>> _categories = [
@@ -33,6 +34,12 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
 
   final ImagePicker _imagePicker = ImagePicker();
 
+  @override
+  void dispose() {
+    _bodyController.dispose();
+    super.dispose();
+  }
+
   Future<void> _pickImage() async {
     final XFile? image = await _imagePicker.pickImage(
       source: ImageSource.gallery,
@@ -43,7 +50,7 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
 
     if (image != null && mounted) {
       setState(() {
-        _selectedImages.add(File(image.path));
+        _selectedImages.add(image);
       });
     }
   }
@@ -55,16 +62,6 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
   }
 
   Future<void> _submitPost() async {
-    if (_titleController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter a post title'),
-          backgroundColor: AppColors.error(context),
-        ),
-      );
-      return;
-    }
-
     if (_bodyController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -80,14 +77,16 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
     });
 
     try {
-      //Upload images to server first, then get URLs
-      final List<String> imageUrls = []; //actual URLs after upload
+      final bulletinService = ref.read(bulletinServiceProvider);
+      String? mediaUrl;
+      if (_selectedImages.isNotEmpty) {
+        mediaUrl = await bulletinService.uploadImage(_selectedImages.first);
+      }
 
-      await BulletinService().createPost(
-        title: _titleController.text.trim(),
-        body: _bodyController.text.trim(),
+      await bulletinService.createPost(
+        postContent: _bodyController.text.trim(),
         category: _selectedCategory,
-        imageUrls: imageUrls,
+        mediaUrl: mediaUrl,
       );
 
       if (mounted) {
@@ -141,17 +140,10 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CustomInputField(
-              label: 'Post Title',
-              hintText: 'Enter a title for your post',
-              controller: _titleController,
-              maxLines: 1,
-            ),
-            const SizedBox(height: 16),
-            CustomInputField(
-              label: 'Post Body',
+              label: 'Post Content',
               hintText: 'Write your announcement...',
               controller: _bodyController,
-              maxLines: 5,
+              maxLines: 6,
             ),
             const SizedBox(height: 16),
             Text(
@@ -263,7 +255,9 @@ class _CreateBulletinPostScreenState extends State<CreateBulletinPostScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
                                 image: DecorationImage(
-                                  image: FileImage(_selectedImages[index]),
+                                  image: kIsWeb
+                                      ? NetworkImage(_selectedImages[index].path) as ImageProvider
+                                      : FileImage(File(_selectedImages[index].path)) as ImageProvider,
                                   fit: BoxFit.cover,
                                 ),
                               ),

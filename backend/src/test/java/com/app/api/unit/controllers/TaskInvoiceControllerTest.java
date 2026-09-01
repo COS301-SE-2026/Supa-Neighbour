@@ -13,6 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import com.app.api.services.FirebaseAuthService;
+import com.google.firebase.auth.FirebaseAuthException;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -20,6 +22,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -30,6 +33,9 @@ class TaskInvoiceControllerTest {
 
     @Mock
     private TaskInvoiceService taskInvoiceService;
+
+    @Mock
+    private FirebaseAuthService firebaseAuthService;
 
     @InjectMocks
     private TaskInvoiceController taskInvoiceController;
@@ -159,10 +165,15 @@ class TaskInvoiceControllerTest {
     
     @Test
     void createTaskInvoice_CreatedTaskInvoice() throws Exception {
-        // Given
-        when(taskInvoiceService.saveTaskInvoice(any(TaskInvoice.class))).thenReturn(taskInvoice);
+
+        when(firebaseAuthService.getUserIdFromToken(anyString()))
+        .thenReturn(1);
+
+        when(taskInvoiceService.saveTaskInvoice(anyInt(), any(TaskInvoice.class)))
+        .thenReturn(taskInvoice);
 
         mockMvc.perform(post("/api/taskinvoices")
+                .header("Authorization", "Bearer test-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(taskInvoice)))
@@ -171,7 +182,8 @@ class TaskInvoiceControllerTest {
                 .andExpect(jsonPath("$.isImmediate").value(true))
                 .andExpect(jsonPath("$.needsspecialist").value(false));
 
-        verify(taskInvoiceService, times(1)).saveTaskInvoice(any(TaskInvoice.class));
+        verify(taskInvoiceService, times(1))
+        .saveTaskInvoice(anyInt(), any(TaskInvoice.class));
     }
 
     @Test
@@ -233,9 +245,14 @@ class TaskInvoiceControllerTest {
                 .adminReview("Test admin review")
                 .build();
 
-        when(taskInvoiceService.saveTaskInvoice(any(TaskInvoice.class))).thenReturn(savedInvoice);
+        when(firebaseAuthService.getUserIdFromToken(anyString()))
+        .thenReturn(1);
+
+        when(taskInvoiceService.saveTaskInvoice(anyInt(), any(TaskInvoice.class)))
+        .thenReturn(taskInvoice);
 
         mockMvc.perform(post("/api/taskinvoices")
+                .header("Authorization", "Bearer test-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(newInvoice)))
@@ -243,7 +260,7 @@ class TaskInvoiceControllerTest {
                 .andExpect(jsonPath("$.taskid").value(1))
                 .andExpect(jsonPath("$.isImmediate").value(true));
 
-        verify(taskInvoiceService, times(1)).saveTaskInvoice(any(TaskInvoice.class));
+        verify(taskInvoiceService, times(1)) .saveTaskInvoice(anyInt(), any(TaskInvoice.class));
     }
 
     @Test
@@ -254,12 +271,12 @@ class TaskInvoiceControllerTest {
                 .content("null"))
                 .andExpect(status().isBadRequest());
 
-        verify(taskInvoiceService, never()).saveTaskInvoice(any());
+        verify(taskInvoiceService, never()).updateTaskInvoice(anyInt(), any(TaskInvoice.class));
     }
     
     @Test
     void updateTaskInvoice_WhenExists() throws Exception {
-        // Given
+        
         Helper updatedHelper = new Helper();
         updatedHelper.setHelperid(202);
 
@@ -274,6 +291,7 @@ class TaskInvoiceControllerTest {
         when(taskInvoiceService.updateTaskInvoice(eq(1), any(TaskInvoice.class))).thenReturn(updatedInvoice);
 
         mockMvc.perform(put("/api/taskinvoices/1")
+                .header("Authorization", "Bearer test-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updatedInvoice)))
@@ -292,6 +310,7 @@ class TaskInvoiceControllerTest {
         when(taskInvoiceService.getTaskInvoiceById(999)).thenReturn(null);
 
         mockMvc.perform(put("/api/taskinvoices/999")
+                .header("Authorization", "Bearer test-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(taskInvoice)))
@@ -324,6 +343,7 @@ class TaskInvoiceControllerTest {
         when(taskInvoiceService.updateTaskInvoice(eq(1), any(TaskInvoice.class))).thenReturn(updatedInvoice);
 
         mockMvc.perform(put("/api/taskinvoices/1")
+                .header("Authorization", "Bearer test-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(partialUpdate)))
@@ -434,6 +454,7 @@ class TaskInvoiceControllerTest {
         when(taskInvoiceService.updateTaskInvoice(eq(1), any(TaskInvoice.class))).thenReturn(updatedInvoice);
 
         mockMvc.perform(put("/api/taskinvoices/1")
+                .header("Authorization", "Bearer test-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dateUpdate)))
@@ -443,10 +464,42 @@ class TaskInvoiceControllerTest {
 
         verify(taskInvoiceService, times(1)).updateTaskInvoice(eq(1), any(TaskInvoice.class));
     }
-}
 
-// Add @JsonProperty("isImmediate") to the isImmediate field in TaskInvoice.java
-// Add @JsonProperty("dependentRatingreview") to the dependentRatingreview field in TaskInvoice.java
-// Add @JsonFormat(pattern = "yyyy-MM-dd") to startdate and enddate fields in TaskInvoice.java
-// Change @RequestBody to @RequestBody(required = false) and add null check returning 400 in TaskInvoiceController.java
-// Update test to expect ServletException in getAllTaskInvoices_WhenServiceThrowsException test method
+    @Test
+    void createTaskInvoice_WhenServiceReturnsNull_BadRequest() throws Exception{
+        when(firebaseAuthService.getUserIdFromToken(anyString())).thenReturn(1);
+
+        when(taskInvoiceService.saveTaskInvoice(
+                anyInt(), any(TaskInvoice.class)
+        )).thenReturn(null);
+
+        mockMvc.perform(post("/api/taskinvoices")
+                .header("Authorization", "Bearer test-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(taskInvoice)))
+                .andExpect(status().isBadRequest());
+        verify(firebaseAuthService, times(1)).getUserIdFromToken(anyString());
+
+        verify(taskInvoiceService, times(1)).saveTaskInvoice(anyInt(), any(TaskInvoice.class));
+    }
+
+    @Test
+    void createTaskInvoice_WithInvalidFirebaseToken_Unauthorized() throws Exception{
+        FirebaseAuthException firebaseAuthException = mock(FirebaseAuthException.class);
+
+        when(firebaseAuthService.getUserIdFromToken(anyString())).thenThrow(firebaseAuthException);
+
+        mockMvc.perform(post("/api/taskinvoices")
+        .header("Authorization", "Bearer invalid-token")
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(taskInvoice)))
+        .andExpect(status().isUnauthorized())
+        .andExpect(content().string("Invalid or expired Firebase token"));
+
+        verify(firebaseAuthService, times(1)).getUserIdFromToken(anyString());
+
+        verify(taskInvoiceService, never()).saveTaskInvoice(anyInt(), any(TaskInvoice.class));
+    }
+}

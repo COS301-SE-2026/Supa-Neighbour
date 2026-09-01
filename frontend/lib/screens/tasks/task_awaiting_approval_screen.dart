@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../leaderboard/helper_profile_preview_screen.dart';
 
 class TaskAwaitingApprovalScreen extends StatelessWidget {
   final Task task;
@@ -101,24 +102,45 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.person, color: AppColors.primaryTeal(context), size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Requester: ${task.requesterName}',
-                    style: GoogleFonts.openSans(
-                      color: AppColors.charcoal(context),
-                      fontSize: 14,
+            GestureDetector(
+              onTap: () {
+                final requesterId = int.tryParse(task.createdBy);
+                if (requesterId != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HelperProfilePreviewScreen(
+                        helperId: requesterId,
+                        taskId: task.id,
+                        showRequestButton: false,
+                        isUserId: true,
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.person, color: AppColors.primaryTeal(context), size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Requester: ${task.requesterName}',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.charcoal(context),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: AppColors.primaryTeal(context), size: 20),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -340,18 +362,16 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
-      case 'Plants':
-        return Icons.eco;
-      case 'Pets':
+      case 'Medical Assistance':
+        return Icons.medical_services;
+      case 'Pet Care':
         return Icons.pets;
-      case 'Bins':
-        return Icons.delete;
-      case 'Packages':
-        return Icons.inventory;
-      case 'Home Check-in':
-        return Icons.home;
-      case 'Pool Pump':
-        return Icons.water;
+      case 'Technology Support':
+        return Icons.computer;
+      case 'Transportation Support':
+        return Icons.directions_car;
+      case 'Home Repair':
+        return Icons.home_repair_service;
       default:
         return Icons.assignment;
     }

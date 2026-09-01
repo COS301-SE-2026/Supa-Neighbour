@@ -7,7 +7,8 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=coverage)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=bugs)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
 [![API Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/backend.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/backend.yml)
-[![Flutter Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/flutter.yml)
+[![App Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend-app.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend-app.yml)
+[![Website Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend-admin.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend-admin.yml)
 [![GitHub Issues](https://img.shields.io/github/issues/COS301-SE-2026/Supa-Neighbour)](https://github.com/COS301-SE-2026/Supa-Neighbour/issues)
 
 [![dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)](https://github.com/COS301-SE-2026/Supa-Neighbour)
@@ -58,6 +59,14 @@
 | Testing Policy | Team's testing standards and coverage requirements | [View Testing Policy](/documentation/Demo%202%20Files/Testing_Policy.md) |
 | Coding Standards Doc | Team's coding conventions and style guide | [View Coding Standards](/documentation/Demo%202%20Files/Coding_Standards_Document.md) |
 | Architecture Diagram | Architectural Diagram of the system | [View Diagram](/documentation/Demo%202%20Files/Images/Architecture%20diagram%20V2.png)
+| Landing Page | SupaNeighbour's Landing Page | https://green-beach-06bbfcd03.7.azurestaticapps.net/ |
+| Style Guide | SupaNeighbour's style Guide | https://red-pebble-0a5f86903.7.azurestaticapps.net/ |
+| Live Backend | The deployed backend to Azure | https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net/ |
+
+> Please note that the above link to the live backend will lead you to meet with a white label error page. If you would like to confirm that the backend is live, please use the following api to test:
+https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net/api/users
+
+> You will be met with a list of all users in json/xml format
 
 ---
 
@@ -82,13 +91,28 @@ src/main/resources/
 
 **Frontend (Flutter)**
 ```
-frontend/lib/app/
-├── screens/
-├── widgets/
-├── services/
-├── components/
-├── constants/
-└── model/
+frontend/
+├── lib/
+│   ├── main.dart
+│   ├── screens/
+│   │   ├── auth/
+│   │   ├── home/
+│   │   ├── tasks/
+│   │   ├── chat/
+│   │   ├── leaderboard/
+│   │   └── profile/
+│   ├── widgets/
+│   │   └── achievements/
+│   ├── services/
+│   ├── models/
+│   ├── providers/
+│   ├── constants/
+│   └── components/
+├── assets/
+│   └── screenshots/
+├── test/
+├── pubspec.yaml
+└── README.md
 ```
 
 ---

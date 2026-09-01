@@ -5,21 +5,22 @@ import '../../constants/skill_options.dart';
 import '../../constants/badge_visuals.dart';
 import 'package:supa_neighbour/screens/profile/achievements_screen.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
-import '../../services/auth_service.dart';
 import '../auth/splash_screen.dart';
-import '../../services/profile_service.dart';
 import '../../models/user_profile_response.dart';
 import '../profile/privacy_settings_screen.dart';
+import '../help/help_menu_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 import 'edit_profile_screen.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   UserProfileResponse? _profile;
   bool _isLoading = true;
   String? _errorMessage;
@@ -40,7 +41,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try{
-      final profile = await ProfileService().getMyProfile();
+       final profileService = ref.read(profileServiceProvider);
+      final profile = await profileService.getMyProfile();
       setState(() {
         _profile = profile;
         _localSkillEdits = List.from(profile.skills);
@@ -153,7 +155,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 setDialogState (() => isSaving = true);
 
                 try{
-                  final response = await ProfileService().updateSkills(selectedSkills.toList());
+                  final profileService = ref.read(profileServiceProvider);
+                  final response = await profileService.updateSkills(selectedSkills.toList());
+
                   setState (() {
                     _localSkillEdits = response.skills ?? selectedSkills.toList();
                     _profile = UserProfileResponse(
@@ -229,10 +233,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background(context),
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
+          onPressed: () {
+            HelpMenuScreen.showHelpModal(context, 'profile');
+          },
+        ),
         title: Text(
           'My Profile',
           style: GoogleFonts.poppins(
-            color: AppColors.charcoal(context),
+            color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -243,9 +253,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icon(Icons.settings_outlined, color: AppColors.charcoal(context)),
             onPressed: () =>
               Navigator.push(
-              context,
-              MaterialPageRoute(
-              builder: (context) => const SettingsScreen())),
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen()
+                )
+              ),
           ),
         ],
       ),
@@ -257,8 +269,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildProfileHeader(profile, levelColor),
-              const SizedBox(height: 20),
+            _buildProfileHeader(profile, levelColor),
+            const SizedBox(height: 20),
               if(profile.currentXp != null) ...[
                 _buildXpCard(profile),
                 const SizedBox(height: 20),
@@ -763,7 +775,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
- Widget _buildActionButtons() {
+  Widget _buildActionButtons() {
   return Column(
     children: [
       SizedBox(
@@ -882,7 +894,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _performLogout() async{
     try{
-      await AuthService().logout();
+      final auth = ref.read(authServiceProvider);
+      await auth.logout();
       if(mounted){
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SplashScreen()),

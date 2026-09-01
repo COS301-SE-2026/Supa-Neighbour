@@ -1,0 +1,205 @@
+package com.app.api.services;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.app.api.dtos.MatchedHelperDTO;
+import com.app.api.events.HelperMatchedEvent;
+import com.app.api.models.Helper;
+import com.app.api.models.HelperSkill;
+import com.app.api.models.TaskInvitation;
+import com.app.api.models.TaskInvoice;
+import com.app.api.repositories.HelperRepository;
+import com.app.api.repositories.HelperSkillRepository;
+import com.app.api.repositories.TaskInvitationRepository;
+import com.app.api.repositories.TaskInvoiceRepository;
+import com.app.api.services.LocationService;
+
+/**
+ * Service class responsible for matching helpers to tasks based on various criteria such as location and skills.
+ */
+@Service
+public class MatchingService {
+
+    private final HelperRepository helperRepo;
+    private final HelperSkillRepository helperSkillRepo;
+    private final TaskInvitationRepository taskInvitationRepo;
+    private final TaskInvoiceRepository taskInvoiceRepo;
+    private final NotificationsService notificationsService;
+    private final LocationService locationService;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    /**
+     * Constructs a MatchingService with the specified repositories.
+     *
+     * @param helperRepo the repository for managing helpers
+     * @param helperSkillRepo the repository for managing helper skills
+     * @param taskInvitationRepo the repository for managing task invitations
+     * @param taskInvoiceRepo the repository for managing task invoices
+     */
+        public MatchingService(HelperRepository helperRepo,
+            HelperSkillRepository helperSkillRepo,
+            TaskInvitationRepository taskInvitationRepo,
+            TaskInvoiceRepository taskInvoiceRepo,
+            NotificationsService notificationsService,
+            LocationService locationService) {
+        this.helperRepo = helperRepo;
+        this.helperSkillRepo = helperSkillRepo;
+        this.taskInvitationRepo = taskInvitationRepo;
+        this.taskInvoiceRepo = taskInvoiceRepo;
+        this.notificationsService = notificationsService;
+        this.locationService = locationService;
+    }
+    /**
+     * Matches helpers to a task based on location and skills.
+     *
+     * @param taskId the ID of the task for which to find matching helpers
+     * @return a list of matched helpers with their details
+     */
+    @Transactional
+    public List<MatchedHelperDTO> matchHelpersForTask(int taskId) {
+
+        TaskInvoice task = taskInvoiceRepo.findById(taskId).orElse(null);
+        if (task == null) {
+            return null;
+        }
+
+        int requesterUserId = task.getDependentid().getUserId().getUserid();
+
+        String requesterZone = getZoneFromTask(task);
+        if (requesterZone == null) {
+            return new ArrayList<>();
+        }
+
+        Integer taskTypeId = task.getTasktypeid() != null 
+            ? task.getTasktypeid().getTasktypeid()
+            : null;
+
+
+        List<Helper> availableHelpers = helperRepo.findByAvailable(true);
+
+        List<MatchedHelperDTO> matched = new ArrayList<>();
+
+        for(Helper helper : availableHelpers) {
+
+            if (helper.getUserid() != null && helper.getUserid().getUserid() == requesterUserId) {
+                continue; 
+            }
+
+            String helperZone = getZoneFromHelper(helper);
+            if (helperZone == null) {
+                continue;
+            }
+
+            if (!helperZone.equalsIgnoreCase(requesterZone)) {
+                continue;
+            }
+
+            boolean skillMatched = false;
+            if (taskTypeId != null) {
+                List<HelperSkill> skills = helperSkillRepo.findHelperId(helper.getHelperid());
+                for (HelperSkill skill : skills) {
+                if (skill.getTaskTypeId() != null
+                        && skill.getTaskTypeId().getTasktypeid() == taskTypeId) {
+                        skillMatched = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!skillMatched) {
+                continue;
+            }
+
+            boolean alreadyExist =  taskInvitationRepo
+                .findByTaskId_TaskidAndHelperId_Helperid(taskId, helper.getHelperid())
+                .isPresent();
+
+            if(!alreadyExist){
+                TaskInvitation invitation = TaskInvitation.builder()
+                .taskId(task)
+                .helperId(helper)
+                .status(null)
+                .invitedAt(new Date())
+                .build();
+                taskInvitationRepo.save(invitation);
+
+                String newTask = "New Task Created";
+
+                if(helper.getUserid() != null){
+                   eventPublisher.publishEvent(new HelperMatchedEvent(
+                        helper.getUserid().getUserid(),
+                        taskId,
+                        task.getTitle() 
+                    ));
+                }
+            }
+            
+
+            String helperName = helper.getUserid() != null
+                    ? helper.getUserid().getFirstName() + " " + helper.getUserid().getLastName()
+                    : "Unknown";
+
+            matched.add(new MatchedHelperDTO(
+                    helper.getHelperid(),
+                    helperName,
+                    helperZone,
+                    skillMatched,
+                    helper.getHelperXp(),
+                    "Helpers matched"
+            ));
+        }
+
+        matched.sort((a, b) -> {
+            if (a.isSkillMatched() != b.isSkillMatched()) {
+                return a.isSkillMatched() ? -1 : 1;
+            }
+            return Integer.compare(b.getHelperXp(), a.getHelperXp());
+        });
+
+        return matched;
+    }
+
+    /**
+     * Retrieves the neighbourhood zone from a given task.
+     *
+     * @param task the task from which to extract the zone
+     * @return the neighbourhood zone, or null if not available
+     */
+    private String getZoneFromTask(TaskInvoice task) {
+    try {
+            return task.getDependentid()
+                    .getUserId()
+                    .getAddressid()
+                    .getNeighbourhoodid()
+                    .getNeighbourhoodName();
+
+        } catch (NullPointerException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves the neighbourhood zone from a given helper.
+     *
+     * @param helper the helper from which to extract the zone
+     * @return the neighbourhood zone, or null if not available
+     */
+    private String getZoneFromHelper(Helper helper) {
+        try {
+            return helper.getUserid()
+                    .getAddressid()
+                    .getNeighbourhoodid()
+                    .getNeighbourhoodName();
+        } catch (NullPointerException e) {
+            return null;
+        }
+    }
+}

@@ -1,4 +1,4 @@
-# Supa-Neighbour — API Service Contract
+# Supa-Neighbour - API Service Contract
 
 
 > All endpoints require a valid JWT Bearer Token unless stated otherwise.
@@ -62,8 +62,16 @@
    - [POST /api/settings/users/mode](#84-post-apisettingsusersmode)
    - [GET api/settings//users/{userId}/status](#85-get-apisettingsusersuseridstatus)
    - [GET /api/settings/users/information/{userId}](#86-get-apisettingsusersinformationuserid)
-   - []
-9.  [Http Status Code Reference](#8-http-status-code-reference)
+9. [Admin & Reporting](#9--admin--reporting)
+   - [9.1 POST /api/auth/admin/login](#91-post-apiauthadminlogin)
+   - [9.2 GET /api/admin/dashboard](#92-get-apiadmindashboard)
+   - [9.3 GET /api/report](#94-get-apireport)
+   - [9.4 GET /api/suggestion](#95-get-apisuggestion)
+   - [9.5 PUT /api/report](#96-put-apireport)
+   - [9.6 PATCH /api/report](#97-patch-apireport)
+   - [9.7 PUT /api/user (deregister admin)](#98-put-apiuser-deregister-admin) 
+   - [9.8 GET /api/report/me](#99-get-apireportme)
+10.  [Http Status Code Reference](#8-http-status-code-reference)
 ---
 
 
@@ -2432,7 +2440,359 @@ No response body.
 | `404 Not Found`     | Firebase-authenticated user has no matching `User` row    | *(exception thrown — see note)*  |
 
 ---
-## 9. HTTP Status Code Reference
+#  9. — Admin & Reporting
+
+> Renumber to match placement in the master API contract doc.
+> Note on 9.6: written as `PUT` per spec, though `POST` is more conventional for creating a new resource without a pre-known ID — worth a quick team gut-check.
+
+---
+
+### 9.1 POST /api/auth/admin/login
+
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/auth/admin/login` |
+| **Method** | `POST` |
+| **Purpose** | Verifies the authenticated user's `isAdmin` flag and confirms admin access before the frontend routes into the admin dashboard |
+| **Authentication** | Firebase ID Token required |
+| **Content-Type** | `application/json` |
+
+#### Request Headers
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Request Body
+None — identity is derived from the token.
+
+#### Success Response — `200 OK`
+```json
+{
+  "userId": 123,
+  "isAdmin": true
+}
+```
+
+#### Error Responses
+
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid Firebase ID token | *(exception thrown — see note)* |
+| `403 Forbidden` | Valid user, but `isAdmin = false` | `{ "error": "User is not an admin" }` |
+
+---
+
+### 9.2 GET /api/admin/dashboard
+
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/admin/dashboard` |
+| **Method** | `GET` |
+| **Purpose** | Returns high-level summary stats for the logged-in admin: count of reports currently assigned to them, breakdown by report type, and count of reports they've completed |
+| **Authentication** | Firebase ID Token required; user must have `isAdmin = true` |
+| **Content-Type** | `application/json` |
+
+#### Request Headers
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Success Response — `200 OK`
+```json
+{
+  "assignedReportsCount": 12,
+  "reportsByType": {
+    "USER": 4,
+    "POST": 3,
+    "COMMENT": 2,
+    "TASK_DISPUTE": 3
+  },
+  "completedReportsCount": 47
+}
+```
+
+#### Error Responses
+
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid Firebase ID token | *(exception thrown — see note)* |
+| `403 Forbidden` | User is not an admin | `{ "error": "User is not an admin" }` |
+
+---
+
+### 9.4 GET /api/report
+
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/report` |
+| **Method** | `GET` |
+| **Purpose** | Returns all reports currently assigned to the requesting admin |
+| **Authentication** | Firebase ID Token required; user must have `isAdmin = true` |
+| **Content-Type** | `application/json` |
+
+#### Request Headers
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Query Parameters (optional)
+
+| Param | Type | Description |
+|---|---|---|
+| `status` | string | Filter by `submitted`, `assigned`, `reviewed` |
+| `reportType` | string | Filter by `USER`, `POST`, `COMMENT`, `TASK_DISPUTE` |
+
+#### Success Response — `200 OK`
+```json
+[
+  {
+    "reportId": 501,
+    "reportType": "POST",
+    "status": "assigned",
+    "adminId": 7,
+    "reporterUserId": 42,
+    "reportedPostId": 88,
+    "reason": "Harassment",
+    "createdAt": "2026-08-14T09:12:00Z"
+  }
+]
+```
+
+#### Error Responses
+
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid Firebase ID token | *(exception thrown — see note)* |
+| `403 Forbidden` | User is not an admin | `{ "error": "User is not an admin" }` |
+
+---
+
+### 9.5 GET /api/report/suggestion
+
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/report/suggestion` |
+| **Method** | `GET` |
+| **Purpose** | Returns the system-suggested punishment for a given violation type + severity pair, for the admin to accept or override while reviewing a report |
+| **Authentication** | Firebase ID Token required; user must have `isAdmin = true` |
+| **Content-Type** | `application/json` |
+
+#### Query Parameters (required)
+
+| Param | Type | Description |
+|---|---|---|
+| `violationType` | string | e.g. `HARASSMENT`, `PRIVACY_VIOLATION`, `TASK_NO_SHOW` |
+| `severity` | string | `MINOR`, `MODERATE`, `SEVERE` |
+
+#### Success Response — `200 OK`
+```json
+{
+  "violationType": "PRIVACY_VIOLATION",
+  "severity": "SEVERE",
+  "suggestedAction": "BAN"
+}
+```
+
+#### Error Responses
+
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | `violationType` or `severity` is not a recognized enum value | `{ "error": "Invalid violationType or severity" }` |
+| `401 Unauthorized` | Missing or invalid Firebase ID token | *(exception thrown — see note)* |
+| `403 Forbidden` | User is not an admin | `{ "error": "User is not an admin" }` |
+
+---
+
+### 9.6 PUT /api/report
+
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/report` |
+| **Method** | `PUT` |
+| **Purpose** | Submits a new report — user, post, comment, or task dispute. The required fields vary by `reportType` (see body below) |
+| **Authentication** | Firebase ID Token required |
+| **Content-Type** | `application/json` |
+
+#### Request Body
+
+```json
+{
+  "reportType": "TASK_DISPUTE",
+  "reportedUserId": null,
+  "reportedPostId": null,
+  "reportedCommentId": null,
+  "taskId": 301,
+  "disputeReason": "NO_SHOW",
+  "reason": "Helper never arrived",
+  "description": "Waited 2 hours, no contact from helper."
+}
+```
+
+Only the field(s) matching `reportType` should be populated — `reportedUserId` for `USER`, `reportedPostId` for `POST`, `reportedCommentId` for `COMMENT`, `taskId` (+ `disputeReason`) for `TASK_DISPUTE`. The backend should reject a body where the populated field doesn't match `reportType`, mirroring the `CHECK` constraint on `report_table`.
+
+#### Success Response — `201 Created`
+```json
+{
+  "reportId": 512,
+  "reportType": "TASK_DISPUTE",
+  "status": "submitted",
+  "createdAt": "2026-08-14T10:03:00Z"
+}
+```
+
+#### Error Responses
+
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | Field(s) don't match `reportType`, or required field missing | `{ "error": "Invalid report payload for reportType" }` |
+| `401 Unauthorized` | Missing or invalid Firebase ID token | *(exception thrown — see note)* |
+| `404 Not Found` | Referenced entity (post/comment/user/task) doesn't exist | `{ "error": "Target entity not found" }` |
+
+---
+
+### 9.7 PATCH /api/report
+
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/report` |
+| **Method** | `PATCH` |
+| **Purpose** | Admin updates a report's status and/or verdict (`violationType`, `severity`, `actualAction`). On resolution, triggers a notification to the affected user informing them of the outcome |
+| **Authentication** | Firebase ID Token required; user must have `isAdmin = true` |
+| **Content-Type** | `application/json` |
+
+#### Request Body
+```json
+{
+  "reportId": 512,
+  "status": "reviewed",
+  "violationType": "TASK_NO_SHOW",
+  "severity": "MODERATE",
+  "actualAction": "SUSPEND_7D",
+  "adminNotes": "Confirmed with requester, no evidence helper attempted contact."
+}
+```
+
+#### Success Response — `200 OK`
+```json
+{
+  "reportId": 512,
+  "status": "reviewed",
+  "actualAction": "SUSPEND_7D",
+  "resolvedAt": "2026-08-14T11:20:00Z"
+}
+```
+
+**Side effect:** notification dispatch should follow the existing event-driven pattern — publish an event inside the transaction, handle FCM send via `@TransactionalEventListener(phase = AFTER_COMMIT)` — rather than sending inline before the report update is committed.
+
+#### Error Responses
+
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | Invalid enum value for `status`/`violationType`/`severity`/`actualAction` | `{ "error": "Invalid field value" }` |
+| `401 Unauthorized` | Missing or invalid Firebase ID token | *(exception thrown — see note)* |
+| `403 Forbidden` | User is not an admin, or report is not assigned to this admin | `{ "error": "Not authorized to update this report" }` |
+| `404 Not Found` | `reportId` doesn't exist | `{ "error": "Report not found" }` |
+
+---
+
+### 9.8 PUT /api/user (deregister admin)
+
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/user` |
+| **Method** | `PUT` |
+| **Purpose** | Reuses the existing user-update endpoint to deregister an admin by setting `isAdmin = false` |
+| **Authentication** | Firebase ID Token required |
+| **Content-Type** | `application/json` |
+
+#### Request Body
+```json
+{
+  "userId": 7,
+  "isAdmin": false
+}
+```
+
+#### Success Response — `200 OK`
+```json
+{
+  "userId": 7,
+  "isAdmin": false
+}
+```
+
+#### Error Responses
+
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid Firebase ID token | *(exception thrown — see note)* |
+| `403 Forbidden` | Requesting user isn't authorized to deregister this admin | `{ "error": "Not authorized to modify this user" }` |
+| `404 Not Found` | `userId` doesn't exist | `{ "error": "User not found" }` |
+
+**Open decision:** who's allowed to call this on someone else's behalf — self-deregistration only, or does it need a "super-admin" concept? `isAdmin` is currently a flat boolean, so there's no tier above "admin" to gate this with. If any admin can deregister any other admin, worth a line in the PR description since it's a permission decision, not just plumbing.
+
+---
+
+### 9.9 GET /api/report/me
+ 
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/report/me` |
+| **Method** | `GET` |
+| **Purpose** | Returns all reports submitted by the authenticated user, so they can track status on the "My Reports" page — distinct from 9.4, which returns reports *assigned to* an admin |
+| **Authentication** | Firebase ID Token required — any authenticated user, not admin-only |
+| **Content-Type** | `application/json` |
+ 
+#### Request Headers
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+ 
+#### Query Parameters (optional)
+ 
+| Param | Type | Description |
+|---|---|---|
+| `status` | string | Filter by `submitted`, `assigned`, `reviewed` |
+| `reportType` | string | Filter by `USER`, `POST`, `COMMENT`, `TASK_DISPUTE` |
+ 
+#### Success Response — `200 OK`
+```json
+[
+  [
+  {
+    "reportId": 501,
+    "reportType": "POST",
+    "status": "assigned",
+    "adminId": 7,
+    "reporterUserId": 42,
+    "reportedPostId": 88,
+    "reason": "Harassment",
+    "createdAt": "2026-08-14T09:12:00Z",
+    "details": {
+      "postId": 88,
+      "contentSnippet": "Check out this deal, click here to claim your prize...",
+      "category": "general",
+      "mediaURL": null,
+      "authorUserId": 15,
+      "createdAt": "2026-08-13T18:40:00Z"
+    }
+  }
+]
+]
+```
+ 
+Note: `actualAction` and `resolvedAt` are `null` while `status` is `submitted` or `assigned` — the report hasn't reached a verdict yet. The user only needs to see the outcome, not `violationType`/`severity`/`adminNotes` — those stay admin-internal, so this response is a leaner shape than 9.4's, not a reuse of the same DTO.
+ 
+#### Error Responses
+ 
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `401 Unauthorized` | Missing or invalid Firebase ID token | *(exception thrown — see note)* |
+ 
+**Note on scope:** since this only returns reports where `reporter_user_id` matches the token's resolved user, there's no ownership check needed beyond that filter — same pattern as resolving ownership from the token rather than trusting a client-supplied ID, used elsewhere in the API.
+
+---
+## 10. HTTP Status Code Reference
 
 
 | Code | Meaning | When used |

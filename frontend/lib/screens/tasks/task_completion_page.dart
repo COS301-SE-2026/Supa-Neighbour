@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; // ADD: Import google_fonts
-import '../../constants/app_colors.dart'; // ADD: Import AppColors
+import 'package:google_fonts/google_fonts.dart';
+import '../../models/task_model.dart';
+import '../../constants/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class TaskCompletionPage extends StatefulWidget {
+class TaskCompletionPage extends ConsumerStatefulWidget {
   final String taskId;
   final String taskTitle;
   final String residentName;
@@ -20,10 +23,10 @@ class TaskCompletionPage extends StatefulWidget {
   });
 
   @override
-  State<TaskCompletionPage> createState() => _TaskCompletionPageState();
+  ConsumerState<TaskCompletionPage> createState() => _TaskCompletionPageState();
 }
 
-class _TaskCompletionPageState extends State<TaskCompletionPage> {
+class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   final TextEditingController _noteController = TextEditingController();
   final List<String> _photoPaths = [];
   bool _isSubmitting = false;
@@ -78,7 +81,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
             Text(
               'You will earn +${widget.xpReward} XP upon resident confirmation.',
               style: GoogleFonts.openSans(
-                // CHANGE: Use AppColors.citrusYellow
                 color: AppColors.citrusYellow(context),
                 fontWeight: FontWeight.bold,
               ),
@@ -98,7 +100,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              // CHANGE: Use AppColors.primaryTeal
               backgroundColor: AppColors.primaryTeal(context),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
@@ -122,26 +123,37 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
   }
 
   Future<void> _submitCompletion() async {
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    // TODO: Call API to submit task completion
-    await Future.delayed(const Duration(seconds: 1)); // Simulates API call
-
-    if (mounted) {
-      setState(() {
-        _isSubmitting = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Task submitted! Waiting for resident confirmation.'),
-          // CHANGE: Use AppColors.primaryTeal
-          backgroundColor: AppColors.primaryTeal(context),
-        ),
+    setState(() => _isSubmitting = true);
+    try {
+      final taskService = ref.read(taskServiceProvider);
+      await taskService.updateTask(
+        taskId: int.parse(widget.taskId),
+        status: 'pending_approval',
+        helperRatingId: _noteController.text.isNotEmpty ? _noteController.text : null,
       );
-      Navigator.pop(context);
+
+      Task.updateTaskStatus(widget.taskId, 'pending_approval');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Task submitted! Waiting for resident confirmation.'),
+            backgroundColor: AppColors.primaryTeal(context),
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -150,13 +162,11 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      // CHANGE: Use AppColors.background
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            // CHANGE: Use AppColors.charcoal
             color: AppColors.charcoal(context),
           ),
           onPressed: () => Navigator.pop(context),
@@ -165,11 +175,9 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
           'Task Completion',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
-            // CHANGE: Use AppColors.charcoal
             color: AppColors.charcoal(context),
           ),
         ),
-        // CHANGE: Use AppColors.background
         backgroundColor: AppColors.background(context),
         elevation: 0,
         foregroundColor: AppColors.charcoal(context),
@@ -184,7 +192,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                // CHANGE: Use AppColors.surfaceGrey
                 color: isDarkMode ? AppColors.surfaceGrey(context) : AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
@@ -205,7 +212,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      // CHANGE: Use AppColors.charcoal
                       color: AppColors.charcoal(context),
                     ),
                   ),
@@ -214,7 +220,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
                     'Resident: ${widget.residentName}',
                     style: GoogleFonts.openSans(
                       fontSize: 14,
-                      // CHANGE: Use AppColors.charcoal
                       color: AppColors.charcoal(context),
                     ),
                   ),
@@ -223,7 +228,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
                     'Due: ${widget.dueDate}',
                     style: GoogleFonts.openSans(
                       fontSize: 14,
-                      // CHANGE: Use AppColors.charcoal
                       color: AppColors.charcoal(context),
                     ),
                   ),
@@ -233,7 +237,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
                     style: GoogleFonts.openSans(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      // CHANGE: Use AppColors.citrusYellow
                       color: AppColors.citrusYellow(context),
                     ),
                   ),
@@ -249,7 +252,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                // CHANGE: Use AppColors.charcoal
                 color: AppColors.charcoal(context),
               ),
             ),
@@ -258,7 +260,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
               'Add photos to show your work (optional)',
               style: GoogleFonts.openSans(
                 fontSize: 12,
-                // CHANGE: Use AppColors.textGrey
                 color: AppColors.textGrey(context),
               ),
             ),
@@ -281,7 +282,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
                         margin: const EdgeInsets.only(right: 12),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            // CHANGE: Use AppColors.primaryTeal
                             color: AppColors.primaryTeal(context),
                             width: 2,
                           ),
@@ -293,7 +293,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
                           children: [
                             Icon(
                               Icons.add,
-                              // CHANGE: Use AppColors.primaryTeal
                               color: AppColors.primaryTeal(context),
                               size: 32,
                             ),
@@ -302,7 +301,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
                               'Add Photo',
                               style: GoogleFonts.openSans(
                                 fontSize: 10,
-                                // CHANGE: Use AppColors.primaryTeal
                                 color: AppColors.primaryTeal(context),
                               ),
                             ),
@@ -369,7 +367,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                // CHANGE: Use AppColors.charcoal
                 color: AppColors.charcoal(context),
               ),
             ),
@@ -380,20 +377,17 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
               decoration: InputDecoration(
                 hintText: 'Tell the resident what you did...',
                 hintStyle: GoogleFonts.openSans(
-                  // CHANGE: Use AppColors.textGrey
                   color: AppColors.textGrey(context),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    // CHANGE: Use AppColors.surfaceGrey
                     color: AppColors.surfaceGrey(context),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    // CHANGE: Use AppColors.primaryTeal
                     color: AppColors.primaryTeal(context),
                     width: 2,
                   ),
@@ -414,7 +408,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _showCompletionDialog,
                 style: ElevatedButton.styleFrom(
-                  // CHANGE: Use AppColors.primaryTeal
                   backgroundColor: AppColors.primaryTeal(context),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -451,7 +444,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
                 'Resident will need to confirm before XP is awarded',
                 style: GoogleFonts.openSans(
                   fontSize: 12,
-                  // CHANGE: Use AppColors.textGrey
                   color: AppColors.textGrey(context),
                 ),
               ),

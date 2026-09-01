@@ -1,28 +1,31 @@
 # Software Architecture Specifications - Supa-Neighbour
 
-
 ## Table of Contents
 
-- [Software Architecture Specifications - Supa-Neighbour](#software-architecture-specifications---supa-neighbour)
-  - [Table of Contents](#table-of-contents)
-  - [1. Introduction](#1-introduction)
-  - [2. Architectural Requirements](#2-architectural-requirements)
-    - [2.1 Architectural Pattern](#21-architectural-pattern)
-      - [2.1.1 Reasons for Choosing This Architecture](#211-reasons-for-choosing-this-architecture)
-  - [2.2Architectural Diagram](#22architectural-diagram)
-    - [2.3 Constraints on the Architecture](#23-constraints-on-the-architecture)
-  - [3. Technology Requirements](#3-technology-requirements)
-  - [4. API Contract](#4-api-contract)
-  - [5. Deployment Requirements](#5-deployment-requirements)
-    - [Environment Parity](#environment-parity)
-    - [Secrets Management](#secrets-management)
-    - [Rollback Strategy](#rollback-strategy)
-    - [Deployment Diagram](#deployment-diagram)
-
+- [1. Introduction](#1-introduction)
+- [2. Architectural Requirements](#2-architectural-requirements)
+  - [2.1 Architectural Pattern](#21-architectural-pattern)
+    - [2.1.1 Reasons for Choosing This Architecture](#211-reasons-for-choosing-this-architecture)
+  - [2.2 Architectural Diagram](#22architectural-diagram)
+  - [2.3 Constraints on the Architecture](#23-constraints-on-the-architecture)
+  - [2.4 Design Patterns](#24-design-patterns)
+    - [2.4.1 Singleton Pattern (Creational)](#241-singleton-pattern-creational)
+    - [2.4.2 Factory Pattern (Creational)](#242-factory-pattern-creational)
+    - [2.4.3 Repository Pattern (Structural)](#243-repository-pattern-structural)
+    - [2.4.4 Observer Pattern (Behavioral)](#244-observer-pattern-behavioral)
+    - [2.4.5 Dependency Injection Pattern (Structural)](#245-dependency-injection-pattern-structural)
+- [3. Technology Requirements](#3-technology-requirements)
+- [4. API Contract](#4-api-contract)
+- [5. Deployment Requirements](#5-deployment-requirements)
+  - [Environment Parity](#environment-parity)
+  - [Secrets Management](#secrets-management)
+  - [Rollback Strategy](#rollback-strategy)
+  - [Deployment Diagram](#deployment-diagram)
+- [6. Quality Requirements to Architectural Decisions Mapping](#6-quality-requirements-to-architectural-decisions-mapping)
 
 ## 1. Introduction
 
-FILL THIS IN
+This document covers all things related to the architecture and deployment of the system.
 
 ## 2. Architectural Requirements
 
@@ -31,13 +34,13 @@ FILL THIS IN
 
 Supa-Neighbour employs a **Client-Server Architecture** with the following components:
 
-a) **Frontend (Flutter)** — the mobile client used by residents and helpers to interact with the platform (post tasks, browse helpers, chat, view trust scores and gamification progress).
+a) **Frontend (Flutter)** - the mobile client used by residents and helpers to interact with the platform (post tasks, browse helpers, chat, view trust scores and gamification progress).
 
-b) **Backend (Spring Boot)** — the central server, which internally follows a **Layered Architecture** (Controller → Service → Repository → DTO) to separate request handling, business logic, and data access.
+b) **Backend (Spring Boot)** - the central server, which internally follows a **Layered Architecture** (Controller → Service → Repository → DTO) to separate request handling, business logic, and data access.
 
-c) **Communication** — the frontend and backend communicate via **REST APIs**, keeping the client and server decoupled and independently deployable.
+c) **Communication** - the frontend and backend communicate via **REST APIs**, keeping the client and server decoupled and independently deployable.
 
-d) **Database (Azure Database for PostgreSQL)** — a centralised database used for both read and write operations, acting as the single source of truth for tasks, users, ratings, and chat data.
+d) **Database (Azure Database for PostgreSQL)** - a centralised database used for both read and write operations, acting as the single source of truth for tasks, users, ratings, and chat data.
 
 ---
 
@@ -46,13 +49,13 @@ d) **Database (Azure Database for PostgreSQL)** — a centralised database used 
 
 a) **Separation of concerns.** Splitting the system into a client and a server keeps presentation, business logic, and data access cleanly isolated from one another.
 
-b) **Multiple, independent clients need to hit the same backend (admin and user).** The platform supports two distinct kinds of clientsover its lifetime:
+b) **Multiple, independent clients need to hit the same backend (admin and user).** The platform supports two distinct kinds of clients over its lifetime:
    - The **Flutter user app**, used by residents and helpers.
    - The **admin web interface**, used for moderation, verification oversight, and platform management.
   
 ---
 
-## 2.2Architectural Diagram
+## 2.2 Architectural Diagram
 
 Please refer to this for the Architectural Diagram: [Architectural Diagram](Images/Architecture%20diagram%20V2.png)
 
@@ -63,37 +66,226 @@ a) **Azure compatibility requirement.** All chosen technologies had to be compat
 
 b) **Security and compliance standards.**
    - **POPIA compliance**: the system must protect personally identifiable information in line with South Africa's data protection law, driving decisions such as AES-256 column-level encryption for sensitive fields.
-   - **Verified-user access only** :the platform must ensure only authenticated, verified users can access the app, enforced through Firebase Authentication and the Admin SDK, rather than a custom-built authentication system.
+   - **Verified-user access only:** the platform must ensure only authenticated, verified users can access the app, enforced through Firebase Authentication and the Admin SDK, rather than a custom-built authentication system.
 
 c) **Mandatory cloud deployment target.** The application is required to be deployed to Azure specifically (rather than any general cloud provider), constraining infrastructure decisions to Azure's available services, deployment models (App Service, ACR-based CI/CD), and regional availability.
 
 d) **Mandated authentication provider**: Firebase Authentication is fixed as the identity provider, meaning the backend cannot own credential storage and must integrate via the Admin SDK.
 
+### 2.4 Design Patterns
+
+Design patterns are reusable solutions to common software design problems at the code or component level. They improve flexibility, maintainability, and code reuse.
+
+The SupaNeighbour system employs the following design patterns across both the frontend (Flutter/Dart) and backend (Spring Boot/Java):
+
+#### 2.4.1 Singleton Pattern (Creational)
+
+**Problem Solved:**  
+The application requires a single, globally accessible source of truth for the user's authentication session. Multiple instances would lead to inconsistent state and potential bugs.
+
+**Where It's Used:**
+- **File:** `frontend/lib/models/auth_session.dart`
+- **Class:** `AuthSession`
+- **Method:** `AuthSession.instance` (static getter)
+
+**Implementation Details:**  
+The `AuthSession` class uses a private constructor and a static instance to ensure only one instance exists throughout the application lifecycle.
+
+**Why This Pattern Was Chosen:**
+- Ensures consistent authentication state across all screens
+- Prevents duplicate instances that could cause state conflicts
+- Simple and widely understood pattern
+
+**Code Snippet:**
+```dart
+class AuthSession {
+  static final AuthSession _instance = AuthSession._internal();
+  factory AuthSession() => _instance;
+  static AuthSession get instance => _instance;
+
+  User? _currentUser;
+  bool get isLoggedIn => _currentUser != null;
+
+  void login(User user) {
+    _currentUser = user;
+  }
+
+  void logout() {
+    _currentUser = null;
+  }
+}
+```
+
+#### 2.4.2 Factory Pattern (Creational)
+
+**Problem Solved:**  
+The application receives JSON data from the backend API and needs to convert it into Dart objects. The creation logic is complex and should be encapsulated in a single place.
+
+**Where It's Used:**
+- **File:** `frontend/lib/models/task_model.dart`
+- **Class:** `Task`
+- **Method:** `Task.fromJson()`
+
+- **File:** `frontend/lib/models/user_model.dart`
+- **Class:** `User`
+- **Method:** `User.fromJson()`
+
+**Why This Pattern Was Chosen:**
+- Encapsulates complex object creation logic
+- Makes the code more maintainable when the API contract changes
+- Separates creation logic from the rest of the class
+- Allows for validation and transformation during creation
+
+**Code Snippet:**
+```dart
+class Task {
+  factory Task.fromJson(Map<String, dynamic> json) {
+    final DateTime startDate = json['startDate'] != null 
+        ? DateTime.parse(json['startDate'] as String) 
+        : DateTime.now();
+
+    return Task(
+      id: (json['taskId'] as int).toString(),
+      title: _resolveCategoryName(json['taskTypeId'] as int?),
+      category: _resolveCategoryName(json['taskTypeId'] as int?),
+      date: startDate,
+      time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
+      xpReward: 0,
+      instructions: json['adminReview'] as String? ?? 'No instructions provided',
+      status: json['helperId'] != null ? 'in_progress' : 'pending',
+      createdAt: startDate,
+      createdBy: json['createdBy'] as String? ?? 'unknown',
+      requesterName: json['requesterName'] as String?,
+      helperId: json['helperId'] as String?,
+      helperName: json['helperName'] as String?,
+      completionNote: json['completionNote'] as String?,
+      completionPhotos: json['completionPhotos'] != null
+          ? List<String>.from(json['completionPhotos'] as List)
+          : null,
+    );
+  }
+}
+```
+#### 2.4.3 Repository Pattern (Structural)
+
+**Problem Solved:**  
+The backend needs to separate data access logic from business logic. This makes the code more maintainable and allows for easier switching between data sources.
+
+**Where It's Used:**
+- **Files:** `backend/src/main/java/com/app/api/repositories/*Repository.java`
+- **Examples:** `TaskRepository.java`, `UserRepository.java`, `RatingRepository.java`
+
+**Implementation Details:**  
+Spring Data JPA repositories handle all database operations. Each repository interface extends `JpaRepository`, providing built-in CRUD operations and custom query methods.
+
+**Why This Pattern Was Chosen:**
+- Separates data access from business logic
+- Makes testing easier (can mock repositories)
+- Allows for switching data sources without changing business logic
+- Provides a consistent API for data access
+- Spring Data JPA reduces boilerplate code
+
+**Code Snippet:**
+```java
+@Repository
+public interface TaskRepository extends JpaRepository<Task, Integer> {
+    List<Task> findByCreatedBy(String userId);
+    List<Task> findByHelperId(String helperId);
+    List<Task> findByStatus(String status);
+}
+```
+
+#### 2.4.4 Observer Pattern (Behavioral)
+
+**Problem Solved:**  
+The UI needs to react to changes in application state. When data changes, the UI should automatically rebuild to reflect the new state.
+
+**Where It's Used:**
+- **File:** Throughout the frontend
+- **Library:** Riverpod (`ref.watch()`, `ref.read()`)
+- **Examples:** `home_screen.dart`, `profile_screen.dart`, `my_tasks_screen.dart`
+
+**Why This Pattern Was Chosen:**
+- Decouples state management from the UI
+- Automatically updates UI when state changes
+- Makes testing easier (providers can be overridden)
+- Prevents unnecessary rebuilds
+- Clean, declarative code
+
+**Code Snippet:**
+```dart
+final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
+  return FirebaseAuth.instance;
+});
+
+class MyWidget extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(firebaseAuthProvider);
+    // Widget automatically rebuilds when auth changes
+    // ...
+  }
+}
+```
+
+#### 2.4.5 Dependency Injection Pattern (Structural)
+
+**Problem Solved:**  
+Classes should not create their own dependencies. This makes the code more testable and flexible, as dependencies can be swapped without changing the class.
+
+**Where It's Used:**
+- **File:** `frontend/lib/providers/theme_mode_provider.dart`
+- **Library:** Riverpod
+
+**Why This Pattern Was Chosen:**
+- Makes code highly testable (mocks can be injected)
+- Reduces coupling between classes
+- Follows the "inversion of control" principle
+- Dependencies are explicit and visible
+- Easy to swap implementations
+
+**Code Snippet:**
+```dart
+final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
+  return FirebaseAuth.instance;
+});
+
+// In tests, the provider can be overridden:
+final testProvider = ProviderScope(
+  overrides: [
+    firebaseAuthProvider.overrideWithValue(mockAuth),
+  ],
+  child: const MaterialApp(home: MyScreen()),
+);
+```
+These five design patterns work together to create a clean, maintainable, and testable codebase that supports current requirements and can easily accommodate future changes. The creational patterns (Singleton and Factory) manage object creation, structural patterns (Repository and Dependency Injection) organise code structure, and the behavioral pattern (Observer) handles reactive state updates in the UI.
+---
+
 ## 3. Technology Requirements
 
 
-**Flutter — Frontend (Mobile Application)**
+**Flutter - Frontend (Mobile Application)**
 
 - Single codebase targets both iOS and Android, saving development time for a small team on a fixed timeline
 - Widget-based architecture supports the accessible, large-font, intuitive UI required by R6
 - Built-in testing framework supports the unit/widget test coverage tracked under the Maintainability NFR
   
-**Spring Boot + Docker — Backend**
+**Spring Boot + Docker - Backend**
 
 - Mature ecosystem for building secure, RESTful, role-based APIs, supporting R5.2.2 (role-based access control for resident, helper, admin)
 - Docker packaging decouples the backend from the host environment, ensuring consistent behaviour between WSL2 development and production
 - Supports the automatic-restart recovery strategy described under the Reliability NFR
   
-**Firebase — Authentication (Login & Registration)**
+**Firebase - Authentication (Login & Registration)**
 - Provides email verification, password strength enforcement, and account lockout out of the box
 - Satisfies R1.1.1 (email verification) and R1.2.1 (password strength validation)
 - Removes the need to build and maintain custom authentication/credential-storage logic, reducing security risk
   
-**Azure Database for PostgreSQL (Flexible Server) — Database**
+**Azure Database for PostgreSQL (Flexible Server) - Database**
 - Chosen over Cosmos DB because the data (users, tasks, ratings, trust scores) is inherently relational, with clear foreign-key relationships
 - Provides automated backups with a seven-day retention period, supporting the Reliability NFR's recovery targets
   
-**Azure Blob Storage — Media Storage**
+**Azure Blob Storage - Media Storage**
 - Stores all user-uploaded images, including task completion photo evidence and in-app chat photo updates.
 - Configured with Locally Redundant Storage (LRS), keeping multiple copies of files within the Azure region
 - Supports the Reliability NFR's protection against hardware failure
@@ -132,11 +324,27 @@ The `main` branch deploys automatically to the production environment via GitHub
 
 
 ### Rollback Strategy
-//FILL THIS
+
+- **Backend:** Every image pushed to Azure Container Registry is tagged uniquely by branch name and commit SHA, so no previous version is ever overwritten. In the event of a failed deployment, rollback is performed by re-pointing the Azure Web App's container configuration to the last known-good image tag and restarting the app.
+- **Frontend (static pages):** Deployments are tied to Git commits via GitHub Actions. Rollback is performed by checking out the last known-good commit, rebuilding, and redeploying via the Static Web Apps CLI.
 
 
 ### Deployment Diagram
 
-//FILL THIS AS WELL
+Please refer to this for the Deployment Diagram: [Deployment Diagram](../Demo%202%20Files/Images/DeploymentDiagram_.drawio.svg)
 
+## 6. Quality Requirements to Architectural Decisions Mapping
 
+| Quality Requirement | Architectural Decision | Rationale |
+|---|---|---|
+| **Reliability** (99.9% uptime, recover from critical failures within 5 min) | Docker container with automatic restart policy on failure | Container orchestration detects crashed processes and restarts them without manual intervention, keeping recovery time low |
+| | Azure Database for PostgreSQL with automated backups (7-day retention) | Data loss from a critical failure is bounded and recoverable - restore point available within the retention window |
+| | Azure Blob Storage with Locally Redundant Storage (LRS) | Media files survive single-hardware-node failures via automatic in-region replication |
+| **Maintainability** (deployable within 2 hrs, 80% test coverage) | CI/CD pipeline: GitHub Actions → Azure Container Registry → App Service | Automates build/test/deploy so a merged change requires no manual environment setup - collapses deploy lead time |
+| | Environment-specific config (`application-azure.yml`) separated from local config | Prevents environment drift/manual reconfiguration at deploy time, a common source of deploy delay |
+| | Azure Key Vault for runtime secrets, GitHub Secrets for CI/CD-time secrets | Removes manual credential handling as a deployment bottleneck |
+| | SonarQube continuous coverage tracking | Coverage regressions are caught per-scan rather than only at release, keeping the 80% floor enforceable over time |
+| | Layered Controller → Service → Repository → DTO pattern | Isolates change impact to a single layer, reducing the blast radius (and testing effort) of new features/fixes |
+| **Availability** (24/7, ≤2 hrs/month scheduled maintenance) | Azure App Service (PaaS) for backend hosting | Managed platform with built-in uptime SLA, patching, and health monitoring, rather than self-managed VM uptime |
+| | Azure Postgres Flexible Server (managed DB service) | Managed service uptime SLA + built-in failover handling, removing single-point-of-failure risk from self-hosted DB |
+| | Stateless backend design (no server-side session state) | Any instance can serve any request, so scheduled maintenance or instance restarts don't require app-wide downtime |

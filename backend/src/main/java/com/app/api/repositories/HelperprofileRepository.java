@@ -19,7 +19,24 @@ public class HelperprofileRepository {
     @PersistenceContext
     private EntityManager em;
 
-     /**
+    /**
+     * Resolves a user ID to its corresponding helper ID.
+     *
+     * @param userId the user identifier
+     * @return the helper ID, or {@code null} if the user is not a helper
+     */
+    public Integer findHelperIdByUserId(int userId) {
+        String sql = "SELECT helper_id FROM helper_table WHERE user_id = :userId";
+        try {
+            return ((Number) em.createNativeQuery(sql)
+                    .setParameter("userId", userId)
+                    .getSingleResult()).intValue();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    /**
      * Retrieves the core profile information for a helper.
      *
      * @param helperId the identifier of the helper

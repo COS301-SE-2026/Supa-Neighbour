@@ -3,19 +3,27 @@ import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:supa_neighbour/models/update_profile_response.dart';
 import '../models/user_profile_response.dart';
 
-class UserProfileService{
+// INTERFACE (Contract)
+abstract class IProfileService {
+  Future<UserProfileResponse> getMyProfile();
+  Future<UpdateProfileResponse> updateSkills(List<String> skills);
+}
+
+class UserProfileService implements IProfileService {
   final Dio _dio;
   final fb.FirebaseAuth _firebaseAuth;
 
   UserProfileService({Dio? dio, fb.FirebaseAuth? firebaseAuth})
   :_dio = dio ??
   Dio(BaseOptions(
+    //baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
     baseUrl: 'http://localhost:8080',
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
     )),
     _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
-
+ 
+  @override
   Future<UserProfileResponse> getMyProfile() async{
     final String? idToken = await _firebaseAuth.currentUser?.getIdToken(false);
 
@@ -35,6 +43,7 @@ class UserProfileService{
     throw Exception('Failed to fetch profile: unexpected response form server.');
   }
 
+  @override
   Future<UpdateProfileResponse> updateSkills(List<String> skills) async{
     final String? idToken = await _firebaseAuth.currentUser?.getIdToken(false);
     if(idToken == null){

@@ -11,4 +11,6 @@ import com.app.api.models.TaskInvoice;
 @Repository
 public interface TaskInvoiceRepository extends JpaRepository<TaskInvoice, Integer> {
     
+
+    
 }

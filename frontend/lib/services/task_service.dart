@@ -1,25 +1,77 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/task_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+
+// INTERFACE (Contract)
+abstract class ITaskService {
+  Future<List<Task>> getTasksByUserId(int userId);
+  Future<List<Task>> getMyHelperTasks({
+    String? statusFilter,
+    int limit = 50,
+    int offset = 0,
+  });
+
+  Future<Task> createTask({
+    required int dependentId,
+    required int taskTypeId,
+    required DateTime startDate,
+    required bool isImmediate,
+    required bool needsSpecialist,
+    String? title,
+    String? instructions,
+  });
+
+  Future<Task> updateTask({
+    required int taskId,
+    int? taskTypeId,
+    DateTime? startDate,
+    String? status,
+    String? helperRatingId,      // was helperRatingReview
+    String? dependentRatingId, 
+  });
+  Future<void> deleteTask(int taskId);
+  Future<Map<String, dynamic>> getUserById(int userId);
+  Future<int?> getDependentIdForUser(int userId);
+  Future<int?> getHelperIdForUser(int userId);
+  Future<List<Map<String, dynamic>>> getInvitationsForHelper(int helperId);
+  Future<void> acceptTaskInvitation(int taskId);
+  Future<void> declineTaskInvitation(int taskId);
+  Future<List<Task>> getAvailableTasks(int currentUserId);
+  Future<void> matchHelpersForTask(int taskId);
+}
+
 
 /// responsible for all task-related API calls.
-class TaskService {
+class TaskService implements ITaskService {
   final Dio _dio;
 
   TaskService({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
+             // baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               baseUrl: 'http://localhost:8080',
               connectTimeout: const Duration(seconds: 10),// will update timeut if needed
               receiveTimeout: const Duration(seconds: 10),
             ));
 
-  /// Get all tasks for a given user from GET /users/{userId}/tasks.
-  /// if the request fails return empty list
+  /// Gets a fresh fb idToken for auth headers.
+  Future<String?> _getToken() async {
+    return await fb.FirebaseAuth.instance.currentUser?.getIdToken();
+  }
+
+  /// GET /users/{userId}/tasks - tasks where the user is the dependent.
+  @override
   Future<List<Task>> getTasksByUserId(int userId) async {
     try {
-      final Response<List<dynamic>> res =
-          await _dio.get('/users/$userId/tasks');
-
+      final token = await _getToken();
+      final Response<List<dynamic>> res = await _dio.get(
+        '/users/$userId/tasks',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
       if (res.statusCode == 200 && res.data != null) {
         return res.data!
             .map((json) => Task.fromJson(json as Map<String, dynamic>))
@@ -31,73 +83,297 @@ class TaskService {
     }
   }
 
-  /// Create a new task frm POST /tasks/create.
-  /// will return created task on success else non
+  /// GET /api/helpers/me/tasks - tasks where the auth user is the helper.
+  @override
+  Future<List<Task>> getMyHelperTasks({
+    String? statusFilter,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final token = await _getToken();
+      if (token == null) return [];
+
+      final Response<Map<String, dynamic>> res = await _dio.get(
+        '/api/helpers/me/tasks',
+        queryParameters: {
+          if (statusFilter != null) 'statusFilter': statusFilter,
+          'limit': limit,
+          'offset': offset,
+        },
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (res.statusCode == 200 && res.data != null) {
+        final taskList = res.data!['tasks'] as List<dynamic>? ?? [];
+        return taskList
+          .map((json) => Task.fromHelperTaskJson(json as Map<String, dynamic>))
+          .toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      throw Exception("Couldn't load helper tasks: ${e.message}");
+    }
+  }
+
+  /// POST /tasks/create
+  @override
   Future<Task> createTask({
     required int dependentId,
     required int taskTypeId,
     required DateTime startDate,
     required bool isImmediate,
     required bool needsSpecialist,
+    String? title,
+    String? instructions,
   }) async {
     try {
-      final Response<Map<String, dynamic>> res = await _dio.post('/tasks/create', data: {
-        'dependentId': dependentId,
-        'taskTypeId': taskTypeId,
-        'startDate': startDate.toIso8601String().split('T').first,
-        'isImmediate': isImmediate,
-        'needsSpecialist': needsSpecialist,
-      });
-
+      final token = await _getToken();
+      final Response<Map<String, dynamic>> res = await _dio.post(
+        '/tasks/create',
+        data: {
+          'dependentId': dependentId,
+          'taskTypeId': taskTypeId,
+          'startDate': startDate.toIso8601String().split('T').first,
+          'isImmediate': isImmediate,
+          'needsSpecialist': needsSpecialist,
+          'title': title,
+          'instructions': instructions,
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
       return Task.fromJson(res.data!);
     } on DioException catch (e) {
-      throw Exception(" Couldn't create task: ${e.message}");
+      throw Exception("Couldn't create task: ${e.message}");
     }
-}
+  }
 
-
-  /// Updates an exisiting task from PUT /tasks/{taskId}.
-  /// should return the updated task if success
+  /// PUT /tasks/{taskId}
+  @override
   Future<Task> updateTask({
     required int taskId,
-    required int taskTypeId,
-    required DateTime startDate,
-    required String adminReview,
+    int? taskTypeId,
+    DateTime? startDate,
+    String? status,
+    String? helperRatingId,      // was helperRatingReview
+    String? dependentRatingId,
   }) async {
-    try{
-      final Response<Map<String, dynamic>> res = 
-      await _dio.put('/tasks/$taskId', data: {
-        'taskTypeId' : taskTypeId,
-        'startDate': startDate.toIso8601String().split('T').first,
-        'adminReview':adminReview,
-      });
+    try {
+      final token = await _getToken();
+      final Map<String, dynamic> body = {};
+      if (taskTypeId != null) body['taskTypeId'] = taskTypeId;
+      if (startDate != null) {
+        body['startDate'] = startDate.toIso8601String().split('T').first;
+      }
+      if (status != null) body['status'] = status;
+      if (helperRatingId != null) body['helperRatingId'] = helperRatingId;
+      if (dependentRatingId != null) body['dependentRatingId'] = dependentRatingId;
 
+      final Response<Map<String, dynamic>> res = await _dio.put(
+        '/tasks/$taskId',
+        data: body,
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
       return Task.fromJson(res.data!);
     } on DioException catch (e) {
       throw Exception("Couldn't update task: ${e.message}");
     }
   }
 
-  /// Deletes a task via DELETE /tasks/{taskId}.
+  /// DELETE /tasks/{taskId}
+  @override
   Future<void> deleteTask(int taskId) async {
     try {
-      await _dio.delete('/tasks/$taskId');
+      final token = await _getToken();
+      await _dio.delete(
+        '/tasks/$taskId',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
     } on DioException catch (e) {
       throw Exception("Couldn't delete task: ${e.message}");
     }
   }
 
-  /// Gets a user by ID from GET /api/users/{id}.
-Future<Map<String, dynamic>> getUserById(int userId) async {
-  try {
-    final Response<Map<String, dynamic>> res =
-        await _dio.get('/api/users/$userId');
-    return res.data!;
-
-  } on DioException catch (e) {
-    throw Exception("Couldn't load user: ${e.message}");
+  /// GET /api/users/{id} - fetch a user's profile by id.
+  @override
+  Future<Map<String, dynamic>> getUserById(int userId) async {
+    try {
+      final token = await _getToken();
+      final Response<Map<String, dynamic>> res = await _dio.get(
+        '/api/users/$userId',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      return res.data!;
+    } on DioException catch (e) {
+      throw Exception("Couldn't load user: ${e.message}");
+    }
   }
-}
 
+  
+  @override
+  Future<int?> getDependentIdForUser(int userId) async {
+    try {
+  
+      final prefs = await SharedPreferences.getInstance();
+      final stored = prefs.getInt('current_dependent_id');
+      if (stored != null) return stored;
+
+      // fall back
+      final token = await _getToken();
+      final Response<List<dynamic>> res = await _dio.get(
+        '/api/dependents',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        for (final d in res.data!) {
+          final user = d['userid'];
+          final uid = user is Map
+              ? (user['userid'] ?? user['userId'])
+              : d['userId'] ?? d['userid'];
+          if (uid == userId) {
+            final id = d['dependentId'] ?? d['dependent_id'] ?? d['dependentid'];
+            if (id != null) {
+              await prefs.setInt('current_dependent_id', id as int);
+              return id ;
+            }
+          }
+        }
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+
+
+  @override
+  Future<int?> getHelperIdForUser(int userId) async {
+    try {
+      final token = await _getToken();
+      final Response<List<dynamic>> res = await _dio.get(
+        '/api/helpers',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        for (final h in res.data!) {
+          final user = h['userid'];
+          final uid = user is Map ? user['userid'] ?? user['userId'] : null;
+          if (uid == userId) {
+            return h['helperid'] as int?;
+          }
+        }
+      }
+      return null;
+    } on DioException {
+      return null;
+    }
+  }
+
+ @override
+  Future<List<Map<String, dynamic>>> getInvitationsForHelper(int helperId) async {
+    try {
+      final token = await _getToken();
+     final Response<dynamic> res = await _dio.get(
+        '/api/task-invitations', 
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+      final list = res.data as List<dynamic>;
+        return list
+            .where((inv) {
+              final h = inv['helperid'];
+              final hId = h is Map ? (h['helperid'] ?? h['helperId']) : null;
+              return hId == helperId && inv['status'] == null;
+            })
+            .map((inv) => inv as Map<String, dynamic>)
+            .toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      throw Exception("Couldn't load invitations: ${e.message}");
+    }
+  }
+  
+  @override
+  Future<void> acceptTaskInvitation(int taskId) async {
+    try {
+      final token = await _getToken();
+      await _dio.post(
+        '/api/task-invitations/$taskId/accept',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+    } on DioException catch (e) {
+      throw Exception("Couldn't accept task: ${e.message}");
+    }
+  }
+
+@override
+Future<void> declineTaskInvitation(int taskId) async {
+   try {
+      final token = await _getToken();
+      await _dio.post(
+        '/api/task-invitations/$taskId/decline',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+    } on DioException catch (e) {
+      throw Exception("Couldn't decline task: ${e.message}");
+    }
+  }
+
+ @override
+  Future<List<Task>> getAvailableTasks(int currentUserId) async {
+    try {
+      final token = await _getToken();
+      final Response<List<dynamic>> res = await _dio.get(
+        '/tasks',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        return res.data!
+            .map((json) => Task.fromJson(json as Map<String, dynamic>))
+          .toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      throw Exception("Couldn't load available tasks: ${e.message}");
+    }
+  }
+
+
+ @override
+  Future<void> matchHelpersForTask(int taskId) async {
+    try {
+      final token = await _getToken();
+      await _dio.post(
+        '/api/task-invitations/$taskId/match',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+    } on DioException catch (e) {
+      throw Exception("Couldn't match helpers for task: ${e.message}");
+    }
+  }
 
 }

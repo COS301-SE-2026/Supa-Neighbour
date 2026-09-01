@@ -84,4 +84,12 @@ public class AchievementDTO {
     public String getProgress(){
         return progress;
     }
+
+
+    /**
+     * sets the progress of the user
+     */
+    public void setProgress(String progress){
+        this.progress = progress;
+    }
 }

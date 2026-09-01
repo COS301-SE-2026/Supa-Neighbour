@@ -5,15 +5,17 @@ import '../../models/achievement_model.dart';
 import '../../widgets/achievements/achievement_progress_stats.dart';
 import '../../widgets/achievements/achievement_grid.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class AchievementsScreen extends StatefulWidget {
+class AchievementsScreen extends ConsumerStatefulWidget {
   const AchievementsScreen({super.key});
 
   @override
-  State<AchievementsScreen> createState() => _AchievementsScreenState();
+  ConsumerState<AchievementsScreen> createState() => _AchievementsScreenState();
 }
 
-class _AchievementsScreenState extends State<AchievementsScreen> {
+class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   List<Achievement> _earnedAchievements = [];
   List<Achievement> _unearnedAchievements = [];
   bool _isLoading = true;
@@ -26,108 +28,28 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   }
 
   Future<void> _fetchAchievements() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (mounted) {
-      setState(() {
-        _earnedAchievements = _getMockEarnedAchievements();
-        _unearnedAchievements = _getMockUnearnedAchievements();
-        _isLoading = false;
-      });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final achievementService = ref.read(achievementServiceProvider);
+      final response = await achievementService.getAchievements();
+      if (mounted) {
+        setState(() {
+          _earnedAchievements = response.earned;
+          _unearnedAchievements = response.unearned;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString().replaceAll('Exception: ', '');
+          _isLoading = false;
+        });
+      }
     }
-  }
-
-  List<Achievement> _getMockEarnedAchievements() {
-    return [
-      Achievement.earned(
-        badgeId: 5,
-        name: 'Home Repair Specialist',
-        description: 'Complete 10 home repair tasks',
-        awardedOn: '2026-05-01',
-      ),
-      Achievement.earned(
-        badgeId: 3,
-        name: 'Green Thumb',
-        description: 'Complete 5 gardening tasks',
-        awardedOn: '2026-04-15',
-      ),
-      Achievement.earned(
-        badgeId: 8,
-        name: 'Pet Whisperer',
-        description: 'Complete 8 pet care tasks',
-        awardedOn: '2026-06-10',
-      ),
-      Achievement.earned(
-        badgeId: 12,
-        name: 'Package Pro',
-        description: 'Complete 15 package deliveries',
-        awardedOn: '2026-05-20',
-      ),
-      Achievement.earned(
-        badgeId: 9,
-        name: 'Gardening Guru',
-        description: 'Complete 10 gardening tasks',
-        awardedOn: '2026-04-28',
-      ),
-    ];
-  }
-
-  List<Achievement> _getMockUnearnedAchievements() {
-    return [
-      Achievement.unearned(
-        badgeId: 2,
-        name: 'Pet Care Helper',
-        description: 'Complete 5 pet care tasks',
-        progress: '3/5',
-      ),
-      Achievement.unearned(
-        badgeId: 7,
-        name: 'Package Master',
-        description: 'Complete 20 package deliveries',
-        progress: '12/20',
-      ),
-      Achievement.unearned(
-        badgeId: 4,
-        name: 'Neighbourhood Hero',
-        description: 'Complete 50 tasks',
-        progress: '42/50',
-      ),
-      Achievement.unearned(
-        badgeId: 1,
-        name: 'First Steps',
-        description: 'Complete your first task',
-        progress: '0/1',
-      ),
-      Achievement.unearned(
-        badgeId: 6,
-        name: 'Handyman Helper',
-        description: 'Complete 5 repair tasks',
-        progress: '2/5',
-      ),
-      Achievement.unearned(
-        badgeId: 10,
-        name: 'Community Champion',
-        description: 'Complete 25 tasks',
-        progress: '18/25',
-      ),
-      Achievement.unearned(
-        badgeId: 11,
-        name: 'Reliable Neighbour',
-        description: 'Complete 10 tasks with 5-star rating',
-        progress: '6/10',
-      ),
-      Achievement.unearned(
-        badgeId: 13,
-        name: 'Pool Pal',
-        description: 'Complete 5 pool maintenance tasks',
-        progress: '1/5',
-      ),
-      Achievement.unearned(
-        badgeId: 14,
-        name: 'Bin Buddy',
-        description: 'Complete 8 bin collection tasks',
-        progress: '4/8',
-      ),
-    ];
   }
 
   @override
@@ -157,11 +79,11 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             icon: Icon(Icons.settings_outlined, color: AppColors.charcoal(context)),
             onPressed: () {
               Navigator.push(
-              context,
-              MaterialPageRoute(
-              builder: (context) => const SettingsScreen(),
-        ),
-      );
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
             },
           ),
         ],

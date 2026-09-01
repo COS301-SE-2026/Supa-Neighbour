@@ -12,19 +12,28 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import com.app.api.repositories.SettingsRepository;
-import com.app.api.repositories.UserRepository;
+
 import com.app.api.dtos.ModeResponse;
 import com.app.api.dtos.ShowStatusRequest;
 import com.app.api.dtos.ShowStatusResponse;
 import com.app.api.dtos.UpdateSettingsDTO;
 import com.app.api.dtos.UserSettingsDTO;
 import com.app.api.dtos.UserStatusResponse;
+import com.app.api.models.User;
+import com.app.api.repositories.SettingsRepository;
+import com.app.api.repositories.UserRepository;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.SettingsServices;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.app.api.models.User;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * REST controller responsible for managing user application settings.
@@ -36,6 +45,7 @@ import com.app.api.models.User;
  */
 @RestController
 @RequestMapping("api/settings")
+@Tag(name = "Settings", description = "Endpoints for managing user application settings")
 public class SettingsController {
 
     private final FirebaseAuthService firebaseAuthService;
@@ -68,7 +78,17 @@ public class SettingsController {
      *         or HTTP 401 if the Firebase token is invalid or expired
      */
     @GetMapping("/users/show-status")
+    @Operation(
+        summary = "Get user visibility status",
+        description = "Retrieves the authenticated user's visibility status",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Visibility status retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content)
+    })
     public ResponseEntity<?> getStatus(
+            @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
             @RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.replace("Bearer ", "");
@@ -90,7 +110,18 @@ public class SettingsController {
      *         or HTTP 401 if the Firebase token is invalid or expired
      */
     @PostMapping("/users/show-status")
+    @Operation(
+        summary = "Update user visibility status",
+        description = "Updates the authenticated user's visibility status",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Visibility status updated successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content)
+    })
     public ResponseEntity<?> updateStatus(
+            @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
             @RequestHeader("Authorization") String authHeader,
             @RequestBody ShowStatusRequest request) {
         try {
@@ -112,7 +143,17 @@ public class SettingsController {
      *         or HTTP 401 if the Firebase token is invalid or expired
      */
     @GetMapping("/users/mode")
+    @Operation(
+        summary = "Get user application mode",
+        description = "Retrieves the authenticated user's current application mode (LIGHT or DARK)",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Application mode retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content)
+    })
     public ResponseEntity<?> getMode(
+            @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
             @RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.replace("Bearer ", "");
@@ -134,7 +175,18 @@ public class SettingsController {
      *         or HTTP 401 if the Firebase token is invalid or expired
      */
     @PostMapping("/users/mode")
+    @Operation(
+        summary = "Update user application mode",
+        description = "Updates the authenticated user's application mode (LIGHT or DARK)",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Application mode updated successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid mode value", content = @Content)
+    })
     public ResponseEntity<?> setMode(
+            @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
             @RequestHeader("Authorization") String authHeader,
             @RequestBody ModeResponse request) {
         try {
@@ -164,8 +216,20 @@ public class SettingsController {
      *         or HTTP 401 if the Firebase token is invalid or expired
      */
     @GetMapping("/users/{userId}/status")
+    @Operation(
+        summary = "Get user status by ID",
+        description = "Retrieves the online status information for a specified user",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User status retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
     public ResponseEntity<?> getStatusForUser(
+            @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
             @RequestHeader("Authorization") String authHeader,
+            @Parameter(description = "ID of the user to retrieve status for", example = "1")
             @PathVariable int userId) {
         try {
             String token = authHeader.replace("Bearer ", "");
@@ -185,7 +249,21 @@ public class SettingsController {
      * @return the user's settings information, or 401 if unauthenticated
      */
     @GetMapping("/users/information/{userId}")
-    public ResponseEntity<?> getUserInfo(@PathVariable int userId, @RequestHeader("Authorization") String authHeader) {
+    @Operation(
+        summary = "Get user settings information",
+        description = "Retrieves settings and profile information for the specified user",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User settings retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid Firebase token", content = @Content),
+        @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
+    public ResponseEntity<?> getUserInfo(
+            @Parameter(description = "ID of the user to retrieve settings for", example = "1")
+            @PathVariable int userId,
+            @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
+            @RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.replace("Bearer ", "");
             firebaseAuthService.getUserIdFromToken(token);
@@ -205,7 +283,22 @@ public class SettingsController {
      * @return the updated settings information, or 401 if unauthenticated
      */
     @PutMapping("/{userId}")
-    public ResponseEntity<?> updateSettings(@PathVariable int userId, @RequestBody UpdateSettingsDTO dto,
+    @Operation(
+        summary = "Update user settings",
+        description = "Updates settings for the specified user",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User settings updated successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid Firebase token", content = @Content),
+        @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid settings data", content = @Content)
+    })
+    public ResponseEntity<?> updateSettings(
+            @Parameter(description = "ID of the user to update settings for", example = "1")
+            @PathVariable int userId,
+            @RequestBody UpdateSettingsDTO dto,
+            @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
             @RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.replace("Bearer ", "");
@@ -224,7 +317,18 @@ public class SettingsController {
      * @return 204 No Content on success
      */
     @DeleteMapping("/me/user")
+    @Operation(
+        summary = "Delete user account",
+        description = "Permanently deletes the authenticated user's account and all associated data",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Account deleted successfully", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid Firebase token", content = @Content),
+        @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
     public ResponseEntity<Void> deleteUser(
+            @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
             @RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.replace("Bearer ", "");

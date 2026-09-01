@@ -70,6 +70,7 @@ public class BulletinServicesTest {
 
         Posts post = new Posts();
         post.setPostid(1);
+        post.setUserid(user);
 
         Comments comment = new Comments();
         comment.setCommentid(1);

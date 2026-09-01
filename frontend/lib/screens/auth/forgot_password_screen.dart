@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../../components/logo_placeholder.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_text_files.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -13,13 +15,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
   bool _isLoading = false;
 
-  // keyword "email enumeration protection"
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
   Future<void> _sendResetLink() async {
     if (_emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your email'),
-          backgroundColor: Color(0xFF1C9A89),
+        SnackBar(
+          content: const Text('Please enter your email'),
+          backgroundColor: AppColors.primaryTeal(context),
         ),
       );
       return;
@@ -36,8 +43,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              'Reset link sent to ${_emailController.text.trim()}. Check your inbox.'),
-          backgroundColor: const Color(0xFF1C9A89),
+            'Reset link sent to ${_emailController.text.trim()}. Check your inbox.',
+          ),
+          backgroundColor: AppColors.primaryTeal(context),
         ),
       );
 
@@ -61,26 +69,37 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final logoSize = screenWidth * 0.3;
-    final titleSize = screenWidth * 0.08;
-    final subtitleSize = screenWidth * 0.045;
-    final buttonHeight = screenHeight * 0.07;
-    final fontSize = screenWidth * 0.04;
-    final smallFontSize = screenWidth * 0.035;
+    // Responsive sizing
+    final isSmallScreen = screenWidth < 400;
+    final isLargeScreen = screenWidth > 800;
+    
+    final logoSize = (screenWidth * 0.3).clamp(80.0, 180.0);
+    final titleSize = isSmallScreen ? 24.0 : (isLargeScreen ? 40.0 : 32.0);
+    final subtitleSize = isSmallScreen ? 14.0 : (isLargeScreen ? 24.0 : 18.0);
+    final buttonHeight = isSmallScreen ? 48.0 : 56.0;
+    final fontSize = isSmallScreen ? 14.0 : (isLargeScreen ? 20.0 : 16.0);
+    final smallFontSize = isSmallScreen ? 12.0 : (isLargeScreen ? 16.0 : 14.0);
+    
+    // Spacing
+    final spacing = screenHeight * 0.015;
+    final largeSpacing = screenHeight * 0.03;
 
     return Scaffold(
       body: SafeArea(
         child: Container(
           width: screenWidth,
           height: screenHeight,
-          color: Colors.white,
+          color: AppColors.background(context),
           child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: screenHeight * 0.03),
+                  SizedBox(height: screenHeight * 0.02),
 
+                  // Back Button
                   Align(
                     alignment: Alignment.centerLeft,
                     child: GestureDetector(
@@ -88,118 +107,146 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: Container(
                         width: 50,
                         height: 50,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF1C9A89),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryTeal(context),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.arrow_back,
-                            color: Colors.white, size: 30),
+                        child: Icon(
+                          Icons.arrow_back,
+                          color: AppColors.textLight(context),
+                          size: 30,
+                        ),
                       ),
                     ),
                   ),
 
-                  SizedBox(height: screenHeight * 0.02),
-                  LogoPlaceholder(size: logoSize),
-                  SizedBox(height: screenHeight * 0.03),
+                  SizedBox(height: spacing),
 
-                  Text(
-                    'super Neighbour',
-                    style: TextStyle(
+                  // Logo
+                  Center(
+                    child: LogoPlaceholder(size: logoSize),
+                  ),
+
+                  SizedBox(height: largeSpacing),
+
+                  // Title
+                  Center(
+                    child: Text(
+                      'Super Neighbour',
+                      style: AppTextStyles.primaryHeader(context).copyWith(
                         fontSize: titleSize,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1C9A89)),
-                    textAlign: TextAlign.center,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                  SizedBox(height: screenHeight * 0.01),
-                  Text(
-                    'Your neighbourly helper',
-                    style: TextStyle(
+
+                  SizedBox(height: spacing * 0.5),
+
+                  // Subtitle
+                  Center(
+                    child: Text(
+                      'Your neighbourly helper',
+                      style: AppTextStyles.secondaryHeader(context).copyWith(
                         fontSize: subtitleSize,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1C9A89)),
-                    textAlign: TextAlign.center,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
 
-                  SizedBox(height: screenHeight * 0.04),
+                  SizedBox(height: largeSpacing * 0.8),
 
+                  // Card Container
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.background(context),
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withValues(alpha: 0.2),
+                          color: AppColors.charcoal(context).withValues(alpha: 0.08),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
                       ],
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(screenWidth * 0.07),
+                      padding: EdgeInsets.all(screenWidth * 0.05),
                       child: Column(
                         children: [
+                          // Forgot Password Title
                           Text(
                             'Forgot Password',
-                            style: TextStyle(
-                                fontSize: titleSize * 0.8,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1C9A89)),
+                            style: AppTextStyles.primaryHeader(context).copyWith(
+                              fontSize: isSmallScreen ? 20.0 : 24.0,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryTeal(context),
+                            ),
                           ),
 
-                          SizedBox(height: screenHeight * 0.02),
+                          SizedBox(height: spacing),
 
                           // Explanation text
                           Text(
                             'Enter your email and we\'ll send you a link to reset your password.',
-                            style: TextStyle(
-                                fontSize: smallFontSize,
-                                color: Colors.grey[600]),
+                            style: AppTextStyles.bodyText(context).copyWith(
+                              fontSize: smallFontSize,
+                              color: AppColors.textGrey(context),
+                            ),
                             textAlign: TextAlign.center,
                           ),
 
-                          SizedBox(height: screenHeight * 0.04),
+                          SizedBox(height: spacing * 1.5),
 
+                          // Email Field
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Email',
-                                  style: TextStyle(
-                                      fontSize: fontSize,
-                                      fontWeight: FontWeight.w400,
-                                      color: const Color(0xFF1C9A89))),
-                              SizedBox(height: screenHeight * 0.01),
+                              Text(
+                                'Email',
+                                style: AppTextStyles.bodyText(context).copyWith(
+                                  fontSize: fontSize,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.primaryTeal(context),
+                                ),
+                              ),
+                              SizedBox(height: spacing * 0.3),
                               Container(
                                 width: double.infinity,
                                 height: buttonHeight,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(29),
-                                  color: Colors.white,
+                                  color: AppColors.background(context),
                                   border: Border.all(
-                                      color: const Color(0xFF1C9A89),
-                                      width: 2),
+                                    color: AppColors.primaryTeal(context),
+                                    width: 2,
+                                  ),
                                 ),
                                 child: TextField(
                                   controller: _emailController,
-                                  style: TextStyle(fontSize: fontSize * 0.7),
+                                  style: AppTextStyles.bodyText(context).copyWith(
+                                    color: AppColors.charcoal(context),
+                                  ),
                                   keyboardType: TextInputType.emailAddress,
+                                  cursorColor: AppColors.primaryTeal(context),
                                   decoration: InputDecoration(
                                     hintText: 'Enter your email',
-                                    hintStyle: TextStyle(
-                                        fontSize: fontSize * 0.6,
-                                        color: Colors.grey),
+                                    hintStyle: AppTextStyles.bodyText(context).copyWith(
+                                      color: AppColors.textGrey(context),
+                                    ),
                                     border: InputBorder.none,
                                     contentPadding: EdgeInsets.symmetric(
-                                        horizontal: screenWidth * 0.05,
-                                        vertical: screenHeight * 0.02),
+                                      horizontal: screenWidth * 0.04,
+                                      vertical: screenHeight * 0.01,
+                                    ),
                                   ),
                                 ),
                               ),
                             ],
                           ),
 
-                          SizedBox(height: screenHeight * 0.04),
+                          SizedBox(height: spacing * 1.5),
 
+                          // Send Reset Link Button
                           GestureDetector(
                             onTap: _isLoading ? null : _sendResetLink,
                             child: Container(
@@ -207,37 +254,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               height: buttonHeight,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(29),
-                                color: const Color(0xFF1C9A89),
+                                color: AppColors.primaryTeal(context),
                               ),
                               child: Center(
                                 child: _isLoading
                                     ? SizedBox(
-                                        width: buttonHeight * 0.4,
-                                        height: buttonHeight * 0.4,
-                                        child: const CircularProgressIndicator(
-                                            color: Colors.white, strokeWidth: 2),
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.textLight(context),
+                                          strokeWidth: 2,
+                                        ),
                                       )
                                     : Text(
                                         'Send Reset Link',
-                                        style: TextStyle(
-                                            fontSize: fontSize,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white),
+                                        style: AppTextStyles.buttonText(context).copyWith(
+                                          fontSize: isSmallScreen ? 16.0 : 20.0,
+                                        ),
                                       ),
                               ),
-                            ),
-                          ),
-
-                          SizedBox(height: screenHeight * 0.02),
-
-                          Center(
-                            child: GestureDetector(
-                              onTap: () => Navigator.pop(context),
-                              child: Text('Back',
-                                  style: TextStyle(
-                                      fontSize: smallFontSize,
-                                      color: const Color(0xFF1C9A89),
-                                      fontWeight: FontWeight.w500)),
                             ),
                           ),
                         ],
@@ -245,7 +280,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
 
-                  SizedBox(height: screenHeight * 0.03),
+                  SizedBox(height: spacing * 2),
                 ],
               ),
             ),

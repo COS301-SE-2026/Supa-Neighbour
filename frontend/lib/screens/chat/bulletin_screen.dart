@@ -3,19 +3,19 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../models/bulletin_post_model.dart';
-import '../../services/bulletin_service.dart';
 import 'bulletin_post_detail_screen.dart';
 import 'create_bulletin_post_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class BulletinScreen extends StatefulWidget {
+class BulletinScreen extends ConsumerStatefulWidget {
   const BulletinScreen({super.key});
 
   @override
-  State<BulletinScreen> createState() => _BulletinScreenState();
+  ConsumerState<BulletinScreen> createState() => _BulletinScreenState();
 }
 
-class _BulletinScreenState extends State<BulletinScreen> {
-  final BulletinService _bulletinService = BulletinService();
+class _BulletinScreenState extends ConsumerState<BulletinScreen> {
   List<BulletinPost> _posts = [];
   bool _isLoading = true;
   String _selectedCategory = 'all';
@@ -51,7 +51,8 @@ class _BulletinScreenState extends State<BulletinScreen> {
     }
 
     try {
-      final newPosts = await _bulletinService.getPosts(
+      final bulletinService = ref.read(bulletinServiceProvider);
+      final newPosts = await bulletinService.getPosts(
         category: _selectedCategory == 'all' ? null : _selectedCategory,
         page: _currentPage,
         limit: 10,
@@ -210,20 +211,6 @@ class _BulletinScreenState extends State<BulletinScreen> {
     
     return Scaffold(
       backgroundColor: AppColors.background(context),
-      appBar: AppBar(
-        backgroundColor: AppColors.background(context),
-        elevation: 0,
-        title: Text(
-          'Community Bulletin',
-          style: GoogleFonts.poppins(
-            color: AppColors.charcoal(context),
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-        actions: const [],
-      ),
       body: Column(
         children: [
           Padding(
@@ -252,7 +239,6 @@ class _BulletinScreenState extends State<BulletinScreen> {
                         borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
                       ),
                       filled: true,
-                      // CHANGE: Use dynamic fill color
                       fillColor: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
                       contentPadding: const EdgeInsets.symmetric(vertical: 4),
                     ),
@@ -352,7 +338,6 @@ class _BulletinScreenState extends State<BulletinScreen> {
           ),
         ],
       ),
-      // FAB stays in original position
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push(
@@ -442,7 +427,6 @@ class _BulletinScreenState extends State<BulletinScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          // CHANGE: Use dynamic color based on theme
           color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
@@ -472,7 +456,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  post.authorName,
+                  post.authorUsername,
                   style: GoogleFonts.openSans(
                     color: AppColors.charcoal(context),
                     fontSize: 14,
@@ -506,49 +490,29 @@ class _BulletinScreenState extends State<BulletinScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              post.title,
+           Text(
+              post.postContent,
               style: GoogleFonts.poppins(
                 color: AppColors.charcoal(context),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              post.body,
-              style: GoogleFonts.openSans(
-                color: AppColors.charcoal(context),
-                fontSize: 14,
-                height: 1.4,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
             const SizedBox(height: 8),
-            if (post.imageUrls.isNotEmpty)
-              SizedBox(
-                height: 80,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: post.imageUrls.length > 3 ? 3 : post.imageUrls.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      width: 80,
-                      height: 80,
-                      margin: const EdgeInsets.only(right: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceGrey(context),
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: NetworkImage(post.imageUrls[index]),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    );
-                  },
+            if (post.mediaUrl != null)
+              Container(
+                  width: double.infinity,
+                  height: 160,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceGrey(context),
+                    borderRadius: BorderRadius.circular(8),
+                    image: DecorationImage(
+                      image: NetworkImage(post.mediaUrl!),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -565,7 +529,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        post.helpfulCount.toString(),
+                        post.likeCount.toString(),
                         style: GoogleFonts.openSans(
                           color: post.isHelpfulByUser ? AppColors.primaryTeal(context): AppColors.textGrey(context),
                           fontSize: 12,
@@ -601,7 +565,7 @@ class _BulletinScreenState extends State<BulletinScreen> {
                   child: Icon(
                     Icons.flag_outlined,
                     size: 16,
-                    color: post.isReported ? Colors.red : AppColors.textGrey(context),
+                    color: AppColors.textGrey(context),
                   ),
                 ),
               ],
@@ -612,224 +576,145 @@ class _BulletinScreenState extends State<BulletinScreen> {
     );
   }
 
-Future<void> _toggleHelpful(BulletinPost post) async {
-  try {
-    final index = _posts.indexWhere((p) => p.id == post.id);
-    if (index == -1) return;
+  Future<void> _toggleHelpful(BulletinPost post) async {
+    try {
+      final index = _posts.indexWhere((p) => p.id == post.id);
+      if (index == -1) return;
 
-    if (post.isHelpfulByUser) {
-      await _bulletinService.removeHelpful(post.id);
+      final bulletinService = ref.read(bulletinServiceProvider);
+      if (post.isHelpfulByUser) {
+        await bulletinService.removeHelpful(post.id);
+        if (!mounted) return;
+        setState(() {
+          _posts[index] = post.copyWith(
+            isHelpfulByUser: false,
+            likeCount: post.likeCount - 1,
+          );
+        });
+      } else {
+        await bulletinService.addHelpful(post.id);
+        if (!mounted) return;
+        setState(() {
+          _posts[index] = post.copyWith(
+            isHelpfulByUser: true,
+            likeCount: post.likeCount + 1,
+          );
+        });
+      }
+    } catch (e) {
       if (!mounted) return;
-      
-      // Create updated post with helpful count decreased
-      final updatedPost = BulletinPost(
-        id: post.id,
-        title: post.title,
-        body: post.body,
-        category: post.category,
-        authorId: post.authorId,
-        authorName: post.authorName,
-        authorAvatar: post.authorAvatar,
-        imageUrls: post.imageUrls,
-        helpfulCount: post.helpfulCount - 1,
-        commentCount: post.commentCount,
-        createdAt: post.createdAt,
-        isOwner: post.isOwner,
-        isReported: post.isReported,
-        isHelpfulByUser: false,
-        isExpired: post.isExpired,
-      );
-      
-      setState(() {
-        _posts[index] = updatedPost;
-      });
-    } else {
-      await _bulletinService.addHelpful(post.id);
-      if (!mounted) return;
-      
-      // Create updated post with helpful count increased
-      final updatedPost = BulletinPost(
-        id: post.id,
-        title: post.title,
-        body: post.body,
-        category: post.category,
-        authorId: post.authorId,
-        authorName: post.authorName,
-        authorAvatar: post.authorAvatar,
-        imageUrls: post.imageUrls,
-        helpfulCount: post.helpfulCount + 1,
-        commentCount: post.commentCount,
-        createdAt: post.createdAt,
-        isOwner: post.isOwner,
-        isReported: post.isReported,
-        isHelpfulByUser: true,
-        isExpired: post.isExpired,
-      );
-      
-      setState(() {
-        _posts[index] = updatedPost;
-      });
-    }
-  } catch (e) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Failed to update helpful status'),
-        backgroundColor: AppColors.error(context),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-}
-
- void _showReportDialog(BulletinPost post) {
-  final TextEditingController reasonController = TextEditingController();
-
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      title: Text(
-        'Report Post',
-        style: GoogleFonts.poppins(
-          color: AppColors.charcoal(context),
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Failed to update helpful status'),
+          backgroundColor: AppColors.error(context),
+          duration: const Duration(seconds: 2),
         ),
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Why are you reporting this post?',
-            style: GoogleFonts.openSans(
-              color: AppColors.textGrey(context),
-              fontSize: 14,
-            ),
+      );
+    }
+  }
+
+  void _showReportDialog(BulletinPost post) {
+    final TextEditingController reasonController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Report Post',
+          style: GoogleFonts.poppins(
+            color: AppColors.charcoal(context),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: reasonController,
-            maxLines: 3,
-            style: GoogleFonts.openSans(
-              color: AppColors.charcoal(context),
-              fontSize: 14,
-            ),
-            decoration: InputDecoration(
-              hintText: 'Enter reason...',
-              hintStyle: GoogleFonts.openSans(
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Why are you reporting this post?',
+              style: GoogleFonts.openSans(
                 color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
-              ),
-              contentPadding: const EdgeInsets.all(12),
             ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(
-            'Cancel',
-            style: GoogleFonts.openSans(
-              color: AppColors.textGrey(context),
-              fontSize: 14,
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              maxLines: 3,
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal(context),
+                fontSize: 14,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Enter reason...',
+                hintStyle: GoogleFonts.openSans(
+                  color: AppColors.textGrey(context),
+                  fontSize: 14,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
+                ),
+                contentPadding: const EdgeInsets.all(12),
+              ),
             ),
-          ),
+          ],
         ),
-        ElevatedButton(
-          onPressed: () async {
-            if (reasonController.text.isNotEmpty) {
-              try {
-                await _bulletinService.reportPost(post.id, reasonController.text);
-                
-                
-                if (!mounted) {
-                  if (context.mounted) Navigator.pop(context);
-                  return;
-                }
-                
-                setState(() {
-                  final index = _posts.indexWhere((p) => p.id == post.id);
-                  if (index != -1) {
-                    _posts[index] = BulletinPost(
-                      id: post.id,
-                      title: post.title,
-                      body: post.body,
-                      category: post.category,
-                      authorId: post.authorId,
-                      authorName: post.authorName,
-                      authorAvatar: post.authorAvatar,
-                      imageUrls: post.imageUrls,
-                      helpfulCount: post.helpfulCount,
-                      commentCount: post.commentCount,
-                      createdAt: post.createdAt,
-                      isOwner: post.isOwner,
-                      isReported: true,
-                      isHelpfulByUser: post.isHelpfulByUser,
-                      isExpired: post.isExpired,
-                    );
-                  }
-                });
-                
-                if (context.mounted) Navigator.pop(context);
-                
-                
-                if (!context.mounted) return;
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 14,
+              ),
+            ),
+          ),
+          ElevatedButton(
+          onPressed: () {
+              if (reasonController.text.isNotEmpty) {
+                Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Post reported successfully'),
+                    content: const Text('Post reported successfully'),
                     backgroundColor: AppColors.success(context),
                     duration: const Duration(seconds: 2),
                   ),
                 );
-              } catch (e) {
-                if (context.mounted) Navigator.pop(context);
-                
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to report post'),
-                    backgroundColor: AppColors.error(context),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
               }
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+            },
+
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Report',
+              style: GoogleFonts.openSans(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-          child: Text(
-            'Report',
-            style: GoogleFonts.openSans(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   String _getTimeAgo(DateTime date) {
     final now = DateTime.now();

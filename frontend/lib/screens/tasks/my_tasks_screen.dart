@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
-import '../../constants/app_colors.dart'; // ADD: Import AppColors
+import '../../constants/app_colors.dart';
+import '../help/help_menu_screen.dart';
 import 'available_helpers_screen.dart';
 import 'task_start_screen.dart';
 import 'task_detail_screen.dart';
 import 'task_completion_page.dart';
 import 'task_awaiting_approval_screen.dart';
 import 'task_approval_screen.dart';
+import '../../models/auth_session.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class MyTasksScreen extends StatefulWidget {
+class MyTasksScreen extends ConsumerStatefulWidget {
   final int initialTab;
   
   const MyTasksScreen({super.key, this.initialTab = 0});
 
   @override
-  State<MyTasksScreen> createState() => _MyTasksScreenState();
+  ConsumerState<MyTasksScreen> createState() => _MyTasksScreenState();
 }
 
-class _MyTasksScreenState extends State<MyTasksScreen>
+class _MyTasksScreenState extends ConsumerState<MyTasksScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -43,19 +47,64 @@ class _MyTasksScreenState extends State<MyTasksScreen>
     super.dispose();
   }
 
-  Future<void> _loadAllTasks() async {
-    final allTasks = Task.getMockTasks();
+Future<void> _loadAllTasks() async {
+  final currentUserId = int.tryParse(
+    AuthSession.instance.currentUser?.id ?? '',
+  );
 
-    setState(() {
-      _postedTasks = allTasks.where((task) => task.createdBy == 'currentUser').toList();
-      _acceptedTasks = allTasks.where((task) => task.helperId == 'currentUser').toList();
-      _availableTasks = allTasks.where((task) => task.createdBy != 'currentUser' && task.status == 'open').toList();
-    });
-  }
+  try {
+    final taskService = ref.read(taskServiceProvider);
+    final results = await Future.wait([
+      currentUserId != null
+          ? taskService.getTasksByUserId(currentUserId)
+          : Future.value(<Task>[]),
+      taskService.getMyHelperTasks(),
+      currentUserId != null
+          ? taskService.getAvailableTasks(currentUserId)
+          : Future.value(<Task>[])
+    ]);
+
+    if (mounted) {
+      setState(() {
+        _postedTasks = results[0];
+        _acceptedTasks = results[1];
+        _availableTasks = results[2];
+      });
+    }
+    } on Exception catch (e) {
+      debugPrint('_loadAllTasks error: $e');
+      if (mounted) {
+        setState(() {});
+      }
+    }
+
+}
+
 
   void _refreshTasks() {
     _loadAllTasks();
   }
+
+void _passTask(Task task) async {
+  try {
+    final taskService = ref.read(taskServiceProvider);
+    await taskService.declineTaskInvitation(int.parse(task.id));
+  } catch (_) {
+  }
+  if (!mounted) return;
+  setState(() {
+    _availableTasks.removeWhere((t) => t.id == task.id);
+  });
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('You passed on "${task.title}"'),
+      backgroundColor: const Color(0xFF9CA3AF),
+      duration: const Duration(seconds: 2),
+    ),
+  );
+}
+
+
 
   String _getStatusDisplay(String status, {bool isRequesterView = false}) {
     switch (status) {
@@ -76,7 +125,7 @@ class _MyTasksScreenState extends State<MyTasksScreen>
     }
   }
 
-  // CHANGE: Update to use AppColors with context
+
   Color _getStatusColor(String status, BuildContext context) {
     switch (status) {
       case 'open':
@@ -100,16 +149,19 @@ class _MyTasksScreenState extends State<MyTasksScreen>
   Widget build(BuildContext context) {
     
     return Scaffold(
-      // CHANGE: Use AppColors.background
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        // CHANGE: Use AppColors.background
         backgroundColor: AppColors.background(context),
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
+          onPressed: () {
+            HelpMenuScreen.showHelpModal(context, 'tasks');
+          },
+        ),
         title: Text(
           'My Tasks',
           style: GoogleFonts.poppins(
-            // CHANGE: Use AppColors.primaryTeal
             color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
@@ -118,11 +170,11 @@ class _MyTasksScreenState extends State<MyTasksScreen>
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          // CHANGE: Use AppColors.primaryTeal
+        
           labelColor: AppColors.primaryTeal(context),
-          // CHANGE: Use AppColors.textGrey
+      
           unselectedLabelColor: AppColors.textGrey(context),
-          // CHANGE: Use AppColors.primaryTeal
+
           indicatorColor: AppColors.primaryTeal(context),
           labelStyle: GoogleFonts.poppins(
             fontSize: 14,
@@ -259,6 +311,7 @@ Widget _buildTaskCard(Task task, {required bool isRequesterView, bool isAvailabl
               builder: (context) => TaskDetailScreen(
                 task: task,
                 isAvailableTab: true,
+                isRequesterView: false,
               ),
             ),
           );
@@ -316,6 +369,7 @@ Widget _buildTaskCard(Task task, {required bool isRequesterView, bool isAvailabl
               builder: (context) => TaskDetailScreen(
                 task: task,
                 onTaskUpdated: () => _refreshTasks(),
+                isRequesterView: false,
               ),
             ),
           );
@@ -326,7 +380,7 @@ Widget _buildTaskCard(Task task, {required bool isRequesterView, bool isAvailabl
 
       // CASE 2: REQUESTER VIEW (Posted Tab)
       if (isRequesterView) {
-        if (task.status == 'open' || task.status == 'assigned') {
+        if (task.status == 'open') {
           await Navigator.push(
             context,
             MaterialPageRoute(
@@ -367,7 +421,7 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
     margin: const EdgeInsets.only(bottom: 12),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: AppColors.surfaceGrey(context),
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
@@ -383,7 +437,7 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: const Color(0xFF2A9D8F).withOpacity(0.1),
+            color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -400,7 +454,7 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
               Text(
                 task.title,
                 style: GoogleFonts.poppins(
-                  color: const Color(0xFF264653),
+                  color: AppColors.charcoal(context),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -413,7 +467,7 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
                   Text(
                     task.category,
                     style: GoogleFonts.openSans(
-                      color: const Color(0xFF6B7280),
+                      color: AppColors.textGrey(context),
                       fontSize: 12,
                     ),
                   ),
@@ -423,8 +477,8 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
                   Text(
                     '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
                     style: GoogleFonts.openSans(
-                      color: const Color(0xFF6B7280),
-                      fontSize: 12,
+                     color: AppColors.textGrey(context),
+                     fontSize: 12,
                     ),
                   ),
                 ],
@@ -485,55 +539,40 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
   );
 }
 
-  void _acceptTask(Task task) {
-  final updatedTask = task.copyWith(
-    status: 'assigned',
-    helperId: 'currentUser',
-  );
-  
+void _acceptTask(Task task) async {
+  try {
+    final taskService = ref.read(taskServiceProvider);
+    await taskService.acceptTaskInvitation(int.parse(task.id));
+  } catch (_) {
+  }
+  if (!mounted) return;
+  final updatedTask = task.copyWith(status: 'assigned', helperId: 'currentUser');
   setState(() {
     _availableTasks.removeWhere((t) => t.id == task.id);
     _acceptedTasks.add(updatedTask);
   });
-    
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('You accepted "${task.title}"!'),
-        backgroundColor: const Color(0xFF2A9D8F),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _passTask(Task task) {
-  setState(() {
-    _availableTasks.removeWhere((t) => t.id == task.id);
-  });
-  
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text('You passed on "${task.title}"'),
-      backgroundColor: const Color(0xFF9CA3AF),
+      content: Text('You accepted "${task.title}"!'),
+      backgroundColor: const Color(0xFF2A9D8F),
       duration: const Duration(seconds: 2),
     ),
   );
+  _loadAllTasks();
 }
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
-      case 'Plants':
-        return Icons.eco;
-      case 'Pets':
+      case 'Medical Assistance':
+        return Icons.medical_services;
+      case 'Pet Care':
         return Icons.pets;
-      case 'Bins':
-        return Icons.delete;
-      case 'Packages':
-        return Icons.inventory;
-      case 'Home Check-in':
-        return Icons.home;
-      case 'Pool Pump':
-        return Icons.water;
+      case 'Technology Support':
+        return Icons.computer;
+      case 'Transportation Support':
+        return Icons.directions_car;
+      case 'Home Repair':
+        return Icons.home_repair_service;
       default:
         return Icons.assignment;
     }

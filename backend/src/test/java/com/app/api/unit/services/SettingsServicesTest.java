@@ -13,9 +13,9 @@ import com.app.api.services.SettingsServices;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
+import org.mockito.Mock;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -31,13 +31,17 @@ public class SettingsServicesTest {
     private SettingsRepository settingsRepository;
 
     private SettingsServices settingsServices;
-
     private Settings settings;
 
+    @Mock
     private UserRepository userRepository;
+    @Mock
     private HelperRepository helperRepository;
+    @Mock
     private RatingService ratingService;
+    @Mock
     private HelperTasksService helperTasksService;
+    @Mock
     private AchievementService achievementService;
 
     @BeforeEach

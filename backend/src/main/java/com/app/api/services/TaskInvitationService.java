@@ -1,16 +1,17 @@
 package com.app.api.services;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 
+import com.app.api.models.Helper;
 import com.app.api.models.TaskInvitation;
 import com.app.api.models.TaskInvoice;
 import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
-import java.util.Optional;
-import java.util.Date;
-import com.app.api.models.Helper;
+import com.app.api.repositories.HelperRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -25,6 +26,7 @@ public class TaskInvitationService {
     
     private final TaskInvitationRepository taskInvitationRepository;
     private final TaskInvoiceRepository taskInvoiceRepository;
+    private final HelperRepository helperRepository;
 
     /**
      * Constructs the service with its required repository dependencies.
@@ -32,9 +34,10 @@ public class TaskInvitationService {
      * @param taskInvitationRepository repository for {@link TaskInvitation} persistence operations
      * @param taskInvoiceRepository    repository for {@link TaskInvoice} persistence operations
      */
-    TaskInvitationService(TaskInvitationRepository taskInvitationRepository, TaskInvoiceRepository taskInvoiceRepository) {
+    TaskInvitationService(TaskInvitationRepository taskInvitationRepository, TaskInvoiceRepository taskInvoiceRepository, HelperRepository helperRepository) {
         this.taskInvitationRepository = taskInvitationRepository;
         this.taskInvoiceRepository = taskInvoiceRepository;
+        this.helperRepository = helperRepository;
     }
 
     // Get all
@@ -212,18 +215,62 @@ public class TaskInvitationService {
      */
     @Transactional
     public TaskInvitation acceptInvitation(int taskId, int helperId, TaskInvoice taskInvoice, Helper helper){
-        Optional<TaskInvitation> existing = taskInvitationRepository.findByTaskId_TaskidAndHelperId_Helperid(taskId, helperId);
+        TaskInvitation existing = taskInvitationRepository.findByTaskId_TaskidAndHelperId_Helperid(taskId, helperId)
+            .orElseThrow(() -> new IllegalStateException("NOT_FOUND"));
 
-        if(existing.isPresent()){
-            String status = existing.get().getStatus();
-            if("Invited".equals(status)){
-                throw new IllegalStateException("UNPROCESSABLE");
-            }
+        if (existing.getStatus() != null) {
             throw new IllegalStateException("CONFLICT");
         }
+        
+        existing.setStatus("Accepted");
+        TaskInvitation accepted = taskInvitationRepository.save(existing);
 
-        TaskInvitation invitation = TaskInvitation.builder().taskId(taskInvoice).helperId(helper).status("Accepted").invitedAt(null).build();
+        taskInvoice.setStatus("assigned");
+        taskInvoice.setHelperid(helper);
+        taskInvoiceRepository.save(taskInvoice);
+        List<TaskInvitation> others = taskInvitationRepository.findByTaskId_Taskid(taskId);
+        for(TaskInvitation other: others){
+            if (other.getHelperId().getHelperid() != helperId
+                && !"Rejected".equals(other.getStatus())) {
+                other.setStatus("Rejected");
+                taskInvitationRepository.save(other);
+            }
+        }
 
-        return taskInvitationRepository.save(invitation);
+        return accepted;
+    }
+
+    /**
+     * Retrieves all task invoices for which the specified user has pending task invitations.
+     * <p>
+     * The method first checks whether the user is registered as a helper. If the user
+     * is not a helper, an empty list is returned. Otherwise, all task invitations
+     * assigned to the helper with a {@code null} status (pending invitations) are
+     * retrieved, and the corresponding task invoices are returned.
+     * </p>
+     *
+     * @param userId the ID of the user whose pending task invoices are to be retrieved
+     * @return a list of {@link TaskInvoice} objects associated with the helper's
+     *         pending task invitations, or an empty list if the user is not a helper
+     */
+    @Transactional
+    public List<TaskInvoice> getAllTasksBasedOnUserId(int userId){
+        Optional<Helper> helperOptional = helperRepository.findByUserid_Userid(userId);
+
+        if(helperOptional.isEmpty()){
+            return new ArrayList<>();
+        }
+
+        Helper helper = helperOptional.get();
+
+        List<TaskInvitation> pending = taskInvitationRepository.findByHelperId_HelperidAndStatus(helper.getHelperid(), null);
+        List<Integer> taskIds = new ArrayList<>();
+        for(TaskInvitation invitation: pending){
+            TaskInvoice taskInvoice = invitation.getTaskId();
+            if(taskInvoice != null){
+                taskIds.add(taskInvoice.getTaskid());
+            }
+        }
+        return taskInvoiceRepository.findAllById(taskIds);
     }
 }

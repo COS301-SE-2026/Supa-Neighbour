@@ -1,34 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/chat_thread.dart';
-import '../../constants/app_colors.dart'; // ADD: Import AppColors
+import '../../constants/app_colors.dart';
 import 'bulletin_screen.dart';
 import 'chat_detail_screen.dart';
-import '../../services/chat_service.dart';
+import '../help/help_menu_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-
-class InboxScreen extends StatefulWidget {
+class InboxScreen extends ConsumerStatefulWidget {
   const InboxScreen({super.key});
 
   @override
-  State<InboxScreen> createState() => _InboxScreenState();
+  ConsumerState<InboxScreen> createState() => _InboxScreenState();
 }
 
-class _InboxScreenState extends State<InboxScreen>
+class _InboxScreenState extends ConsumerState<InboxScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final ChatService _chatService = ChatService();
   List<ChatThread> _chats = [];
   bool _isLoading = false;
   String? _error;
-
-  static const int _currentUserId = 6;
+  int _currentUserId = 0;
 
   @override
   void initState() {
     super.initState();
-   _tabController = TabController(length: 2, vsync: this);
-  _loadChats();
+     _tabController = TabController(length: 2, vsync: this);
+    _initUserId();
   }
 
   @override
@@ -37,14 +37,24 @@ class _InboxScreenState extends State<InboxScreen>
     super.dispose();
   }
 
+  Future<void> _initUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getInt('current_user_id');
+    if (stored != null) {
+      setState(() => _currentUserId = stored);
+    }
+    _loadChats();
+  }
+
   Future<void> _loadChats() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
     try {
+      final chatService = ref.read(chatServiceProvider);
       final List<Map<String, dynamic>> data =
-          await _chatService.getChatsByUserId(_currentUserId);
+          await chatService.getChatsByUserId(_currentUserId);
       setState(() {
         _chats = data.map((c) => ChatThread.fromJson(c)).toList();
         _isLoading = false;
@@ -60,82 +70,75 @@ class _InboxScreenState extends State<InboxScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // CHANGE: Use AppColors.background
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        // CHANGE: Use AppColors.primaryTeal
-        backgroundColor: AppColors.primaryTeal(context),
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         title: Text(
-          'Inbox',
+          'Chat',
           style: GoogleFonts.poppins(
-            color: Colors.white,
+            color: AppColors.primaryTeal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.info_outline, color: AppColors.primaryTeal(context)),
           onPressed: () {
-            Navigator.pop(context);
+            HelpMenuScreen.showHelpModal(context, 'chat');
           },
         ),
-          bottom: TabBar(
+        bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
+          labelColor: AppColors.primaryTeal(context),
+          unselectedLabelColor: AppColors.textGrey(context),
+          indicatorColor: AppColors.primaryTeal(context),
           tabs: const [
             Tab(text: 'Inbox'),
-            Tab(text: 'Bulletin'),
+            Tab(text: 'Community Bulletin'),
           ],
         ),
       ),
       body: TabBarView(
-  controller: _tabController,
-  children: [
-    // Inbox Tab
-      _isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                // CHANGE: Use AppColors.primaryTeal
-                color: AppColors.primaryTeal(context),
-              ),
-            )
-          : _error != null
-              ? Center(
-                  child: Text(
-                    _error!,
-                    // CHANGE: Use AppColors.error
-                    style: TextStyle(color: AppColors.error(context)),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadChats,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    itemCount: _chats.length,
-                    itemBuilder: (context, index) {
-                      final chat = _chats[index];
-                      return ChatCard(
-                        chat: chat,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatDetailScreen(chat: chat),
-                            ),
+        controller: _tabController,
+        children: [
+          // Inbox Tab
+          _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF1C9A89)))
+              : _error != null
+                  ? Center(
+                      child: Text(_error!,
+                          style: const TextStyle(color: Colors.red)))
+                  : RefreshIndicator(
+                      onRefresh: _loadChats,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        itemCount: _chats.length,
+                        itemBuilder: (context, index) {
+                          final chat = _chats[index];
+                          return ChatCard(
+                            chat: chat,
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ChatDetailScreen(chat: chat),
+                                ),
+                              );
+                              _loadChats();
+                            },
                           );
                         },
-                      );
-                    },
-                  ),
-                ),
-      // Bulletin Tab
-      const BulletinScreen(),
-    ],
-  ),
+                      ),
+                    ),
+          // Bulletin Tab
+          const BulletinScreen(),
+        ],
+      ),
     );
   }
 }
@@ -158,37 +161,24 @@ class ChatCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          // CHANGE: Use AppColors.primaryTeal with alpha
           color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 55,
-              height: 55,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: chat.avatarColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      chat.name[0],
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+            CircleAvatar(
+              radius: 27,
+              backgroundColor: Colors.white,
+              child: CircleAvatar(
+                radius: 24,
+                backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
+                child: Text(
+                  chat.name[0],
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryTeal(context),
                   ),
                 ),
               ),
@@ -206,7 +196,6 @@ class ChatCard extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            // CHANGE: Use AppColors.charcoal
                             color: AppColors.charcoal(context),
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -219,7 +208,6 @@ class ChatCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            // CHANGE: Use AppColors.citrusYellow
                             color: AppColors.citrusYellow(context),
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -228,7 +216,6 @@ class ChatCard extends StatelessWidget {
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              // CHANGE: Use AppColors.charcoal
                               color: AppColors.charcoal(context),
                             ),
                           ),
@@ -241,7 +228,6 @@ class ChatCard extends StatelessWidget {
                       Icon(
                         Icons.location_on,
                         size: 12,
-                        // CHANGE: Use AppColors.primaryTeal
                         color: AppColors.primaryTeal(context),
                       ),
                       const SizedBox(width: 2),
@@ -251,7 +237,6 @@ class ChatCard extends StatelessWidget {
                           style: GoogleFonts.openSans(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            // CHANGE: Use AppColors.textGrey
                             color: AppColors.textGrey(context),
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -266,9 +251,7 @@ class ChatCard extends StatelessWidget {
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
                       color: chat.unreadCount > 0
-                          // CHANGE: Use AppColors.charcoal for unread
                           ? AppColors.charcoal(context)
-                          // CHANGE: Use AppColors.textGrey for read
                           : AppColors.textGrey(context),
                     ),
                     maxLines: 1,
@@ -284,7 +267,6 @@ class ChatCard extends StatelessWidget {
                 vertical: 4,
               ),
               decoration: BoxDecoration(
-                // CHANGE: Use AppColors.primaryTeal
                 color: AppColors.primaryTeal(context),
                 borderRadius: BorderRadius.circular(16),
               ),

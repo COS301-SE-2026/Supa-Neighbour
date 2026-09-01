@@ -1,0 +1,17 @@
+# shared/pubspec.yaml
+name: shared
+description: Shared models, services, and constants for Supa Neighbour
+version: 1.0.0
+repository: https://github.com/COS301-SE-2026/Supa-Neighbour
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  dio: ^5.10.0
+  firebase_auth: ^6.5.4
+  shared_preferences: ^2.5.3
+
+dev_dependencies:
+  lints: ^3.0.0
+  test: ^1.24.0

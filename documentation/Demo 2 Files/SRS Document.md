@@ -48,19 +48,28 @@
 
 # 1. Introduction
 
-## Business Needs:
+## Business Needs
 
-Alot of Ubran and sub-urban communities are increasingly characterised by social dissconecton. Despite living in close proximity, the neighbours rarely interact in meaningful ways, leaving individuals without the reliable support network for small but important day-to-day tasks. When residents travel, work long hours, or face unexpected circumstances, simple household responsibilities such as collecting packages, caring for plants, feeding pets, managing bin days, and conducting home check-ins can become significant sources of stress.
+Many urban and sub-urban communities are increasingly characterised by social disconnection. Despite living in close proximity, neighbours rarely interact in meaningful ways, leaving individuals without a reliable support network for small but important day-to-day tasks. When residents travel, work long hours, or face unexpected circumstances, simple household responsibilities; collecting packages, caring for plants, feeding pets, managing bin days, home check-ins can become significant sources of stress.
 
-Existing solutions seems to only exacerbate this problem. This is were SupaNeighbour comes in: providing a dedicated, secure, community-driven platform that connects the residents within the same nehbourhood by enabling someone to request and provide short-term assistance for small household tasks. By embedding trust, transparency, and community collaboration at the core of the platform, Supa-Neighbour transforms neighbours from strangers into a dependable local support network.
+Existing solutions tend to exacerbate this problem rather than solve it. Supa-Neighbour addresses this gap: a dedicated, secure, community-driven platform that connects residents within the same neighbourhood, enabling someone to request and provide short-term assistance for small household tasks. By embedding trust, transparency, and community collaboration at its core, Supa-Neighbour transforms neighbours from strangers into a dependable local support network.
 
 ## Project Scope
 
-SupaNeighbour will be delivered as a cross-platform solution consisting of mobile application for general community users and web-based admin dashboard for aplatform administrators
+Supa-Neighbour is delivered as a cross-platform solution:
+- A **mobile application** for general community users
+- A **web-based admin dashboard** for platform administrators
 
-The system will allows residents to post assistance for short-term household tasks, browse and reposnse to requests from neighbouring users and buils a profile of community contributions over time.
+**Mobile application** — residents can:
+- Post requests for assistance with short-term household tasks
+- Browse and respond to requests from neighbouring users
+- Build a profile of community contributions over time
 
-The admin dashbord provides a platform for manages with the needed tools to monitor community activity, manage users and handle reported content and maintain the overall health and safety of the platform.
+**Admin dashboard** — administrators can:
+- Monitor community activity
+- Manage users
+- Handle reported content
+- Maintain the overall health and safety of the platform
 
 
 
@@ -407,6 +416,8 @@ The system shall calculate a user's trust score as the average rating they have 
 # 4. Use cases
 
 ## 4.1 Use Cases
+
+Please find the Use Cases Listed on the following Link: [Use Cases](documentation/Demo%202%20Files/High%20Level%20Use%20Case%20V2.md)
 
 
 

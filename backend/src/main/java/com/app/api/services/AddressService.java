@@ -6,6 +6,12 @@ import org.springframework.stereotype.Service;
 
 import com.app.api.models.Address;
 import com.app.api.repositories.AddressRepository;
+import com.app.api.dtos.AddressInfoDTO;
+import com.app.api.models.Location;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.springframework.transaction.annotation.Transactional;
+import com.app.api.repositories.LocationRepository;
 
 /**
  * Service layer for managing address operations.
@@ -16,14 +22,17 @@ public class AddressService {
 
 
     private final AddressRepository addressRepository;
+    private final LocationRepository locationRepository;
+    private static final Pattern STREET_PATTERN = Pattern.compile("^(\\d+)\\s+(.+)$");
 
     /**
      * Constructs the repository with its required service dependency.
      *
      * @param addressRepository repository providing analytics data for address
      */
-    public AddressService(AddressRepository addressRepository) {
+    public AddressService(AddressRepository addressRepository,LocationRepository locationRepository) {
         this.addressRepository = addressRepository;
+        this.locationRepository = locationRepository;
     }
     // Get all
     
@@ -94,4 +103,49 @@ public class AddressService {
     public void deleteAddress(int id) {
         addressRepository.deleteById(id);
     }
+
+    /**
+     * Resolves an address from raw registration-form input, creating the
+     * underlying Location (neighbourhood) and Address rows only if they
+     * don't already exist.
+     *
+     * @param request raw street/town/zip from the registration form
+     * @return the existing or newly created Address
+     * @throws IllegalArgumentException if the street doesn't start with a number
+     */
+    @Transactional
+    public Address resolveOrCreateAddress(AddressInfoDTO request){
+        if(request == null){
+            return null;
+        }
+
+        Matcher matcher = STREET_PATTERN.matcher(request.getStreet().trim());
+        if(!matcher.matches()){
+            throw new IllegalArgumentException("Street must start with a number, e.g '15 Bond Street");
+        }
+        int streetNumber = Integer.parseInt(matcher.group(1));
+        String streetName = matcher.group(2).trim();
+        String town = request.getTown().trim();
+
+        Location location = locationRepository.findByNeighbourhoodName(town)
+        .orElseGet(() ->{
+            Location newLocation = new Location();
+            newLocation.setNeighbourhoodName(town);
+            newLocation.setLocationCenterPoint(400);
+            newLocation.setNeighbourhoodid(locationRepository.findMaxNeighbourhoodid() + 1);
+            newLocation.setLocationRadius(20);
+            return locationRepository.save(newLocation);
+        });
+
+        return addressRepository.findByStreetNumberAndStreetAndZipcodeAndNeighbourhoodid(streetNumber, streetName, request.getZip(), location)
+        .orElseGet(() ->{
+            Address newAddress = new Address();
+            newAddress.setStreetNumber(streetNumber);
+            newAddress.setStreet(streetName);
+            newAddress.setZipcode(request.getZip());
+            newAddress.setNeighbourhoodid(location);
+            return addressRepository.save(newAddress);
+        });
+    }
+
 }

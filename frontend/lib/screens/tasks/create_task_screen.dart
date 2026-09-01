@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
-import '../../services/task_service.dart';
-import '../../constants/app_colors.dart'; // ADD: Import AppColors
+import '../../models/auth_session.dart';
+import '../../constants/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class CreateTaskScreen extends StatefulWidget {
+
+class CreateTaskScreen extends ConsumerStatefulWidget {
   const CreateTaskScreen({super.key});
 
   @override
-  State<CreateTaskScreen> createState() => _CreateTaskScreenState();
+  ConsumerState<CreateTaskScreen> createState() => _CreateTaskScreenState();
 }
 
-class _CreateTaskScreenState extends State<CreateTaskScreen> {
+class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
   // Form controllers
   final _titleController = TextEditingController();
   final _instructionsController = TextEditingController();
@@ -23,13 +26,11 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
   // Categories
   final List<String> _categories = [
-    'Plants',
-    'Pets',
-    'Bins',
-    'Packages',
-    'Home Check-in',
-    'Pool Pump',
-    'Other',
+    'Medical Assistance',
+    'Pet Care',
+    'Technology Support',
+    'Transportation Support',
+    'Home Repair',
   ];
 
   @override
@@ -88,84 +89,85 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   }
 
   // Service
-  final TaskService _taskService = TaskService();
   bool _isSubmit = false;
 
-  void _submitTask() async {
-    // Validate required fields
-    if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a task title')),
-      );
-      return;
-    }
+Future<void> _submitTask() async {
+  if (_titleController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter a task title')),
+    );
+    return;
+  }
+  if (_selectedCategory == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select a category')),
+    );
+    return;
+  }
 
-    if (_selectedCategory == null) {
+      final userId = int.tryParse(AuthSession.instance.currentUser?.id ?? '');
+    if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')),
+        const SnackBar(content: Text('You must be logged in to create a task')),
       );
       return;
     }
 
     setState(() => _isSubmit = true);
-    
+
     try {
-      await _taskService.createTask(
-        dependentId: 1, // will update to auth users
-        taskTypeId: Task.resolveTaskTypeId(_selectedCategory!),
-        startDate: _selectedDate,
-        isImmediate: false,
-        needsSpecialist: false,
-      );
+       final taskService = ref.read(taskServiceProvider);
+       final dependentId = await taskService.getDependentIdForUser(userId);
+        if (dependentId == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Could not resolve your profile. Please log out and back in.')),
+            );
+            setState(() => _isSubmit = false);
+          }
+          return;
+        }
 
-      if(mounted) {
+        final createdTask = await taskService.createTask(
+          dependentId: dependentId,
+          taskTypeId: Task.resolveTaskTypeId(_selectedCategory!),
+          startDate: _selectedDate,
+          isImmediate: false,
+          needsSpecialist: false,
+          title: _titleController.text.trim(),
+          instructions: _instructionsController.text.trim().isEmpty
+              ? null
+              : _instructionsController.text.trim(),
+        );
+
+
+      final taskId = int.tryParse(createdTask.id);
+      if (taskId != null) {
+        taskService.matchHelpersForTask(taskId);
+      }
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Task created successfully!'),
-            // CHANGE: Use AppColors.primaryTeal
-            backgroundColor: AppColors.primaryTeal(context),
+            backgroundColor: Color(0xFF2A9D8F),
           ),
         );
-        Navigator.pop(context, true);
+        Navigator.pop(context, {'taskId': taskId});
       }
-    } catch(e) {
-      // fallback to what we mocked
-      // Create new task with all required parameters
-      final newTask = Task(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        title: _titleController.text,
-        category: _selectedCategory!,
-        date: _selectedDate,
-        time: _selectedTime,
-        xpReward: 50, // Default XP reward
-        instructions: _instructionsController.text.isNotEmpty
-            ? _instructionsController.text
-            : 'No additional instructions',
-        status: 'open',  // New task starts as 'open' (waiting for helper)
-        createdAt: DateTime.now(),
-        createdBy: 'currentUser',  // The current user is the creator
-        requesterName: 'You',       // Display name for requester
-        helperId: null,             // No helper yet
-        helperName: null,           // No helper yet
+  } on Exception catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
       );
-      // Add to mock data list
-      Task.addMockTask(newTask);
-
-      if(mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Task saved locally (offline mode)'),
-            // CHANGE: Use AppColors.citrusYellow
-            backgroundColor: AppColors.citrusYellow(context),
-          ),
-        );
-        // Navigate back
-        Navigator.pop(context, true);
-      }
-    } finally {
-      if(mounted) setState(() => _isSubmit = false);
     }
+  } finally {
+    if (mounted) setState(() => _isSubmit = false);
   }
+  }
+
 
   @override
   Widget build(BuildContext context) {
