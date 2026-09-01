@@ -417,13 +417,13 @@ The system shall calculate a user's trust score as the average rating they have 
 
 ## 4.1 Use Cases
 
-Please find the Use Cases Listed on the following Link: [Use Cases](documentation/Demo%202%20Files/High%20Level%20Use%20Case%20V2.md)
+Please find the Use Cases Listed on the following Link: [Use Cases](/documentation/Demo%203%20Files/High%20Level%20Use%20Case%20V2.md)
 
 
 
 ## 4.2 Use Case Diagram
 
-Please refer to this image for the use case Diagram: [Use Case Diagram](Images/Use%20Case%20Diagram%20V2.jpeg)
+Please refer to this image for the use case Diagram: [Use Case Diagram](Images/Use%20Cases%20V3.png)
 
 # 5. Functional requirements
 
@@ -505,11 +505,30 @@ The system shall provide a friendly, warm, and accessible user interface.
 - **R6.2.1** — The system must display ratings and badges clearly on helper profiles.
 - **R6.2.2** — The system must include easy scheduling workflows with reminder confirmations.
 
+## R7: Administration and Moderation
+The system shall provide administrators with the tools to monitor community conduct and enforce platform rules.
+
+### R7.1: The system shall allow administrators to securely authenticate and access the admin dashboard.
+- **R7.1.1** — The system must restrict access to admin functionality to users flagged with admin privileges.
+- **R7.1.2** — The system must redirect authenticated admins to a dedicated admin dashboard, separate from the standard user experience.
+
+### R7.2: The system shall allow administrators to view and manage user-submitted reports.
+- **R7.2.1** — The system must display all submitted reports, including the reported entity (user, task, or bulletin post) and current status.
+- **R7.2.2** — The system must allow an admin to action a report by selecting a suggested moderation action (Warning, Suspension, or Ban).
+- **R7.2.3** — The system must record both the suggested action and the actual action taken against a report, for audit purposes.
+- **R7.2.4** — The system must update the report's status once an action has been taken.
+
+### R7.3: The system shall log moderation actions taken against user accounts.
+- **R7.3.1** — The system must maintain a record of warnings, suspensions, and bans issued to a user, including the reason and the administrator responsible.
+
+### R7.4: The system shall allow administrators to manage their own profile.
+- **R7.4.1** — The system must allow admins to view and update their personal account settings from within the admin dashboard.
+
 ---
 
 # 6. Non-Functional Requirements
 
-Below are the Non-functional requirements that were focused on for Demo 2:
+Below are the Non-functional requirements that were focused on for Demo 3:
 
 ## 6.1 Reliability
 
@@ -521,7 +540,7 @@ The backend is deployed as a Docker container configured with an automatic resta
 
 **Target:** New features or bug fixes should be deployable within 2 hours, and the codebase should maintain at least 80% automated test coverage.
 
-Maintainability is implemented through a containerized CI/CD pipeline (GitHub Actions → Azure Container Registry → App Service) with environment-specific config (`application-azure.yml`) and secrets managed via Key Vault, so a merged change requires no manual environment or credential steps to reach deployment — supporting the 2-hour deployability target. Automated test coverage is tracked continuously via SonarQube against a minimum 80% threshold, with particular focus on the Demo 2 use cases (UC6, UC7, UC8).
+Maintainability is implemented through a containerized CI/CD pipeline (GitHub Actions → Azure Container Registry → App Service) with environment-specific config (`application-azure.yml`) and secrets managed via Key Vault, so a merged change requires no manual environment or credential steps to reach deployment — supporting the 2-hour deployability target. Automated test coverage is tracked continuously via SonarQube against a minimum 80% threshold, with particular focus on the Demo 3 use cases (UC6, UC7, UC8).
 
 ## 6.3 Availability
 
@@ -532,7 +551,7 @@ Availability is supported by Azure's managed infrastructure — Postgres Flexibl
 
 # 7. Domain Model
 
-Please refer to the file for the Domain model: [Domain Model](Images/SNR-Domain-Model.drawio.png)
+Please refer to the file for the Domain model: [Domain Model](/documentation/Demo%202%20Files/Images/SNR-Domain-Model.drawio.png)
 
 ---
 

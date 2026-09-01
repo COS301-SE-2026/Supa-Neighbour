@@ -81,3 +81,39 @@
 | **Goal** | Change the visual appearance of the application interface to light or dark mode |
 | **TUCBW** | The User toggles the theme selection switch in the settings panel |
 | **TUCEW** | The application re-renders its layout with the new color palette instantly |
+
+---
+
+## **Administration**
+
+### **Use Case: Admin Login**
+
+| **Primary Actor** | Admin |
+| --- | --- |
+| **Goal** | Authenticate and gain access to the admin dashboard on the website |
+| **TUCBW** | The Admin enters their credentials (email and password) on the admin login page and clicks "Login" |
+| **TUCEW** | The system authenticates the Admin's credentials, confirms their `isAdmin` status, and redirects them to the admin dashboard |
+
+### **Use Case: View Reports**
+
+| **Primary Actor** | Admin |
+| --- | --- |
+| **Goal** | Review all reports submitted by users against tasks, bulletin posts, or other users |
+| **TUCBW** | The Admin navigates to the "Reports" section of the admin dashboard |
+| **TUCEW** | The system retrieves all report records and displays them in a list, showing report type, status, and reported entity |
+
+### **Use Case: Action a Report**
+
+| **Primary Actor** | Admin |
+| --- | --- |
+| **Goal** | Resolve a submitted report by issuing a moderation action against the offending user |
+| **TUCBW** | The Admin opens a report from the report list and selects a suggested action (Warning / Suspension / Ban) |
+| **TUCEW** | The system records the Admin's suggested and actual action against the report, updates the report status, and logs the moderation action against the offending user's account |
+
+### **Use Case: Manage Admin Profile**
+
+| **Primary Actor** | Admin |
+| --- | --- |
+| **Goal** | View and update personal account settings from the admin panel |
+| **TUCBW** | The Admin navigates to the "Settings" section within the admin dashboard |
+| **TUCEW** | The system saves the updated profile details and reflects the changes across the admin session |
