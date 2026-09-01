@@ -6,6 +6,9 @@ import '../../models/notification_model.dart';
 import '../profile/settings_screen.dart';
 import '../profile/achievements_screen.dart';
 import '../../services/notification_api_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/auth_service.dart'; 
+import '../../screens/auth/splash_screen.dart';
 
 // Provider for notifications
 final notificationsApiServiceProvider = Provider<NotificationsApiService>((ref) {
