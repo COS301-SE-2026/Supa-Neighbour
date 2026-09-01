@@ -89,7 +89,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        shadowColor: AppColors.charcoal.withOpacity(0.04),
+        shadowColor: AppColors.charcoal.withValues(alpha: 0.04),
       ),
     );
   }
