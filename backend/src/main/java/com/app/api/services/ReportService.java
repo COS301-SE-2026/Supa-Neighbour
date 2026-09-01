@@ -7,9 +7,12 @@ import com.app.api.dtos.ReportDTO;
 import com.app.api.dtos.AdminDashboardDTO;
 import com.app.api.dtos.ReportResponseDTO;
 import com.app.api.models.Report;
+import com.app.api.models.User;
+import com.app.api.repositories.CommentsRepository;
+import com.app.api.repositories.PostsRepository;
+import com.app.api.repositories.TaskRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.repositories.ReportRepository;
-import com.app.api.models.User;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,12 +20,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Service layer for report-related business logic.
@@ -42,18 +48,40 @@ public class ReportService {
     /** The report repository. */
     private final ReportRepository reportRepository;
     private final ReportDetailService reportDetailService;
-
     private final UserRepository userRepository;
+    private final ModerationActionService moderationActionService;
+    private final PostsRepository postsRepository;
+    private final CommentsRepository commentsRepository;
+    private final TaskRepository taskRepository;
+
+    private static final Pattern SUSPEND_PATTERN =
+            Pattern.compile("^SUSPEND_(\\d+)D$", Pattern.CASE_INSENSITIVE);
 
     /**
-     * Constructs a ReportService with the required repository.
-     *
+     * Constructs a ReportService with the required dependencies.
      * @param reportRepository the report repository
+     * @param userRepository the user repository
+     * @param reportDetailService the report detail service
+     * @param moderationActionService the moderation action service
+     * @param postsRepository the posts repository
+     * @param commentsRepository the comments repository
+     * @param taskRepository the task repository
      */
-    public ReportService(ReportRepository reportRepository, UserRepository userRepository, ReportDetailService reportDetailService) {
+    public ReportService(
+            ReportRepository reportRepository,
+            UserRepository userRepository,
+            ReportDetailService reportDetailService,
+            ModerationActionService moderationActionService,
+            PostsRepository postsRepository,
+            CommentsRepository commentsRepository,
+            TaskRepository taskRepository) {
         this.reportRepository = reportRepository;
-        this.userRepository = userRepository; 
+        this.userRepository = userRepository;
         this.reportDetailService = reportDetailService;
+        this.moderationActionService = moderationActionService;
+        this.postsRepository = postsRepository;
+        this.commentsRepository = commentsRepository;
+        this.taskRepository = taskRepository;
     }
 
     /**
@@ -134,11 +162,14 @@ public class ReportService {
     }
 
     /**
-     * Admin partially updates a report - sets status, verdict fields, and/or     * @param adminUserId the user_id of the calling admin     * @param dto the patch payload - must include {@code reportId}
+     * Admin partially updates a report - sets status, verdict fields, and/or
+     * triggers a moderation action.
+     * @param adminUserId the user_id of the calling admin
+     * @param dto the patch payload — must include {@code reportId}
      * @return a {@link PatchReportResponseDTO} with the updated fields
      * @throws ResponseStatusException 400 for invalid enum values,
-     * 403 if report not assigned to this admin,
-     * 404 if report not found
+     *         403 if report not assigned to this admin,
+     *         404 if report not found
      */
     @Transactional
     public PatchReportResponseDTO patchReport(int adminUserId, PatchReportDTO dto) {
@@ -186,11 +217,131 @@ public class ReportService {
 
         Report saved = reportRepository.save(existing);
 
+        if (dto.getActualAction() != null) {
+            recordModerationAction(saved, adminUserId, dto.getActualAction(), dto.getAdminNotes());
+        }
+
         return new PatchReportResponseDTO(
                 saved.getReportId(),
                 saved.getStatus(),
                 saved.getActualAction(),
                 saved.getResolvedAt());
+    }
+
+    /**
+     * Derives the moderation action type and expiry from {@code actualAction},
+     * resolves the target user, and persists a {@link com.app.api.models.ModerationAction}.
+     * @param report the saved report entity
+     * @param adminUserId the ID of the admin issuing the action
+     * @param actualAction the raw actualAction string from the request
+     * @param adminNotes optional admin notes used as the moderation reason fallback
+     */
+    private void recordModerationAction(
+            Report report, int adminUserId, String actualAction, String adminNotes) {
+
+        String upper = actualAction.trim().toUpperCase();
+
+        String actionType;
+        LocalDateTime expiresAt = null;
+
+        if ("WARNING".equals(upper)) {
+            actionType = "warning";
+        } else if ("BAN".equals(upper)) {
+            actionType = "ban";
+        } else {
+            Matcher m = SUSPEND_PATTERN.matcher(upper);
+            if (m.matches()) {
+                actionType = "suspension";
+                int days = Integer.parseInt(m.group(1));
+                expiresAt = LocalDateTime.now().plusDays(days);
+            } else {
+                //skip
+                return;
+            }
+        }
+
+        Integer targetUserId = resolveTargetUserId(report);
+        if (targetUserId == null) {
+            return;
+        }
+
+        User targetUser = userRepository.findById(targetUserId).orElse(null);
+        if (targetUser == null) {
+            return;
+        }
+
+        User adminUser = userRepository.findById(adminUserId).orElse(null);
+        if (adminUser == null) {
+            return;
+        }
+
+
+       String reason = buildReason(report, adminNotes);
+        moderationActionService.issueModerationAction(
+                targetUser, actionType, reason, report, adminUser, expiresAt);
+    }
+
+    /**
+     * Resolves the user ID of the person being moderated based on report type.
+     * @param report the report entity
+     * @return the user ID of the offending party, or {@code null} if it cannot be resolved
+     */
+    private Integer resolveTargetUserId(Report report) {
+        if (report.getReportType() == null) {
+            return null;
+        }
+        switch (report.getReportType()) {
+            case "USER":
+                return report.getReportedUserId();
+            case "POST":
+                if (report.getReportedPostId() == null) {
+                    return null;
+                }
+                return postsRepository.findById(report.getReportedPostId())
+                        .map(p -> p.getUserid() != null ? p.getUserid().getUserid() : null)
+                        .orElse(null);
+            case "COMMENT":
+                if (report.getReportedCommentId() == null) {
+                    return null;
+                }
+                return commentsRepository.findById(report.getReportedCommentId())
+                        .map(c -> c.getUserid() != null ? c.getUserid().getUserid() : null)
+                        .orElse(null);
+            case "TASK_DISPUTE":
+                if (report.getTaskId() == null) {
+                    return null;
+                }
+                
+                return taskRepository.findById(report.getTaskId())
+                        .map(t -> t.getHelperId())
+                        .orElse(null);
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Builds a human-readable reason string for the moderation record.
+     * Prefers violationType, then adminNotes, then the report's own reason field.
+     * @param report the report entity
+     * @param adminNotes optional notes from the admin
+     * @return a non-null reason string
+     */
+    private String buildReason(Report report, String adminNotes) {
+        if (report.getViolationType() != null && !report.getViolationType().isBlank()) {
+            String base = report.getViolationType();
+            if (adminNotes != null && !adminNotes.isBlank()) {
+                return base + ": " + adminNotes;
+            }
+            return base;
+        }
+        if (adminNotes != null && !adminNotes.isBlank()) {
+            return adminNotes;
+        }
+        if (report.getReason() != null && !report.getReason().isBlank()) {
+            return report.getReason();
+        }
+        return "Moderation action from report #" + report.getReportId();
     }
 
     
@@ -283,7 +434,6 @@ public class ReportService {
     /**
      * Retrieves all reports filed by the given user, optionally filtered
      * by status and reportType, mapped to the leaner user-facing shape.
-     *
      * @param reporterUserId the resolved user ID from the Firebase token
      * @param status optional status filter, normalized to lowercase
      * @param reportType optional report type filter, normalized to uppercase
@@ -313,14 +463,7 @@ public class ReportService {
     }
 
     /**
-     * Retrieves dashboard statistics for an admin user.
-     * <p>
-     * This method fetches comprehensive analytics data for the admin dashboard,
-     * including counts of assigned, completed, and reviewed reports, as well as
-     * a breakdown of assigned reports by their type. The method first validates
-     * that the user exists and has admin privileges before retrieving the data.
-     * </p>
-     * 
+     * Retrieves dashboard statistics for an admin user.m
      * @param userId the ID of the user requesting the dashboard data
      * @return an {@link AdminDashboardDTO} containing the admin's dashboard statistics
      * @throws ResponseStatusException with {@link HttpStatus#NOT_FOUND} if the user 

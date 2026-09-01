@@ -1,10 +1,12 @@
 package com.app.api.services;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
 import com.app.api.models.ModerationAction;
+import com.app.api.models.Report;
 import com.app.api.models.User;
 import com.app.api.repositories.ModerationActionRepository;
 
@@ -13,6 +15,10 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ModerationActionService {
+
+    private static final Set<String> VALID_ACTION_TYPES =
+            Set.of("warning", "suspension", "ban");
+
     private final ModerationActionRepository moderationActionRepository;
 
     /**
@@ -66,5 +72,48 @@ public class ModerationActionService {
                 action.getExpiredAt() != null &&
                 action.getExpiredAt().isAfter(now)
         );
+    }
+
+    /**
+     * Records a moderation action in the {@code moderation_action} table.
+     *
+     * <p>The {@code actionType} must be one of {@code "warning"}, {@code "suspension"},
+     * or {@code "ban"} — values enforced by the DB CHECK constraint.
+     * For suspensions, pass a non-null {@code expiresAt} to set the expiry window;
+     * warnings and bans should pass {@code null}.</p>
+     *
+     * @param targetUser the user being moderated
+     * @param actionType DB-level action type: {@code "warning"}, {@code "suspension"}, or {@code "ban"}
+     * @param reason     human-readable reason stored in the record
+     * @param report     the report that triggered this action (may be null)
+     * @param issuedBy   the admin user issuing the action
+     * @param expiresAt  expiry timestamp for suspensions; null for warnings and bans
+     * @return the saved {@link ModerationAction}
+     * @throws IllegalArgumentException if {@code actionType} is not a recognised value
+     */
+    public ModerationAction issueModerationAction(
+            User targetUser,
+            String actionType,
+            String reason,
+            Report report,
+            User issuedBy,
+            LocalDateTime expiresAt) {
+
+        if (!VALID_ACTION_TYPES.contains(actionType)) {
+            throw new IllegalArgumentException(
+                    "actionType must be one of: warning, suspension, ban — got: " + actionType);
+        }
+
+        ModerationAction action = ModerationAction.builder()
+                .user(targetUser)
+                .actionType(actionType)
+                .reason(reason)
+                .report(report)
+                .issuedBy(issuedBy)
+                .issuedAt(LocalDateTime.now())
+                .expiredAt(expiresAt)
+                .build();
+
+        return moderationActionRepository.save(action);
     }
 }
