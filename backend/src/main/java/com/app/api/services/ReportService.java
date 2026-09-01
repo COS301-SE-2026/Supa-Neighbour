@@ -54,13 +54,11 @@ public class ReportService {
     private final CommentsRepository commentsRepository;
     private final TaskRepository taskRepository;
 
-    /** Regex that matches SUSPEND_<N>D patterns, e.g. SUSPEND_7D, SUSPEND_30D. */
     private static final Pattern SUSPEND_PATTERN =
             Pattern.compile("^SUSPEND_(\\d+)D$", Pattern.CASE_INSENSITIVE);
 
     /**
      * Constructs a ReportService with the required dependencies.
-     *
      * @param reportRepository the report repository
      * @param userRepository the user repository
      * @param reportDetailService the report detail service
@@ -89,7 +87,6 @@ public class ReportService {
     /**
      * Returns all reports currently assigned to the given admin, with optional
      * filtering by status and/or reportType 
-     * 
      * @param adminId the user_id of the requesting admin
      * @param status optional status filter - one of submitted, assigned, reviewed
      * @param reportType optional type filter - one of USER, POST, COMMENT, TASK_DISPUTE
@@ -126,7 +123,6 @@ public class ReportService {
 
     /**
      * Submits a new report on behalf of the authenticated user.
-     * 
      * @param reporterUserId the authenticated user's ID
      * @param dto the submitted report payload
      * @return a {@link ReportDTO} for the newly created report
@@ -168,7 +164,6 @@ public class ReportService {
     /**
      * Admin partially updates a report - sets status, verdict fields, and/or
      * triggers a moderation action.
-     *
      * @param adminUserId the user_id of the calling admin
      * @param dto the patch payload — must include {@code reportId}
      * @return a {@link PatchReportResponseDTO} with the updated fields
@@ -236,7 +231,6 @@ public class ReportService {
     /**
      * Derives the moderation action type and expiry from {@code actualAction},
      * resolves the target user, and persists a {@link com.app.api.models.ModerationAction}.
-     * 
      * @param report the saved report entity
      * @param adminUserId the ID of the admin issuing the action
      * @param actualAction the raw actualAction string from the request
@@ -289,7 +283,6 @@ public class ReportService {
 
     /**
      * Resolves the user ID of the person being moderated based on report type.
-     *
      * @param report the report entity
      * @return the user ID of the offending party, or {@code null} if it cannot be resolved
      */
@@ -330,7 +323,6 @@ public class ReportService {
     /**
      * Builds a human-readable reason string for the moderation record.
      * Prefers violationType, then adminNotes, then the report's own reason field.
-     *
      * @param report the report entity
      * @param adminNotes optional notes from the admin
      * @return a non-null reason string
@@ -442,7 +434,6 @@ public class ReportService {
     /**
      * Retrieves all reports filed by the given user, optionally filtered
      * by status and reportType, mapped to the leaner user-facing shape.
-     *
      * @param reporterUserId the resolved user ID from the Firebase token
      * @param status optional status filter, normalized to lowercase
      * @param reportType optional report type filter, normalized to uppercase
@@ -472,8 +463,7 @@ public class ReportService {
     }
 
     /**
-     * Retrieves dashboard statistics for an admin user.
-     * 
+     * Retrieves dashboard statistics for an admin user.m
      * @param userId the ID of the user requesting the dashboard data
      * @return an {@link AdminDashboardDTO} containing the admin's dashboard statistics
      * @throws ResponseStatusException with {@link HttpStatus#NOT_FOUND} if the user 
