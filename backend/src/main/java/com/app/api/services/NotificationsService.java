@@ -1,11 +1,12 @@
 package com.app.api.services;
 
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.app.api.repositories.UserDeviceRepository;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -21,6 +22,7 @@ import com.app.api.dtos.NotificationDTO;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.app.api.services.NotificationPersistenceService;
 
 /**
  * Sends push notifications via Firebase Cloud Messaging (FCM) to a user's
@@ -36,6 +38,9 @@ public class NotificationsService {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private NotificationPersistenceService notifPersistance;
 
     private static final DateTimeFormatter TIMESTAMP_FORMAT =
         DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -96,6 +101,7 @@ public class NotificationsService {
      * @param commenterName    display name of the commenter
      */
     public void sendPostCommentNotifications(int postAuthorUserId, int postId, String commenterName) {
+        LOGGER.info("🔔 sendPostCommentNotif() called: userId={}, type={}, entityId={}", postId);
         send(postAuthorUserId,
                 "New comment under your post!",
                 commenterName + " commented on your post",
@@ -205,16 +211,9 @@ public class NotificationsService {
      * @param entityId the ID of the relevant entity as a string
      */
     private void send(int userId, String title, String body, String type, String entityId) {
-            Notifications notification = Notifications.builder()
-                .user(userRepository.getReferenceById(userId))
-                .notificationtype(type)
-                .entityid(entityId)
-                .notificationtitle(title)
-                .notificationbody(body)
-                .isread(false)
-                .createdat(LocalDateTime.now())
-                .build();
-        notificationRepository.save(notification);
+            LOGGER.info("🔔 send() called: userId={}, type={}, entityId={}", userId, type, entityId);
+        notifPersistance.saveNotification(userId, title, body, type, entityId);
+
         
         List<String> tokens = userDeviceRepository.findTokensByUserId(userId);
 
@@ -244,7 +243,7 @@ public class NotificationsService {
     /**
      * Fetches all notifications for a user, most recent first.
      *
-     * @param userId the user_id to fetch notifications for
+     * @param userId the user_id to fetch notifications for 
      * @return the user's notifications as DTOs
      */
     public List<NotificationDTO> getNotificationsForUser(int userId){
@@ -262,6 +261,12 @@ public class NotificationsService {
      */
     public void markAsRead(int notificationId, int userId){
         Notifications notification = notificationRepository.findById(notificationId).orElseThrow(() -> new IllegalArgumentException("Notification not found: " + notificationId));
+        if (notification.getUser() == null ||
+            notification.getUser().getUserid() != userId) {
+            throw new IllegalArgumentException(
+                "Notification does not belong to user: " + userId
+            );
+        }
         notification.setIsread(true);
         notificationRepository.save(notification);
     }
