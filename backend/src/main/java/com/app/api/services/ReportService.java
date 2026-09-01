@@ -1,34 +1,41 @@
 package com.app.api.services;
 
-import com.app.api.dtos.PatchReportDTO;
-import com.app.api.dtos.PatchReportResponseDTO;
-import com.app.api.dtos.ReportRequestDTO;
-import com.app.api.dtos.ReportDTO;
-import com.app.api.dtos.AdminDashboardDTO;
-import com.app.api.dtos.ReportResponseDTO;
-import com.app.api.models.Report;
-import com.app.api.models.User;
-import com.app.api.repositories.CommentsRepository;
-import com.app.api.repositories.PostsRepository;
-import com.app.api.repositories.TaskRepository;
-import com.app.api.repositories.UserRepository;
-import com.app.api.repositories.ReportRepository;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.context.ApplicationEventPublisher;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.app.api.dtos.AdminDashboardDTO;
+import com.app.api.dtos.PatchReportDTO;
+import com.app.api.dtos.PatchReportResponseDTO;
+import com.app.api.dtos.ReportDTO;
+import com.app.api.dtos.ReportRequestDTO;
+import com.app.api.dtos.ReportResponseDTO;
+import com.app.api.events.UserBannedEvent;
+import com.app.api.events.UserSuspendedEvent;
+import com.app.api.events.UserWarnedEvent;
+import com.app.api.models.Report;
+import com.app.api.models.User;
+import com.app.api.repositories.CommentsRepository;
+import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.HelperRepository;
+import com.app.api.repositories.PostsRepository;
+import com.app.api.repositories.ReportRepository;
+import com.app.api.repositories.TaskRepository;
+import com.app.api.repositories.UserRepository;
+import com.app.api.models.Task;
 
 /**
  * Service layer for report-related business logic.
@@ -53,6 +60,9 @@ public class ReportService {
     private final PostsRepository postsRepository;
     private final CommentsRepository commentsRepository;
     private final TaskRepository taskRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final HelperRepository helperRepository;
+    private final DependentRepository dependentRepository;
 
     private static final Pattern SUSPEND_PATTERN =
             Pattern.compile("^SUSPEND_(\\d+)D$", Pattern.CASE_INSENSITIVE);
@@ -74,7 +84,10 @@ public class ReportService {
             ModerationActionService moderationActionService,
             PostsRepository postsRepository,
             CommentsRepository commentsRepository,
-            TaskRepository taskRepository) {
+            TaskRepository taskRepository,
+            ApplicationEventPublisher applicationEventPublisher,
+            DependentRepository dependentRepository,
+            HelperRepository helperRepository) {
         this.reportRepository = reportRepository;
         this.userRepository = userRepository;
         this.reportDetailService = reportDetailService;
@@ -82,6 +95,9 @@ public class ReportService {
         this.postsRepository = postsRepository;
         this.commentsRepository = commentsRepository;
         this.taskRepository = taskRepository;
+        this.eventPublisher = applicationEventPublisher;
+        this.dependentRepository = dependentRepository;
+        this.helperRepository = helperRepository;
     }
 
     /**
@@ -276,9 +292,14 @@ public class ReportService {
         }
 
 
-       String reason = buildReason(report, adminNotes);
+        String reason = buildReason(report, adminNotes);
         moderationActionService.issueModerationAction(
                 targetUser, actionType, reason, report, adminUser, expiresAt);
+        switch (actionType) {
+            case "warning" -> eventPublisher.publishEvent(new UserWarnedEvent(targetUserId, String.valueOf(report.getReportId()), reason));
+            case "ban" -> eventPublisher.publishEvent(new UserBannedEvent(targetUserId, String.valueOf(report.getReportId()), reason));
+            case "suspension" -> eventPublisher.publishEvent(new UserSuspendedEvent(targetUserId, String.valueOf(report.getReportId()), reason));
+        }
     }
 
     /**
@@ -308,17 +329,52 @@ public class ReportService {
                         .map(c -> c.getUserid() != null ? c.getUserid().getUserid() : null)
                         .orElse(null);
             case "TASK_DISPUTE":
-                if (report.getTaskId() == null) {
-                    return null;
-                }
-                
-                return taskRepository.findById(report.getTaskId())
-                        .map(t -> t.getHelperId())
-                        .orElse(null);
+                return resolveTaskDisputeTarget(report);
             default:
                 return null;
         }
     }
+
+    /**
+     * For a TASK_DISPUTE report, resolves the *other* party to the reporter:
+     * if the dependent filed the report, the helper is the target, and vice versa.
+     * Both helperId/dependentId on Task are FKs into helper_table/Dependent_table,
+     * not user_id directly, so each side must be resolved through its profile
+     * entity to reach the real user_id.
+     */
+    private Integer resolveTaskDisputeTarget(Report report){
+        if(report.getTaskId() == null){
+            return null;
+        }
+
+        Task task = taskRepository.findById(report.getTaskId()).orElse(null);
+        if(task == null){
+            return null;
+        }
+
+        Integer helperUserId = null;
+        if(task.getHelperId() != null){
+            helperUserId = helperRepository.findById(task.getHelperId()).map(h -> h.getUserid() != null ? h.getUserid().getUserid() : null).orElse(null);
+        }
+
+        Integer dependentUserId = null;
+        if(task.getDependentId() != null){
+            dependentUserId = dependentRepository.findById(task.getDependentId()).map(d -> d.getUserId() != null ? d.getUserId().getUserid() : null).orElse(null);
+        }
+        
+
+        int reporterId = report.getReporterUserId();
+        if(helperUserId != null && reporterId == helperUserId){
+            return dependentUserId;
+        }
+
+        if(dependentUserId != null && reporterId == dependentUserId){
+            return helperUserId;
+        }
+
+        return null;
+    }
+
 
     /**
      * Builds a human-readable reason string for the moderation record.

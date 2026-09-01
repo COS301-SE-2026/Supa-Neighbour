@@ -9,6 +9,8 @@ import com.app.api.events.HelperMatchedEvent;
 import com.app.api.events.PostCommentEvent;
 import com.app.api.events.PostCreatedEvent;
 import com.app.api.events.TaskStartedEvent;
+import com.app.api.events.UserBannedEvent;
+import com.app.api.events.UserSuspendedEvent;
 import com.app.api.events.UserWarnedEvent;
 import com.app.api.services.NotificationsService;
 
@@ -131,7 +133,7 @@ public class TaskNotificationListener {
      * @see TransactionPhase#AFTER_COMMIT
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void onUserSuspended(UserWarnedEvent event){
+    public void onUserSuspended(UserSuspendedEvent event){
         notificationsService.sendSuspensionNotification(event.getUserId(), event.getReportId(), event.getReason());
     }
 
@@ -143,7 +145,7 @@ public class TaskNotificationListener {
      * @see TransactionPhase#AFTER_COMMIT
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void onUserBanned(UserWarnedEvent event){
+    public void onUserBanned(UserBannedEvent event){
         notificationsService.sendBanNotification(event.getUserId(), event.getReportId(), event.getReason());
     }
 

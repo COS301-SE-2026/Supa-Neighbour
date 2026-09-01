@@ -13,6 +13,14 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
+import com.app.api.models.Notifications;
+import com.app.api.repositories.NotificationRepository;
+import com.app.api.repositories.UserRepository;
+import java.time.LocalDateTime;
+import com.app.api.dtos.NotificationDTO;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Sends push notifications via Firebase Cloud Messaging (FCM) to a user's
@@ -25,6 +33,15 @@ public class NotificationsService {
 
     @Autowired
     private UserDeviceRepository userDeviceRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    private static final DateTimeFormatter TIMESTAMP_FORMAT =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * Notifies a requester that someone wants to start their task.
@@ -188,6 +205,17 @@ public class NotificationsService {
      * @param entityId the ID of the relevant entity as a string
      */
     private void send(int userId, String title, String body, String type, String entityId) {
+            Notifications notification = Notifications.builder()
+                .user(userRepository.getReferenceById(userId))
+                .notificationtype(type)
+                .entityid(entityId)
+                .notificationtitle(title)
+                .notificationbody(body)
+                .isread(false)
+                .createdat(LocalDateTime.now())
+                .build();
+        notificationRepository.save(notification);
+        
         List<String> tokens = userDeviceRepository.findTokensByUserId(userId);
 
         for (String token : tokens) {
@@ -212,4 +240,42 @@ public class NotificationsService {
             }
         }
     }
+
+    /**
+     * Fetches all notifications for a user, most recent first.
+     *
+     * @param userId the user_id to fetch notifications for
+     * @return the user's notifications as DTOs
+     */
+    public List<NotificationDTO> getNotificationsForUser(int userId){
+        return notificationRepository.findByUser_UseridOrderByCreatedatDesc(userId)
+        .stream()
+        .map(this::toDTO)
+        .collect(Collectors.toList());
+    }
+
+
+    /**
+     * Marks a single notification as read.
+     *
+     * @param notificationId the notification to mark as read
+     */
+    public void markAsRead(int notificationId, int userId){
+        Notifications notification = notificationRepository.findById(notificationId).orElseThrow(() -> new IllegalArgumentException("Notification not found: " + notificationId));
+        notification.setIsread(true);
+        notificationRepository.save(notification);
+    }
+
+    private NotificationDTO toDTO(Notifications n){
+        return new NotificationDTO(
+            n.getNotificationid(),
+            n.getNotificationtype(),
+            n.getEntityid(),
+            n.getNotificationtitle(),
+            n.getNotificationbody(),
+            n.isIsread(),
+            n.getCreatedat().format(TIMESTAMP_FORMAT)
+        );
+    }
+
 }

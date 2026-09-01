@@ -19,7 +19,6 @@ import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.HelperSkillRepository;
 import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
-import com.app.api.services.LocationService;
 
 /**
  * Service class responsible for matching helpers to tasks based on various criteria such as location and skills.

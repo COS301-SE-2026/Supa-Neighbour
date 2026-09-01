@@ -27,26 +27,32 @@ SupaNeighbour connects residents within the same neighbourhood by enabling them 
 
    ![Login/Signup splash screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Splash%20-%20LoginSignup%20Screen.png)
 
-3. Enter your details:
-   - **Email Address** — A valid email address for verification
-   - **Phone Number** — For important notifications
-   - **First and Last Name** — How you'll be known in the community
-   - **Residential Address** — To match you with your neighbourhood zone
+3. Enter your **Email Address** and create a **password** (minimum 8 characters with a mix of letters, numbers, and special characters), then tap **"Sign Up"**
 
    ![Sign up screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20Screen.png)
 
-   ![Sign up - user identity screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Identity%20Screen.png)
+4. Check your inbox for a **verification email** and click the link inside it to confirm your email address.
 
-   ![Sign up - residential address screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Residential%20Address%20Screen.png)
+   > **Don't see it?** Verification emails sometimes land in your **Spam** or **Junk** folder — check there if it hasn't arrived within a few minutes.
 
-   ![Sign up - other details screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Other%20Details%20Screen.png)
+   *(Note: this step now uses an email verification link rather than an OTP code — the screenshot below should be updated to match.)*
 
-4. Create a **password** (minimum 8 characters with a mix of letters, numbers, and special characters)
-5. Tap **"Sign Up"**
-6. Check your email/phone for the **OTP verification code**
-7. Enter the code to activate your account
+   ![Sign up - confirm verification screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20Confirm%20OTP%20Screen.png)
 
-   ![Sign up - confirm OTP screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20Confirm%20OTP%20Screen.png)
+5. Once your email is verified, you'll be taken to finish setting up your profile. Enter the remaining details:
+   - **First and Last Name** — How you'll be known in the community
+
+     ![Sign up - user identity screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Identity%20Screen.png)
+
+   - **Residential Address** — To match you with your neighbourhood zone
+
+     ![Sign up - residential address screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Residential%20Address%20Screen.png)
+
+   - **Phone Number** — For important notifications, plus any other remaining details
+
+     ![Sign up - other details screen](/documentation/Demo%202%20Files/Images/Wireframes/Auth/Sign%20up%20-%20User%20Other%20Details%20Screen.png)
+
+6. Once these details are submitted, your account is fully set up and you'll land on the **Home screen** (see [Section 3](#3-home-screen)).
 
 **Forgot your password?**
 
@@ -72,7 +78,7 @@ SupaNeighbour connects residents within the same neighbourhood by enabling them 
 
 ## 3. Home Screen
 
-The Home screen is your dashboard for everything happening in your neighbourhood.
+Once you're signed in — whether for the first time after registering, or on a return visit — you land on the Home screen, your dashboard for everything happening in your neighbourhood.
 
 | Element | What It Does |
 |---------|--------------|
@@ -84,12 +90,17 @@ The Home screen is your dashboard for everything happening in your neighbourhood
 
 ![Home screen](/frontend/assets/screenshots/home-screen.png)
 
+**To create a task**, tap the **+ Button**:
 
-**To create a task:** Tap the **+ Button** on the Home screen.
+1. Tap the **+ Button** on the Home screen
+2. Fill in your task details (category, description, timing, and any other requirements)
+3. Submit the task — it will now appear under the **Posted** tab of the Tasks screen (see [Section 4.1](#41-posted-tab)), where neighbours can find and accept it
 
-![Create task screen](/frontend/assets/screenshots/create-task.png)
+   ![Create task screen](/frontend/assets/screenshots/create-task.png)
 
-**To refresh the list:** Pull down from the top of the screen.
+**To view a task**, tap on any task card to see full details and instructions. To see everything at once, tap **"See All"** — this takes you to the Tasks screen (see [Section 4](#4-tasks-screen)).
+
+**To refresh the list**, pull down from the top of the screen.
 
 ---
 
@@ -99,7 +110,7 @@ The Tasks screen helps you manage all your tasks in one place. It has three tabs
 
 ### 4.1 Posted Tab
 
-Shows tasks you have created.
+Shows tasks you have created — including any you just posted from the Home screen.
 
 ![Posted tasks tab](/frontend/assets/screenshots/tasks-posted.png)
 
@@ -265,17 +276,22 @@ The Help Menu includes:
 - Use the "Forgot Password" option to reset your password
 - Ensure you have a stable internet connection
 
-### 9.2 Can't Find a Task
+### 9.2 Didn't Receive the Verification Email
+- Check your **Spam** or **Junk** folder
+- Make sure you entered your email address correctly during sign up
+- Wait a few minutes, then check again before requesting a new one
+
+### 9.3 Can't Find a Task
 - Check the Available tab for tasks from neighbours
 - Pull down to refresh the list
 - Check your filter settings
 
-### 9.3 Task Not Updating
+### 9.4 Task Not Updating
 - Pull down to refresh the screen
 - Check your internet connection
 - Try restarting the app
 
-### 9.4 Chat Messages Not Sending
+### 9.5 Chat Messages Not Sending
 - Check your internet connection
 - Ensure you're connected to a stable network
 - Try restarting the app
@@ -300,6 +316,9 @@ Yes — go to Profile → Privacy Settings and update your residential address.
 
 ### 10.5 How do I contact a helper?
 Once a helper accepts your task, you can chat with them through the Chat tab.
+
+### 10.6 Why did I get an email link instead of an OTP code during sign up?
+SupaNeighbour verifies your email using a confirmation link rather than a one-time code — just click the link in the email we send you (check Spam if it's not in your inbox).
 
 ---
 
