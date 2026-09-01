@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -187,8 +186,8 @@ public class TaskService {
         if (updates.getDependentRatingId() != null) {
             targetTask.setDependentRatingId(updates.getDependentRatingId());
         }
+
         Task saved = taskRepo.save(targetTask);
-        Hibernate.initialize(saved.getImages()); // force-load while session is open
         return saved;
     }
 
