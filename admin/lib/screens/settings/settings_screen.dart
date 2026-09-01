@@ -16,7 +16,7 @@ class SettingsScreen extends StatelessWidget {
           Icon(
             Icons.settings,
             size: 64,
-            color: AppColors.primaryTeal.withOpacity(0.3),
+            color: AppColors.primaryTeal.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(

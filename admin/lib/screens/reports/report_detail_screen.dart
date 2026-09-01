@@ -1,7 +1,6 @@
 // admin/lib/screens/reports/report_detail_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared/constants/constants.dart';
 import '../../models/report_model.dart';
@@ -64,7 +63,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 64, color: AppColors.error),
+          const Icon(Icons.error_outline, size: 64, color: AppColors.error),
           const SizedBox(height: 16),
           Text(
             'Failed to load report',
@@ -109,7 +108,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.error),
                   ),
@@ -133,7 +132,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -163,9 +162,9 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primaryTeal.withOpacity(0.05),
+              color: AppColors.primaryTeal.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primaryTeal.withOpacity(0.3)),
+              border: Border.all(color: AppColors.primaryTeal.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -226,9 +225,9 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 child: OutlinedButton(
                   onPressed: () {},
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppColors.textGrey),
+                    side: const BorderSide(color: AppColors.textGrey),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Dismiss',
                     style: TextStyle(color: AppColors.textGrey),
                   ),
@@ -239,9 +238,9 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 child: OutlinedButton(
                   onPressed: () {},
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppColors.error),
+                    side: const BorderSide(color: AppColors.error),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Escalate',
                     style: TextStyle(color: AppColors.error),
                   ),
@@ -258,7 +257,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: report.statusColor.withOpacity(0.1),
+        color: report.statusColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -290,7 +289,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: report.severityColor.withOpacity(0.1),
+        color: report.severityColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(

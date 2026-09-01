@@ -128,9 +128,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -164,7 +164,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.textGrey.withOpacity(0.3)),
+        border: Border.all(color: AppColors.textGrey.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButton<String>(
@@ -195,7 +195,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -235,7 +235,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: report.statusColor.withOpacity(0.1),
+                          color: report.statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -251,7 +251,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: report.severityColor.withOpacity(0.1),
+                          color: report.severityColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -276,7 +276,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      Icon(Icons.person_outline, size: 12, color: AppColors.textGrey),
+                      const Icon(Icons.person_outline, size: 12, color: AppColors.textGrey),
                       const SizedBox(width: 4),
                       Text(
                         report.reporterName,
@@ -286,7 +286,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Icon(Icons.access_time, size: 12, color: AppColors.textGrey),
+                      const Icon(Icons.access_time, size: 12, color: AppColors.textGrey),
                       const SizedBox(width: 4),
                       Text(
                         _formatTime(report.createdAt),
@@ -339,7 +339,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           Icon(
             Icons.flag_outlined,
             size: 64,
-            color: AppColors.textGrey.withOpacity(0.3),
+            color: AppColors.textGrey.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
