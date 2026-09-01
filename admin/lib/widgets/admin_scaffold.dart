@@ -26,16 +26,12 @@ class AdminScaffold extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: Row(
         children: [
-          // Sidebar
           AdminSidebar(selectedIndex: selectedIndex),
-          
-          // Main Content
           Expanded(
             child: Column(
               children: [
-                // App Bar
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     border: Border(
@@ -47,6 +43,14 @@ class AdminScaffold extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
+                      Image.asset(
+                        'assets/images/Logo.png',
+                        height: 30,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                      const SizedBox(width: 12),
                       Text(
                         title,
                         style: GoogleFonts.poppins(
@@ -56,7 +60,6 @@ class AdminScaffold extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      // User info
                       Row(
                         children: [
                           const CircleAvatar(
@@ -82,7 +85,6 @@ class AdminScaffold extends StatelessWidget {
                           IconButton(
                             icon: const Icon(Icons.logout, size: 20),
                             onPressed: () {
-                              // TODO: Implement logout
                               context.go('/login');
                             },
                             tooltip: 'Logout',
@@ -92,7 +94,6 @@ class AdminScaffold extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Page Content
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(24),

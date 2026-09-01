@@ -20,15 +20,21 @@ class AdminSidebar extends StatelessWidget {
       color: AppColors.charcoal,
       child: Column(
         children: [
-          // Logo Section
           Container(
             padding: const EdgeInsets.symmetric(vertical: 24),
             child: Column(
               children: [
-                const Icon(
-                  Icons.admin_panel_settings,
-                  size: 40,
-                  color: AppColors.primaryTeal,
+                Image.asset(
+                  'assets/images/Logo.png',
+                  height: 50,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Fallback if image not found
+                    return const Icon(
+                      Icons.admin_panel_settings,
+                      size: 40,
+                      color: AppColors.primaryTeal,
+                    );
+                  },
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -133,8 +139,7 @@ class AdminSidebar extends StatelessWidget {
         if (isLogout) {
           _showLogoutDialog(context);
         } else {
-          // Use pushReplacement for navigation
-          context.pushReplacement(route);
+          context.go(route);
         }
       },
       child: Container(
@@ -184,7 +189,7 @@ class AdminSidebar extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              context.pushReplacement('/login');
+              context.go('/login');
             },
             style: TextButton.styleFrom(
               foregroundColor: AppColors.error,
