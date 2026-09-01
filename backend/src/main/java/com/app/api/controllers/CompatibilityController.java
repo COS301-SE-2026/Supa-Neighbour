@@ -16,13 +16,20 @@ import org.springframework.web.bind.annotation.RestController;
 import com.app.api.models.Compatibility;
 import com.app.api.services.CompatibilityService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST controller for managing compatibility
  */
 @RestController
 @RequestMapping("/api/compatibility")
+@Tag(name = "Compatibility", description = "Operations for managing compatibility records")
 public class CompatibilityController {
-
 
     private final CompatibilityService compatibilityService;
 
@@ -42,6 +49,8 @@ public class CompatibilityController {
      * @return a list of all compatibility
      */
     @GetMapping
+    @Operation(summary = "Get all compatibility records", description = "Retrieves a list of all compatibility records")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved compatibility records")
     public ResponseEntity<List<Compatibility>> getAllCompatibility() {
         return ResponseEntity.ok(compatibilityService.getAllCompatibility());
     }
@@ -54,7 +63,15 @@ public class CompatibilityController {
      * @return the compatibility if found, otherwise 404 Not Found
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Compatibility> getCompatibilityById(@PathVariable int id) {
+    @Operation(summary = "Get compatibility by ID", description = "Retrieves a single compatibility record by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Compatibility record found"),
+        @ApiResponse(responseCode = "404", description = "Compatibility record not found", content = @Content)
+    })
+    public ResponseEntity<Compatibility> getCompatibilityById(
+        @Parameter(description = "ID of the compatibility record to retrieve", example = "1")
+        @PathVariable int id
+    ) {
         Compatibility compatibility = compatibilityService.getCompatibilityById(id);
         if (compatibility == null) {
             return ResponseEntity.notFound().build();
@@ -70,6 +87,11 @@ public class CompatibilityController {
      * @return the created compatibility with HTTP 201 status
      */
     @PostMapping
+    @Operation(summary = "Create a new compatibility record", description = "Creates a new compatibility record")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Compatibility record created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid compatibility data", content = @Content)
+    })
     public ResponseEntity<Compatibility> createCompatibility(@RequestBody Compatibility compatibility) {
         Compatibility saved = compatibilityService.saveCompatibility(compatibility);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -84,7 +106,17 @@ public class CompatibilityController {
      * @return the updated compatibility if found, otherwise 404 Not Found
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Compatibility> updateCompatibility(@PathVariable int id, @RequestBody Compatibility compatibility) {
+    @Operation(summary = "Update a compatibility record", description = "Updates an existing compatibility record by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Compatibility record updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Compatibility record not found", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid compatibility data", content = @Content)
+    })
+    public ResponseEntity<Compatibility> updateCompatibility(
+        @Parameter(description = "ID of the compatibility record to update", example = "1")
+        @PathVariable int id,
+        @RequestBody Compatibility compatibility
+    ) {
         Compatibility existing = compatibilityService.getCompatibilityById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();
@@ -101,7 +133,15 @@ public class CompatibilityController {
      * @return 204 No Content if deleted, otherwise 404 Not Found
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCompatibility(@PathVariable int id) {
+    @Operation(summary = "Delete a compatibility record", description = "Deletes a compatibility record by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Compatibility record deleted successfully", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Compatibility record not found", content = @Content)
+    })
+    public ResponseEntity<Void> deleteCompatibility(
+        @Parameter(description = "ID of the compatibility record to delete", example = "1")
+        @PathVariable int id
+    ) {
         Compatibility existing = compatibilityService.getCompatibilityById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();

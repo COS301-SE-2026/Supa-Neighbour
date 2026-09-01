@@ -55,6 +55,18 @@ class MockChatService implements IChatService {
   Future<void> markAsRead(int chatId, int userId) async {
     // Mock success
   }
+
+  @override
+  Future<Map<String, dynamic>> getOrCreateChatForTask(int taskId, String authToken) async {
+    return {
+      'chatId': 101,
+      'taskId': taskId,
+      'name': 'Mock Chat',
+      'lastMessage': 'Hello from mock chat',
+      'timestamp': DateTime.now().toIso8601String(),
+      'participants': [1, 2],
+    };
+  }
 }
 
 class MockChatServiceError implements IChatService {
@@ -76,5 +88,10 @@ class MockChatServiceError implements IChatService {
   @override
   Future<void> markAsRead(int chatId, int userId) async {
     throw Exception('Failed to mark as read');
+  }
+
+  @override
+  Future<Map<String, dynamic>> getOrCreateChatForTask(int taskId, String authToken) async {
+    throw Exception('Failed to open chat for task');
   }
 }
