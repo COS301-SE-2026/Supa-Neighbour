@@ -7,59 +7,77 @@ import 'package:shared/constants/constants.dart';
 
 class AdminSidebar extends StatelessWidget {
   final int selectedIndex;
+  final bool isCollapsed;
+  final VoidCallback onToggle;
 
   const AdminSidebar({
     super.key,
     required this.selectedIndex,
+    required this.isCollapsed,
+    required this.onToggle,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 240,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+      width: isCollapsed ? 70 : 240,
       color: AppColors.charcoal,
       child: Column(
         children: [
+          // Logo Section (simplified, no toggle button)
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Column(
-              children: [
-                Image.asset(
-                  'assets/images/Logo.png',
-                  height: 50,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Fallback if image not found
-                    return const Icon(
-                      Icons.admin_panel_settings,
-                      size: 40,
-                      color: AppColors.primaryTeal,
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Supa Neighbour',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: isCollapsed
+                ? Image.asset(
+                    'assets/images/Logo.png',
+                    height: 40,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.admin_panel_settings,
+                        size: 32,
+                        color: AppColors.primaryTeal,
+                      );
+                    },
+                  )
+                : Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/Logo.png',
+                        height: 50,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.admin_panel_settings,
+                            size: 40,
+                            color: AppColors.primaryTeal,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Supa Neighbour',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Admin',
+                        style: GoogleFonts.openSans(
+                          fontSize: 11,
+                          color: AppColors.textGrey,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Text(
-                  'Admin',
-                  style: GoogleFonts.openSans(
-                    fontSize: 12,
-                    color: AppColors.textGrey,
-                  ),
-                ),
-              ],
-            ),
           ),
           const Divider(
             color: AppColors.textGrey,
             thickness: 0.5,
-            indent: 16,
-            endIndent: 16,
+            indent: 8,
+            endIndent: 8,
           ),
           // Navigation Items
           Expanded(
@@ -107,8 +125,8 @@ class AdminSidebar extends StatelessWidget {
           const Divider(
             color: AppColors.textGrey,
             thickness: 0.5,
-            indent: 16,
-            endIndent: 16,
+            indent: 8,
+            endIndent: 8,
           ),
           _buildNavItem(
             context: context,
@@ -143,8 +161,8 @@ class AdminSidebar extends StatelessWidget {
         }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primaryTeal : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
@@ -156,19 +174,21 @@ class AdminSidebar extends StatelessWidget {
               color: isSelected 
                   ? Colors.white 
                   : (isLogout ? AppColors.error : AppColors.textGrey),
-              size: 20,
+              size: 22,
             ),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: GoogleFonts.openSans(
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected 
-                    ? Colors.white 
-                    : (isLogout ? AppColors.error : AppColors.textGrey),
+            if (!isCollapsed) ...[
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: GoogleFonts.openSans(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected 
+                      ? Colors.white 
+                      : (isLogout ? AppColors.error : AppColors.textGrey),
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared/constants/constants.dart';
 import 'admin_sidebar.dart';
 
-class AdminScaffold extends StatelessWidget {
+class AdminScaffold extends StatefulWidget {
   final Widget child;
   final String title;
   final int selectedIndex;
@@ -21,17 +21,38 @@ class AdminScaffold extends StatelessWidget {
   });
 
   @override
+  State<AdminScaffold> createState() => _AdminScaffoldState();
+}
+
+class _AdminScaffoldState extends State<AdminScaffold> {
+  bool _isSidebarCollapsed = false;
+
+  void _toggleSidebar() {
+    setState(() {
+      _isSidebarCollapsed = !_isSidebarCollapsed;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Row(
         children: [
-          AdminSidebar(selectedIndex: selectedIndex),
+          // Sidebar
+          AdminSidebar(
+            selectedIndex: widget.selectedIndex,
+            isCollapsed: _isSidebarCollapsed,
+            onToggle: _toggleSidebar,
+          ),
+          
+          // Main Content
           Expanded(
             child: Column(
               children: [
+                // App Bar
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     border: Border(
@@ -43,23 +64,32 @@ class AdminScaffold extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Image.asset(
-                        'assets/images/Logo.png',
-                        height: 30,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const SizedBox.shrink();
-                        },
+                      // Toggle button
+                      IconButton(
+                        onPressed: _toggleSidebar,
+                        icon: Icon(
+                          _isSidebarCollapsed ? Icons.menu : Icons.menu_open,
+                          color: AppColors.charcoal,
+                          size: 28,
+                        ),
+                        tooltip: _isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                       const SizedBox(width: 12),
+                      
+                      // Title only
                       Text(
-                        title,
+                        widget.title,
                         style: GoogleFonts.poppins(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: AppColors.charcoal,
                         ),
                       ),
                       const Spacer(),
+                      
+                      // User Info
                       Row(
                         children: [
                           const CircleAvatar(
@@ -94,10 +124,12 @@ class AdminScaffold extends StatelessWidget {
                     ],
                   ),
                 ),
+                
+                // Content
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: child,
+                    child: widget.child,
                   ),
                 ),
               ],

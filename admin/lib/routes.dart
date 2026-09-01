@@ -1,3 +1,5 @@
+// admin/lib/routes.dart
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'screens/login/admin_login_screen.dart';
@@ -8,7 +10,6 @@ import 'screens/users/users_screen.dart';
 import 'screens/zones/zones_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'widgets/admin_scaffold.dart';
-
 
 CustomTransitionPage _buildPageWithNoTransition(Widget child) {
   return CustomTransitionPage(
@@ -31,9 +32,8 @@ final router = GoRouter(
       builder: (context, state, child) {
         int selectedIndex = 0;
         final location = state.uri.path;
-        if (location.startsWith('/reports')) {
-          selectedIndex = 1;
-        } else if (location.startsWith('/users')) selectedIndex = 2;
+        if (location.startsWith('/reports')) selectedIndex = 1;
+        else if (location.startsWith('/users')) selectedIndex = 2;
         else if (location.startsWith('/zones')) selectedIndex = 3;
         else if (location.startsWith('/settings')) selectedIndex = 4;
         
