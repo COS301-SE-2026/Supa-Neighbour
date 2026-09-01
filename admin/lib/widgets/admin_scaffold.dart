@@ -11,6 +11,8 @@ class AdminScaffold extends StatefulWidget {
   final String title;
   final int selectedIndex;
   final List<Widget>? actions;
+  final bool showBackButton;
+  final VoidCallback? onBackPressed;
 
   const AdminScaffold({
     super.key,
@@ -18,6 +20,8 @@ class AdminScaffold extends StatefulWidget {
     required this.title,
     required this.selectedIndex,
     this.actions,
+    this.showBackButton = false,
+    this.onBackPressed,
   });
 
   @override
@@ -78,7 +82,16 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                       ),
                       const SizedBox(width: 12),
                       
-                      // Title only
+                      if (widget.showBackButton) ...[
+                        IconButton(
+                          onPressed: widget.onBackPressed ?? () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back),
+                          tooltip: 'Back',
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      
+                      // Title
                       Text(
                         widget.title,
                         style: GoogleFonts.poppins(

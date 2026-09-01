@@ -1,6 +1,7 @@
 // admin/lib/screens/reports/report_detail_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared/constants/constants.dart';
 import '../../models/report_model.dart';
@@ -21,6 +22,11 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   Report? _report;
   bool _isLoading = true;
   String? _error;
+
+  ViolationType? _selectedViolationType;
+  Severity? _selectedSeverity;
+  SuggestedAction? _suggestedAction;
+  bool _isLoadingSuggestion = false;
 
   @override
   void initState() {
@@ -44,7 +50,49 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     setState(() {
       _report = report;
       _isLoading = false;
+      _selectedViolationType = report.violationType;
+      _selectedSeverity = report.severity;
+      _suggestedAction = report.suggestedAction;
     });
+  }
+
+  Future<void> _getSuggestedAction() async {
+    if (_selectedViolationType == null || _selectedSeverity == null) {
+      setState(() {
+        _suggestedAction = null;
+      });
+      return;
+    }
+
+    setState(() => _isLoadingSuggestion = true);
+
+    // TODO: Replace with actual API call to /api/suggestion
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Mock logic - simulate API response based on selection
+    final action = _mockSuggestedAction(
+      _selectedViolationType!, 
+      _selectedSeverity!,
+    );
+    
+    setState(() {
+      _suggestedAction = action;
+      _isLoadingSuggestion = false;
+    });
+  }
+
+  SuggestedAction _mockSuggestedAction(ViolationType type, Severity severity) {
+    if (severity == Severity.severe) {
+      if (type == ViolationType.threatsViolence || 
+          type == ViolationType.privacyViolation) {
+        return SuggestedAction.ban;
+      }
+      return SuggestedAction.suspend30d;
+    } else if (severity == Severity.moderate) {
+      return SuggestedAction.suspend7d;
+    } else {
+      return SuggestedAction.warning;
+    }
   }
 
   @override
@@ -98,6 +146,28 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          //BACK BUTTON
+          Row(
+            children: [
+              IconButton(
+                onPressed: () => context.go('/reports'),
+                icon: const Icon(Icons.arrow_back),
+                tooltip: 'Back to reports',
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Report #${report.id}',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.charcoal,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          
+          // Status badges
           Row(
             children: [
               _buildStatusBadge(report),
@@ -125,6 +195,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           ),
           const SizedBox(height: 16),
 
+          // Report details card
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -159,56 +230,139 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           ),
           const SizedBox(height: 16),
 
+          //Violation Type & Severity Selection with Suggested Action
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primaryTeal.withValues(alpha: 0.05),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primaryTeal.withValues(alpha: 0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.gavel, color: AppColors.primaryTeal),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Suggested Action',
-                        style: GoogleFonts.openSans(
-                          fontSize: 12,
-                          color: AppColors.textGrey,
-                        ),
-                      ),
-                      Text(
-                        report.suggestedActionDisplay,
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primaryTeal,
-                        ),
-                      ),
-                    ],
+                Text(
+                  'Review & Action',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.charcoal,
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.success,
+                const SizedBox(height: 16),
+                
+                // Violation Type Dropdown
+                DropdownButtonFormField<ViolationType>(
+                  value: _selectedViolationType,
+                  hint: const Text('Select violation type'),
+                  isExpanded: true,
+                  items: ViolationType.values.map((type) {
+                    return DropdownMenuItem(
+                      value: type,
+                      child: Text(_getViolationTypeDisplay(type)),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedViolationType = value;
+                    });
+                    _getSuggestedAction();
+                  },
+                  decoration: const InputDecoration(
+                    labelText: 'Violation Type',
+                    border: OutlineInputBorder(),
                   ),
-                  child: const Text('Accept'),
                 ),
-                const SizedBox(width: 8),
-                OutlinedButton(
-                  onPressed: () {},
-                  child: const Text('Override'),
+                const SizedBox(height: 12),
+                
+                // Severity Dropdown
+                DropdownButtonFormField<Severity>(
+                  value: _selectedSeverity,
+                  hint: const Text('Select severity'),
+                  isExpanded: true,
+                  items: Severity.values.map((severity) {
+                    return DropdownMenuItem(
+                      value: severity,
+                      child: Text(severity.toString().split('.').last.toUpperCase()),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedSeverity = value;
+                    });
+                    _getSuggestedAction();
+                  },
+                  decoration: const InputDecoration(
+                    labelText: 'Severity',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
+                
+                // Suggested Action Result
+                if (_isLoadingSuggestion)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_suggestedAction != null)
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryTeal.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.primaryTeal.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.gavel, color: AppColors.primaryTeal),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Suggested Action',
+                                style: GoogleFonts.openSans(
+                                  fontSize: 12,
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                              Text(
+                                _getSuggestedActionDisplay(_suggestedAction!),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primaryTeal,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            // TODO: Apply suggested action
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.success,
+                          ),
+                          child: const Text('Apply'),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
           const SizedBox(height: 16),
 
+          // Action buttons
           Row(
             children: [
               Expanded(
@@ -336,6 +490,49 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} · ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+
+  String _getViolationTypeDisplay(ViolationType type) {
+    switch (type) {
+      case ViolationType.harassment:
+        return 'Harassment';
+      case ViolationType.hateSpeech:
+        return 'Hate Speech';
+      case ViolationType.inappropriateContent:
+        return 'Inappropriate Content';
+      case ViolationType.spamScam:
+        return 'Spam/Scam';
+      case ViolationType.privacyViolation:
+        return 'Privacy Violation';
+      case ViolationType.impersonation:
+        return 'Impersonation';
+      case ViolationType.taskNoShow:
+        return 'Task: No-show';
+      case ViolationType.taskPoorQuality:
+        return 'Task: Poor Quality';
+      case ViolationType.taskPropertyDamage:
+        return 'Task: Property Damage';
+      case ViolationType.taskUnsafeConditions:
+        return 'Task: Unsafe Conditions';
+      case ViolationType.threatsViolence:
+        return 'Threats of Violence';
+    }
+  }
+
+  String _getSuggestedActionDisplay(SuggestedAction action) {
+    switch (action) {
+      case SuggestedAction.warning:
+        return 'Warning';
+      case SuggestedAction.suspend7d:
+        return 'Suspend 7 days';
+      case SuggestedAction.suspend14d:
+        return 'Suspend 14 days';
+      case SuggestedAction.suspend30d:
+        return 'Suspend 30 days';
+      case SuggestedAction.ban:
+        return 'Ban';
+    }
   }
 
   List<Report> _getMockReports() {
