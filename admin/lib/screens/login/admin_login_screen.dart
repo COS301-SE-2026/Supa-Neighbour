@@ -16,7 +16,7 @@ class AdminLoginScreen extends ConsumerStatefulWidget {
 class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
+  final bool _isLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
 
@@ -101,7 +101,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -173,7 +173,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _mockLogin,
-                child: Text(
+                child: const Text(
                   'Skip Login (Dev Mode)',
                   style: TextStyle(
                     color: AppColors.textGrey,

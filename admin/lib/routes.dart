@@ -31,8 +31,9 @@ final router = GoRouter(
       builder: (context, state, child) {
         int selectedIndex = 0;
         final location = state.uri.path;
-        if (location.startsWith('/reports')) selectedIndex = 1;
-        else if (location.startsWith('/users')) selectedIndex = 2;
+        if (location.startsWith('/reports')) {
+          selectedIndex = 1;
+        } else if (location.startsWith('/users')) selectedIndex = 2;
         else if (location.startsWith('/zones')) selectedIndex = 3;
         else if (location.startsWith('/settings')) selectedIndex = 4;
         

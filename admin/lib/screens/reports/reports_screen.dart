@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared/constants/constants.dart';
-import '../../widgets/admin_scaffold.dart';
 import '../../models/report_model.dart';
 
 class ReportsScreen extends StatefulWidget {
@@ -15,13 +14,9 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
-  // Filter state
   String _selectedStatusFilter = 'All';
   String _selectedSeverityFilter = 'All';
-  String _selectedTypeFilter = 'All';
   String _searchQuery = '';
-
-  // Mock data
   List<Report> _reports = [];
   bool _isLoading = true;
 
@@ -33,7 +28,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Future<void> _loadReports() async {
     setState(() => _isLoading = true);
-    // TODO: Replace with actual API call
     await Future.delayed(const Duration(milliseconds: 500));
     setState(() {
       _reports = _getMockReports();
@@ -52,10 +46,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
       filtered = filtered.where((r) => r.severityDisplay == _selectedSeverityFilter).toList();
     }
 
-    if (_selectedTypeFilter != 'All') {
-      filtered = filtered.where((r) => r.violationTypeDisplay == _selectedTypeFilter).toList();
-    }
-
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((r) =>
         r.id.toString().contains(_searchQuery) ||
@@ -71,70 +61,66 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final filteredReports = _getFilteredReports();
     final pendingCount = _reports.where((r) => r.status == ReportStatus.submitted || r.status == ReportStatus.assigned).length;
 
-    return AdminScaffold(
-      selectedIndex: 1,
-      title: 'Reports Management',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Stats row
-          Row(
-            children: [
-              _buildStatChip('Total', _reports.length, AppColors.primaryTeal),
-              const SizedBox(width: 12),
-              _buildStatChip('Pending', pendingCount, AppColors.citrusYellow),
-              const SizedBox(width: 12),
-              _buildStatChip('Resolved', _reports.where((r) => r.status == ReportStatus.resolved).length, AppColors.success),
-            ],
-          ),
-          const SizedBox(height: 16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Stats chips
+        Row(
+          children: [
+            _buildStatChip('Total', _reports.length, AppColors.primaryTeal),
+            const SizedBox(width: 12),
+            _buildStatChip('Pending', pendingCount, AppColors.citrusYellow),
+            const SizedBox(width: 12),
+            _buildStatChip('Resolved', _reports.where((r) => r.status == ReportStatus.resolved).length, AppColors.success),
+          ],
+        ),
+        const SizedBox(height: 16),
 
-          // Search and filters
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  onChanged: (value) {
-                    setState(() => _searchQuery = value);
-                  },
-                  decoration: const InputDecoration(
-                    hintText: 'Search by ID or reporter...',
-                    prefixIcon: Icon(Icons.search),
-                    isDense: true,
-                  ),
+        // Search and filters
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                onChanged: (value) {
+                  setState(() => _searchQuery = value);
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Search by ID or reporter...',
+                  prefixIcon: Icon(Icons.search),
+                  isDense: true,
                 ),
               ),
-              const SizedBox(width: 12),
-              _buildFilterDropdown(
-                value: _selectedStatusFilter,
-                items: ['All', 'Submitted', 'In Review', 'Reviewed', 'Resolved'],
-                onChanged: (value) => setState(() => _selectedStatusFilter = value!),
-              ),
-              const SizedBox(width: 12),
-              _buildFilterDropdown(
-                value: _selectedSeverityFilter,
-                items: ['All', 'Minor', 'Moderate', 'Severe'],
-                onChanged: (value) => setState(() => _selectedSeverityFilter = value!),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+            ),
+            const SizedBox(width: 12),
+            _buildFilterDropdown(
+              value: _selectedStatusFilter,
+              items: ['All', 'Submitted', 'In Review', 'Reviewed', 'Resolved'],
+              onChanged: (value) => setState(() => _selectedStatusFilter = value!),
+            ),
+            const SizedBox(width: 12),
+            _buildFilterDropdown(
+              value: _selectedSeverityFilter,
+              items: ['All', 'Minor', 'Moderate', 'Severe'],
+              onChanged: (value) => setState(() => _selectedSeverityFilter = value!),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
 
-          // Report list
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredReports.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        itemCount: filteredReports.length,
-                        itemBuilder: (context, index) {
-                          return _buildReportCard(context, filteredReports[index]);
-                        },
-                      ),
-          ),
-        ],
-      ),
+        // Report list
+        Expanded(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : filteredReports.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      itemCount: filteredReports.length,
+                      itemBuilder: (context, index) {
+                        return _buildReportCard(context, filteredReports[index]);
+                      },
+                    ),
+        ),
+      ],
     );
   }
 
@@ -220,7 +206,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ),
         child: Row(
           children: [
-            // Priority indicator
             if (report.isUrgent)
               Container(
                 width: 4,
@@ -232,7 +217,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
               ),
             if (report.isUrgent) const SizedBox(width: 12),
 
-            // Content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -317,7 +301,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
               ),
             ),
 
-            // Actions
             Row(
               children: [
                 TextButton(
@@ -332,7 +315,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 if (report.status != ReportStatus.resolved)
                   ElevatedButton(
                     onPressed: () {
-                      // TODO: Navigate to review
                       context.go('/reports/${report.id}');
                     },
                     style: ElevatedButton.styleFrom(
@@ -396,7 +378,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
-  // MOCK DATA
   List<Report> _getMockReports() {
     return [
       Report(

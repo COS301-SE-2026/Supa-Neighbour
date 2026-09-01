@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared/constants/constants.dart';
-import '../../widgets/admin_scaffold.dart';
 import '../../models/report_model.dart';
 
 class ReportDetailScreen extends StatefulWidget {
@@ -36,10 +35,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       _error = null;
     });
 
-    // TODO: Replace with actual API call
     await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Find mock report
     final mockReports = _getMockReports();
     final report = mockReports.firstWhere(
       (r) => r.id == widget.reportId,
@@ -54,17 +50,13 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminScaffold(
-      selectedIndex: 1,
-      title: 'Report #${widget.reportId}',
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? _buildErrorState()
-              : _report != null
-                  ? _buildReportDetail()
-                  : _buildErrorState(),
-    );
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null || _report == null) {
+      return _buildErrorState();
+    }
+    return _buildReportDetail();
   }
 
   Widget _buildErrorState() {
@@ -107,7 +99,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Status and severity row
           Row(
             children: [
               _buildStatusBadge(report),
@@ -135,7 +126,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Report details card
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -170,7 +160,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Suggested action
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -205,9 +194,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    // TODO: Accept suggested action
-                  },
+                  onPressed: () {},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.success,
                   ),
@@ -215,9 +202,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 ),
                 const SizedBox(width: 8),
                 OutlinedButton(
-                  onPressed: () {
-                    // TODO: Override action
-                  },
+                  onPressed: () {},
                   child: const Text('Override'),
                 ),
               ],
@@ -225,14 +210,11 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Action buttons
           Row(
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Approve report
-                  },
+                  onPressed: () {},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.success,
                   ),
@@ -242,9 +224,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {
-                    // TODO: Dismiss report
-                  },
+                  onPressed: () {},
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: AppColors.textGrey),
                   ),
@@ -257,9 +237,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {
-                    // TODO: Escalate report
-                  },
+                  onPressed: () {},
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: AppColors.error),
                   ),
@@ -361,8 +339,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     return '${date.day}/${date.month}/${date.year} · ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
-  
-  // MOCK DATA
   List<Report> _getMockReports() {
     return [
       Report(
