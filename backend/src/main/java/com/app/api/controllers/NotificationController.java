@@ -4,7 +4,12 @@ import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.dtos.NotificationDTO;
 import com.app.api.services.FirebaseAuthService;
@@ -23,6 +28,13 @@ public class NotificationController {
     @Autowired
     private FirebaseAuthService firebaseAuthService;
 
+     /**
+     * Retrieves all notifications for the authenticated user.
+     * Notifications are ordered newest first.
+     *
+     * @param authHeader Firebase authentication token in format: "Bearer &lt;token&gt;"
+     * @return List of user's notifications, or 401 if authentication fails
+     */
     @GetMapping("/notifications")
     public ResponseEntity<?>  getMyNotifications(
         @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
@@ -40,6 +52,13 @@ public class NotificationController {
         return ResponseEntity.ok(notifications);
     }
 
+    /**
+     * Marks a specific notification as read for the authenticated user.
+     *
+     * @param notificationId The ID of the notification to mark as read
+     * @param authHeader Firebase authentication token in format: "Bearer &lt;token&gt;"
+     * @return 200 OK if successful, 404 if notification not found, or 401 if authentication fails
+     */
     @PatchMapping("/notifications/{notificationId}/read")
     public ResponseEntity<?> markNotificationRead(
         @Parameter(description = "ID of the notification", example = "1")

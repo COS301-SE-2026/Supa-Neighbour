@@ -1,28 +1,25 @@
 package com.app.api.services;
 
 
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.app.api.dtos.NotificationDTO;
+import com.app.api.models.Notifications;
+import com.app.api.repositories.NotificationRepository;
 import com.app.api.repositories.UserDeviceRepository;
+import com.app.api.repositories.UserRepository;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
-import com.app.api.models.Notifications;
-import com.app.api.repositories.NotificationRepository;
-import com.app.api.repositories.UserRepository;
-import java.time.LocalDateTime;
-import com.app.api.dtos.NotificationDTO;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
-import com.app.api.services.NotificationPersistenceService;
 
 /**
  * Sends push notifications via Firebase Cloud Messaging (FCM) to a user's
