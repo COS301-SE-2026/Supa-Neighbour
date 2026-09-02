@@ -20,7 +20,6 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 import java.util.Optional;
 
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,8 +39,7 @@ import com.app.api.repositories.SettingsRepository;
 // live in the project (e.g. com.app.api.entities.User / .Settings). They are
 // only referenced here as mock targets for their getUserid()/setLastSeen()
 // methods, so the exact package doesn't affect the test logic below.
-import com.app.api.models.User;
-import com.app.api.models.Settings;
+
 
 @ExtendWith(MockitoExtension.class)
 public class FirebaseAuthServiceTest {
@@ -216,4 +214,5 @@ public class FirebaseAuthServiceTest {
         }
     }  
 }
+
 
