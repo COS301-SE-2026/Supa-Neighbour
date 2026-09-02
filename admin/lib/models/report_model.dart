@@ -1,125 +1,260 @@
 // admin/lib/models/report_model.dart
 
 import 'package:flutter/material.dart';
+import 'package:shared/constants/constants.dart';
 
 enum ReportType {
-  user,
-  post,
-  comment,
-  taskDispute,
+  user('User'),
+  post('Post'),
+  comment('Comment'),
+  taskDispute('Task Dispute'),
+  unknown('Unknown');
+
+  final String display;
+  const ReportType(this.display);
+
+  static ReportType fromApi(String? raw) {
+    switch ((raw ?? '').toLowerCase().replaceAll('_', '')) {
+      case 'user':
+        return ReportType.user;
+      case 'post':
+        return ReportType.post;
+      case 'comment':
+        return ReportType.comment;
+      case 'taskdispute':
+        return ReportType.taskDispute;
+      default:
+        return ReportType.unknown;
+    }
+  }
+
+  String get apiValue => name;
 }
 
 enum ReportStatus {
-  submitted,
-  assigned,
-  reviewed,
-  resolved,
+  submitted('Submitted'),
+  assigned('Assigned'),
+  reviewed('Reviewed'),
+  resolved('Resolved'),
+  unknown('Unknown');
+
+  final String display;
+  const ReportStatus(this.display);
+
+  static ReportStatus fromApi(String? raw) {
+    switch ((raw ?? '').toLowerCase().replaceAll('_', '').replaceAll(' ', '')) {
+      case 'submitted':
+        return ReportStatus.submitted;
+      case 'assigned':
+        return ReportStatus.assigned;
+      case 'reviewed':
+        return ReportStatus.reviewed;
+      case 'resolved':
+        return ReportStatus.resolved;
+      default:
+        return ReportStatus.unknown;
+    }
+  }
+
+  String get apiValue => name;
 }
 
+/// Fed by a separate suggested-action endpoint (not GET /api/report) that
+/// takes violationType + severity and returns a SuggestedAction for the
+/// admin to approve. `unassessed` is the default until that call is made.
 enum Severity {
-  minor,
-  moderate,
-  severe,
+  minor('Minor'),
+  moderate('Moderate'),
+  severe('Severe'),
+  unassessed('Not assessed');
+
+  final String display;
+  const Severity(this.display);
+
+  static Severity fromApi(String? raw) {
+    switch ((raw ?? '').toUpperCase()) {
+      case 'MINOR':
+        return Severity.minor;
+      case 'MODERATE':
+        return Severity.moderate;
+      case 'SEVERE':
+        return Severity.severe;
+      default:
+        return Severity.unassessed;
+    }
+  }
+
+  String get apiValue => name.toUpperCase();
 }
 
 enum ViolationType {
-  harassment,
-  hateSpeech,
-  inappropriateContent,
-  spamScam,
-  privacyViolation,
-  impersonation,
-  taskNoShow,
-  taskPoorQuality,
-  taskPropertyDamage,
-  taskUnsafeConditions,
-  threatsViolence,
+  harassment('Harassment', 'HARASSMENT'),
+  hateSpeech('Hate Speech', 'HATE_SPEECH'),
+  inappropriateContent('Inappropriate Content', 'INAPPROPRIATE_CONTENT'),
+  spamScam('Spam/Scam', 'SPAM_SCAM'),
+  privacyViolation('Privacy Violation', 'PRIVACY_VIOLATION'),
+  impersonation('Impersonation', 'IMPERSONATION'),
+  taskNoShow('Task: No-show', 'TASK_NO_SHOW'),
+  taskPoorQuality('Task: Poor Quality', 'TASK_POOR_QUALITY'),
+  taskPropertyDamage('Task: Property Damage', 'TASK_PROPERTY_DAMAGE'),
+  taskUnsafeConditions('Task: Unsafe Conditions', 'TASK_UNSAFE_CONDITIONS'),
+  threatsViolence('Threats of Violence', 'THREATS_VIOLENCE'),
+  unassessed('Not yet assessed', 'UNASSESSED');
+
+  final String display;
+  final String apiValue;
+  const ViolationType(this.display, this.apiValue);
+
+  static ViolationType fromApi(String? raw) {
+    final value = (raw ?? '').toUpperCase();
+    for (final type in ViolationType.values) {
+      if (type.apiValue == value) return type;
+    }
+    return ViolationType.unassessed;
+  }
 }
 
 enum SuggestedAction {
-  warning,
-  suspend7d,
-  suspend14d,
-  suspend30d,
-  ban,
+  warning('⚠️ Warning', 'WARNING'),
+  suspend7d('⛔ Suspend 7 days', 'SUSPEND_7D'),
+  suspend14d('⛔ Suspend 14 days', 'SUSPEND_14D'),
+  suspend30d('⛔ Suspend 30 days', 'SUSPEND_30D'),
+  ban('🚫 Ban', 'BAN'),
+  pending('Pending review', 'PENDING');
+
+  final String display;
+  final String apiValue;
+  const SuggestedAction(this.display, this.apiValue);
+
+  static SuggestedAction fromApi(String? raw) {
+    final value = (raw ?? '').toUpperCase();
+    for (final action in SuggestedAction.values) {
+      if (action.apiValue == value) return action;
+    }
+    return SuggestedAction.pending;
+  }
 }
 
 class Report {
-  final int id;
+  final int reportId;
   final ReportType reportType;
-  final int reporterUserId;
-  final String reporterName;
   final ReportStatus status;
   final int? adminId;
-  final String? adminName;
+  final int reporterUserId;
   final int? reportedUserId;
-  final String? reportedUserName;
   final int? reportedPostId;
-  final String? postContent;
   final int? reportedCommentId;
-  final String? commentContent;
   final int? taskId;
-  final String? taskTitle;
   final String? disputeReason;
   final String reason;
-  final String? description;
-  final ViolationType? violationType;
-  final Severity? severity;
-  final SuggestedAction? suggestedAction;
-  final SuggestedAction? actualAction;
   final DateTime createdAt;
-  final DateTime? resolvedAt;
 
-  Report({
-    required this.id,
+  // Not returned by GET /api/report — stay at their "not assessed yet"
+  // defaults until copyWithAssessment() is called with data from the
+  // suggested-action endpoint.
+  final Severity severity;
+  final ViolationType violationType;
+  final SuggestedAction suggestedAction;
+
+  const Report({
+    required this.reportId,
     required this.reportType,
-    required this.reporterUserId,
-    required this.reporterName,
     required this.status,
     this.adminId,
-    this.adminName,
+    required this.reporterUserId,
     this.reportedUserId,
-    this.reportedUserName,
     this.reportedPostId,
-    this.postContent,
     this.reportedCommentId,
-    this.commentContent,
     this.taskId,
-    this.taskTitle,
     this.disputeReason,
     required this.reason,
-    this.description,
-    this.violationType,
-    this.severity,
-    this.suggestedAction,
-    this.actualAction,
     required this.createdAt,
-    this.resolvedAt,
+    this.severity = Severity.unassessed,
+    this.violationType = ViolationType.unassessed,
+    this.suggestedAction = SuggestedAction.pending,
   });
 
-  String get statusDisplay {
-    switch (status) {
-      case ReportStatus.submitted:
-        return 'Submitted';
-      case ReportStatus.assigned:
-        return 'In Review';
-      case ReportStatus.reviewed:
-        return 'Reviewed';
-      case ReportStatus.resolved:
-        return 'Resolved';
-    }
+  factory Report.fromJson(Map<String, dynamic> json) {
+    return Report(
+      reportId: json['reportId'] as int,
+      reportType: ReportType.fromApi(json['reportType'] as String?),
+      status: ReportStatus.fromApi(json['status'] as String?),
+      adminId: json['adminId'] as int?,
+      reporterUserId: json['reporterUserId'] as int,
+      reportedUserId: json['reportedUserId'] as int?,
+      reportedPostId: json['reportedPostId'] as int?,
+      reportedCommentId: json['reportedCommentId'] as int?,
+      taskId: json['taskId'] as int?,
+      disputeReason: json['disputeReason'] as String?,
+      reason: json['reason'] as String? ?? '',
+      createdAt: _parseTimestamp(json['createdAt']),
+      // severity/violationType/suggestedAction intentionally left at
+      // their defaults — ReportResponseDTO doesn't include them.
+    );
+  }
+
+  /// java.sql.Timestamp can serialize as an ISO string OR epoch millis
+  /// depending on Jackson/ObjectMapper config — handles both.
+  static DateTime _parseTimestamp(dynamic value) {
+    if (value is String) return DateTime.parse(value);
+    if (value is num) return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+    return DateTime.now();
+  }
+
+  /// Returns a copy with severity/violationType/suggestedAction filled in
+  /// — call this once the suggested-action endpoint responds, on the
+  /// report detail screen.
+  Report copyWithAssessment({
+    Severity? severity,
+    ViolationType? violationType,
+    SuggestedAction? suggestedAction,
+  }) {
+    return Report(
+      reportId: reportId,
+      reportType: reportType,
+      status: status,
+      adminId: adminId,
+      reporterUserId: reporterUserId,
+      reportedUserId: reportedUserId,
+      reportedPostId: reportedPostId,
+      reportedCommentId: reportedCommentId,
+      taskId: taskId,
+      disputeReason: disputeReason,
+      reason: reason,
+      createdAt: createdAt,
+      severity: severity ?? this.severity,
+      violationType: violationType ?? this.violationType,
+      suggestedAction: suggestedAction ?? this.suggestedAction,
+    );
+  }
+
+  // ---- Display helpers -----------------------------------------------
+  // reporter/reported names aren't returned by the backend yet —
+  // deliberate placeholders, not real data:
+
+  String get reporterName => 'Anonymous';
+  String get reportedName => 'Anonymous';
+
+  /// Short preview built from `reason`, since there's no dedicated
+  /// postContent/commentContent field in the DTO.
+  String get contentPreview {
+    const maxLen = 80;
+    final trimmed = reason.trim();
+    if (trimmed.length <= maxLen) return trimmed;
+    return '${trimmed.substring(0, maxLen).trimRight()}…';
   }
 
   Color get statusColor {
     switch (status) {
       case ReportStatus.submitted:
-        return const Color(0xFFE9C46A); // Yellow
+        return AppColors.citrusYellow;
       case ReportStatus.assigned:
-        return const Color(0xFF3498DB); // Blue
       case ReportStatus.reviewed:
-        return const Color(0xFF9B59B6); // Purple
+        return AppColors.primaryTeal;
       case ReportStatus.resolved:
-        return const Color(0xFF69B578); // Green
+        return AppColors.success;
+      case ReportStatus.unknown:
+        return AppColors.textGrey;
     }
   }
 
@@ -131,177 +266,22 @@ class Report {
         return const Color(0xFFF4A261); // Orange
       case Severity.severe:
         return const Color(0xFFF44336); // Red
-      default:
-        return const Color(0xFF6B7280);
+      case Severity.unassessed:
+        return AppColors.textGrey;
     }
   }
 
-  String get severityDisplay {
-    switch (severity) {
-      case Severity.minor:
-        return 'Minor';
-      case Severity.moderate:
-        return 'Moderate';
-      case Severity.severe:
-        return 'Severe';
-      default:
-        return 'Unknown';
-    }
-  }
+  String get severityDisplay => severity.display;
 
-  String get suggestedActionDisplay {
-    switch (suggestedAction) {
-      case SuggestedAction.warning:
-        return '⚠️ Warning';
-      case SuggestedAction.suspend7d:
-        return '⛔ Suspend 7 days';
-      case SuggestedAction.suspend14d:
-        return '⛔ Suspend 14 days';
-      case SuggestedAction.suspend30d:
-        return '⛔ Suspend 30 days';
-      case SuggestedAction.ban:
-        return '🚫 Ban';
-      default:
-        return '—';
-    }
-  }
+  String get violationTypeDisplay => violationType.display;
 
-  String get violationTypeDisplay {
-    switch (violationType) {
-      case ViolationType.harassment:
-        return 'Harassment';
-      case ViolationType.hateSpeech:
-        return 'Hate Speech';
-      case ViolationType.inappropriateContent:
-        return 'Inappropriate Content';
-      case ViolationType.spamScam:
-        return 'Spam/Scam';
-      case ViolationType.privacyViolation:
-        return 'Privacy Violation';
-      case ViolationType.impersonation:
-        return 'Impersonation';
-      case ViolationType.taskNoShow:
-        return 'Task: No-show';
-      case ViolationType.taskPoorQuality:
-        return 'Task: Poor Quality';
-      case ViolationType.taskPropertyDamage:
-        return 'Task: Property Damage';
-      case ViolationType.taskUnsafeConditions:
-        return 'Task: Unsafe Conditions';
-      case ViolationType.threatsViolence:
-        return 'Threats of Violence';
-      default:
-        return 'Unknown';
-    }
-  }
+  String get suggestedActionDisplay => suggestedAction.display;
 
- 
   bool get isUrgent {
-    // Check violation type first
     if (violationType == ViolationType.privacyViolation ||
         violationType == ViolationType.threatsViolence) {
       return true;
     }
-    // Then check severity
-    if (severity == Severity.severe) {
-      return true;
-    }
-    return false;
-  }
-
-  factory Report.fromJson(Map<String, dynamic> json) {
-    return Report(
-      id: json['reportId'] as int,
-      reportType: _parseReportType(json['reportType'] as String),
-      reporterUserId: json['reporterUserId'] as int,
-      reporterName: json['reporterName'] as String? ?? 'Unknown',
-      status: _parseStatus(json['status'] as String),
-      adminId: json['adminId'] as int?,
-      adminName: json['adminName'] as String?,
-      reportedUserId: json['reportedUserId'] as int?,
-      reportedUserName: json['reportedUserName'] as String?,
-      reportedPostId: json['reportedPostId'] as int?,
-      postContent: json['postContent'] as String?,
-      reportedCommentId: json['reportedCommentId'] as int?,
-      commentContent: json['commentContent'] as String?,
-      taskId: json['taskId'] as int?,
-      taskTitle: json['taskTitle'] as String?,
-      disputeReason: json['disputeReason'] as String?,
-      reason: json['reason'] as String? ?? '',
-      description: json['description'] as String?,
-      violationType: json['violationType'] != null 
-          ? _parseViolationType(json['violationType'] as String) 
-          : null,
-      severity: json['severity'] != null 
-          ? _parseSeverity(json['severity'] as String) 
-          : null,
-      suggestedAction: json['suggestedAction'] != null 
-          ? _parseSuggestedAction(json['suggestedAction'] as String) 
-          : null,
-      actualAction: json['actualAction'] != null 
-          ? _parseSuggestedAction(json['actualAction'] as String) 
-          : null,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      resolvedAt: json['resolvedAt'] != null 
-          ? DateTime.parse(json['resolvedAt'] as String) 
-          : null,
-    );
-  }
-
-  static ReportType _parseReportType(String value) {
-    switch (value.toUpperCase()) {
-      case 'USER': return ReportType.user;
-      case 'POST': return ReportType.post;
-      case 'COMMENT': return ReportType.comment;
-      case 'TASK_DISPUTE': return ReportType.taskDispute;
-      default: return ReportType.user;
-    }
-  }
-
-  static ReportStatus _parseStatus(String value) {
-    switch (value.toUpperCase()) {
-      case 'SUBMITTED': return ReportStatus.submitted;
-      case 'ASSIGNED': return ReportStatus.assigned;
-      case 'REVIEWED': return ReportStatus.reviewed;
-      case 'RESOLVED': return ReportStatus.resolved;
-      default: return ReportStatus.submitted;
-    }
-  }
-
-  static ViolationType _parseViolationType(String value) {
-    switch (value.toUpperCase()) {
-      case 'HARASSMENT': return ViolationType.harassment;
-      case 'HATE_SPEECH': return ViolationType.hateSpeech;
-      case 'INAPPROPRIATE_CONTENT': return ViolationType.inappropriateContent;
-      case 'SPAM_SCAM': return ViolationType.spamScam;
-      case 'PRIVACY_VIOLATION': return ViolationType.privacyViolation;
-      case 'IMPERSONATION': return ViolationType.impersonation;
-      case 'TASK_NO_SHOW': return ViolationType.taskNoShow;
-      case 'TASK_POOR_QUALITY': return ViolationType.taskPoorQuality;
-      case 'TASK_PROPERTY_DAMAGE': return ViolationType.taskPropertyDamage;
-      case 'TASK_UNSAFE_CONDITIONS': return ViolationType.taskUnsafeConditions;
-      case 'THREATS_VIOLENCE': return ViolationType.threatsViolence;
-      default: return ViolationType.harassment;
-    }
-  }
-
-  static Severity _parseSeverity(String value) {
-    switch (value.toUpperCase()) {
-      case 'MINOR': return Severity.minor;
-      case 'MODERATE': return Severity.moderate;
-      case 'SEVERE': return Severity.severe;
-      default: return Severity.minor;
-    }
-  }
-
-  static SuggestedAction _parseSuggestedAction(String value) {
-    switch (value.toUpperCase()) {
-      case 'WARNING': return SuggestedAction.warning;
-      case 'SUSPEND_7D': return SuggestedAction.suspend7d;
-      case 'SUSPEND_14D': return SuggestedAction.suspend14d;
-      case 'SUSPEND_30D': return SuggestedAction.suspend30d;
-      case 'BAN': return SuggestedAction.ban;
-      default: return SuggestedAction.warning;
-    }
+    return severity == Severity.severe;
   }
 }
