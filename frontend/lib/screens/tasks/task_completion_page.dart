@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,8 +29,9 @@ class TaskCompletionPage extends ConsumerStatefulWidget {
 
 class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   final TextEditingController _noteController = TextEditingController();
-  final List<String> _photoPaths = [];
+  final List<XFile> _selectedImages = [];
   bool _isSubmitting = false;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void dispose() {
@@ -38,18 +40,22 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   }
 
   Future<void> _addPhoto() async {
-    // TODO: Implement image picking logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Photo picker will be added soon'),
-        duration: Duration(seconds: 2),
-      ),
+    final XFile? picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1920,
     );
+
+    if(picked != null) {
+      setState(() {
+        _selectedImages.add(picked);
+      });
+    }
   }
 
   void _removePhoto(int index) {
     setState(() {
-      _photoPaths.removeAt(index);
+      _selectedImages.removeAt(index);
     });
   }
 
@@ -126,6 +132,17 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
     setState(() => _isSubmitting = true);
     try {
       final taskService = ref.read(taskServiceProvider);
+
+      final List<String> uploadedUrls = [];
+      for (final image in _selectedImages) {
+        final url = await taskService.uploadTaskImage(image);
+        if (url != null) uploadedUrls.add(url);
+      }
+
+      if (uploadedUrls.isNotEmpty) {
+        await taskService.saveTaskImages(int.parse(widget.taskId), uploadedUrls);
+      }
+
       await taskService.updateTask(
         taskId: int.parse(widget.taskId),
         status: 'pending_approval',
@@ -270,10 +287,10 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
               height: 100,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: _photoPaths.length + 1,
+                itemCount: _selectedImages.length + 1,
                 itemBuilder: (context, index) {
                   // Add Photo Button
-                  if (index == _photoPaths.length) {
+                  if (index == _selectedImages.length) {
                     return GestureDetector(
                       onTap: _addPhoto,
                       child: Container(
@@ -320,20 +337,12 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
                         decoration: BoxDecoration(
                           color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.grey.shade300,
                           borderRadius: BorderRadius.circular(12),
-                          image: _photoPaths[index].isNotEmpty
-                              ? DecorationImage(
-                                  image: FileImage(File(_photoPaths[index])),
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
+                          image: DecorationImage(
+                            image: FileImage(File(_selectedImages[index].path)),
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                        child: _photoPaths[index].isEmpty
-                            ? Icon(
-                                Icons.image,
-                                color: isDarkMode ? AppColors.textGrey(context) : Colors.grey,
-                                size: 40,
-                              )
-                            : null,
+                        child: null,
                       ),
                       Positioned(
                         top: 4,

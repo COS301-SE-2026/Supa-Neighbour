@@ -28,6 +28,7 @@ import com.app.api.events.TaskStartedEvent;
 import com.app.api.models.Dependent;
 import com.app.api.models.Helper;
 import com.app.api.models.Task;
+import com.app.api.models.TaskImage;
 import com.app.api.models.TaskInvitation;
 import com.app.api.models.TaskInvoice;
 import com.app.api.models.User;

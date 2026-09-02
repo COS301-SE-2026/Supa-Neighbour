@@ -1,18 +1,16 @@
 package com.app.api.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.sql.Date;
-
-//
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import java.util.List;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.OneToMany;
 
 
 /**
@@ -95,6 +93,7 @@ public class Task {
     @Column(name = "instructions")
     private String instructions;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "taskid", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TaskImage> images;
 
