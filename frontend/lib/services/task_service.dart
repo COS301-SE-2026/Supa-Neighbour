@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/task_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 
 // INTERFACE (Contract)
@@ -28,9 +29,11 @@ abstract class ITaskService {
     int? taskTypeId,
     DateTime? startDate,
     String? status,
-    String? helperRatingId,      // was helperRatingReview
-    String? dependentRatingId, 
+    String? helperRatingId,
+    String? dependentRatingId,
+    List<String>? imageUrls,
   });
+
   Future<void> deleteTask(int taskId);
   Future<Map<String, dynamic>> getUserById(int userId);
   Future<int?> getDependentIdForUser(int userId);
@@ -40,6 +43,9 @@ abstract class ITaskService {
   Future<void> declineTaskInvitation(int taskId);
   Future<List<Task>> getAvailableTasks(int currentUserId);
   Future<void> matchHelpersForTask(int taskId);
+
+  Future<String?> uploadTaskImage(XFile imageFile);
+  Future<void> saveTaskImages(int taskId, List<String> imageUrls);
 }
 
 
@@ -159,6 +165,7 @@ class TaskService implements ITaskService {
     String? status,
     String? helperRatingId,      // was helperRatingReview
     String? dependentRatingId,
+    List<String>? imageUrls,
   }) async {
     try {
       final token = await _getToken();
@@ -171,6 +178,10 @@ class TaskService implements ITaskService {
       if (helperRatingId != null) body['helperRatingId'] = helperRatingId;
       if (dependentRatingId != null) body['dependentRatingId'] = dependentRatingId;
 
+      if(imageUrls != null && imageUrls.isNotEmpty) {
+        body['image'] = imageUrls.map((url) => {'imageUrl': url}).toList();
+      }
+  
       final Response<Map<String, dynamic>> res = await _dio.put(
         '/tasks/$taskId',
         data: body,
@@ -373,6 +384,46 @@ Future<void> declineTaskInvitation(int taskId) async {
       );
     } on DioException catch (e) {
       throw Exception("Couldn't match helpers for task: ${e.message}");
+    }
+  }
+
+  @override
+  Future<String?> uploadTaskImage(XFile imageFile) async {
+    try {
+      final token = await _getToken();
+      final bytes = await imageFile.readAsBytes();
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(
+          bytes,
+          filename: imageFile.name,
+        ),
+      });
+      final res = await _dio.post(
+        '/api/upload/task/image',
+        data: formData,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      return (res.data as Map<String, dynamic>)['imageUrl'] as String?;
+    } on DioException catch (e) {
+      throw Exception("Couldn't upload image: ${e.message}");
+    }
+  }
+
+  /// POST /api/taskinvoices/{taskId}/images
+  /// Saves a list of uploaded image URLs to the task in the database.
+  @override
+  Future<void> saveTaskImages(int taskId, List<String> imageUrls) async {
+    try {
+      final token = await _getToken();
+      await _dio.post(
+        '/api/taskinvoices/$taskId/images',
+        data: {'imageUrls': imageUrls},
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+    } on DioException catch (e) {
+      throw Exception("Couldn't save task images: ${e.message}");
     }
   }
 

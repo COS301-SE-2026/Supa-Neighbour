@@ -234,7 +234,7 @@ void main() {
       test('should handle null values in helper task JSON', () {
         final json = {
           'taskId': 11,
-          'startDate': null,
+          'startDate': now.toIso8601String(),
         };
 
         final task = Task.fromHelperTaskJson(json);

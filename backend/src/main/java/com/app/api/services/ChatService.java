@@ -1,21 +1,24 @@
 package com.app.api.services;
 
-import com.app.api.models.Chat;
-import com.app.api.models.Message;
-
-import com.app.api.repositories.ChatRepository;
-import com.app.api.repositories.MessageRepository;
-//import com.sun.jna.platform.win32.WinUser.MSG;
-
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.app.api.dtos.ChatResponseDTO;
+import com.app.api.models.Chat;
+import com.app.api.models.Message;
+import com.app.api.models.TaskInvoice;
+import com.app.api.models.User;
+import com.app.api.repositories.ChatRepository;
+import com.app.api.repositories.MessageRepository;
+import com.app.api.repositories.TaskInvoiceRepository;
 
 /**
  * Services for chat related business logic.
@@ -29,14 +32,18 @@ public class ChatService {
     /** The msg repository. */
     private final MessageRepository msgRepo;
 
+    
+    private final TaskInvoiceRepository taskInvoiceRepository;
+
     /**
      * Constructs a ChatService with the required repositries.
      * @param chatRepo the chat repository
      * @param msgRepo the message repository
      */
-    public ChatService(ChatRepository chatRepo, MessageRepository msgRepo) {
+    public ChatService(ChatRepository chatRepo, MessageRepository msgRepo, TaskInvoiceRepository taskInvoiceRepository) {
         this.chatRepo = chatRepo;
         this.msgRepo = msgRepo;
+        this.taskInvoiceRepository = taskInvoiceRepository;
     }
 
     /**
@@ -235,6 +242,59 @@ public class ChatService {
         msgRepo.markMessagesAsRead(chatId, userId);
     }
 
+    /**
+     * Returns the existing chat for a task, or creates one if none exists yet.
+     * Verifies the requesting user is either the task's helper or dependent
+     * before allowing access.
+     *
+     * @param taskId the task to open/create a chat for
+     * @param requestingUserId the resolved user ID of the caller (from Firebase token)
+     * @return the chat, and whether it already existed
+     * @throws NoSuchElementException if the task doesn't exist
+     * @throws IllegalStateException if the task has no assigned helper/dependent yet
+     * @throws SecurityException if the requesting user isn't part of this task
+     */
+    public ChatResponseDTO getOrCreateChatForTask(int taskId, int requestingUserId){
+        TaskInvoice task = taskInvoiceRepository.findById(taskId).orElseThrow(() -> new NoSuchElementException("Task not found"));
+
+        if(task.getHelperid() == null || task.getDependentid() == null){
+            throw new IllegalStateException("Task has no assigned helper and dependent");
+        }
+
+        User helperUser = task.getHelperid().getUserid();
+        User dependentUser = task.getDependentid().getUserId();
+
+        boolean isParticipant = requestingUserId == helperUser.getUserid() || requestingUserId == dependentUser.getUserid();
+
+        if(!isParticipant){
+            throw new SecurityException("User is not participant in this task");
+        }
+
+        List<Chat> existing = chatRepo.findByTask_Taskid(taskId);
+        if (!existing.isEmpty()) {
+            return toDTO(existing.get(0), true);
+        }
+
+        Chat chat = new Chat();
+        chat.setTask(task);
+        chat.setHelperUser(helperUser);
+        chat.setDependentUser(dependentUser);
+        chat.setCreatedAt(LocalDateTime.now());
+        Chat saved = chatRepo.save(chat);
+
+        return toDTO(saved, false);
+    }
+
+    private ChatResponseDTO toDTO(Chat chat, boolean alreadyExisted){
+        return new ChatResponseDTO(
+            chat.getChatId(),
+            chat.getTask().getTaskid(),
+            chat.getDependentUser().getUserid(),
+            chat.getHelperUser().getUserid(),
+            chat.getCreatedAt(),
+            alreadyExisted
+        );
+    }
 
 
 }

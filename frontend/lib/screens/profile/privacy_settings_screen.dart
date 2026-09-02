@@ -174,27 +174,31 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           ),
         ],
       ),
-      child: SwitchListTile(
-        title: Text(
-          title,
-          style: GoogleFonts.openSans(
-            color: AppColors.charcoal(context),
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: SwitchListTile(
+          title: Text(
+            title,
+            style: GoogleFonts.openSans(
+              color: AppColors.charcoal(context),
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: GoogleFonts.openSans(
-            color: AppColors.textGrey(context),
-            fontSize: 13,
+          subtitle: Text(
+            subtitle,
+            style: GoogleFonts.openSans(
+              color: AppColors.textGrey(context),
+              fontSize: 13,
+            ),
           ),
+          value: value,
+          onChanged: onChanged,
+          activeColor: AppColors.primaryTeal(context),
+          activeTrackColor: AppColors.primaryTeal(context).withValues(alpha: 0.3),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         ),
-        value: value,
-        onChanged: onChanged,
-        activeColor: AppColors.primaryTeal(context),
-        activeTrackColor: AppColors.primaryTeal(context).withValues(alpha: 0.3),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
     );
   }
@@ -247,49 +251,57 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () {
-                _showDeleteAccountDialog();
-              },
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: AppColors.error(context)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  _showDeleteAccountDialog();
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: AppColors.error(context)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              child: Text(
-                'Delete Account',
-                style: GoogleFonts.openSans(
-                  color: AppColors.error(context),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                child: Text(
+                  'Delete Account',
+                  style: GoogleFonts.openSans(
+                    color: AppColors.error(context),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
           ),
           const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () {
-                _showClearDataDialog();
-              },
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: AppColors.error(context)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  _showClearDataDialog();
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: AppColors.error(context)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              child: Text(
-                'Clear All Data',
-                style: GoogleFonts.openSans(
-                  color: AppColors.error(context),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                child: Text(
+                  'Clear All Data',
+                  style: GoogleFonts.openSans(
+                    color: AppColors.error(context),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),

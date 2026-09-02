@@ -1,14 +1,24 @@
 package com.app.api.controllers;
-import com.app.api.dtos.LeaderboardResponse;
-import com.app.api.services.LeaderboardService;
-import com.app.api.services.FirebaseAuthService;
-import com.google.firebase.auth.FirebaseAuthException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.app.api.dtos.LeaderboardResponse;
+import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.LeaderboardService;
+import com.google.firebase.auth.FirebaseAuthException;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * REST controller that provides endpoints for retrieving the
@@ -16,10 +26,10 @@ import org.springframework.web.bind.annotation.RequestParam;
  */
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Leaderboard", description = "Endpoints for retrieving the application leaderboard")
 public class LeaderboardController {
     private final LeaderboardService leaderboardService;
     private final FirebaseAuthService firebaseAuthService;
-
 
     /**
      * Constructs a {@code LeaderboardController} with the required services.
@@ -52,13 +62,48 @@ public class LeaderboardController {
      *         if the Firebase token is invalid or expired
      */
     @GetMapping("/leaderboard")
+    @Operation(
+        summary = "Get leaderboard",
+        description = "Retrieves the application leaderboard for authenticated users. " +
+                      "The leaderboard can be ranked by average rating or XP.",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Leaderboard retrieved successfully"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid rankBy parameter",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"error\": \"rankBy must be one of: averageRating, xp\"}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Invalid or expired Firebase token",
+            content = @Content(
+                mediaType = "text/plain",
+                examples = @ExampleObject(
+                    value = "Invalid or expired Firebase token"
+                )
+            )
+        )
+    })
     public ResponseEntity<?> getLeaderboard(
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
         @RequestHeader("Authorization") String authHeader,
+        @Parameter(description = "Ranking criterion: 'averageRating' or 'xp'", example = "averageRating")
         @RequestParam(defaultValue = "averageRating") String rankBy,
-        @RequestParam(defaultValue = "10")            int    limit
+        @Parameter(description = "Maximum number of leaderboard entries to return", example = "10")
+        @RequestParam(defaultValue = "10") int limit
     ){
         if(!rankBy.equals("averageRating") && !rankBy.equals("xp")){
-            return ResponseEntity.badRequest().body("{\\\"error\\\": \\\"rankBy must be one of: averageRating, xp\\}");
+            return ResponseEntity.badRequest().body("{\"error\": \"rankBy must be one of: averageRating, xp\"}");
         }
 
         try {

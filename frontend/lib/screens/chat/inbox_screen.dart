@@ -27,6 +27,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen>
   @override
   void initState() {
     super.initState();
+     _tabController = TabController(length: 2, vsync: this);
     _initUserId();
   }
 
@@ -42,7 +43,6 @@ class _InboxScreenState extends ConsumerState<InboxScreen>
     if (stored != null) {
       setState(() => _currentUserId = stored);
     }
-    _tabController = TabController(length: 2, vsync: this);
     _loadChats();
   }
 

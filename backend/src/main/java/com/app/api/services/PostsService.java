@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
  
 import com.app.api.dtos.CreatePostRequest;
+import com.app.api.dtos.PostDetailDTO;
 import com.app.api.dtos.PostFeedItemDTO;
 import com.app.api.dtos.PostFeedResponseDTO;
 import com.app.api.events.PostCreatedEvent;
@@ -18,8 +19,6 @@ import com.app.api.repositories.PostsRepository;
 import com.app.api.repositories.UserRepository;
 
 import jakarta.transaction.Transactional;
-
-import com.app.api.dtos.PostDetailDTO;
 
 
 /**
@@ -151,7 +150,7 @@ public class PostsService {
                 neighbourhood.getLocationId(), userId
             );
 
-            if(recipients.isEmpty()){
+            if(!recipients.isEmpty()){
                 String preview = request.getPostContent().length() > 80 ? request.getPostContent().substring(0, 80) + "..." : request.getPostContent();
                 eventPublisher.publishEvent(new PostCreatedEvent(recipients, saved.getPostid(), preview));
             }

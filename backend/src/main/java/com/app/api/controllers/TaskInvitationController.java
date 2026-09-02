@@ -1,5 +1,8 @@
 package com.app.api.controllers;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,23 +15,24 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
+import com.app.api.dtos.MatchedHelperDTO;
+import com.app.api.models.Helper;
 import com.app.api.models.TaskInvitation;
 import com.app.api.models.TaskInvoice;
-import com.app.api.models.Helper;
-import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.repositories.HelperRepository;
+import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.MatchingService;
 import com.app.api.services.TaskInvitationService;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.app.api.dtos.MatchedHelperDTO;
-import com.app.api.services.MatchingService;
+
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-
-import java.util.Map;
-import java.util.List;
-
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * TaskInvitation controller.
@@ -36,6 +40,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/task-invitations")
+@Tag(name = "Task Invitations", description = "Operations for managing task invitations, acceptances, and declines")
 public class TaskInvitationController {
 
     private final TaskInvitationService taskInvitationService;
@@ -43,7 +48,6 @@ public class TaskInvitationController {
     private final HelperRepository helperRepository;
     private final FirebaseAuthService firebaseAuthService;
     private final MatchingService matchingService;
-
 
     /**
      * Constructs the controller with its required collaborators.
@@ -61,13 +65,24 @@ public class TaskInvitationController {
         this.firebaseAuthService = firebaseAuthService;
         this.matchingService = matchingService;
     }
+
     // GET /api/task-invitations
     /**
      * Retrieves all task invitations.
-     *     * @return a list of all task invitations
+     * @return a list of all task invitations
      */
     @GetMapping
+    @Operation(
+        summary = "Get all task invitations",
+        description = "Retrieves all task invitations for the authenticated user",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Task invitations retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content)
+    })
     public ResponseEntity<?> getAllTaskInvitations(
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
         @RequestHeader("Authorization") String authHeader
     ) {
         try{
@@ -83,11 +98,23 @@ public class TaskInvitationController {
     // GET /api/task-invitations/1
     /**
      * Retrieves a task invitation by its ID.
-     *     * @param id the task invitation ID
+     * @param id the task invitation ID
      * @return the task invitation if found, otherwise 404 Not Found
      */
     @GetMapping("/{id}")
-    public ResponseEntity<TaskInvitation> getTaskInvitationById(@PathVariable int id) {
+    @Operation(
+        summary = "Get task invitation by ID",
+        description = "Retrieves a single task invitation by its ID",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Task invitation found"),
+        @ApiResponse(responseCode = "404", description = "Task invitation not found", content = @Content)
+    })
+    public ResponseEntity<TaskInvitation> getTaskInvitationById(
+        @Parameter(description = "ID of the task invitation to retrieve", example = "1")
+        @PathVariable int id
+    ) {
         TaskInvitation invitation = taskInvitationService.getInvitationById(id);
         if (invitation == null) {
             return ResponseEntity.notFound().build();
@@ -98,10 +125,19 @@ public class TaskInvitationController {
     // POST /api/task-invitations
     /**
      * Creates a new task invitation.
-     *     * @param invitation the task invitation to create
+     * @param invitation the task invitation to create
      * @return the created task invitation with a 201 Created status, or 400 Bad Request if the invitation is null
      */
     @PostMapping
+    @Operation(
+        summary = "Create a new task invitation",
+        description = "Creates a new task invitation",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Task invitation created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid invitation data", content = @Content)
+    })
     public ResponseEntity<TaskInvitation> createTaskInvitation(@RequestBody TaskInvitation invitation) {
         TaskInvitation created = taskInvitationService.saveTaskInvitation(invitation);
         if (created == null) {
@@ -113,12 +149,26 @@ public class TaskInvitationController {
     // PUT /api/task-invitations/1
     /**
      * Updates an existing task invitation.
-     *     * @param id         the task invitation ID
+     * @param id         the task invitation ID
      * @param invitation the task invitation with updated details
      * @return the updated task invitation if successful, 404 Not Found if the invitation doesn't exist, or 400 Bad Request if the provided invitation is null
      */
     @PutMapping("/{id}")
-    public ResponseEntity<TaskInvitation> updateTaskInvitation(@PathVariable int id, @RequestBody TaskInvitation invitation) {
+    @Operation(
+        summary = "Update a task invitation",
+        description = "Updates an existing task invitation by its ID",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Task invitation updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Task invitation not found", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid invitation data", content = @Content)
+    })
+    public ResponseEntity<TaskInvitation> updateTaskInvitation(
+        @Parameter(description = "ID of the task invitation to update", example = "1")
+        @PathVariable int id,
+        @RequestBody TaskInvitation invitation
+    ) {
         if (invitation == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -132,11 +182,23 @@ public class TaskInvitationController {
     // DELETE /api/task-invitations/1
     /**
      * Deletes a task invitation by its ID.
-     *     * @param id the task invitation ID
+     * @param id the task invitation ID
      * @return 204 No Content if successful, or 404 Not Found if the invitation doesn't exist
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTaskInvitation(@PathVariable int id) {
+    @Operation(
+        summary = "Delete a task invitation",
+        description = "Deletes a task invitation by its ID",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Task invitation deleted successfully", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Task invitation not found", content = @Content)
+    })
+    public ResponseEntity<Void> deleteTaskInvitation(
+        @Parameter(description = "ID of the task invitation to delete", example = "1")
+        @PathVariable int id
+    ) {
         TaskInvitation existing = taskInvitationService.getInvitationById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();
@@ -163,9 +225,24 @@ public class TaskInvitationController {
      *         409 if the task is not open or the helper has already been invited
      */
     @PostMapping("/{taskId}/invite")
+    @Operation(
+        summary = "Invite a helper to a task",
+        description = "Invites a helper to a specific task. Only the requester who owns the task may send invitations.",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Invitation sent successfully"),
+        @ApiResponse(responseCode = "400", description = "helperId is required", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Caller does not own the task", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Task or helper not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Task is not open or helper already invited", content = @Content)
+    })
     public ResponseEntity<?> inviteHelper(
+        @Parameter(description = "ID of the task to invite a helper to", example = "1")
         @PathVariable int taskId,
         @RequestBody Map<String, Integer> body,
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
         @RequestHeader("Authorization") String authHeader
     ){
         int callerId;
@@ -203,7 +280,7 @@ public class TaskInvitationController {
 
         TaskInvitation invitation = taskInvitationService.inviteHelper(taskId, helperId, taskInvoice, helper);
 
-        if(invitation ==  null){
+        if(invitation == null){
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Helper already invited"));
         }
 
@@ -212,7 +289,7 @@ public class TaskInvitationController {
             "taskId", taskId,
             "helperId", helperId,
             "status", "Invited"
-    ));
+        ));
     }
 
     /**
@@ -232,8 +309,23 @@ public class TaskInvitationController {
      *         422 if the task is not otherwise available for acceptance
      */
     @PostMapping("/{taskId}/accept")
+    @Operation(
+        summary = "Accept a task invitation",
+        description = "Accepts a task invitation on behalf of the calling helper",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Task accepted successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "403", description = "User is not a registered helper", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Task not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Task has already been accepted", content = @Content),
+        @ApiResponse(responseCode = "422", description = "Task is not available for acceptance", content = @Content)
+    })
     public ResponseEntity<?> acceptTask(
+        @Parameter(description = "ID of the task to accept", example = "1")
         @PathVariable int taskId,
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
         @RequestHeader("Authorization") String authHeader
     ){
         int callerId;
@@ -244,29 +336,24 @@ public class TaskInvitationController {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
 
-
         Helper helper = helperRepository.findByUserid_Userid(callerId).orElse(null);
         if(helper == null){
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("error", "User is not a helper"));
         }
 
-
         TaskInvoice taskInvoice = taskInvoiceRepository.findById(taskId).orElse(null);
         if(taskInvoice == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Task not found"));
         }
-
 
         if(!"open".equals(taskInvoice.getStatus())){
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(Map.of("error", "Task is not available for acceptance"));
         }
 
-
         try{
             taskInvitationService.acceptInvitation(taskId, helper.getHelperid(), taskInvoice, helper);
-
 
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
             "message", "Task accepted successfully.",
@@ -287,7 +374,6 @@ public class TaskInvitationController {
         }
     }
 
-
     /**
      * Declines a task invitation on behalf of the calling helper.
      * <p>
@@ -305,9 +391,24 @@ public class TaskInvitationController {
      *         422 if the task is not otherwise available for declining
      */
     @PostMapping("/{taskId}/decline")
+    @Operation(
+        summary = "Decline a task invitation",
+        description = "Declines a task invitation on behalf of the calling helper",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Task declined successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "403", description = "User is not a registered helper", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Task not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Task cannot be declined in its current state", content = @Content),
+        @ApiResponse(responseCode = "422", description = "Task is not available for declining", content = @Content)
+    })
     public ResponseEntity<?> declineTask(
+        @Parameter(description = "ID of the task to decline", example = "1")
         @PathVariable int taskId,
-    @RequestHeader("Authorization") String authHeader
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
+        @RequestHeader("Authorization") String authHeader
     ){
         int callerId;
         try{
@@ -333,7 +434,6 @@ public class TaskInvitationController {
                     .body(Map.of("error", "Task is not available for declining"));
         }
 
-
         try{
             taskInvitationService.declineInvitation(taskId, helper.getHelperid(), taskInvoice, helper);
             return ResponseEntity.ok(
@@ -351,10 +451,9 @@ public class TaskInvitationController {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(Map.of("error", "Task is not available for declining"));
         }
-
     }
 
-     /**
+    /**
      * Matches and invites helpers for a task.
      * <p>
      * The caller must be a registered helper, and the target task must be
@@ -366,11 +465,20 @@ public class TaskInvitationController {
      * @return 200 OK with match details on success;
      *         404 if the task does not exist;
      */
-    @Operation(summary = "Match and invite helpers for a task")
-    @ApiResponse(responseCode = "200", description = "Helpers matched and invited")
-    @ApiResponse(responseCode = "404", description = "Task not found")
-     @PostMapping("/{taskId}/match")
-    public ResponseEntity<?> matchHelpers(@PathVariable int taskId) {
+    @PostMapping("/{taskId}/match")
+    @Operation(
+        summary = "Match and invite helpers for a task",
+        description = "Matches and invites helpers for a task based on compatibility",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Helpers matched and invited successfully"),
+        @ApiResponse(responseCode = "404", description = "Task not found", content = @Content)
+    })
+    public ResponseEntity<?> matchHelpers(
+        @Parameter(description = "ID of the task to match helpers for", example = "1")
+        @PathVariable int taskId
+    ) {
         List<MatchedHelperDTO> matched = matchingService.matchHelpersForTask(taskId);
         if (matched == null) {
             return ResponseEntity.status(404).body(Map.of("error", "Task not found"));

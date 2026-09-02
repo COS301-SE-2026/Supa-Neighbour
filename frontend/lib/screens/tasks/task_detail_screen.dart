@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import '../../models/chat_thread.dart';
 import '../../constants/app_colors.dart';
 import 'edit_task_screen.dart';
 import '../leaderboard/helper_profile_preview_screen.dart';
+import '../chat/chat_detail_screen.dart';
+import 'task_report_screen.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
 class TaskDetailScreen extends ConsumerStatefulWidget {
   final Task task;
@@ -26,7 +31,8 @@ class TaskDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
-  // CHANGE: Update to use AppColors with context
+  bool _isOpeningChat = false;
+
   Color _getStatusColor(String status, BuildContext context) {
     switch (status) {
       case 'open':
@@ -46,10 +52,75 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     }
   }
 
+  Future<void> _openChat() async{
+    if(_isOpeningChat) return;
+
+    try{
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if(token == null){
+        throw Exception('You need to be signed in to chat.');
+      }
+
+      final chatService = ref.read(chatServiceProvider);
+      final data = await chatService.getOrCreateChatForTask(
+        int.parse(widget.task.id),
+        token,
+      );
+
+      final int otherUserId;
+      final String otherName;
+
+      if(widget.isRequesterView){
+        final helperId = data['helperUserId'] as int?;
+
+        if(helperId == null){
+          throw Exception('No helper assigned to this task yet.');
+        }
+      otherUserId = helperId;
+      otherName = widget.task.helperName ?? 'Helper';
+      }else{
+        otherUserId = int.tryParse(widget.task.createdBy) ?? data['dependentUserId'] as int;
+        otherName = widget.task.requesterName ?? 'Requester';
+      }
+
+      final chatThread = ChatThread(
+        chatId: data['chatId'] as int,
+        otherUserId: otherUserId,
+        taskId: data['taskId'] as int,
+        name: otherName,
+        location: '',
+        lastMessage: '',
+        timestamp: '',
+        unreadCount: 0,
+        avatarColor: const Color(0xFF2A9D8F),
+     );
+
+     if(!mounted) return;
+     Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatDetailScreen(chat: chatThread),
+      ),
+     );
+    }catch (e){
+      if(!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception', '')),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
+    }finally{
+      if(mounted) setState(() => _isOpeningChat = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool canEdit = widget.task.createdBy == 'currentUser' && widget.task.status == 'open';
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final bool canChat = widget.task.status != 'open' && widget.task.status != 'cancelled';
 
     return Scaffold(
       // CHANGE: Use AppColors.background
@@ -77,6 +148,22 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         ),
         centerTitle: true,
         actions: [
+          if(canChat)
+            IconButton(
+              icon: _isOpeningChat
+              ? SizedBox(
+                width: 20, 
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primaryTeal(context,)
+                ),
+              )
+              : Icon(Icons.chat_bubble_outline,
+              color: AppColors.primaryTeal(context)),
+            tooltip: widget.isRequesterView ? 'Chat with Helper': 'Chat withe Requester',
+            onPressed: _isOpeningChat ? null : _openChat,
+            ),
           if (canEdit)
             IconButton(
               icon: Icon(
@@ -370,8 +457,44 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TaskReportScreen(
+                            taskId: int.parse(widget.task.id),
+                            taskTitle: widget.task.title,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.flag_outlined, color: AppColors.error(context)),
+                    label: Text(
+                      'Report Task',
+                      style: GoogleFonts.openSans(
+                        color: AppColors.error(context),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppColors.error(context)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
             // Non-editable Message
             if (!canEdit && widget.isRequesterView &&
                 widget.task.status != 'completed' &&

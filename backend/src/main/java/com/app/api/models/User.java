@@ -143,10 +143,10 @@ public class User {
         this.isAdmin = isAdmin;
     }
 
-/**
- * Returns the the firebase id 
- * @return fireUid
- */
+    /**
+     * Returns the the firebase id 
+     * @return fireUid
+     */
     public String getFirebaseUid(){
         return firebaseUid;
     }

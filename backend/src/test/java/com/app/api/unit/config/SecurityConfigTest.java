@@ -30,13 +30,7 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import com.app.api.config.PingController;
 
-/**
- * Tests for {@link SecurityConfig}.
- * <p>
- * The CORS bean is tested directly with no Spring context. The filter chain
- * behavior (permitAll, CSRF disabled, CORS headers) is verified against a
- * throwaway controller loaded via {@code @WebMvcTest}.
- */
+
 @WebMvcTest(controllers = PingController.class)
 @Import(SecurityConfig.class)
 class SecurityConfigTest {
