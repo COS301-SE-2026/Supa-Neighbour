@@ -121,7 +121,7 @@ void main() {
 
         expect(find.text('Privacy Settings'), findsOneWidget);
         expect(find.text('Logout'), findsOneWidget);
-        expect(find.text('Edit Profile'), findsOneWidget);
+        expect(find.text('Edit Username'), findsOneWidget);
       });
     });
 
