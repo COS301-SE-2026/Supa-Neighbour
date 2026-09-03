@@ -7,6 +7,7 @@ import 'privacy_settings_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../help/help_menu_screen.dart';
 import '../../providers/service_providers.dart';
+import 'my_reports_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -288,6 +289,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const HelpMenuScreen(),
+                  ),
+                );
+              },
+            ),
+            _buildSettingsTile(
+              icon: Icons.report_outlined,
+              title: 'My Reports',
+              subtitle: 'View your submitted reports',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MyReportsScreen(),
                   ),
                 );
               },

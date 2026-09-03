@@ -71,11 +71,17 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo
-              const Icon(
-                Icons.admin_panel_settings,
-                size: 64,
-                color: AppColors.primaryTeal,
+              Image.asset(
+                'assets/images/Logo.png',
+                height: 80,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback if image not found
+                  return const Icon(
+                    Icons.admin_panel_settings,
+                    size: 64,
+                    color: AppColors.primaryTeal,
+                  );
+                },
               ),
               const SizedBox(height: 16),
               Text(
