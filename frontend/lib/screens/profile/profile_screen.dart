@@ -11,7 +11,7 @@ import '../profile/privacy_settings_screen.dart';
 import '../help/help_menu_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
-import 'edit_profile_screen.dart';
+import 'edit_profile_screen.dart' show EditUsernameScreen;
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -379,7 +379,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => EditProfileScreen(profile: profile),
+                builder: (context) => EditUsernameScreen(profile: profile),
               ),
             );
             if (result == true) {
@@ -394,7 +394,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
           ),
           child: Text(
-            'Edit Profile',
+            'Edit Username',
             style: GoogleFonts.openSans(
               color: AppColors.primaryTeal(context),
               fontSize: 12,
