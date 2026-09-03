@@ -94,6 +94,15 @@
 | **TUCBW** | The Admin enters their credentials (email and password) on the admin login page and clicks "Login" |
 | **TUCEW** | The system authenticates the Admin's credentials, confirms their `isAdmin` status, and redirects them to the admin dashboard |
 
+### Use Case: View Dashboard
+
+| **Primary Actor** | Admin |
+| --- | --- |
+| **Goal** | View key platform metrics and recent activity on the admin dashboard |
+| **TUCBW** | The Admin logs in successfully and is redirected to the dashboard |
+| **TUCEW** | The system displays summary statistics including total reports, pending reports, resolved reports, and a breakdown of reports by type |
+
+
 ### **Use Case: View Reports**
 
 | **Primary Actor** | Admin |
@@ -117,3 +126,4 @@
 | **Goal** | View and update personal account settings from the admin panel |
 | **TUCBW** | The Admin navigates to the "Settings" section within the admin dashboard |
 | **TUCEW** | The system saves the updated profile details and reflects the changes across the admin session |
+
