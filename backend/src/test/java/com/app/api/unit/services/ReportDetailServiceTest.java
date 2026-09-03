@@ -417,7 +417,7 @@ public class ReportDetailServiceTest {
         when(post.getUserid()).thenReturn(null);
 
         Object result = reportDetailService.resolveDetails(report);
-        assertTrue(result instanceof P);
+        assertTrue(result instanceof PostSummaryDTO);
     }
 
 }
