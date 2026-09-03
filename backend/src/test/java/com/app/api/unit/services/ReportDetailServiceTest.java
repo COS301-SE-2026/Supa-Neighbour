@@ -7,8 +7,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -164,7 +162,7 @@ public class ReportDetailServiceTest {
 
         Object result = reportDetailService.resolveDetails(report);
         assertTrue(result instanceof PostSummaryDTO);
-        PostSummaryDTO dto = (PostSummaryDTO) result;
+        //PostSummaryDTO dto = (PostSummaryDTO) result;
     }
 
 @Test
