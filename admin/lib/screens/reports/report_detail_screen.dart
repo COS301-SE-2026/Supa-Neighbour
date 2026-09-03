@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared/constants/constants.dart';
 import '../../models/report_model.dart';
+import '../../services/report_service.dart';
 
 class ReportDetailScreen extends StatefulWidget {
   final int reportId;
@@ -19,6 +20,8 @@ class ReportDetailScreen extends StatefulWidget {
 }
 
 class _ReportDetailScreenState extends State<ReportDetailScreen> {
+  final ReportService _reportService = ReportService();
+
   Report? _report;
   bool _isLoading = true;
   String? _error;
@@ -27,6 +30,16 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   Severity? _selectedSeverity;
   SuggestedAction? _suggestedAction;
   bool _isLoadingSuggestion = false;
+  // Set when the backend has no rule for the selected pair (not an error —
+  // e.g. THREATS_VIOLENCE + MINOR) or when the call genuinely fails.
+  // _suggestionIsError distinguishes which one it is so the UI can style
+  // and word them differently.
+  String? _suggestionMessage;
+  bool _suggestionIsError = false;
+  
+
+  bool _isSubmittingVerdict = false;
+  bool _actionSubmitted = false;
 
   @override
   void initState() {
@@ -40,59 +53,176 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       _error = null;
     });
 
-    await Future.delayed(const Duration(milliseconds: 500));
-    final mockReports = _getMockReports();
-    final report = mockReports.firstWhere(
-      (r) => r.id == widget.reportId,
-      orElse: () => mockReports.first,
-    );
-    
-    setState(() {
-      _report = report;
-      _isLoading = false;
-      _selectedViolationType = report.violationType;
-      _selectedSeverity = report.severity;
-      _suggestedAction = report.suggestedAction;
-    });
+    try {
+      final report = await _reportService.getReportById(widget.reportId);
+
+      if (report == null) {
+        setState(() {
+          _error = 'Report not found.';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _report = report;
+        _isLoading = false;
+        _selectedViolationType = report.violationType == ViolationType.unassessed
+            ? null
+            : report.violationType;
+        _selectedSeverity = report.severity == Severity.unassessed
+            ? null
+            : report.severity;
+        _suggestedAction = report.suggestedAction == SuggestedAction.pending
+            ? null
+            : report.suggestedAction;
+        _actionSubmitted = report.status == ReportStatus.reviewed || report.status == ReportStatus.resolved;
+      });
+    } on ReportServiceException catch (e) {
+      setState(() {
+        _error = e.message;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Failed to load report';
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _getSuggestedAction() async {
-    if (_selectedViolationType == null || _selectedSeverity == null) {
+    final violationType = _selectedViolationType;
+    final severity = _selectedSeverity;
+
+    if (violationType == null ||
+        severity == null ||
+        violationType == ViolationType.unassessed ||
+        severity == Severity.unassessed) {
       setState(() {
         _suggestedAction = null;
+        _suggestionMessage = null;
+        _suggestionIsError = false;
       });
       return;
     }
 
-    setState(() => _isLoadingSuggestion = true);
-
-    // TODO: Replace with actual API call to /api/suggestion
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Mock logic - simulate API response based on selection
-    final action = _mockSuggestedAction(
-      _selectedViolationType!, 
-      _selectedSeverity!,
-    );
-    
     setState(() {
-      _suggestedAction = action;
-      _isLoadingSuggestion = false;
+      _isLoadingSuggestion = true;
+      _suggestionMessage = null;
+      _suggestionIsError = false;
     });
+
+    try {
+      final action = await _reportService.getSuggestedAction(
+        violationType: violationType,
+        severity: severity,
+      );
+
+      setState(() {
+        _suggestedAction = action;
+        _isLoadingSuggestion = false;
+        if (action == null) {
+          _suggestionMessage = 'No suggested action defined for this combination.';
+          _suggestionIsError = false;
+        }
+      });
+    } on ReportServiceException catch (e) {
+      setState(() {
+        _suggestedAction = null;
+        _isLoadingSuggestion = false;
+        _suggestionMessage = e.message;
+        _suggestionIsError = true;
+      });
+    } catch (e) {
+      setState(() {
+        _suggestedAction = null;
+        _isLoadingSuggestion = false;
+        _suggestionMessage = 'Failed to get suggested action.';
+        _suggestionIsError = true;
+      });
+    }
+  }
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  SuggestedAction _mockSuggestedAction(ViolationType type, Severity severity) {
-    if (severity == Severity.severe) {
-      if (type == ViolationType.threatsViolence || 
-          type == ViolationType.privacyViolation) {
-        return SuggestedAction.ban;
-      }
-      return SuggestedAction.suspend30d;
-    } else if (severity == Severity.moderate) {
-      return SuggestedAction.suspend7d;
-    } else {
-      return SuggestedAction.warning;
+
+  Future<void> _patchReport({
+    String? status,
+    ViolationType? violationType, 
+    Severity? severity,
+    String? actualAction,
+    String? adminNotes,
+    required String successMessage,
+  }) async {
+    setState (() => _isSubmittingVerdict = true);
+
+    try{
+      final updated = await _reportService.patchReport(
+        reportId:  widget.reportId,
+        status: status,
+        violationType: violationType,
+        severity: severity,
+        actualAction: actualAction,
+        adminNotes: adminNotes,
+      );
+
+      if(!mounted) return;
+      setState(() {
+        _report = updated;
+        _isSubmittingVerdict = false;
+        _actionSubmitted = true;
+      });
+      _showSnack(successMessage);
+    } on ReportServiceException catch(e){
+      if(!mounted) return;
+      setState(() => _isSubmittingVerdict = false);
+      _showSnack(e.message);
+    }catch (e){
+      if(!mounted) return;
+      setState(() => _isSubmittingVerdict = false);
+      _showSnack('Failed to update report');
     }
+  }
+
+  Future<void> _approve() async{
+    if(_selectedViolationType == null || _selectedSeverity == null){
+      _showSnack('Select a violation type and severity first.');
+      return;
+    }
+
+    if(_suggestedAction == null || _suggestedAction == SuggestedAction.pending){
+      _showSnack('No suggested action avilable yet.');
+      return;
+    }
+    await _patchReport(
+      status: 'reviewed',
+      violationType: _selectedViolationType,
+      severity: _selectedSeverity,
+      actualAction: _suggestedAction!.apiValue,
+      successMessage: 'Report approved and action applied.',
+    );
+  }
+
+  Future<void> _dismiss() async{
+    await _patchReport(
+      status: 'reviewed',
+      violationType: _selectedViolationType,
+      severity: _selectedSeverity,
+      adminNotes: 'Dismissed - no violation found',
+      successMessage: 'Report dismissed.',
+    );
+  }
+
+  Future<void> _escalate() async{
+    await _patchReport(
+      severity: Severity.severe,
+      status: 'reviewed',
+      adminNotes: 'Escalated for senior review.',
+      successMessage: 'Report escalated'
+    );
   }
 
   @override
@@ -156,7 +286,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               ),
               const SizedBox(width: 8),
               Text(
-                'Report #${report.id}',
+                'Report #${report.reportId}',
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -166,7 +296,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          
+
           // Status badges
           Row(
             children: [
@@ -212,17 +342,13 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoRow('Report ID', '#${report.id}'),
-                _buildInfoRow('Type', report.violationTypeDisplay),
-                _buildInfoRow('Reported By', report.reporterName),
-                _buildInfoRow('Reported Against', report.reportedUserName ?? 'Unknown'),
+                _buildInfoRow('Report ID', '#${report.reportId}'),
+                _buildInfoRow('Type', report.reportType.display),
+                _buildInfoRow('Reporter', report.reporterName),
+                _buildInfoRow('Reported', _buildReportedTargetLabel(report)),
                 _buildInfoRow('Created', _formatDate(report.createdAt)),
-                if (report.resolvedAt != null)
-                  _buildInfoRow('Resolved', _formatDate(report.resolvedAt!)),
                 const Divider(),
                 _buildInfoRow('Reason', report.reason),
-                if (report.description != null)
-                  _buildInfoRow('Description', report.description!),
                 if (report.disputeReason != null)
                   _buildInfoRow('Dispute Reason', report.disputeReason!),
               ],
@@ -256,16 +382,18 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Violation Type Dropdown
                 DropdownButtonFormField<ViolationType>(
-                  value: _selectedViolationType,
+                  initialValue: _selectedViolationType,
                   hint: const Text('Select violation type'),
                   isExpanded: true,
-                  items: ViolationType.values.map((type) {
+                  items: ViolationType.values
+                      .where((t) => t != ViolationType.unassessed)
+                      .map((type) {
                     return DropdownMenuItem(
                       value: type,
-                      child: Text(_getViolationTypeDisplay(type)),
+                      child: Text(type.display),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -280,16 +408,18 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Severity Dropdown
                 DropdownButtonFormField<Severity>(
-                  value: _selectedSeverity,
+                  initialValue: _selectedSeverity,
                   hint: const Text('Select severity'),
                   isExpanded: true,
-                  items: Severity.values.map((severity) {
+                  items: Severity.values
+                      .where((s) => s != Severity.unassessed)
+                      .map((severity) {
                     return DropdownMenuItem(
                       value: severity,
-                      child: Text(severity.toString().split('.').last.toUpperCase()),
+                      child: Text(severity.display),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -303,14 +433,49 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                
+
                 // Suggested Action Result
                 if (_isLoadingSuggestion)
                   const Padding(
                     padding: EdgeInsets.only(top: 12),
                     child: Center(child: CircularProgressIndicator()),
                   )
-                else if (_suggestedAction != null)
+                else if (_suggestionMessage != null)
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: (_suggestionIsError ? AppColors.error : AppColors.textGrey)
+                          .withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          _suggestionIsError ? Icons.error_outline : Icons.info_outline,
+                          color: _suggestionIsError ? AppColors.error : AppColors.textGrey,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _suggestionMessage!,
+                            style: GoogleFonts.openSans(
+                              fontSize: 13,
+                              color: _suggestionIsError ? AppColors.error : AppColors.textGrey,
+                            ),
+                          ),
+                        ),
+                        if (_suggestionIsError)
+                          TextButton(
+                            onPressed: _getSuggestedAction,
+                            child: const Text('Retry'),
+                          ),
+                      ],
+                    ),
+                  )
+                else if (_suggestedAction != null &&
+                    _suggestedAction != SuggestedAction.pending)
                   Container(
                     margin: const EdgeInsets.only(top: 12),
                     padding: const EdgeInsets.all(12),
@@ -335,7 +500,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                                 ),
                               ),
                               Text(
-                                _getSuggestedActionDisplay(_suggestedAction!),
+                                _suggestedAction!.display,
                                 style: GoogleFonts.poppins(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -346,13 +511,18 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: () {
-                            // TODO: Apply suggested action
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.success,
-                          ),
-                          child: const Text('Apply'),
+                            onPressed:  (_isSubmittingVerdict || _actionSubmitted) ? null : _approve,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.success,
+                            ),
+                            child: _isSubmittingVerdict ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white
+                              ),
+                            ) : const Text('Apply'),
                         ),
                       ],
                     ),
@@ -367,7 +537,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: (_isSubmittingVerdict || _actionSubmitted) ? null : _approve,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.success,
                   ),
@@ -377,7 +547,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: (_isSubmittingVerdict  || _actionSubmitted)? null : _dismiss,
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppColors.textGrey),
                   ),
@@ -390,7 +560,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed:( _isSubmittingVerdict  || _actionSubmitted)? null : _escalate,
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppColors.error),
                   ),
@@ -427,7 +597,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           ),
           const SizedBox(width: 8),
           Text(
-            report.statusDisplay,
+            report.status.display,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -488,128 +658,26 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     );
   }
 
+  /// The DTO only gives us raw target IDs (reportedUserId /
+  /// reportedPostId / reportedCommentId / taskId) — no names/content —
+  /// so build a readable label from whichever one is set.
+  String _buildReportedTargetLabel(Report report) {
+    if (report.reportedUserId != null) {
+      return 'User #${report.reportedUserId}';
+    }
+    if (report.reportedPostId != null) {
+      return 'Post #${report.reportedPostId}';
+    }
+    if (report.reportedCommentId != null) {
+      return 'Comment #${report.reportedCommentId}';
+    }
+    if (report.taskId != null) {
+      return 'Task #${report.taskId}';
+    }
+    return 'Unknown';
+  }
+
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} · ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-  }
-
-
-  String _getViolationTypeDisplay(ViolationType type) {
-    switch (type) {
-      case ViolationType.harassment:
-        return 'Harassment';
-      case ViolationType.hateSpeech:
-        return 'Hate Speech';
-      case ViolationType.inappropriateContent:
-        return 'Inappropriate Content';
-      case ViolationType.spamScam:
-        return 'Spam/Scam';
-      case ViolationType.privacyViolation:
-        return 'Privacy Violation';
-      case ViolationType.impersonation:
-        return 'Impersonation';
-      case ViolationType.taskNoShow:
-        return 'Task: No-show';
-      case ViolationType.taskPoorQuality:
-        return 'Task: Poor Quality';
-      case ViolationType.taskPropertyDamage:
-        return 'Task: Property Damage';
-      case ViolationType.taskUnsafeConditions:
-        return 'Task: Unsafe Conditions';
-      case ViolationType.threatsViolence:
-        return 'Threats of Violence';
-    }
-  }
-
-  String _getSuggestedActionDisplay(SuggestedAction action) {
-    switch (action) {
-      case SuggestedAction.warning:
-        return 'Warning';
-      case SuggestedAction.suspend7d:
-        return 'Suspend 7 days';
-      case SuggestedAction.suspend14d:
-        return 'Suspend 14 days';
-      case SuggestedAction.suspend30d:
-        return 'Suspend 30 days';
-      case SuggestedAction.ban:
-        return 'Ban';
-    }
-  }
-
-  List<Report> _getMockReports() {
-    return [
-      Report(
-        id: 102,
-        reportType: ReportType.user,
-        reporterUserId: 1,
-        reporterName: 'John Doe',
-        status: ReportStatus.submitted,
-        reportedUserId: 2,
-        reportedUserName: 'mike_helps',
-        reason: 'User posted abusive content targeting multiple community members.',
-        violationType: ViolationType.harassment,
-        severity: Severity.moderate,
-        suggestedAction: SuggestedAction.suspend7d,
-        createdAt: DateTime.now().subtract(const Duration(minutes: 2)),
-      ),
-      Report(
-        id: 101,
-        reportType: ReportType.post,
-        reporterUserId: 3,
-        reporterName: 'Sarah J.',
-        status: ReportStatus.submitted,
-        reportedPostId: 42,
-        postContent: 'Suspicious advertisement for cheap services...',
-        reason: 'Suspected spam/scam post.',
-        violationType: ViolationType.spamScam,
-        severity: Severity.minor,
-        suggestedAction: SuggestedAction.warning,
-        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-      ),
-      Report(
-        id: 100,
-        reportType: ReportType.comment,
-        reporterUserId: 4,
-        reporterName: 'Emily R.',
-        status: ReportStatus.assigned,
-        reportedCommentId: 31,
-        commentContent: 'I have your address saved...',
-        reason: 'Sharing personal information without consent.',
-        violationType: ViolationType.privacyViolation,
-        severity: Severity.severe,
-        suggestedAction: SuggestedAction.suspend30d,
-        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-      ),
-      Report(
-        id: 99,
-        reportType: ReportType.taskDispute,
-        reporterUserId: 5,
-        reporterName: 'Helper User',
-        status: ReportStatus.assigned,
-        taskId: 128,
-        taskTitle: 'Water Plants',
-        disputeReason: 'No-show',
-        reason: 'Helper accepted the task but never arrived.',
-        violationType: ViolationType.taskNoShow,
-        severity: Severity.moderate,
-        suggestedAction: SuggestedAction.suspend7d,
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      Report(
-        id: 98,
-        reportType: ReportType.user,
-        reporterUserId: 6,
-        reporterName: 'Anonymous',
-        status: ReportStatus.resolved,
-        reportedUserId: 7,
-        reportedUserName: 'user_456',
-        reason: 'User posted hate speech in multiple threads.',
-        violationType: ViolationType.hateSpeech,
-        severity: Severity.severe,
-        suggestedAction: SuggestedAction.ban,
-        actualAction: SuggestedAction.ban,
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        resolvedAt: DateTime.now().subtract(const Duration(hours: 4)),
-      ),
-    ];
   }
 }
