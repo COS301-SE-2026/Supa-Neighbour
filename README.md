@@ -61,6 +61,8 @@ To install the app:
 4. Once downloaded, open the APK file on your Android device. You may need to enable **"Install from unknown sources"** in your device settings if prompted.
 5. You may also reference the [User Manual](/documentation/Demo%203%20Files/SupaNeighbour_User_Manual_V3.pdf) for any questiona about the app and it's functionality
 
+> When logging in, you can make use of the email: james.example.298@gmail.com and the password: pass123 if you would like to skip the registration portion of the app and jump straight into the functionality!
+
 ---
 
 ## Relevant Links/Documents
