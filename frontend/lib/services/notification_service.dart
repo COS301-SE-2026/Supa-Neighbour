@@ -168,23 +168,42 @@ class NotificationService {
       ),
     );
 
-    // TODO: Implement navigation based on notification type
-    // This will be implemented when we have the full navigation setup
     switch (type) {
       case 'TASK_CREATED':
       case 'TASK_START':
-        // Navigate to task detail
-        debugPrint('📍 Navigate to task: $entityId');
+        // Navigate to the notifications list for now.
+        // TODO: once we can resolve entityId to a task, deep-link straight to task detail instead.
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+        );
         break;
-        
+
       case 'POST_CREATED':
       case 'POST_COMMENT':
-        // Navigate to post detail
-        debugPrint('📍 Navigate to post: $entityId');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+        );
         break;
-        
+
+      case 'ACCOUNT_WARNING':
+      case 'ACCOUNT_SUSPENDED':
+      case 'ACCOUNT_BANNED':
+        // TODO: route to an account-status screen once it exists,
+        // instead of the general notifications list.
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+        );
+        break;
+
       default:
         debugPrint('⚠️ Unknown notification type: $type');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+        );
         break;
     }
   }
@@ -228,4 +247,6 @@ class NotificationService {
       return null;
     }
   }
+
+  
 }
