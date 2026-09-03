@@ -11,26 +11,25 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.context.ApplicationEventPublisher;
 
 import com.app.api.dtos.AdminDashboardDTO;
 import com.app.api.dtos.PatchReportDTO;
 import com.app.api.dtos.PatchReportResponseDTO;
 import com.app.api.dtos.ReportDTO;
+import com.app.api.dtos.ReportMatchResponseDTO;
 import com.app.api.dtos.ReportRequestDTO;
 import com.app.api.dtos.ReportResponseDTO;
 import com.app.api.events.UserBannedEvent;
 import com.app.api.events.UserSuspendedEvent;
 import com.app.api.events.UserWarnedEvent;
-import com.app.api.dtos.AdminDashboardDTO;
-import com.app.api.dtos.ReportMatchResponseDTO;
-import com.app.api.dtos.ReportResponseDTO;
 import com.app.api.models.Admin;
 import com.app.api.models.Report;
+import com.app.api.models.Task;
 import com.app.api.models.User;
 import com.app.api.repositories.AdminRepository;
 import com.app.api.repositories.CommentsRepository;
@@ -40,7 +39,6 @@ import com.app.api.repositories.PostsRepository;
 import com.app.api.repositories.ReportRepository;
 import com.app.api.repositories.TaskRepository;
 import com.app.api.repositories.UserRepository;
-import com.app.api.models.Task;
 
 /**
  * Service layer for report-related business logic.
@@ -94,7 +92,7 @@ public class ReportService {
             TaskRepository taskRepository,
             ApplicationEventPublisher applicationEventPublisher,
             DependentRepository dependentRepository,
-            HelperRepository helperRepository) {
+            HelperRepository helperRepository,
             AdminRepository adminRepository) {
         this.reportRepository = reportRepository;
         this.userRepository = userRepository;
