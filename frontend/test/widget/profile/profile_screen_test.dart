@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supa_neighbour/providers/service_providers.dart';
 import 'package:supa_neighbour/screens/profile/profile_screen.dart';
+import 'package:supa_neighbour/screens/profile/edit_profile_screen.dart';
 import '../../mocks/mock_achievement_service.dart';
 import '../../mocks/mock_chat_service.dart';
 import '../../mocks/mock_profile_service.dart';
@@ -320,7 +321,7 @@ void main() {
     });
 
     group('Edit Profile', () {
-      testWidgets('should show snackbar when Edit Profile is tapped', (tester) async {
+      testWidgets('should navigate to edit profile screen when Edit Profile is tapped', (tester) async {
         await tester.binding.setSurfaceSize(const Size(800, 1000));
         await tester.pumpWidget(buildTestableWidget());
         await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -331,7 +332,8 @@ void main() {
         await tester.tap(editProfile);
         await tester.pumpAndSettle();
 
-        expect(find.text('Edit Profile coming soon'), findsOneWidget);
+        // Verify navigation to edit profile screen
+        expect(find.byType(EditProfileScreen), findsOneWidget);
       });
     });
 
