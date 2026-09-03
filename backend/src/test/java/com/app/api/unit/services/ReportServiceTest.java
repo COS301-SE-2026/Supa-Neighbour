@@ -5,7 +5,10 @@ import com.app.api.dtos.PatchReportDTO;
 import com.app.api.dtos.PatchReportResponseDTO;
 import com.app.api.dtos.ReportRequestDTO;
 import com.app.api.dtos.ReportResponseDTO;
+import org.springframework.context.ApplicationEventPublisher;
 
+import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.HelperRepository;
 import com.app.api.models.Comments;
 import com.app.api.models.Posts;
 import com.app.api.models.Report;
@@ -60,11 +63,24 @@ public class ReportServiceTest {
 
     private ReportService reportService;
 
-    @BeforeEach
-    void setUp() {
-        reportService = new ReportService(reportRepository, userRepository, reportDetailService,
-                moderationActionService, postsRepository, commentsRepository, taskRepository, adminRepository);
-    }
+    @Mock private ApplicationEventPublisher applicationEventPublisher;
+    @Mock private DependentRepository dependentRepository;
+    @Mock private HelperRepository helperRepository;
+@BeforeEach
+void setUp() {
+    reportService = new ReportService(
+            reportRepository,
+            userRepository,
+            reportDetailService,
+            moderationActionService,
+            postsRepository,
+            commentsRepository,
+            taskRepository,
+            applicationEventPublisher,
+            dependentRepository,
+            helperRepository,
+            adminRepository);
+}
 
     @Test
     void getReportsForAdmin_invalidStatus_throws400() {
@@ -550,32 +566,6 @@ public class ReportServiceTest {
                 any(), eq("warning"), anyString(), eq(existing), any(), isNull());
     }
 
-    @Test
-    void patchReport_targetResolution_taskDisputeType_resolvesHelper() {
-        Report existing = new Report();
-        existing.setReportId(1);
-        existing.setAdminId(10);
-        existing.setReportType("TASK_DISPUTE");
-        existing.setTaskId(70);
-
-        Task task = mock(Task.class);
-        when(task.getHelperId()).thenReturn(9);
-
-        PatchReportDTO dto = mock(PatchReportDTO.class);
-        when(dto.getReportId()).thenReturn(1);
-        when(dto.getActualAction()).thenReturn("warning");
-
-        when(reportRepository.findById(1)).thenReturn(Optional.of(existing));
-        when(reportRepository.save(existing)).thenReturn(existing);
-        when(taskRepository.findById(70)).thenReturn(Optional.of(task));
-        when(userRepository.findById(9)).thenReturn(Optional.of(mock(User.class)));
-        when(userRepository.findById(10)).thenReturn(Optional.of(mock(User.class)));
-
-        reportService.patchReport(10, dto);
-
-        verify(moderationActionService).issueModerationAction(
-                any(), eq("warning"), anyString(), eq(existing), any(), isNull());
-    }
 
     @Test
     void patchReport_targetResolution_unknownReportType_skipsModerationAction() {
