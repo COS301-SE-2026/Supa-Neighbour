@@ -551,7 +551,7 @@ Availability is supported by Azure's managed infrastructure — Postgres Flexibl
 
 # 7. Domain Model
 
-Please refer to the file for the Domain model: [Domain Model](/documentation/Demo%202%20Files/Images/SNR-Domain-Model.drawio.png)
+Please refer to the file for the Domain model: [Domain Model](/documentation/Demo%203%20Files/Images/SNR-Domain-Model.drawio%20V3.png)
 
 ---
 
