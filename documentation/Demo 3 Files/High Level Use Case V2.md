@@ -127,3 +127,8 @@
 | **TUCBW** | The Admin navigates to the "Settings" section within the admin dashboard |
 | **TUCEW** | The system saves the updated profile details and reflects the changes across the admin session |
 
+| **Version** | **Date** | **Author** | **Change Description** |
+|-------------|----------|------------|--------------------------|
+| 1.0         | 2026-05-20 | Blessing Gibendi | Initial release for Demo 1 |
+| 2.0         | 2026-07-25 | Blessing Gibendi | Updated use cases for Demo 2 |
+| 3.0     | 2026-09-03 | Michelle Njoroge | Added View Dashboard use case for Admin |
