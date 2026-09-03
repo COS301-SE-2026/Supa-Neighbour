@@ -1,6 +1,7 @@
 // admin/lib/screens/dashboard/dashboard_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared/constants/constants.dart';
 
@@ -9,146 +10,126 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              // TODO: Implement logout
-              // For now, go back to login
-              Navigator.pushReplacementNamed(context, '/login');
-            },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Welcome Section
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primaryTeal,
+                AppColors.primaryTeal.withValues(alpha: 0.8)
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
           ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Welcome back, Admin',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Here\'s what\'s happening in your community',
+                style: GoogleFonts.openSans(
+                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Stats Cards
+        Row(
           children: [
-            // Welcome Section
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primaryTeal,
-                    AppColors.primaryTeal.withOpacity(0.8),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome back, Admin 👋',
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Here\'s what\'s happening in your community',
-                    style: GoogleFonts.openSans(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.8),
-                    ),
-                  ),
-                ],
-              ),
+            _buildStatCard(
+              title: 'Total Users',
+              value: '1,284',
+              icon: Icons.people,
+              color: AppColors.primaryTeal,
             ),
-            const SizedBox(height: 24),
-
-            // Stats Cards
-            Row(
-              children: [
-                _buildStatCard(
-                  title: 'Total Users',
-                  value: '1,284',
-                  icon: Icons.people,
-                  color: AppColors.primaryTeal,
-                ),
-                const SizedBox(width: 12),
-                _buildStatCard(
-                  title: 'Pending Reports',
-                  value: '23',
-                  icon: Icons.flag,
-                  color: AppColors.citrusYellow,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildStatCard(
-                  title: 'Tasks Completed',
-                  value: '156',
-                  icon: Icons.check_circle,
-                  color: AppColors.success,
-                ),
-                const SizedBox(width: 12),
-                _buildStatCard(
-                  title: 'Banned Users',
-                  value: '12',
-                  icon: Icons.block,
-                  color: AppColors.error,
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Quick Actions
-            Text(
-              'Quick Actions',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.charcoal,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildQuickAction(
-                  title: 'Reports',
-                  icon: Icons.flag,
-                  color: AppColors.error,
-                  onTap: () {
-                    // TODO: Navigate to reports
-                  },
-                ),
-                const SizedBox(width: 12),
-                _buildQuickAction(
-                  title: 'Users',
-                  icon: Icons.people,
-                  color: AppColors.primaryTeal,
-                  onTap: () {
-                    // TODO: Navigate to users
-                  },
-                ),
-                const SizedBox(width: 12),
-                _buildQuickAction(
-                  title: 'Zones',
-                  icon: Icons.location_on,
-                  color: AppColors.citrusYellow,
-                  onTap: () {
-                    // TODO: Navigate to zones
-                  },
-                ),
-              ],
+            const SizedBox(width: 12),
+            _buildStatCard(
+              title: 'Pending Reports',
+              value: '23',
+              icon: Icons.flag,
+              color: AppColors.citrusYellow,
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _buildStatCard(
+              title: 'Tasks Completed',
+              value: '156',
+              icon: Icons.check_circle,
+              color: AppColors.success,
+            ),
+            const SizedBox(width: 12),
+            _buildStatCard(
+              title: 'Banned Users',
+              value: '12',
+              icon: Icons.block,
+              color: AppColors.error,
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // Quick Actions
+        Text(
+          'Quick Actions',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.charcoal,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _buildQuickAction(
+              title: 'Reports',
+              icon: Icons.flag,
+              color: AppColors.error,
+              onTap: () {
+                context.go('/reports');
+              },
+            ),
+            const SizedBox(width: 12),
+            _buildQuickAction(
+              title: 'Users',
+              icon: Icons.people,
+              color: AppColors.primaryTeal,
+              onTap: () {
+                context.go('/users');
+              },
+            ),
+            const SizedBox(width: 12),
+            _buildQuickAction(
+              title: 'Zones',
+              icon: Icons.location_on,
+              color: AppColors.citrusYellow,
+              onTap: () {
+                context.go('/zones');
+              },
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -166,7 +147,7 @@ class DashboardScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha:0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -180,7 +161,7 @@ class DashboardScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha:0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(icon, color: color, size: 20),
@@ -226,7 +207,7 @@ class DashboardScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),

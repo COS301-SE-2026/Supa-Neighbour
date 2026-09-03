@@ -70,7 +70,9 @@ class SecurityConfigTest {
         CorsConfiguration corsConfig = source.getCorsConfigurations().get("/**");
 
         assertThat(corsConfig).isNotNull();
-        assertThat(corsConfig.getAllowedOrigins()).containsExactly("http://localhost:3000");
+        assertThat(corsConfig.getAllowedOrigins()).containsExactly(
+            "http://localhost:3000",
+            "https://red-rock-009e74b03.3.azurestaticapps.net");
         assertThat(corsConfig.getAllowedMethods())
                 .containsExactlyInAnyOrder("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
         assertThat(corsConfig.getAllowedHeaders()).containsExactly("*");

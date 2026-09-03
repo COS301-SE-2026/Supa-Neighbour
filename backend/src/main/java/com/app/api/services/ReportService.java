@@ -26,8 +26,13 @@ import com.app.api.dtos.ReportResponseDTO;
 import com.app.api.events.UserBannedEvent;
 import com.app.api.events.UserSuspendedEvent;
 import com.app.api.events.UserWarnedEvent;
+import com.app.api.dtos.AdminDashboardDTO;
+import com.app.api.dtos.ReportMatchResponseDTO;
+import com.app.api.dtos.ReportResponseDTO;
+import com.app.api.models.Admin;
 import com.app.api.models.Report;
 import com.app.api.models.User;
+import com.app.api.repositories.AdminRepository;
 import com.app.api.repositories.CommentsRepository;
 import com.app.api.repositories.DependentRepository;
 import com.app.api.repositories.HelperRepository;
@@ -63,6 +68,7 @@ public class ReportService {
     private final ApplicationEventPublisher eventPublisher;
     private final HelperRepository helperRepository;
     private final DependentRepository dependentRepository;
+    private final AdminRepository adminRepository;
 
     private static final Pattern SUSPEND_PATTERN =
             Pattern.compile("^SUSPEND_(\\d+)D$", Pattern.CASE_INSENSITIVE);
@@ -76,6 +82,7 @@ public class ReportService {
      * @param postsRepository the posts repository
      * @param commentsRepository the comments repository
      * @param taskRepository the task repository
+     * @param adminRepository the admin repository
      */
     public ReportService(
             ReportRepository reportRepository,
@@ -88,6 +95,7 @@ public class ReportService {
             ApplicationEventPublisher applicationEventPublisher,
             DependentRepository dependentRepository,
             HelperRepository helperRepository) {
+            AdminRepository adminRepository) {
         this.reportRepository = reportRepository;
         this.userRepository = userRepository;
         this.reportDetailService = reportDetailService;
@@ -98,6 +106,7 @@ public class ReportService {
         this.eventPublisher = applicationEventPublisher;
         this.dependentRepository = dependentRepository;
         this.helperRepository = helperRepository;
+        this.adminRepository = adminRepository;
     }
 
     /**
@@ -485,6 +494,46 @@ public class ReportService {
         return reports.stream()
                 .map(r -> this.toResponse(r))
                 .toList();
+    }
+
+    /**
+     * Assigns a submitted report to the admin with the fewest currently
+     * assigned reports (POST /api/report/match).
+     * <p>
+     * Only reports in {@code submitted} status can be matched — a report
+     * that is already {@code assigned} or {@code reviewed} is rejected with
+     * {@code 409 Conflict} so the caller cannot accidentally overwrite an
+     * existing assignment.
+     * </p>
+     *
+     * @param reportId the ID of the report to assign
+     * @return a {@link ReportMatchResponseDTO} confirming the assignment
+     * @throws ResponseStatusException 404 if the report does not exist,
+     *         409 if the report is not in {@code submitted} status,
+     *         503 if no admins exist in the system
+     */
+    @Transactional
+    public ReportMatchResponseDTO matchReportToAdmin(int reportId) {
+        Report report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Report not found"));
+
+        if (!"submitted".equals(report.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Report has already been assigned or reviewed");
+        }
+
+        Admin admin = adminRepository.findAdminWithLeastAssignedReports()
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.SERVICE_UNAVAILABLE, "No admins available"));
+
+        int assignedAdminUserId = admin.getUserid().getUserid();
+
+        report.setAdminId(assignedAdminUserId);
+        report.setStatus("assigned");
+        reportRepository.save(report);
+
+        return new ReportMatchResponseDTO(reportId, assignedAdminUserId, "assigned");
     }
 
     /**

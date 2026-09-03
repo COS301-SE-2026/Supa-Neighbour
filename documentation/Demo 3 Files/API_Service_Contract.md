@@ -71,6 +71,7 @@
    - [9.6 PATCH /api/report](#97-patch-apireport)
    - [9.7 PUT /api/user (deregister admin)](#98-put-apiuser-deregister-admin) 
    - [9.8 GET /api/report/me](#99-get-apireportme)
+   - [9.9 POST /api/report/match](#910-post-apireportmatch)
 10.  [Http Status Code Reference](#8-http-status-code-reference)
 ---
 
@@ -2798,3 +2799,61 @@ Note: `actualAction` and `resolvedAt` are `null` while `status` is `submitted` o
 | `422 Unprocessable Entity` | Missing required fields | Incomplete request bodies |
 | `500 Internal Server Error` | Unexpected server failure | All endpoints |
 
+
+### 9.9 POST /api/report/match
+
+| Field | Details |
+|---|---|
+| **Endpoint** | `/api/report/match` |
+| **Method** | `POST` |
+| **Purpose** | Assigns a submitted report to the admin with the fewest currently assigned reports. Uses a load-balancing strategy — the admin with the lowest count of `assigned` reports is selected. Ties are broken by the lowest `admin_id`. Only reports in `submitted` status can be matched |
+| **Authentication** | Firebase ID Token required; user must have `isAdmin = true` |
+| **Content-Type** | `application/json` |
+
+#### Request Headers
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Request Body
+
+| Field | Type | Description |
+|---|---|---|
+| `reportId` | int | **Required.** The ID of the report to assign |
+
+```json
+{
+  "reportId": 14
+}
+```
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "reportId": 14,
+  "assignedAdminId": 1,
+  "status": "assigned"
+}
+```
+
+> `assignedAdminId` is the `user_id` (from `user_table`) of the admin who was assigned — not their `admin_id` from `admin_table`. The report's `admin_id` column and `status` are both updated atomically in the same transaction.
+
+#### Error Responses
+
+| Status Code | Scenario | Response Body |
+|---|---|---|
+| `400 Bad Request` | `reportId` missing from request body | `{ "error": "reportId is required" }` |
+| `401 Unauthorized` | Missing or invalid Firebase ID token | `{ "error": "Unauthorized" }` |
+| `403 Forbidden` | Authenticated user is not an admin | `{ "error": "User is not an admin" }` |
+| `404 Not Found` | Report does not exist | `{ "error": "Report not found" }` |
+| `409 Conflict` | Report is already `assigned` or `reviewed` — cannot be re-matched | `{ "error": "Report has already been assigned or reviewed" }` |
+| `503 Service Unavailable` | No admins exist in the system | `{ "error": "No admins available" }` |
+
+#### Notes
+
+- This endpoint is intended to be called by an admin (or an automated system) after a new report is submitted via `PUT /api/report`.
+- The typical flow is: user submits report (`PUT /api/report` → status `submitted`) → admin or system calls `POST /api/report/match` → report status becomes `assigned` and the selected admin can now see it via `GET /api/report`.
+- An already-assigned report cannot be re-matched through this endpoint — use `PATCH /api/report` to update `adminId` manually if reassignment is needed.
+
+---

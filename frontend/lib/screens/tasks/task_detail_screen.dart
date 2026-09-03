@@ -7,6 +7,7 @@ import '../../constants/app_colors.dart';
 import 'edit_task_screen.dart';
 import '../leaderboard/helper_profile_preview_screen.dart';
 import '../chat/chat_detail_screen.dart';
+import 'task_report_screen.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
@@ -456,8 +457,44 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TaskReportScreen(
+                            taskId: int.parse(widget.task.id),
+                            taskTitle: widget.task.title,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.flag_outlined, color: AppColors.error(context)),
+                    label: Text(
+                      'Report Task',
+                      style: GoogleFonts.openSans(
+                        color: AppColors.error(context),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppColors.error(context)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
             // Non-editable Message
             if (!canEdit && widget.isRequesterView &&
                 widget.task.status != 'completed' &&

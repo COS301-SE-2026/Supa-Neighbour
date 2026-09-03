@@ -3716,7 +3716,7 @@ paths:
       security:
       - BearerAuth: []
   /api/suggestion:
-    get:
+    post:
       tags:
       - Suggestions
       summary: Get suggested action for violation

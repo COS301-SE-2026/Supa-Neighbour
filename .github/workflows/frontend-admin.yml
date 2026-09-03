@@ -20,8 +20,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'   # pin to whatever you use for frontend/
-          channel: 'stable'
+          flutter-version: '3.44.6'   # matches frontend/ pin
 
       - name: Get dependencies
         working-directory: admin
@@ -36,3 +35,13 @@ jobs:
         run: flutter build web --release
         # add --dart-define=API_BASE_URL=... here if the admin app
         # needs a different backend URL flag than frontend/
+
+      - name: Deploy to Azure Static Web Apps
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ADMIN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: 'admin/build/web'
+          skip_app_build: true

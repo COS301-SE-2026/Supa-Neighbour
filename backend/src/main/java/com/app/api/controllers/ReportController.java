@@ -2,6 +2,7 @@ package com.app.api.controllers;
 
 import com.app.api.dtos.PatchReportDTO;
 import com.app.api.dtos.PatchReportResponseDTO;
+import com.app.api.dtos.ReportMatchResponseDTO;
 import com.app.api.dtos.ReportRequestDTO;
 import com.app.api.dtos.ReportResponseDTO;
 import com.app.api.dtos.ReportDTO;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -149,6 +151,59 @@ public class ReportController {
             int userId = firebaseAuthService.getUserIdFromToken(token);
             requireAdmin(userId);
             PatchReportResponseDTO result = reportService.patchReport(userId, dto);
+            return ResponseEntity.ok(result);
+        } catch (FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized"));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Map.of("error", e.getReason()));
+        }
+    }
+
+    /**
+     * Assigns a submitted report to the admin with the fewest currently
+     * assigned reports
+     * <p>
+     * Caller must be an admin. The report must be in {@code submitted} status —
+     * already-assigned or reviewed reports are rejected with {@code 409}.
+     * </p>
+     *
+     * @param authHeader the Firebase Bearer token
+     * @param body a map containing {@code reportId} — the report to assign
+     * @return 200 with {@link ReportMatchResponseDTO} confirming the assignment,
+     *         400 if {@code reportId} is missing,
+     *         401 on bad token,
+     *         403 if caller is not an admin,
+     *         404 if the report does not exist,
+     *         409 if the report is not in {@code submitted} status,
+     *         503 if no admins exist in the system
+     */
+    @Operation(summary = "Assign a submitted report to the admin with the least workload")
+    @ApiResponse(responseCode = "200", description = "Report successfully assigned")
+    @ApiResponse(responseCode = "400", description = "reportId is missing")
+    @ApiResponse(responseCode = "401", description = "Unauthorized — invalid or missing token")
+    @ApiResponse(responseCode = "403", description = "User is not an admin")
+    @ApiResponse(responseCode = "404", description = "Report not found")
+    @ApiResponse(responseCode = "409", description = "Report already assigned or reviewed")
+    @ApiResponse(responseCode = "503", description = "No admins available in the system")
+    @PostMapping("/match")
+    public ResponseEntity<?> matchReport(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Map<String, Object> body) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            requireAdmin(userId);
+
+            Object reportIdRaw = body.get("reportId");
+            if (reportIdRaw == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "reportId is required"));
+            }
+
+            int reportId = ((Number) reportIdRaw).intValue();
+            ReportMatchResponseDTO result = reportService.matchReportToAdmin(reportId);
             return ResponseEntity.ok(result);
         } catch (FirebaseAuthException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

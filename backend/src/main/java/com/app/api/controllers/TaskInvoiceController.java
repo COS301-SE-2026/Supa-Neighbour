@@ -1,6 +1,7 @@
 package com.app.api.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -179,6 +180,54 @@ public class TaskInvoiceController {
             TaskInvoice updated = taskInvoiceService.updateTaskInvoice(id, taskInvoice);
             return ResponseEntity.ok(updated);
         }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+        }
+    }
+
+    // POST /api/taskinvoices/{id}/images
+    /**
+     * Saves a list of image URLs as TaskImage records linked to the given task.
+     *
+     * @param id the task invoice ID
+     * @param body request body containing a list of image URLs under the key "imageUrls"
+     * @param authHeader the Firebase Bearer token
+     * @return 201 Created with the count of images saved, 404 if task not found, 401 if token invalid
+     */
+    @PostMapping("/{id}/images")
+    @Operation(
+        summary = "Add images to a task invoice",
+        description = "Saves a list of Azure Blob Storage image URLs as completion proof for a task",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Images saved successfully"),
+        @ApiResponse(responseCode = "400", description = "No image URLs provided", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Task invoice not found", content = @Content)
+    })
+    public ResponseEntity<?> addImagesToTask(
+        @Parameter(description = "ID of the task invoice", example = "1")
+        @PathVariable int id,
+        @RequestBody Map<String, List<String>> body,
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true)
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            firebaseAuthService.getUserIdFromToken(token);
+
+            List<String> imageUrls = body.get("imageUrls");
+            if (imageUrls == null || imageUrls.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "No image URLs provided"));
+            }
+
+            int saved = taskInvoiceService.addImagesToTask(id, imageUrls);
+            if (saved == -1) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("saved", saved));
+        } catch (com.google.firebase.auth.FirebaseAuthException e) {
             return ResponseEntity.status(401).body("Invalid or expired Firebase token");
         }
     }
