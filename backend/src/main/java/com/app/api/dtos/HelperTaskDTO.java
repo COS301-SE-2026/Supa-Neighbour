@@ -17,8 +17,10 @@ public class HelperTaskDTO {
     private String status;
     private String startDate;
     private String endDate;
-    private String neighbourhood;
     private Integer xpAwarded;
+    private String completionNote;
+    private String requesterName;
+    private Integer requesterUserId;
 
     /**
      * Creates a helper task data transfer object.
@@ -30,15 +32,20 @@ public class HelperTaskDTO {
      * @param endDate the completion or scheduled end date of the task
      * @param neighbourhood the neighbourhood where the task is located
      * @param xpAwarded the experience points awarded for the task, if applicable
+     * @param completionNote the note provided upon task completion, if any
+     * @param requesterName the name of the user who requested the task
+     * @param requesterUserId the unique identifier of the user who requested the task
      */
-    public HelperTaskDTO(int taskId, String taskType, String status, String startDate, String endDate, String neighbourhood, Integer xpAwarded){
+    public HelperTaskDTO(int taskId, String taskType, String status, String startDate, String endDate, Integer xpAwarded, String completionNote, String requesterName, Integer requesterUserId){
         this.taskId = taskId;
         this.taskType = taskType;
         this.status = status;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.neighbourhood = neighbourhood;
         this.xpAwarded = xpAwarded;
+        this.completionNote = completionNote;
+        this.requesterName = requesterName;
+        this.requesterUserId = requesterUserId;
     }
 
     /**
@@ -88,20 +95,39 @@ public class HelperTaskDTO {
     }
 
     /**
-     * Returns the neighbourhood in which the task is located.
-     *
-     * @return the neighbourhood name
-     */
-    public String getNeighbourhood(){
-        return neighbourhood;
-    }
-
-    /**
      * Returns the experience points awarded for completing the task.
      *
      * @return the experience points awarded, or {@code null} if not applicable
      */
     public Integer getXpAwarded(){
         return xpAwarded;
+    }
+
+
+    /**
+     * Returns the completion note provided for the task.
+     * 
+     * $@return the completion note
+     */
+    public String getCompletionNote(){
+        return completionNote;
+    }
+
+    /**
+     * Returns the name of the requester who created the task.
+     *
+     * @return the requester's name
+     */
+    public String getRequesterName() {
+        return requesterName;
+    }
+
+    /**
+     * Returns the user ID of the requester who created the task.
+     *
+     * @return the requester's user ID
+     */
+    public Integer getRequesterUserId() {
+        return requesterUserId;
     }
 }

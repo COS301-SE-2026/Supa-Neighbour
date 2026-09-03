@@ -97,6 +97,10 @@ public class User {
     @Column(name = "user_type")
     private String userType;
 
+    /** indicates if user is admin */
+    @Column(name = "is_admin")
+    private Boolean isAdmin;
+
     /**
      * Default constructor required by JPA.
      */
@@ -119,8 +123,9 @@ public class User {
      * @param badgeid the badge assigned to the user
      * @param ratingid the rating associated with the user
      * @param userType the user's type or role
+     * @param isAdmin the user is either a user or an admin
      */
-    public User(int userid,String firebaseUid,boolean phoneVerified,boolean emailVerified, String firstName, String lastName, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType) {
+    public User(int userid,String firebaseUid,boolean phoneVerified,boolean emailVerified, String firstName, String lastName, String email,String phoneNumber, Date dateOfBirth, String gender,Address addressid, Badges badgeid, Ratings ratingid, String userType,Boolean isAdmin) {
         this.userid = userid;
         this.firebaseUid = firebaseUid;
         this.emailVerified = emailVerified;
@@ -135,12 +140,13 @@ public class User {
         this.badgeid = badgeid;
         this.ratingid = ratingid;
         this.userType = userType;
+        this.isAdmin = isAdmin;
     }
 
-/**
- * Returns the the firebase id 
- * @return fireUid
- */
+    /**
+     * Returns the the firebase id 
+     * @return fireUid
+     */
     public String getFirebaseUid(){
         return firebaseUid;
     }

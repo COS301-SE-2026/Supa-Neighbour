@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
+import '../../models/chat_thread.dart';
 import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'task_completion_page.dart';
-import '../../services/task_service.dart';
+import '../leaderboard/helper_profile_preview_screen.dart';
+import '../chat/chat_detail_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-
-class TaskStartScreen extends StatefulWidget {
+class TaskStartScreen extends ConsumerStatefulWidget {
   final Task task;
 
   const TaskStartScreen({
@@ -17,19 +21,19 @@ class TaskStartScreen extends StatefulWidget {
   });
 
   @override
-  State<TaskStartScreen> createState() => _TaskStartScreenState();
+  ConsumerState<TaskStartScreen> createState() => _TaskStartScreenState();
 }
 
-class _TaskStartScreenState extends State<TaskStartScreen> {
+class _TaskStartScreenState extends ConsumerState<TaskStartScreen> {
   bool _isStarting = false;
-
-  final TaskService _taskService = TaskService();
+  bool _isOpeningChat = false;
 
   Future<void> _startTask() async {
     setState(() => _isStarting = true);
 
     try {
-      await _taskService.updateTask(
+      final taskService = ref.read(taskServiceProvider);
+      await taskService.updateTask(
         taskId: int.parse(widget.task.id),
         status: 'in_progress',
       );
@@ -63,6 +67,56 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
     }
   }
 
+  Future<void> _openChat() async{
+    if(_isOpeningChat) return;
+    setState(() => _isOpeningChat = true);
+
+    try{
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if(token == null){
+         throw Exception('You need to be signed in to chat.');
+      }
+
+      final chatService = ref.read(chatServiceProvider);
+      final data = await chatService.getOrCreateChatForTask(
+        int.parse(widget.task.id),
+        token
+      );
+
+      final requesterId = int.tryParse(widget.task.createdBy) ?? data['dependentUserId'] as int;
+
+      final chatThread = ChatThread(
+        chatId: data['chatId'] as int,
+        otherUserId: requesterId, 
+        taskId: data['taskId'] as int,
+        name: widget.task.requesterName ?? 'Requester',
+        location: '',
+        lastMessage: '',
+        timestamp: '',
+        unreadCount: 0,
+        avatarColor: const Color(0xFF2A9D8F),
+      );
+
+      if(!mounted) return;
+      Navigator.push(
+        context, 
+        MaterialPageRoute(
+            builder: (context) => ChatDetailScreen(chat: chatThread),
+          ),
+      );
+    }catch (e) {
+      if(!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ' , '')),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
+    }finally{
+      if(mounted) setState(() => _isOpeningChat = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,6 +137,23 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: _isOpeningChat ? 
+              SizedBox(
+                width: 20, 
+                height: 20, 
+                child: CircularProgressIndicator(
+                  strokeWidth: 2, 
+                  color: AppColors.primaryTeal(context),
+                ),
+              )
+              : Icon(Icons.chat_bubble_outline, 
+                  color: AppColors.charcoal(context)),
+            tooltip: 'Chat with Requester',
+            onPressed: _isOpeningChat ? null : _openChat,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -152,24 +223,45 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.person, color: AppColors.primaryTeal(context), size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Requester: ${widget.task.requesterName}',
-                    style: GoogleFonts.openSans(
-                      color: AppColors.charcoal(context),
-                      fontSize: 14,
+            GestureDetector(
+              onTap: () {
+                final requesterId = int.tryParse(widget.task.createdBy);
+                if (requesterId != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HelperProfilePreviewScreen(
+                        helperId: requesterId,
+                        taskId: widget.task.id,
+                        showRequestButton: false,
+                        isUserId: true,
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.person, color: AppColors.primaryTeal(context), size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Requester: ${widget.task.requesterName}',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.charcoal(context),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: AppColors.primaryTeal(context), size: 20),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -304,18 +396,16 @@ class _TaskStartScreenState extends State<TaskStartScreen> {
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
-      case 'Plants':
-        return Icons.eco;
-      case 'Pets':
+      case 'Medical Assistance':
+        return Icons.medical_services;
+      case 'Pet Care':
         return Icons.pets;
-      case 'Bins':
-        return Icons.delete;
-      case 'Packages':
-        return Icons.inventory;
-      case 'Home Check-in':
-        return Icons.home;
-      case 'Pool Pump':
-        return Icons.water;
+      case 'Technology Support':
+        return Icons.computer;
+      case 'Transportation Support':
+        return Icons.directions_car;
+      case 'Home Repair':
+        return Icons.home_repair_service;
       default:
         return Icons.assignment;
     }

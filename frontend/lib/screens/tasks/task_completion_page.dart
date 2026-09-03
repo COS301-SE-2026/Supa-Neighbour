@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../services/task_service.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-
-
-class TaskCompletionPage extends StatefulWidget {
+class TaskCompletionPage extends ConsumerStatefulWidget {
   final String taskId;
   final String taskTitle;
   final String residentName;
@@ -24,16 +24,14 @@ class TaskCompletionPage extends StatefulWidget {
   });
 
   @override
-  State<TaskCompletionPage> createState() => _TaskCompletionPageState();
+  ConsumerState<TaskCompletionPage> createState() => _TaskCompletionPageState();
 }
 
-class _TaskCompletionPageState extends State<TaskCompletionPage> {
+class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   final TextEditingController _noteController = TextEditingController();
-  final List<String> _photoPaths = [];
+  final List<XFile> _selectedImages = [];
   bool _isSubmitting = false;
-
-  final TaskService _taskService = TaskService();
-
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void dispose() {
@@ -42,18 +40,22 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
   }
 
   Future<void> _addPhoto() async {
-    // TODO: Implement image picking logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Photo picker will be added soon'),
-        duration: Duration(seconds: 2),
-      ),
+    final XFile? picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1920,
     );
+
+    if(picked != null) {
+      setState(() {
+        _selectedImages.add(picked);
+      });
+    }
   }
 
   void _removePhoto(int index) {
     setState(() {
-      _photoPaths.removeAt(index);
+      _selectedImages.removeAt(index);
     });
   }
 
@@ -85,7 +87,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
             Text(
               'You will earn +${widget.xpReward} XP upon resident confirmation.',
               style: GoogleFonts.openSans(
-                // CHANGE: Use AppColors.citrusYellow
                 color: AppColors.citrusYellow(context),
                 fontWeight: FontWeight.bold,
               ),
@@ -105,7 +106,6 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              // CHANGE: Use AppColors.primaryTeal
               backgroundColor: AppColors.primaryTeal(context),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
@@ -128,57 +128,62 @@ class _TaskCompletionPageState extends State<TaskCompletionPage> {
     }
   }
 
-Future<void> _submitCompletion() async {
-  //// semi complete
-  setState(() => _isSubmitting = true);
-  try {
-    await _taskService.updateTask(
-      taskId: int.parse(widget.taskId),
-      status: 'pending_approval',
-      adminReview: _noteController.text.isNotEmpty
-          ? _noteController.text
-          : null,
-    );
+  Future<void> _submitCompletion() async {
+    setState(() => _isSubmitting = true);
+    try {
+      final taskService = ref.read(taskServiceProvider);
 
-    Task.updateTaskStatus(widget.taskId, 'pending_approval');
+      final List<String> uploadedUrls = [];
+      for (final image in _selectedImages) {
+        final url = await taskService.uploadTaskImage(image);
+        if (url != null) uploadedUrls.add(url);
+      }
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Task submitted! Waiting for resident confirmation.'),
-          // CHANGE: Use AppColors.primaryTeal
-          backgroundColor: AppColors.primaryTeal(context),
-        ),
+      if (uploadedUrls.isNotEmpty) {
+        await taskService.saveTaskImages(int.parse(widget.taskId), uploadedUrls);
+      }
+
+      await taskService.updateTask(
+        taskId: int.parse(widget.taskId),
+        status: 'pending_approval',
+        helperRatingId: _noteController.text.isNotEmpty ? _noteController.text : null,
       );
-      Navigator.pop(context);
+
+      Task.updateTaskStatus(widget.taskId, 'pending_approval');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Task submitted! Waiting for resident confirmation.'),
+            backgroundColor: AppColors.primaryTeal(context),
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
-  } on Exception catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  } finally {
-    if (mounted) setState(() => _isSubmitting = false);
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      // CHANGE: Use AppColors.background
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            // CHANGE: Use AppColors.charcoal
             color: AppColors.charcoal(context),
           ),
           onPressed: () => Navigator.pop(context),
@@ -187,11 +192,9 @@ Future<void> _submitCompletion() async {
           'Task Completion',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
-            // CHANGE: Use AppColors.charcoal
             color: AppColors.charcoal(context),
           ),
         ),
-        // CHANGE: Use AppColors.background
         backgroundColor: AppColors.background(context),
         elevation: 0,
         foregroundColor: AppColors.charcoal(context),
@@ -206,7 +209,6 @@ Future<void> _submitCompletion() async {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                // CHANGE: Use AppColors.surfaceGrey
                 color: isDarkMode ? AppColors.surfaceGrey(context) : AppColors.surfaceGrey(context),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
@@ -227,7 +229,6 @@ Future<void> _submitCompletion() async {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      // CHANGE: Use AppColors.charcoal
                       color: AppColors.charcoal(context),
                     ),
                   ),
@@ -236,7 +237,6 @@ Future<void> _submitCompletion() async {
                     'Resident: ${widget.residentName}',
                     style: GoogleFonts.openSans(
                       fontSize: 14,
-                      // CHANGE: Use AppColors.charcoal
                       color: AppColors.charcoal(context),
                     ),
                   ),
@@ -245,7 +245,6 @@ Future<void> _submitCompletion() async {
                     'Due: ${widget.dueDate}',
                     style: GoogleFonts.openSans(
                       fontSize: 14,
-                      // CHANGE: Use AppColors.charcoal
                       color: AppColors.charcoal(context),
                     ),
                   ),
@@ -255,7 +254,6 @@ Future<void> _submitCompletion() async {
                     style: GoogleFonts.openSans(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      // CHANGE: Use AppColors.citrusYellow
                       color: AppColors.citrusYellow(context),
                     ),
                   ),
@@ -271,7 +269,6 @@ Future<void> _submitCompletion() async {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                // CHANGE: Use AppColors.charcoal
                 color: AppColors.charcoal(context),
               ),
             ),
@@ -280,7 +277,6 @@ Future<void> _submitCompletion() async {
               'Add photos to show your work (optional)',
               style: GoogleFonts.openSans(
                 fontSize: 12,
-                // CHANGE: Use AppColors.textGrey
                 color: AppColors.textGrey(context),
               ),
             ),
@@ -291,10 +287,10 @@ Future<void> _submitCompletion() async {
               height: 100,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: _photoPaths.length + 1,
+                itemCount: _selectedImages.length + 1,
                 itemBuilder: (context, index) {
                   // Add Photo Button
-                  if (index == _photoPaths.length) {
+                  if (index == _selectedImages.length) {
                     return GestureDetector(
                       onTap: _addPhoto,
                       child: Container(
@@ -303,7 +299,6 @@ Future<void> _submitCompletion() async {
                         margin: const EdgeInsets.only(right: 12),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            // CHANGE: Use AppColors.primaryTeal
                             color: AppColors.primaryTeal(context),
                             width: 2,
                           ),
@@ -315,7 +310,6 @@ Future<void> _submitCompletion() async {
                           children: [
                             Icon(
                               Icons.add,
-                              // CHANGE: Use AppColors.primaryTeal
                               color: AppColors.primaryTeal(context),
                               size: 32,
                             ),
@@ -324,7 +318,6 @@ Future<void> _submitCompletion() async {
                               'Add Photo',
                               style: GoogleFonts.openSans(
                                 fontSize: 10,
-                                // CHANGE: Use AppColors.primaryTeal
                                 color: AppColors.primaryTeal(context),
                               ),
                             ),
@@ -344,20 +337,12 @@ Future<void> _submitCompletion() async {
                         decoration: BoxDecoration(
                           color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.grey.shade300,
                           borderRadius: BorderRadius.circular(12),
-                          image: _photoPaths[index].isNotEmpty
-                              ? DecorationImage(
-                                  image: FileImage(File(_photoPaths[index])),
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
+                          image: DecorationImage(
+                            image: FileImage(File(_selectedImages[index].path)),
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                        child: _photoPaths[index].isEmpty
-                            ? Icon(
-                                Icons.image,
-                                color: isDarkMode ? AppColors.textGrey(context) : Colors.grey,
-                                size: 40,
-                              )
-                            : null,
+                        child: null,
                       ),
                       Positioned(
                         top: 4,
@@ -391,7 +376,6 @@ Future<void> _submitCompletion() async {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                // CHANGE: Use AppColors.charcoal
                 color: AppColors.charcoal(context),
               ),
             ),
@@ -402,20 +386,17 @@ Future<void> _submitCompletion() async {
               decoration: InputDecoration(
                 hintText: 'Tell the resident what you did...',
                 hintStyle: GoogleFonts.openSans(
-                  // CHANGE: Use AppColors.textGrey
                   color: AppColors.textGrey(context),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    // CHANGE: Use AppColors.surfaceGrey
                     color: AppColors.surfaceGrey(context),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    // CHANGE: Use AppColors.primaryTeal
                     color: AppColors.primaryTeal(context),
                     width: 2,
                   ),
@@ -436,7 +417,6 @@ Future<void> _submitCompletion() async {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _showCompletionDialog,
                 style: ElevatedButton.styleFrom(
-                  // CHANGE: Use AppColors.primaryTeal
                   backgroundColor: AppColors.primaryTeal(context),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -473,7 +453,6 @@ Future<void> _submitCompletion() async {
                 'Resident will need to confirm before XP is awarded',
                 style: GoogleFonts.openSans(
                   fontSize: 12,
-                  // CHANGE: Use AppColors.textGrey
                   color: AppColors.textGrey(context),
                 ),
               ),

@@ -10,19 +10,19 @@ import 'task_completion_page.dart';
 import 'task_awaiting_approval_screen.dart';
 import 'task_approval_screen.dart';
 import '../../models/auth_session.dart';
-import '../../services/task_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-
-class MyTasksScreen extends StatefulWidget {
+class MyTasksScreen extends ConsumerStatefulWidget {
   final int initialTab;
   
   const MyTasksScreen({super.key, this.initialTab = 0});
 
   @override
-  State<MyTasksScreen> createState() => _MyTasksScreenState();
+  ConsumerState<MyTasksScreen> createState() => _MyTasksScreenState();
 }
 
-class _MyTasksScreenState extends State<MyTasksScreen>
+class _MyTasksScreenState extends ConsumerState<MyTasksScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -47,23 +47,20 @@ class _MyTasksScreenState extends State<MyTasksScreen>
     super.dispose();
   }
 
-  
-
-final TaskService _taskService = TaskService();
-
 Future<void> _loadAllTasks() async {
   final currentUserId = int.tryParse(
     AuthSession.instance.currentUser?.id ?? '',
   );
 
   try {
+    final taskService = ref.read(taskServiceProvider);
     final results = await Future.wait([
       currentUserId != null
-          ? _taskService.getTasksByUserId(currentUserId)
+          ? taskService.getTasksByUserId(currentUserId)
           : Future.value(<Task>[]),
-      _taskService.getMyHelperTasks(),
+      taskService.getMyHelperTasks(),
       currentUserId != null
-          ? _taskService.getAvailableTasks(currentUserId)
+          ? taskService.getAvailableTasks(currentUserId)
           : Future.value(<Task>[])
     ]);
 
@@ -90,7 +87,8 @@ Future<void> _loadAllTasks() async {
 
 void _passTask(Task task) async {
   try {
-    await _taskService.declineTaskInvitation(int.parse(task.id));
+    final taskService = ref.read(taskServiceProvider);
+    await taskService.declineTaskInvitation(int.parse(task.id));
   } catch (_) {
   }
   if (!mounted) return;
@@ -313,6 +311,7 @@ Widget _buildTaskCard(Task task, {required bool isRequesterView, bool isAvailabl
               builder: (context) => TaskDetailScreen(
                 task: task,
                 isAvailableTab: true,
+                isRequesterView: false,
               ),
             ),
           );
@@ -370,6 +369,7 @@ Widget _buildTaskCard(Task task, {required bool isRequesterView, bool isAvailabl
               builder: (context) => TaskDetailScreen(
                 task: task,
                 onTaskUpdated: () => _refreshTasks(),
+                isRequesterView: false,
               ),
             ),
           );
@@ -380,7 +380,7 @@ Widget _buildTaskCard(Task task, {required bool isRequesterView, bool isAvailabl
 
       // CASE 2: REQUESTER VIEW (Posted Tab)
       if (isRequesterView) {
-        if (task.status == 'open' || task.status == 'assigned') {
+        if (task.status == 'open') {
           await Navigator.push(
             context,
             MaterialPageRoute(
@@ -421,7 +421,7 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
     margin: const EdgeInsets.only(bottom: 12),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: AppColors.surfaceGrey(context),
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
@@ -433,11 +433,12 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
     ),
     child: Row(
       children: [
+        // Category Icon Container
         Container(
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: const Color(0xFF2A9D8F).withOpacity(0.1),
+            color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -447,43 +448,53 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
           ),
         ),
         const SizedBox(width: 12),
+        // Main Content - Expanded to take remaining space
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Task Title
               Text(
                 task.title,
                 style: GoogleFonts.poppins(
-                  color: const Color(0xFF264653),
+                  color: AppColors.charcoal(context),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Row(
                 children: [
                   const Icon(Icons.category, size: 14, color: Color(0xFF2A9D8F)),
                   const SizedBox(width: 4),
-                  Text(
-                    task.category,
-                    style: GoogleFonts.openSans(
-                      color: const Color(0xFF6B7280),
-                      fontSize: 12,
+                  Flexible(
+                    child: Text(
+                      task.category,
+                      style: GoogleFonts.openSans(
+                        color: AppColors.textGrey(context),
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   const SizedBox(width: 12),
                   const Icon(Icons.access_time, size: 14, color: Color(0xFF2A9D8F)),
                   const SizedBox(width: 4),
-                  Text(
-                    '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
-                    style: GoogleFonts.openSans(
-                      color: const Color(0xFF6B7280),
-                      fontSize: 12,
+                  Flexible(
+                    child: Text(
+                      '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
+                      style: GoogleFonts.openSans(
+                        color: AppColors.textGrey(context),
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 6),
+              // Status Badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
@@ -538,10 +549,10 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
     ),
   );
 }
-
 void _acceptTask(Task task) async {
   try {
-    await _taskService.acceptTaskInvitation(int.parse(task.id));
+    final taskService = ref.read(taskServiceProvider);
+    await taskService.acceptTaskInvitation(int.parse(task.id));
   } catch (_) {
   }
   if (!mounted) return;
@@ -562,18 +573,16 @@ void _acceptTask(Task task) async {
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
-      case 'Plants':
-        return Icons.eco;
-      case 'Pets':
+      case 'Medical Assistance':
+        return Icons.medical_services;
+      case 'Pet Care':
         return Icons.pets;
-      case 'Bins':
-        return Icons.delete;
-      case 'Packages':
-        return Icons.inventory;
-      case 'Home Check-in':
-        return Icons.home;
-      case 'Pool Pump':
-        return Icons.water;
+      case 'Technology Support':
+        return Icons.computer;
+      case 'Transportation Support':
+        return Icons.directions_car;
+      case 'Home Repair':
+        return Icons.home_repair_service;
       default:
         return Icons.assignment;
     }

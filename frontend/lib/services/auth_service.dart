@@ -1,38 +1,122 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb; //to avoid clash with usr model
+import 'package:flutter/widgets.dart';
 import '../models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/address_model.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 
-class AuthService {
+// INTERFACE (Contract)
+abstract class IAuthService {
+  Future<User> login(String email, String password);
+  Future<User> loginWithToken(String idToken);
+  Future<void> logout();
+  Future<void> deleteAccount();
+  Future<User> register({
+    required String idToken,
+    required String firstName,
+    required String lastName,
+    required String password,
+    required String phoneNumber,
+    required String dateOfBirth,
+    required String gender,
+    required String username,
+    required String street,
+    required String town,
+    required int zip,
+    String userType = 'user',
+  });
+}
+
+
+class AuthService implements IAuthService {
   final Dio _dio;
   final fb.FirebaseAuth _firebaseAuth;
+  bool _fcmListenerStarted = false;
 
   AuthService({Dio? dio, fb.FirebaseAuth? firebaseAuth})
       : _dio = dio ??
             Dio(BaseOptions(
-             // baseUrl: 'http://10.0.2.2:8080',
+              //baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
-              connectTimeout: const Duration(seconds: 19),
-              receiveTimeout: const Duration(seconds: 19),
+              connectTimeout: const Duration(seconds: 30),
+              receiveTimeout: const Duration(seconds: 30),
             )),
         _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
 
- 
-  Future<User> login(String email, String password) async {
+  // ============ FCM DEVICE TOKEN REGISTRATION ============
+
+  /// Post FCM token to backend
+  Future<void> _postDeviceToken(String fcmToken) async {
+    final fb.User? firebaseUser = _firebaseAuth.currentUser;
+    if (firebaseUser == null) return;
+
+    final String? idToken = await firebaseUser.getIdToken(false);
+    if (idToken == null) return;
+
+    await _dio.post(
+      '/api/users/me/device-token',
+      data: {'fcmToken': fcmToken},
+      options: Options(
+        headers: {'Authorization': 'Bearer $idToken'},
+      ),
+    );
+  }
+
+  /// Register FCM token and set up refresh listener
+  Future<void> _registerFcmToken() async {
+    final messaging = FirebaseMessaging.instance;
+
+    // Request permission
+  try {
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    // If authorized, get and send token
+    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional) {
+      String? token = await messaging.getToken();
+      if (token != null) {
+        await _postDeviceToken(token);
+        }
+
+      // Set up token refresh listener (only once)
+      if (!_fcmListenerStarted) {
+        _fcmListenerStarted = true;
+        FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+          _postDeviceToken(newToken);
+        });
+      }
+    } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
+      debugPrint('Push notification permission denied');
+    }
+  } catch (e) {
+    debugPrint('Failed to register FCM token: $e');
+    }
+  }
+
+  // ============ AUTH METHODS ============
+
+  @override
+Future<User> login(String email, String password) async {
+  try {
     // sign in with fb
     final fb.UserCredential credential = await _firebaseAuth
         .signInWithEmailAndPassword(email: email, password: password);
 
     // get the id token of fb usr.
-    final String? idToken =
-        await credential.user?.getIdToken(false);
+    final String? idToken = await credential.user?.getIdToken(false);
 
     if (idToken == null) {
       throw Exception('Failed to retrieve Firebase ID token.');
     }
 
-    final Response<Map<String, dynamic>> res = await _dio.post(
+    // No generic type here — the error-path body is a plain string, not a Map
+    final Response res = await _dio.post(
       '/api/auth/login',
       options: Options(
         headers: {'Authorization': 'Bearer $idToken'},
@@ -40,13 +124,28 @@ class AuthService {
     );
 
     if (res.statusCode == 200 && res.data != null) {
-      return User.fromJson(res.data!);
+      await _registerFcmToken();
+      return User.fromJson(res.data as Map<String, dynamic>);
     }
 
     throw Exception('Login failed: unexpected response from server.');
+  } on fb.FirebaseAuthException catch (e) {
+    throw Exception('Authentication failed: ${e.message}');
+  } on DioException catch (e) {
+    if (e.response != null) {
+      final data = e.response!.data;
+      final message = data is String && data.trim().isNotEmpty
+          ? data
+          : (e.response!.statusCode == 404
+              ? 'No account found for this user.'
+              : 'Login failed. Please try again.');
+      throw Exception(message);
+    }
+    throw Exception('Connection error: ${e.message}');
   }
+}
 
-
+@override
 Future<User> loginWithToken(String idToken) async {
   final Response<Map<String, dynamic>> response = await _dio.post(
     '/api/auth/login',
@@ -56,13 +155,15 @@ Future<User> loginWithToken(String idToken) async {
   );
 
   if (response.statusCode == 200 && response.data != null) {
-    return User.fromJson(response.data!);
+      // Register FCM token after successful auto-login
+      await _registerFcmToken();
+      return User.fromJson(response.data!);
   }
 
   throw Exception('Auto-login failed: unexpected response from server.');
 }
 
-
+ @override
   Future<void> logout() async {
     try{
       final String? idToken = await _firebaseAuth.currentUser?.getIdToken();
@@ -81,8 +182,29 @@ Future<User> loginWithToken(String idToken) async {
     await _firebaseAuth.signOut();
   }
 
+  Future<int> createAddress({
+    required String street,
+    required String town,
+    required int zip,
+  }) async{
+    final Response<Map<String, dynamic>> res = await _dio.post(
+      '/api/addresses', 
+      data: {
+        'street': street, 
+        'town': town,
+        'zip': zip,
+      },
+    );
 
-  
+    if(res.statusCode == 201 && res.data != null){
+      return Address.fromJson(res.data!).addressid;    
+    }
+
+    throw Exception('Address createion failed: unexpected response from server.');
+  }
+
+
+  @override
   Future<User> register({
     required String idToken,
     required String firstName,
@@ -92,11 +214,16 @@ Future<User> loginWithToken(String idToken) async {
     required String dateOfBirth, 
     required String gender,
     required String username,
+    required String street,
+    required String town,
+    required int zip,
     String userType = 'user',
-    int addressId = 1,
-    int badgeId = 1,
-    int ratingId = 1,
   }) async {
+    final int addressId = await createAddress(
+      street: street, 
+      town: town,
+      zip: zip,
+    );
     final Response<Map<String, dynamic>> response = await _dio.post(
       '/api/auth/register',
       options: Options(
@@ -112,18 +239,19 @@ Future<User> loginWithToken(String idToken) async {
         'username': username,
         'userType': userType,
         'addressId': addressId,
-        'badgeId': badgeId,
-        'ratingId': ratingId,
       },
     );
 
     if (response.statusCode == 200 && response.data != null) {
+      // Register FCM token after successful registration
+      await _registerFcmToken();
       return User.fromJson(response.data!);
     }
 
     throw Exception('Registration failed: unexpected response from server.');
   }
-
+  
+  @override
   Future<void> deleteAccount() async{
     final String? idToken = await  _firebaseAuth.currentUser?.getIdToken(false);
 
@@ -145,5 +273,4 @@ Future<User> loginWithToken(String idToken) async {
     await prefs.setBool('remember_me', false);
 
   }
-
 }

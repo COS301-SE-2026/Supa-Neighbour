@@ -22,11 +22,20 @@ import com.app.api.services.CommentsService;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.ReactionService;
 import com.google.firebase.auth.FirebaseAuthException;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST controller for managing comments
  */
 @RestController
 @RequestMapping("/api/comments")
+@Tag(name = "Comments", description = "Operations for managing comments and reactions on bulletin posts")
 public class CommentsController {
 
     private final ReactionService reactionService;
@@ -51,6 +60,8 @@ public class CommentsController {
      * @return a list of all comments
      */
     @GetMapping
+    @Operation(summary = "Get all comments", description = "Retrieves a list of all comments")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved comments")
     public ResponseEntity<List<?>> getAllComments() {
         return ResponseEntity.ok(commentsService.getAllComments());
     }
@@ -63,7 +74,15 @@ public class CommentsController {
      * @return the comment if found, otherwise 404 Not Found
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Comments> getCommentsById(@PathVariable int id) {
+    @Operation(summary = "Get comment by ID", description = "Retrieves a single comment by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Comment found"),
+        @ApiResponse(responseCode = "404", description = "Comment not found", content = @Content)
+    })
+    public ResponseEntity<Comments> getCommentsById(
+        @Parameter(description = "ID of the comment to retrieve", example = "1")
+        @PathVariable int id
+    ) {
         Comments comments = commentsService.getCommentsById(id);
         if (comments == null) {
             return ResponseEntity.notFound().build();
@@ -79,8 +98,16 @@ public class CommentsController {
      * @return the created comment with HTTP 201 status
      */
     @PostMapping("/bulletin/{postId}")
+    @Operation(summary = "Create a new comment", description = "Creates a new comment on a bulletin post")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Comment created successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid comment data", content = @Content)
+    })
     public ResponseEntity<CommentResponseDTO> createComments(
+        @Parameter(description = "ID of the bulletin post", example = "1")
         @PathVariable int postId,
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
         @RequestHeader("Authorization") String authHeader,
         @RequestBody CommentRequestDTO request) {
 
@@ -103,7 +130,17 @@ public class CommentsController {
      * @return the updated comment if found, otherwise 404 Not Found
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Comments> updateComments(@PathVariable int id, @RequestBody Comments comments) {
+    @Operation(summary = "Update a comment", description = "Updates an existing comment by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Comment updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Comment not found", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid comment data", content = @Content)
+    })
+    public ResponseEntity<Comments> updateComments(
+        @Parameter(description = "ID of the comment to update", example = "1")
+        @PathVariable int id,
+        @RequestBody Comments comments
+    ) {
         Comments existing = commentsService.getCommentsById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();
@@ -120,11 +157,19 @@ public class CommentsController {
      * @return 204 No Content if deleted, otherwise 404 Not Found
      * 
      */
-
     @DeleteMapping("/bulletin/posts/{postId}/{commentId}")
+    @Operation(summary = "Delete a comment from a post", description = "Deletes a comment from a specific bulletin post")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Comment deleted successfully", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Comment or post not found", content = @Content)
+    })
     public ResponseEntity<Void> deleteCommentsUnderPost(
+        @Parameter(description = "ID of the bulletin post", example = "1")
         @PathVariable int postId,
+        @Parameter(description = "ID of the comment to delete", example = "1")
         @PathVariable int commentId,
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
         @RequestHeader("Authorization") String authHeader
     ) {
         try{
@@ -146,7 +191,17 @@ public class CommentsController {
      * @return the updated comment if found, otherwise 404 Not Found
      */
     @PostMapping("/bulletin/posts/{postId}/like")
-    public ResponseEntity<CommentReactionResponseDTO> postHelpfulReation(@PathVariable int postId,@RequestHeader("Authorization") String authHead) {
+    @Operation(summary = "Add helpful reaction to post", description = "Adds a helpful reaction to a bulletin post")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Reaction added successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Post not found", content = @Content)
+    })
+    public ResponseEntity<CommentReactionResponseDTO> postHelpfulReation(
+        @Parameter(description = "ID of the bulletin post", example = "1")
+        @PathVariable int postId,
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
+        @RequestHeader("Authorization") String authHead) {
 
         try{
             String token = authHead.replace("Bearer ", "");
@@ -167,7 +222,18 @@ public class CommentsController {
      * @return the updated comment if found, otherwise 404 Not Found
      */
     @DeleteMapping("/bulletin/posts/{postId}/like")
-    public ResponseEntity<Void> deleteCommentsUnderPost(@PathVariable int postId,@RequestHeader("Authorization") String authHeader){
+    @Operation(summary = "Remove helpful reaction from post", description = "Removes a helpful reaction from a bulletin post")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Reaction removed successfully", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Post or reaction not found", content = @Content)
+    })
+    public ResponseEntity<Void> deleteCommentsUnderPost(
+        @Parameter(description = "ID of the bulletin post", example = "1")
+        @PathVariable int postId,
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
+        @RequestHeader("Authorization") String authHeader
+    ){
         try{
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
@@ -179,4 +245,3 @@ public class CommentsController {
     }  
     
 }
-

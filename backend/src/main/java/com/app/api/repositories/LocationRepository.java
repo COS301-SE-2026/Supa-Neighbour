@@ -18,5 +18,11 @@ public interface LocationRepository extends JpaRepository<Location, Integer> {
      * Finds a Location entity by its neighbourhood name.
      */
     @Query("SELECT l FROM Location l WHERE l.neighbourhoodName = :name")
-Optional<Location> findByNeighbourhoodName(@Param("name") String name);
+    Optional<Location> findByNeighbourhoodName(@Param("name") String name);
+
+    /**
+     * Returns the highest current neighbourhoodid value, or 0 if the table is empty.
+    */
+   @Query("SELECT COALESCE(MAX(l.neighbourhoodid), 0) FROM Location l")
+   int findMaxNeighbourhoodid();
 }

@@ -2,15 +2,62 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/task_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+
+
+// INTERFACE (Contract)
+abstract class ITaskService {
+  Future<List<Task>> getTasksByUserId(int userId);
+  Future<List<Task>> getMyHelperTasks({
+    String? statusFilter,
+    int limit = 50,
+    int offset = 0,
+  });
+
+  Future<Task> createTask({
+    required int dependentId,
+    required int taskTypeId,
+    required DateTime startDate,
+    required bool isImmediate,
+    required bool needsSpecialist,
+    String? title,
+    String? instructions,
+    String? startTime,
+  });
+
+  Future<Task> updateTask({
+    required int taskId,
+    int? taskTypeId,
+    DateTime? startDate,
+    String? status,
+    String? helperRatingId,
+    String? dependentRatingId,
+    List<String>? imageUrls,
+  });
+
+  Future<void> deleteTask(int taskId);
+  Future<Map<String, dynamic>> getUserById(int userId);
+  Future<int?> getDependentIdForUser(int userId);
+  Future<int?> getHelperIdForUser(int userId);
+  Future<List<Map<String, dynamic>>> getInvitationsForHelper(int helperId);
+  Future<void> acceptTaskInvitation(int taskId);
+  Future<void> declineTaskInvitation(int taskId);
+  Future<List<Task>> getAvailableTasks(int currentUserId);
+  Future<void> matchHelpersForTask(int taskId);
+
+  Future<String?> uploadTaskImage(XFile imageFile);
+  Future<void> saveTaskImages(int taskId, List<String> imageUrls);
+}
 
 
 /// responsible for all task-related API calls.
-class TaskService {
+class TaskService implements ITaskService {
   final Dio _dio;
 
   TaskService({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
+             // baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               connectTimeout: const Duration(seconds: 10),// will update timeut if needed
               receiveTimeout: const Duration(seconds: 10),
@@ -22,6 +69,7 @@ class TaskService {
   }
 
   /// GET /users/{userId}/tasks - tasks where the user is the dependent.
+  @override
   Future<List<Task>> getTasksByUserId(int userId) async {
     try {
       final token = await _getToken();
@@ -43,6 +91,7 @@ class TaskService {
   }
 
   /// GET /api/helpers/me/tasks - tasks where the auth user is the helper.
+  @override
   Future<List<Task>> getMyHelperTasks({
     String? statusFilter,
     int limit = 50,
@@ -75,12 +124,16 @@ class TaskService {
   }
 
   /// POST /tasks/create
+  @override
   Future<Task> createTask({
     required int dependentId,
     required int taskTypeId,
     required DateTime startDate,
     required bool isImmediate,
     required bool needsSpecialist,
+    String? title,
+    String? instructions,
+    String? startTime,
   }) async {
     try {
       final token = await _getToken();
@@ -90,8 +143,11 @@ class TaskService {
           'dependentId': dependentId,
           'taskTypeId': taskTypeId,
           'startDate': startDate.toIso8601String().split('T').first,
+          if(startTime != null ) 'startTime': startTime,
           'isImmediate': isImmediate,
           'needsSpecialist': needsSpecialist,
+          'title': title,
+          'instructions': instructions,
         },
         options: token != null
             ? Options(headers: {'Authorization': 'Bearer $token'})
@@ -104,12 +160,15 @@ class TaskService {
   }
 
   /// PUT /tasks/{taskId}
+  @override
   Future<Task> updateTask({
     required int taskId,
     int? taskTypeId,
     DateTime? startDate,
-    String? adminReview,
     String? status,
+    String? helperRatingId,      // was helperRatingReview
+    String? dependentRatingId,
+    List<String>? imageUrls,
   }) async {
     try {
       final token = await _getToken();
@@ -118,9 +177,14 @@ class TaskService {
       if (startDate != null) {
         body['startDate'] = startDate.toIso8601String().split('T').first;
       }
-      if (adminReview != null) body['adminReview'] = adminReview;
       if (status != null) body['status'] = status;
+      if (helperRatingId != null) body['helperRatingId'] = helperRatingId;
+      if (dependentRatingId != null) body['dependentRatingId'] = dependentRatingId;
 
+      if(imageUrls != null && imageUrls.isNotEmpty) {
+        body['image'] = imageUrls.map((url) => {'imageUrl': url}).toList();
+      }
+  
       final Response<Map<String, dynamic>> res = await _dio.put(
         '/tasks/$taskId',
         data: body,
@@ -135,6 +199,7 @@ class TaskService {
   }
 
   /// DELETE /tasks/{taskId}
+  @override
   Future<void> deleteTask(int taskId) async {
     try {
       final token = await _getToken();
@@ -150,6 +215,7 @@ class TaskService {
   }
 
   /// GET /api/users/{id} - fetch a user's profile by id.
+  @override
   Future<Map<String, dynamic>> getUserById(int userId) async {
     try {
       final token = await _getToken();
@@ -166,20 +232,46 @@ class TaskService {
   }
 
   
-  
-
-
-Future<int?> getDependentIdForUser(int userId) async {
+  @override
+  Future<int?> getDependentIdForUser(int userId) async {
     try {
+  
       final prefs = await SharedPreferences.getInstance();
       final stored = prefs.getInt('current_dependent_id');
       if (stored != null) return stored;
+
+      // fall back
+      final token = await _getToken();
+      final Response<List<dynamic>> res = await _dio.get(
+        '/api/dependents',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        for (final d in res.data!) {
+          final user = d['userid'];
+          final uid = user is Map
+              ? (user['userid'] ?? user['userId'])
+              : d['userId'] ?? d['userid'];
+          if (uid == userId) {
+            final id = d['dependentId'] ?? d['dependent_id'] ?? d['dependentid'];
+            if (id != null) {
+              await prefs.setInt('current_dependent_id', id as int);
+              return id ;
+            }
+          }
+        }
+      }
       return null;
     } catch (_) {
       return null;
     }
   }
 
+
+
+  @override
   Future<int?> getHelperIdForUser(int userId) async {
     try {
       final token = await _getToken();
@@ -204,6 +296,7 @@ Future<int?> getDependentIdForUser(int userId) async {
     }
   }
 
+ @override
   Future<List<Map<String, dynamic>>> getInvitationsForHelper(int helperId) async {
     try {
       final token = await _getToken();
@@ -229,7 +322,8 @@ Future<int?> getDependentIdForUser(int userId) async {
       throw Exception("Couldn't load invitations: ${e.message}");
     }
   }
-
+  
+  @override
   Future<void> acceptTaskInvitation(int taskId) async {
     try {
       final token = await _getToken();
@@ -244,7 +338,7 @@ Future<int?> getDependentIdForUser(int userId) async {
     }
   }
 
-  
+@override
 Future<void> declineTaskInvitation(int taskId) async {
    try {
       final token = await _getToken();
@@ -259,6 +353,7 @@ Future<void> declineTaskInvitation(int taskId) async {
     }
   }
 
+ @override
   Future<List<Task>> getAvailableTasks(int currentUserId) async {
     try {
       final token = await _getToken();
@@ -279,6 +374,8 @@ Future<void> declineTaskInvitation(int taskId) async {
     }
   }
 
+
+ @override
   Future<void> matchHelpersForTask(int taskId) async {
     try {
       final token = await _getToken();
@@ -293,6 +390,44 @@ Future<void> declineTaskInvitation(int taskId) async {
     }
   }
 
+  @override
+  Future<String?> uploadTaskImage(XFile imageFile) async {
+    try {
+      final token = await _getToken();
+      final bytes = await imageFile.readAsBytes();
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(
+          bytes,
+          filename: imageFile.name,
+        ),
+      });
+      final res = await _dio.post(
+        '/api/upload/task/image',
+        data: formData,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      return (res.data as Map<String, dynamic>)['imageUrl'] as String?;
+    } on DioException catch (e) {
+      throw Exception("Couldn't upload image: ${e.message}");
+    }
+  }
 
+  /// POST /api/taskinvoices/{taskId}/images
+  /// Saves a list of uploaded image URLs to the task in the database.
+  @override
+  Future<void> saveTaskImages(int taskId, List<String> imageUrls) async {
+    try {
+      final token = await _getToken();
+      await _dio.post(
+        '/api/taskinvoices/$taskId/images',
+        data: {'imageUrls': imageUrls},
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+    } on DioException catch (e) {
+      throw Exception("Couldn't save task images: ${e.message}");
+    }
+  }
 
 }

@@ -5,6 +5,14 @@ import com.app.api.services.AchievementService;
 import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseAuthException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -47,6 +55,49 @@ public class AchievementsController {
      *         invalid or expired
      */
     @GetMapping("/achievements")
+    @Operation(
+        summary = "Get authenticated user's achievements",
+        description = "Retrieves all achievements earned by the currently authenticated user. " +
+                      "Requires a valid Firebase authentication token.",
+        security = @SecurityRequirement(name = "BearerAuth"),
+        tags = {"Achievements"}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved user achievements",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = AchievementResponse.class),
+                examples = @ExampleObject(
+                    name = "Achievements Response",
+                    value = """
+                        {
+                            "achievements": [
+                                {
+                                    "id": 1,
+                                    "name": "First Milestone",
+                                    "description": "Completed your first task",
+                                    "earnedDate": "2026-08-28T10:30:00Z",
+                                }
+                            ],
+                            "total": 1
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Invalid or expired Firebase token",
+            content = @Content(
+                mediaType = "text/plain",
+                examples = @ExampleObject(
+                    value = "Invalid or expired Firebase token"
+                )
+            )
+        )
+    })
     public ResponseEntity<?> getAchievements(
         @RequestHeader("Authorization") String authHeader
     ){

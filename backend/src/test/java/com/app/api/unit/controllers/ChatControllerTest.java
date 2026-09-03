@@ -4,26 +4,38 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.app.api.controllers.ChatController;
+import com.app.api.dtos.ChatResponseDTO;
 import com.app.api.services.ChatService;
+import com.app.api.services.FirebaseAuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.auth.FirebaseAuthException;
 
 @ExtendWith(MockitoExtension.class)
 class ChatControllerTest {
@@ -34,11 +46,15 @@ class ChatControllerTest {
     @InjectMocks
     private ChatController chatController;
 
+    @Mock
+    private FirebaseAuthService firebaseAuthService;
+
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
     private Map<String, Object> mockMessagesResponse;
     private Map<String, Object> mockChatsResponse;
     private Map<String, Object> mockMessageResponse;
+    private ChatResponseDTO mockChatResponseDTO;
 
     @BeforeEach
     void setUp() {
@@ -74,6 +90,9 @@ class ChatControllerTest {
         mockMessageResponse.put("type", "text");
         mockMessageResponse.put("read", false);
         mockMessageResponse.put("timestamp", LocalDateTime.now().toString());
+
+        
+        mockChatResponseDTO = new ChatResponseDTO(10, 500, 2, 1, LocalDateTime.now(), true);
     }
 
     @Test
@@ -150,7 +169,7 @@ class ChatControllerTest {
 
         mockMvc.perform(get("/api/chats/999")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -273,5 +292,205 @@ class ChatControllerTest {
                 .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.content").value(""));
+    }
+
+    @Test
+    void markAsRead_ShouldReturnSuccessResponse() throws Exception{
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("userID", 101);
+        mockMvc.perform(put("/api/chats/1/read")
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(requestBody)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.chatID").value(1))
+        .andExpect(jsonPath("$.markedAsRead").value(true));
+
+        verify(chatService, times(1)).markAsRead(1, 101);
+    }
+
+    @Test
+    void markAsRead_WithDifferentChatAndUser_ShouldMarkMessageAsRead() throws Exception{
+        Map<String, Object> requestBody = new HashMap<>();
+
+        requestBody.put("userID", 202);
+        
+        mockMvc.perform(put("/api/chats/55/read")
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(requestBody)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.chatID").value(55))
+        .andExpect(jsonPath("$.markedAsRead").value(true));
+
+        verify(chatService, times(1)).markAsRead(55, 202);
+    }
+
+    @Test
+    void markAsRead_WithoutUserId_ShouldReturnServerError() throws Exception{
+        Map<String, Object> requestBody = new HashMap<>();
+
+        mockMvc.perform(put("/api/chats/1/read")
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(requestBody)))
+        .andExpect(status().isBadRequest());
+    }
+
+    
+    @Test
+    void getOrCreateChatForTask_WhenTaskHasExistingChat_ShouldReturn200() throws Exception {
+        String authHeader = "Bearer valid-token";
+        int taskId = 500;
+        int userId = 1;
+
+        when(firebaseAuthService.getUserIdFromToken("valid-token")).thenReturn(userId);
+        when(chatService.getOrCreateChatForTask(taskId, userId)).thenReturn(mockChatResponseDTO);
+
+        mockMvc.perform(post("/api/chats/task/{taskId}", taskId)
+                .header("Authorization", authHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.chatId").value(10))
+                .andExpect(jsonPath("$.taskId").value(500))
+                .andExpect(jsonPath("$.alreadyExisted").value(true));
+
+        verify(firebaseAuthService, times(1)).getUserIdFromToken("valid-token");
+        verify(chatService, times(1)).getOrCreateChatForTask(taskId, userId);
+    }
+
+    @Test
+    void getOrCreateChatForTask_WhenTaskHasNoChatAndCreatesNew_ShouldReturn201() throws Exception {
+        String authHeader = "Bearer valid-token";
+        int taskId = 500;
+        int userId = 1;
+
+        ChatResponseDTO newChatResponse = new ChatResponseDTO(15, taskId, 1, 2, LocalDateTime.now(), false);
+        newChatResponse.setChatId(15);
+        newChatResponse.setTaskId(taskId);
+        newChatResponse.setAlreadyExisted(false);
+
+        when(firebaseAuthService.getUserIdFromToken("valid-token")).thenReturn(userId);
+        when(chatService.getOrCreateChatForTask(taskId, userId)).thenReturn(newChatResponse);
+
+        mockMvc.perform(post("/api/chats/task/{taskId}", taskId)
+                .header("Authorization", authHeader)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.chatId").value(15))
+                .andExpect(jsonPath("$.taskId").value(taskId))
+                .andExpect(jsonPath("$.alreadyExisted").value(false));
+
+        verify(firebaseAuthService, times(1)).getUserIdFromToken("valid-token");
+        verify(chatService, times(1)).getOrCreateChatForTask(taskId, userId);
+    }
+
+    @Test
+    void getOrCreateChatForTask_WhenTaskNotFound_ShouldReturn404() throws Exception {
+        String authHeader = "Bearer valid-token";
+        int taskId = 999;
+        int userId = 1;
+
+        when(firebaseAuthService.getUserIdFromToken("valid-token")).thenReturn(userId);
+        when(chatService.getOrCreateChatForTask(taskId, userId))
+                .thenThrow(new NoSuchElementException("Task not found"));
+
+        mockMvc.perform(post("/api/chats/task/{taskId}", taskId)
+                .header("Authorization", authHeader)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        verify(chatService, times(1)).getOrCreateChatForTask(taskId, userId);
+    }
+
+    @Test
+    void getOrCreateChatForTask_WhenNoHelperOrDependentAssigned_ShouldReturn409() throws Exception {
+        String authHeader = "Bearer valid-token";
+        int taskId = 500;
+        int userId = 1;
+        String errorMessage = "Task has no assigned helper or dependent yet";
+
+        when(firebaseAuthService.getUserIdFromToken("valid-token")).thenReturn(userId);
+        when(chatService.getOrCreateChatForTask(taskId, userId))
+                .thenThrow(new IllegalStateException(errorMessage));
+
+        mockMvc.perform(post("/api/chats/task/{taskId}", taskId)
+                .header("Authorization", authHeader)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$").value(errorMessage));
+
+        verify(chatService, times(1)).getOrCreateChatForTask(taskId, userId);
+    }
+
+    @Test
+    void getOrCreateChatForTask_WhenUserIsNotParticipant_ShouldReturn403() throws Exception {
+        String authHeader = "Bearer valid-token";
+        int taskId = 500;
+        int userId = 3;
+        String errorMessage = "User is not a participant in this task";
+
+        when(firebaseAuthService.getUserIdFromToken("valid-token")).thenReturn(userId);
+        when(chatService.getOrCreateChatForTask(taskId, userId))
+                .thenThrow(new SecurityException(errorMessage));
+
+        mockMvc.perform(post("/api/chats/task/{taskId}", taskId)
+                .header("Authorization", authHeader)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$").value(errorMessage));
+
+        verify(chatService, times(1)).getOrCreateChatForTask(taskId, userId);
+    }
+
+    @Test
+    void getOrCreateChatForTask_WhenFirebaseTokenInvalid_ShouldReturn401() throws Exception {
+        String authHeader = "Bearer invalid-token";
+        int taskId = 500;
+
+        // Using mock(FirebaseAuthException.class) as shown in your SettingsControllerTest
+        when(firebaseAuthService.getUserIdFromToken("invalid-token"))
+                .thenThrow(mock(FirebaseAuthException.class));
+
+        mockMvc.perform(post("/api/chats/task/{taskId}", taskId)
+                .header("Authorization", authHeader)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$").value("Invalid or expired Firebase token"));
+
+        verify(chatService, times(0)).getOrCreateChatForTask(anyInt(), anyInt());
+    }
+
+    @Test
+    void getOrCreateChatForTask_WhenAuthHeaderMissing_ShouldReturn400() throws Exception {
+        int taskId = 500;
+
+        mockMvc.perform(post("/api/chats/task/{taskId}", taskId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());  // Changed from 401 to 400
+
+        verify(firebaseAuthService, times(0)).getUserIdFromToken(anyString());
+        verify(chatService, times(0)).getOrCreateChatForTask(anyInt(), anyInt());
+    }
+
+    @Test
+    void getOrCreateChatForTask_WhenAuthHeaderHasNoBearerPrefix_ShouldReturn401() throws Exception {
+        String authHeader = "invalid-token-format";
+        int taskId = 500;
+
+        // Use mock(FirebaseAuthException.class) like in your SettingsControllerTest
+        when(firebaseAuthService.getUserIdFromToken("invalid-token-format"))
+                .thenThrow(mock(FirebaseAuthException.class));
+
+        mockMvc.perform(post("/api/chats/task/{taskId}", taskId)
+                .header("Authorization", authHeader)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$").value("Invalid or expired Firebase token"));
+
+        verify(firebaseAuthService, times(1)).getUserIdFromToken("invalid-token-format");
+        verify(chatService, times(0)).getOrCreateChatForTask(anyInt(), anyInt());
     }
 }

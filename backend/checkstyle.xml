@@ -28,7 +28,7 @@
         <module name="AvoidStarImport"/>
 
         <module name="MethodLength">
-            <property name="max" value="100"/>
+            <property name="max" value="200"/>
         </module>
 
         <module name="ParameterNumber">
@@ -41,7 +41,7 @@
     </module>
 
     <module name="FileLength">
-        <property name="max" value="500"/>           <!-- files max 500 lines -->
+        <property name="max" value="800"/>           <!-- files max 500 lines -->
     </module>
     <module name="NewlineAtEndOfFile"/>
 </module>

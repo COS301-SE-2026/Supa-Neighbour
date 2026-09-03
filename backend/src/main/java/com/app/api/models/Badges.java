@@ -38,7 +38,6 @@ public class Badges {
     @Column(name = "is_specialist")
     private Boolean isSpecialist;
 
-
     /** The XP reward granted when this badge is earned. */
     @Column(name = "current_xp")
     private int xpReward;

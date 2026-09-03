@@ -1,97 +1,149 @@
-// package com.app.api.unit.services;
+package com.app.api.unit.services;
 
-// import com.app.api.models.User;
-// import com.app.api.repositories.UserRepository;
-// import com.app.api.services.UserService;
+import com.app.api.models.Address;
+import com.app.api.models.Badges;
+import com.app.api.models.Ratings;
+import com.app.api.models.User;
+import com.app.api.repositories.UserRepository;
+import com.app.api.services.UserService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.sql.Date;
+import java.util.List;
+import java.util.Optional;
 
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.Test;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.MockitoAnnotations;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-// import java.util.List;
-// import java.util.Optional;
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
 
-// import static org.junit.jupiter.api.Assertions.*;
-// import static org.mockito.Mockito.*;
+    @Mock
+    private UserRepository userRepository;
 
+    private UserService userService;
 
+    @BeforeEach
+    void setUp() {
+        userService = new UserService(userRepository);
+    }
 
-// public class UserServiceTest
-// {
+    @Test
+    void getAllUsers_returnsAllUsers() {
+        User user1 = new User();
+        user1.setUserid(1);
 
-//     @Mock
-//     private UserRepository userRepo;
+        User user2 = new User();
+        user2.setUserid(2);
 
-//     @InjectMocks
-//     private UserService userService;
+        when(userRepository.findAll()).thenReturn(List.of(user1, user2));
 
-//     @BeforeEach
-//     void initMocks()
-//     {
-//         MockitoAnnotations.openMocks(this);
-//     }
+        List<User> result = userService.getAllUsers();
 
+        assertEquals(2, result.size());
+        assertEquals(user1, result.get(0));
+        assertEquals(user2, result.get(1));
+    }
 
+    @Test
+    void getUserById_whenFound_returnsUser() {
+        User user = new User();
+        user.setUserid(1);
 
-//     @Test
-//     void getUserById_success()
-//     {
-//         User user = new User();
-//         user.setUserid(101);
-//         when(userRepo.findById(101)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
 
-//         User usrfound = userService.getUserById(101);
+        User result = userService.getUserById(1);
 
-//         assertNotNull(usrfound);
-//         assertEquals(101, usrfound.getUserid());
-//         verify(userRepo, times(1)).findById(101);
-//     }
+        assertEquals(user, result);
+    }
 
+    @Test
+    void getUserById_whenNotFound_returnsNull() {
+        when(userRepository.findById(99)).thenReturn(Optional.empty());
 
-//     @Test
-//     void getUserById_returnsNull() 
-//     {
-//         when(userRepo.findById(999)).thenReturn(Optional.empty());
+        User result = userService.getUserById(99);
 
-//         User dne = userService.getUserById(999);
+        assertNull(result);
+    }
 
-//         assertNull(dne);
-//         verify(userRepo, times(1)).findById(999);
-//     }
+    @Test
+    void saveUser_whenNull_returnsNull() {
+        User result = userService.saveUser(null);
 
+        assertNull(result);
+        verify(userRepository, never()).save(any());
+    }
 
-//     @Test
-//     void getAllUsers_success()
-//     {
-//         User user1 = new User();
-//         user1.setUserid(101);
+    @Test
+    void saveUser_whenValid_savesAndReturnsUser() {
+        User user = new User();
+        user.setUserid(1);
 
-//         User user2 = new User();
-//         user2.setUserid(102);
+        when(userRepository.save(user)).thenReturn(user);
 
-//         when(userRepo.findAll()).thenReturn(List.of(user1, user2));
+        User result = userService.saveUser(user);
 
-//         Iterable<User> usrs = userService.getAllUsers();
+        assertEquals(user, result);
+        verify(userRepository).save(user);
+    }
 
-//         assertNotNull(usrs);
-//         verify(userRepo, times(1)).findAll();
-//     }
+    @Test
+    void updateUser_whenFound_updatesAllFieldsAndReturnsSaved() {
+        User existing = new User();
+        existing.setUserid(1);
 
+        Address address = mock(Address.class);
+        Ratings rating = mock(Ratings.class);
+        Date dob = Date.valueOf("1990-01-01");
 
-//     @Test
-//     void saveUser_success()
-//     {
-//         User user = new User();
-//         user.setUserid(201);
-//         when(userRepo.save(user)).thenReturn(user);
+        User updated = new User();
+        updated.setAddressid(address);
+        updated.setDateOfBirth(dob);
+        updated.setEmail("new@example.com");
+        updated.setFirstName("NewFirst");
+        updated.setGender("F");
+        updated.setLastName("NewLast");
+        updated.setPhoneNumber("1234567890");
+        updated.setRatingid(rating);
+        updated.setUserType("ADMIN");
 
-//         User newUser = userService.saveUser(user);
+        when(userRepository.findById(1)).thenReturn(Optional.of(existing));
+        when(userRepository.save(existing)).thenReturn(existing);
 
-//         assertNotNull(newUser);
-//         assertEquals(201, newUser.getUserid());
-//         verify(userRepo, times(1)).save(user);
-//     }
-// }
+        User result = userService.updateUser(1, updated);
+
+        assertEquals(existing, result);
+        assertEquals(dob, existing.getDateOfBirth());
+        assertEquals("new@example.com", existing.getEmail());
+        assertEquals("NewFirst", existing.getFirstName());
+        assertEquals("F", existing.getGender());
+        assertEquals("NewLast", existing.getLastName());
+        assertEquals("1234567890", existing.getPhoneNumber());
+        assertEquals("ADMIN", existing.getUserType());
+        verify(userRepository).save(existing);
+    }
+
+    @Test
+    void updateUser_whenNotFound_returnsNull() {
+        User updated = new User();
+        updated.setFirstName("NewFirst");
+
+        when(userRepository.findById(99)).thenReturn(Optional.empty());
+
+        User result = userService.updateUser(99, updated);
+
+        assertNull(result);
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void deleteUser_callsRepositoryDeleteById() {
+        userService.deleteUser(1);
+
+        verify(userRepository).deleteById(1);
+    }
+}

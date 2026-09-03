@@ -7,7 +7,8 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=coverage)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=COS301-SE-2026_Supa-Neighbour&metric=bugs)](https://sonarcloud.io/summary/new_code?id=COS301-SE-2026_Supa-Neighbour)
 [![API Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/backend.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/backend.yml)
-[![Flutter Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/flutter.yml)
+[![App Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend-app.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend-app.yml)
+[![Website Build](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend-admin.yml/badge.svg)](https://github.com/COS301-SE-2026/Supa-Neighbour/actions/workflows/frontend-admin.yml)
 [![GitHub Issues](https://img.shields.io/github/issues/COS301-SE-2026/Supa-Neighbour)](https://github.com/COS301-SE-2026/Supa-Neighbour/issues)
 
 [![dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)](https://github.com/COS301-SE-2026/Supa-Neighbour)
@@ -27,6 +28,7 @@
   - [Parse\&Co in conjunction with Gendac](#parseco-in-conjunction-with-gendac)
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
+  - [Downlading apk](#downloading-the-apk)
   - [Relevant Links/Documents](#relevant-linksdocuments)
   - [Project Structure](#project-structure)
   - [Team and Information](#team-and-information)
@@ -47,6 +49,22 @@
 
 ---
 
+## Downloading the APK
+
+> ⚠️ **Android only.** The SupaNeighbour app is currently only available for Android devices. There is no iOS build at this time.
+
+To install the app:
+
+1. Go to the [Landing Page](https://green-beach-06bbfcd03.7.azurestaticapps.net/).
+2. Click the **Get Started** button to begin the download.
+3. Depending on your browser, you may see security warnings before the download completes (e.g. "This file can be harmful," or Windows SmartScreen/Google Safe Browsing prompts). This is expected for APKs downloaded outside the Play Store — click through the browser's warning to allow the download.
+4. Once downloaded, open the APK file on your Android device. You may need to enable **"Install from unknown sources"** in your device settings if prompted.
+5. You may also reference the [User Manual](/documentation/Demo%203%20Files/SupaNeighbour_User_Manual_V3.pdf) for any questiona about the app and it's functionality
+
+> When logging in, you can make use of the email: james.example.298@gmail.com and the password: pass123 if you would like to skip the registration portion of the app and jump straight into the functionality!
+
+---
+
 ## Relevant Links/Documents
 
 | Name | Description | Link |
@@ -61,6 +79,7 @@
 | Landing Page | SupaNeighbour's Landing Page | https://green-beach-06bbfcd03.7.azurestaticapps.net/ |
 | Style Guide | SupaNeighbour's style Guide | https://red-pebble-0a5f86903.7.azurestaticapps.net/ |
 | Live Backend | The deployed backend to Azure | https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net/ |
+| Admin Page | Deployed Admin Page| https://red-rock-009e74b03.3.azurestaticapps.net |
 
 > Please note that the above link to the live backend will lead you to meet with a white label error page. If you would like to confirm that the backend is live, please use the following api to test:
 https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net/api/users

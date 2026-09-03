@@ -3,6 +3,8 @@ package com.app.api.services;
 import java.util.List;
 import java.sql.Timestamp;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +18,9 @@ import com.app.api.repositories.CommentsRepository;
 import com.app.api.repositories.PostsRepository;
 import com.app.api.repositories.UserRepository;
 import java.time.Instant;
+import com.app.api.models.User;
+import com.app.api.events.PostCommentEvent;
+import jakarta.transaction.Transactional;
 
 /**
  * Service layer for managing comment operations.
@@ -27,6 +32,9 @@ public class CommentsService {
     private final CommentsRepository commentsRepository;
     private final PostsRepository postsRepository;
     private final UserRepository userRepository;
+    
+    @Autowired
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Constructs the service with its required repository dependency.
@@ -34,10 +42,11 @@ public class CommentsService {
      * @param commentsRepository repository providing analytics data for comments
      */
     public CommentsService(CommentsRepository commentsRepository, PostsRepository postsRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository, ApplicationEventPublisher eventPublisher) {
         this.commentsRepository = commentsRepository;
         this.postsRepository = postsRepository;
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     // Get all
@@ -127,14 +136,7 @@ public class CommentsService {
      *                                 does not exist, or the parent comment is
      *                                 invalid
      */
-    /**
-     * gets all comments based on the post
-     * 
-     * @param postId              used to id the post
-     * @param request             to use firebase authentication
-     * @param authenticatedUserId firebase authentication
-     * @return
-     */
+    @Transactional
     public CommentResponseDTO addCommentToPost(int postId, CommentRequestDTO request, int authenticatedUserId) {
         if (request.getCommentContent() == null || request.getCommentContent().isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "commentContent is required");
@@ -152,6 +154,7 @@ public class CommentsService {
             }
         }
         Comments comment = new Comments();
+        User commenter = userRepository.getReferenceById(authenticatedUserId);
 
         comment.setPostid(post);
         comment.setUserid(userRepository.getReferenceById(authenticatedUserId));
@@ -160,6 +163,11 @@ public class CommentsService {
         comment.setCreatedAt(Timestamp.from(Instant.now()));
 
         Comments saved = commentsRepository.save(comment);
+        int postAuthorUserId = post.getUserid().getUserid();
+        if(postAuthorUserId != authenticatedUserId){
+            String commentorName = commenter.getFirstName() + " " + commenter.getLastName();
+            eventPublisher.publishEvent(new PostCommentEvent(postAuthorUserId, postId, commentorName));
+        }
         return toResponseDTO(saved);
 
     }

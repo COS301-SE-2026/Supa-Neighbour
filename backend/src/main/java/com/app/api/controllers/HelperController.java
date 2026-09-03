@@ -1,6 +1,7 @@
 package com.app.api.controllers;
 
 import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,19 +15,27 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.models.Helper;
 import com.app.api.services.HelperService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Helper controller.
  * REST controller for Helper.
  */
 @RestController
 @RequestMapping("/api/helpers")
+@Tag(name = "Helpers", description = "Operations for managing helpers")
 public class HelperController {
 
     private final HelperService helperService;
 
-
     /**
-     * Basis HelperController contructor
+     * Basic HelperController constructor
      */
     public HelperController(HelperService helperService) {
         this.helperService = helperService;
@@ -39,6 +48,8 @@ public class HelperController {
      * @return a list of all helpers
      */
     @GetMapping
+    @Operation(summary = "Get all helpers", description = "Retrieves a list of all helpers")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved helpers")
     public ResponseEntity<List<Helper>> getAllHelpers() {
         return ResponseEntity.ok(helperService.getAllHelpers());
     }
@@ -51,7 +62,15 @@ public class HelperController {
      * @return the helper if found, otherwise 404 Not Found
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Helper> getHelperById(@PathVariable int id) {
+    @Operation(summary = "Get helper by ID", description = "Retrieves a single helper by their ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Helper found"),
+        @ApiResponse(responseCode = "404", description = "Helper not found", content = @Content)
+    })
+    public ResponseEntity<Helper> getHelperById(
+        @Parameter(description = "ID of the helper to retrieve", example = "1")
+        @PathVariable int id
+    ) {
         Helper helper = helperService.getHelperById(id);
         if (helper == null) {
             return ResponseEntity.notFound().build();
@@ -67,6 +86,11 @@ public class HelperController {
      * @return the created helper with HTTP 201 status
      */
     @PostMapping
+    @Operation(summary = "Create a new helper", description = "Creates a new helper")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Helper created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid helper data", content = @Content)
+    })
     public ResponseEntity<Helper> createHelper(@RequestBody Helper helper) {
         Helper saved = helperService.saveHelper(helper);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -81,7 +105,17 @@ public class HelperController {
      * @return the updated helper if found, otherwise 404 Not Found
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Helper> updateHelper(@PathVariable int id, @RequestBody Helper helper) {
+    @Operation(summary = "Update a helper", description = "Updates an existing helper by their ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Helper updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Helper not found", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid helper data", content = @Content)
+    })
+    public ResponseEntity<Helper> updateHelper(
+        @Parameter(description = "ID of the helper to update", example = "1")
+        @PathVariable int id,
+        @RequestBody Helper helper
+    ) {
         Helper existing = helperService.getHelperById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();
@@ -98,7 +132,15 @@ public class HelperController {
      * @return 204 No Content if deleted, otherwise 404 Not Found
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteHelper(@PathVariable int id) {
+    @Operation(summary = "Delete a helper", description = "Deletes a helper by their ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Helper deleted successfully", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Helper not found", content = @Content)
+    })
+    public ResponseEntity<Void> deleteHelper(
+        @Parameter(description = "ID of the helper to delete", example = "1")
+        @PathVariable int id
+    ) {
         Helper existing = helperService.getHelperById(id);
         if (existing == null) {
             return ResponseEntity.notFound().build();
@@ -115,6 +157,8 @@ public class HelperController {
      * @return a list of helpers with the specified status
      */
     @GetMapping("/available")
+    @Operation(summary = "Get available helpers", description = "Retrieves all helpers who are currently available")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved available helpers")
     public ResponseEntity<List<Helper>> getAllAvailableHelpers() {
         List<Helper> helpers = helperService.findAllByStatus(true);
         return ResponseEntity.ok(helpers);

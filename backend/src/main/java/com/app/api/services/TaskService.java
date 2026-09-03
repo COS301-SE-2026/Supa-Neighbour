@@ -1,12 +1,17 @@
 package com.app.api.services;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.sql.Date;
 
 import com.app.api.dtos.TaskDetailDTO;
+import com.app.api.events.TaskStartedEvent;
 import com.app.api.models.Analytics;
 import com.app.api.models.Chat;
 import com.app.api.models.Dependent;
@@ -20,9 +25,8 @@ import com.app.api.repositories.ChatRepository;
 import com.app.api.repositories.DependentRepository;
 import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.MessageRepository;
-import com.app.api.repositories.TaskRepository;
 import com.app.api.repositories.TaskInvitationRepository;
-import java.util.Optional;
+import com.app.api.repositories.TaskRepository;
 
 /**
  * Service layer for task-related business logic.
@@ -49,6 +53,8 @@ public class TaskService {
     private final HelperRepository helperRepo;
 
     private final TaskInvitationRepository taskInvitationRepo;
+    @Autowired
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Constructs a TaskService with the required repositories.
@@ -61,7 +67,8 @@ public class TaskService {
      */
     public TaskService(TaskRepository taskRepo, AnalyticsRepository analyticsRepo,
             DependentRepository dependentRepo, ChatRepository chatRepo,
-            MessageRepository messageRepo, HelperRepository helperRepo, TaskInvitationRepository taskInvitationRepo) {
+            MessageRepository messageRepo, HelperRepository helperRepo, TaskInvitationRepository taskInvitationRepo,
+            ApplicationEventPublisher eventPublisher) {
         this.taskRepo = taskRepo;
         this.analyticsRepo = analyticsRepo;
         this.dependentRepo = dependentRepo;
@@ -69,6 +76,7 @@ public class TaskService {
         this.messageRepo = messageRepo;
         this.helperRepo = helperRepo;
         this.taskInvitationRepo = taskInvitationRepo;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -122,6 +130,7 @@ public class TaskService {
      * @param updates a task containing new values
      * @return the updated task, or null if not found
      */
+    @Transactional
     public Task updateTask(int taskId, Task updates) {
         Task targetTask = taskRepo.findById(taskId).orElse(null);
         if (targetTask == null) {
@@ -158,9 +167,28 @@ public class TaskService {
 
         if (updates.getStatus() != null) {
             targetTask.setStatus(updates.getStatus());
+            if("in_progress".equals(updates.getStatus())){
+                Dependent dependent = dependentRepo.findById(targetTask.getDependentId()).orElse(null);
+                Helper helper = helperRepo.findById(targetTask.getHelperId()).orElse(null);
+                if(dependent != null && dependent.getUserId() != null && helper != null && helper.getUserid() != null){
+                    int requesterUserId = dependent.getUserId().getUserid();
+                    String helperName = helper.getUserid().getFirstName();
+                    eventPublisher.publishEvent(new TaskStartedEvent(requesterUserId, taskId, helperName));
+                }
+                
+            }
         }
 
-        return taskRepo.save(targetTask);
+        if (updates.getHelperRatingId() != null) {
+            targetTask.setHelperRatingId(updates.getHelperRatingId());
+        }
+
+        if (updates.getDependentRatingId() != null) {
+            targetTask.setDependentRatingId(updates.getDependentRatingId());
+        }
+
+        Task saved = taskRepo.save(targetTask);
+        return saved;
     }
 
     /**
@@ -183,6 +211,7 @@ public class TaskService {
      * @return the saved task
      */
     public Task createTask(Task task) {
+        task.setStatus("open");
         return taskRepo.save(task);
     }
 
@@ -215,6 +244,7 @@ public class TaskService {
         dto.setNeedsSpecialist(task.isNeedsSpecialist());
         dto.setSignedAdminId(task.getSignedAdminId());
         dto.setStartDate(task.getStartDate());
+        dto.setStartTime(task.getStartTime());
         dto.setEndDate(task.getEndDate());
         dto.setHelperBadgeId(task.getHelperBadgeId());
         dto.setDependentRatingId(task.getDependentRatingId());
@@ -222,11 +252,15 @@ public class TaskService {
         dto.setAdminReview(task.getAdminReview());
         dto.setCompatibilityId(task.getCompatibilityId());
         dto.setStatus(task.getStatus());
+        dto.setTitle(task.getTitle());
+        dto.setInstructions(task.getInstructions());
+
 
         if (task.getDependentId() != null) {
             Dependent dependent = dependentRepo.findById(task.getDependentId()).orElse(null);
             if (dependent != null && dependent.getUserId() != null) {
                 dto.setRequesterName(fullName(dependent.getUserId()));
+                dto.setRequesterUserId(dependent.getUserId().getUserid());
             }
         }
 
@@ -285,7 +319,7 @@ public class TaskService {
         Task task = new Task();
         task.setTaskId(invoice.getTaskid());
         task.setHelperId(invoice.getHelperid() != null ? invoice.getHelperid().getHelperid() : null);
-        task.setDependentId(invoice.getDependentid() != null ? invoice.getDependentid().getUserId().getUserid() : null);
+        task.setDependentId(invoice.getDependentid() != null ? invoice.getDependentid().getDependentId() : null);
         task.setImmediate(invoice.getImmediate());
         task.setLocationId(invoice.getLocationid() != null ? invoice.getLocationid().getLocationid() : null);
         task.setTaskTypeId(invoice.getTasktypeid() != null ? invoice.getTasktypeid().getTasktypeid() : null);

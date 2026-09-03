@@ -3,19 +3,19 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../models/bulletin_post_model.dart';
-import '../../services/bulletin_service.dart';
 import 'bulletin_post_detail_screen.dart';
 import 'create_bulletin_post_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
 
-class BulletinScreen extends StatefulWidget {
+class BulletinScreen extends ConsumerStatefulWidget {
   const BulletinScreen({super.key});
 
   @override
-  State<BulletinScreen> createState() => _BulletinScreenState();
+  ConsumerState<BulletinScreen> createState() => _BulletinScreenState();
 }
 
-class _BulletinScreenState extends State<BulletinScreen> {
-  final BulletinService _bulletinService = BulletinService();
+class _BulletinScreenState extends ConsumerState<BulletinScreen> {
   List<BulletinPost> _posts = [];
   bool _isLoading = true;
   String _selectedCategory = 'all';
@@ -51,7 +51,8 @@ class _BulletinScreenState extends State<BulletinScreen> {
     }
 
     try {
-      final newPosts = await _bulletinService.getPosts(
+      final bulletinService = ref.read(bulletinServiceProvider);
+      final newPosts = await bulletinService.getPosts(
         category: _selectedCategory == 'all' ? null : _selectedCategory,
         page: _currentPage,
         limit: 10,
@@ -238,7 +239,6 @@ class _BulletinScreenState extends State<BulletinScreen> {
                         borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
                       ),
                       filled: true,
-                      // CHANGE: Use dynamic fill color
                       fillColor: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
                       contentPadding: const EdgeInsets.symmetric(vertical: 4),
                     ),
@@ -338,7 +338,6 @@ class _BulletinScreenState extends State<BulletinScreen> {
           ),
         ],
       ),
-      // FAB stays in original position
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push(
@@ -428,7 +427,6 @@ class _BulletinScreenState extends State<BulletinScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          // CHANGE: Use dynamic color based on theme
           color: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
@@ -578,145 +576,145 @@ class _BulletinScreenState extends State<BulletinScreen> {
     );
   }
 
-Future<void> _toggleHelpful(BulletinPost post) async {
-  try {
-    final index = _posts.indexWhere((p) => p.id == post.id);
-    if (index == -1) return;
+  Future<void> _toggleHelpful(BulletinPost post) async {
+    try {
+      final index = _posts.indexWhere((p) => p.id == post.id);
+      if (index == -1) return;
 
-    if (post.isHelpfulByUser) {
-      await _bulletinService.removeHelpful(post.id);
+      final bulletinService = ref.read(bulletinServiceProvider);
+      if (post.isHelpfulByUser) {
+        await bulletinService.removeHelpful(post.id);
+        if (!mounted) return;
+        setState(() {
+          _posts[index] = post.copyWith(
+            isHelpfulByUser: false,
+            likeCount: post.likeCount - 1,
+          );
+        });
+      } else {
+        await bulletinService.addHelpful(post.id);
+        if (!mounted) return;
+        setState(() {
+          _posts[index] = post.copyWith(
+            isHelpfulByUser: true,
+            likeCount: post.likeCount + 1,
+          );
+        });
+      }
+    } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _posts[index] = post.copyWith(
-          isHelpfulByUser: false,
-          likeCount: post.likeCount - 1,
-        );
-      });
-    } else {
-      await _bulletinService.addHelpful(post.id);
-      if (!mounted) return;
-      setState(() {
-        _posts[index] = post.copyWith(
-          isHelpfulByUser: true,
-          likeCount: post.likeCount + 1,
-        );
-      });
-    }
-  } catch (e) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Failed to update helpful status'),
-        backgroundColor: AppColors.error(context),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-}
-
-
- void _showReportDialog(BulletinPost post) {
-  final TextEditingController reasonController = TextEditingController();
-
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      title: Text(
-        'Report Post',
-        style: GoogleFonts.poppins(
-          color: AppColors.charcoal(context),
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Failed to update helpful status'),
+          backgroundColor: AppColors.error(context),
+          duration: const Duration(seconds: 2),
         ),
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Why are you reporting this post?',
-            style: GoogleFonts.openSans(
-              color: AppColors.textGrey(context),
-              fontSize: 14,
-            ),
+      );
+    }
+  }
+
+  void _showReportDialog(BulletinPost post) {
+    final TextEditingController reasonController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Report Post',
+          style: GoogleFonts.poppins(
+            color: AppColors.charcoal(context),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: reasonController,
-            maxLines: 3,
-            style: GoogleFonts.openSans(
-              color: AppColors.charcoal(context),
-              fontSize: 14,
-            ),
-            decoration: InputDecoration(
-              hintText: 'Enter reason...',
-              hintStyle: GoogleFonts.openSans(
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Why are you reporting this post?',
+              style: GoogleFonts.openSans(
                 color: AppColors.textGrey(context),
                 fontSize: 14,
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              maxLines: 3,
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal(context),
+                fontSize: 14,
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
+              decoration: InputDecoration(
+                hintText: 'Enter reason...',
+                hintStyle: GoogleFonts.openSans(
+                  color: AppColors.textGrey(context),
+                  fontSize: 14,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
+                ),
+                contentPadding: const EdgeInsets.all(12),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 14,
               ),
-              contentPadding: const EdgeInsets.all(12),
+            ),
+          ),
+          ElevatedButton(
+          onPressed: () {
+              if (reasonController.text.isNotEmpty) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Post reported successfully'),
+                    backgroundColor: AppColors.success(context),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Report',
+              style: GoogleFonts.openSans(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(
-            'Cancel',
-            style: GoogleFonts.openSans(
-              color: AppColors.textGrey(context),
-              fontSize: 14,
-            ),
-          ),
-        ),
-        ElevatedButton(
-        onPressed: () {
-            if (reasonController.text.isNotEmpty) {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Post reported successfully'),
-                  backgroundColor: AppColors.success(context),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            }
-          },
-
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: Text(
-            'Report',
-            style: GoogleFonts.openSans(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
+    );
+  }
 
   String _getTimeAgo(DateTime date) {
     final now = DateTime.now();

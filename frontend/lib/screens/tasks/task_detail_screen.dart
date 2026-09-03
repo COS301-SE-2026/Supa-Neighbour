@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/task_model.dart';
-import '../../constants/app_colors.dart'; // ADD: Import AppColors
+import '../../models/chat_thread.dart';
+import '../../constants/app_colors.dart';
 import 'edit_task_screen.dart';
+import '../leaderboard/helper_profile_preview_screen.dart';
+import '../chat/chat_detail_screen.dart';
+import 'task_report_screen.dart';
 
-class TaskDetailScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
+
+class TaskDetailScreen extends ConsumerStatefulWidget {
   final Task task;
   final VoidCallback? onTaskUpdated;
   final bool isRequesterView;
@@ -19,11 +27,12 @@ class TaskDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<TaskDetailScreen> createState() => _TaskDetailScreenState();
+  ConsumerState<TaskDetailScreen> createState() => _TaskDetailScreenState();
 }
 
-class _TaskDetailScreenState extends State<TaskDetailScreen> {
-  // CHANGE: Update to use AppColors with context
+class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
+  bool _isOpeningChat = false;
+
   Color _getStatusColor(String status, BuildContext context) {
     switch (status) {
       case 'open':
@@ -43,10 +52,75 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
   }
 
+  Future<void> _openChat() async{
+    if(_isOpeningChat) return;
+
+    try{
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if(token == null){
+        throw Exception('You need to be signed in to chat.');
+      }
+
+      final chatService = ref.read(chatServiceProvider);
+      final data = await chatService.getOrCreateChatForTask(
+        int.parse(widget.task.id),
+        token,
+      );
+
+      final int otherUserId;
+      final String otherName;
+
+      if(widget.isRequesterView){
+        final helperId = data['helperUserId'] as int?;
+
+        if(helperId == null){
+          throw Exception('No helper assigned to this task yet.');
+        }
+      otherUserId = helperId;
+      otherName = widget.task.helperName ?? 'Helper';
+      }else{
+        otherUserId = int.tryParse(widget.task.createdBy) ?? data['dependentUserId'] as int;
+        otherName = widget.task.requesterName ?? 'Requester';
+      }
+
+      final chatThread = ChatThread(
+        chatId: data['chatId'] as int,
+        otherUserId: otherUserId,
+        taskId: data['taskId'] as int,
+        name: otherName,
+        location: '',
+        lastMessage: '',
+        timestamp: '',
+        unreadCount: 0,
+        avatarColor: const Color(0xFF2A9D8F),
+     );
+
+     if(!mounted) return;
+     Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatDetailScreen(chat: chatThread),
+      ),
+     );
+    }catch (e){
+      if(!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception', '')),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
+    }finally{
+      if(mounted) setState(() => _isOpeningChat = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool canEdit = widget.task.createdBy == 'currentUser' && widget.task.status == 'open';
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final bool canChat = widget.task.status != 'open' && widget.task.status != 'cancelled';
 
     return Scaffold(
       // CHANGE: Use AppColors.background
@@ -74,6 +148,22 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         ),
         centerTitle: true,
         actions: [
+          if(canChat)
+            IconButton(
+              icon: _isOpeningChat
+              ? SizedBox(
+                width: 20, 
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primaryTeal(context,)
+                ),
+              )
+              : Icon(Icons.chat_bubble_outline,
+              color: AppColors.primaryTeal(context)),
+            tooltip: widget.isRequesterView ? 'Chat with Helper': 'Chat withe Requester',
+            onPressed: _isOpeningChat ? null : _openChat,
+            ),
           if (canEdit)
             IconButton(
               icon: Icon(
@@ -141,7 +231,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   Text(
                     widget.task.category,
                     style: GoogleFonts.openSans(
-                      // CHANGE: Use AppColors.primaryTeal
                       color: AppColors.primaryTeal(context),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -156,38 +245,72 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             Text(
               widget.task.title,
               style: GoogleFonts.poppins(
-                // CHANGE: Use AppColors.charcoal
                 color: AppColors.charcoal(context),
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 16),
-            
-            // Helper/Requester Info
-            if (widget.task.helperName != null && widget.task.helperName != 'You')
+
+            if (!widget.isRequesterView && widget.task.requesterName != null)
+              GestureDetector(
+                onTap: () {
+                  final requesterId = int.tryParse(widget.task.createdBy);
+                  if (requesterId != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HelperProfilePreviewScreen(
+                          helperId: requesterId,
+                          taskId: widget.task.id,
+                          showRequestButton: false,
+                          isUserId: true,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.person, color: AppColors.primaryTeal(context), size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Requester: ${widget.task.requesterName}',
+                          style: GoogleFonts.openSans(
+                            color: AppColors.charcoal(context),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, color: AppColors.primaryTeal(context), size: 20),
+                    ],
+                  ),
+                ),
+              ),
+
+            if (widget.isRequesterView &&
+                widget.task.helperName != null &&
+                widget.task.helperName != 'You')
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  // CHANGE: Use AppColors.primaryTeal with alpha
                   color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.person,
-                      // CHANGE: Use AppColors.primaryTeal
-                      color: AppColors.primaryTeal(context),
-                      size: 20,
-                    ),
+                    Icon(Icons.person, color: AppColors.primaryTeal(context), size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      widget.isRequesterView
-                          ? 'Helper: ${widget.task.helperName}'
-                          : 'Requester: ${widget.task.requesterName}',
+                      'Helper: ${widget.task.helperName}',
                       style: GoogleFonts.openSans(
-                        // CHANGE: Use AppColors.charcoal
                         color: AppColors.charcoal(context),
                         fontSize: 14,
                       ),
@@ -196,7 +319,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 ),
               ),
             const SizedBox(height: 16),
-            
+
+
             // XP Reward Container
             Container(
               padding: const EdgeInsets.all(16),
@@ -333,8 +457,45 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            
+            const SizedBox(height: 16),
+            if (widget.task.status == 'completed' || widget.task.status == 'pending_approval')
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TaskReportScreen(
+                            taskId: int.parse(widget.task.id),
+                            taskTitle: widget.task.title,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.flag_outlined, color: AppColors.error(context)),
+                    label: Text(
+                      'Report Task',
+                      style: GoogleFonts.openSans(
+                        color: AppColors.error(context),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppColors.error(context)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
             // Non-editable Message
             if (!canEdit && widget.isRequesterView &&
                 widget.task.status != 'completed' &&
@@ -463,18 +624,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
-      case 'Plants':
-        return Icons.eco;
-      case 'Pets':
+      case 'Medical Assistance':
+        return Icons.medical_services;
+      case 'Pet Care':
         return Icons.pets;
-      case 'Bins':
-        return Icons.delete;
-      case 'Packages':
-        return Icons.inventory;
-      case 'Home Check-in':
-        return Icons.home;
-      case 'Pool Pump':
-        return Icons.water;
+      case 'Technology Support':
+        return Icons.computer;
+      case 'Transportation Support':
+        return Icons.directions_car;
+      case 'Home Repair':
+        return Icons.home_repair_service;
       default:
         return Icons.assignment;
     }

@@ -1,5 +1,8 @@
 package com.app.api.controllers;
 
+import java.time.Instant;
+import java.util.List;
+
 import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -9,23 +12,42 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
 import com.app.api.models.Badges;
+import com.app.api.models.Dependent;
+import com.app.api.models.Helper;
+import com.app.api.models.HelperAnalytics;
 import com.app.api.models.Ratings;
-import com.app.api.models.User;
 import com.app.api.models.Settings;
 import com.app.api.models.Settings.ThemeMode;
-import java.time.Instant;
+import com.app.api.models.User;
+import com.app.api.models.UserAchievement;
 import com.app.api.repositories.AddressRepository;
+import com.app.api.repositories.AdminRepository;
 import com.app.api.repositories.BadgesRepository;
+import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.HelperAnalyticsRepository;
+import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.RatingsRepository;
+import com.app.api.repositories.SettingsRepository;
+import com.app.api.repositories.UserAchievementRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.security.AuthenticatedUser;
 import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.ModerationActionService;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import com.app.api.repositories.SettingsRepository;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
+
 /**
  * REST controller responsible for user authentication and account management.
  * <p>
@@ -41,20 +63,26 @@ import com.app.api.repositories.SettingsRepository;
  */
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "Endpoints for user authentication and account management")
 public class AuthController {
     
     private final AddressRepository addressRepository;
-    private final BadgesRepository badgeRepository;
-    private final RatingsRepository ratingRepository;
     private final SettingsRepository settingsRepository;
-    /**
-     * Service responsible for verifying Firebase ID tokens.
-     */
+    private final HelperRepository helperRepository;
+    private final DependentRepository dependentRepository;
     private final FirebaseAuthService firebaseAuthService;
-    /**
-     * Repository used to manage application users.
-     */
     private final UserRepository userRepository;
+
+    private final BadgesRepository badgesRepository;
+    private final UserAchievementRepository userAchievementRepository;
+    private final HelperAnalyticsRepository helperAnalyticsRepository;
+    
+    private final RatingsRepository ratingsRepository;
+    private final AdminRepository adminRepository;
+    private final ModerationActionService moderationActionService;
+
+    /** rating_id of the default "Unranked" tier assigned to new users on registration. */
+    private static final int DEFAULT_RATING_ID = 6;
 
     /**
      * Creates a new authentication controller.
@@ -62,15 +90,20 @@ public class AuthController {
      * @param firebaseAuthService the Firebase authentication service
      * @param userRepository the repository used to manage users
      */
-public AuthController(
-        FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository,BadgesRepository badgeRepository,RatingsRepository ratingRepository, SettingsRepository settingsRepository) {
+    public AuthController(FirebaseAuthService firebaseAuthService,UserRepository userRepository,AddressRepository addressRepository, SettingsRepository settingsRepository, HelperRepository helperRepository, DependentRepository dependentRepository, BadgesRepository badgesRepository,UserAchievementRepository userAchievementRepository, RatingsRepository ratingsRepository, HelperAnalyticsRepository helperAnalyticsRepository, AdminRepository adminRepository, ModerationActionService moderationActionService) {
             this.firebaseAuthService = firebaseAuthService;
             this.userRepository = userRepository;
             this.addressRepository = addressRepository;
-            this.badgeRepository = badgeRepository;
-            this.ratingRepository = ratingRepository;
             this.settingsRepository = settingsRepository;
-        }
+            this.helperRepository = helperRepository;
+            this.dependentRepository = dependentRepository;
+            this.badgesRepository = badgesRepository;
+            this.userAchievementRepository = userAchievementRepository;
+            this.ratingsRepository = ratingsRepository;
+            this.helperAnalyticsRepository = helperAnalyticsRepository;
+            this.adminRepository = adminRepository;
+            this.moderationActionService = moderationActionService;
+    }
 
     /**
      * Registers a new user using a Firebase ID token.
@@ -84,13 +117,30 @@ public AuthController(
      *         an error response if the user already exists
      * @throws FirebaseAuthException if the Firebase token is invalid or cannot be verified
      */
+    @Transactional
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String idToken,@RequestBody RegisterRequest request)
-            throws FirebaseAuthException {
-
+    @Operation(
+        summary = "Register a new user",
+        description = "Registers a new user using a Firebase ID token and registration details"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User registered successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid Firebase token", content = @Content),
+        @ApiResponse(responseCode = "409", description = "User already exists", content = @Content)
+    })
+    public ResponseEntity<?> registerUser(
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
+        @RequestHeader("Authorization") String idToken,
+        @RequestBody RegisterRequest request
+    ) throws FirebaseAuthException {
+        FirebaseToken decodedToken;
         String token = idToken.replace("Bearer ", "");
-
-        FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
+        try{
+            decodedToken = firebaseAuthService.verifyIdToken(token);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).build();
+        }
+        
 
         if (userRepository.findByFirebaseUid(decodedToken.getUid()).isPresent()) {
             return ResponseEntity.status(HttpStatus.SC_CONFLICT)
@@ -100,11 +150,6 @@ public AuthController(
         Address address = addressRepository.findById(request.getAddressId())
             .orElseThrow(() -> new RuntimeException("Address not found"));
 
-        Badges badge = badgeRepository.findById(request.getBadgeId())
-            .orElseThrow(() -> new RuntimeException("Badge not found"));
-
-        Ratings rating = ratingRepository.findById(request.getRatingId())
-            .orElseThrow(() -> new RuntimeException("Rating not found"));
 
         User user = new User();
 
@@ -121,15 +166,18 @@ public AuthController(
         user.setDateOfBirth(request.getDateOfBirth());
         user.setGender(request.getGender());
         user.setUserType(request.getUserType());
+        user.setIsAdmin(false);
+
+        Ratings defaultRating = ratingsRepository.findById(DEFAULT_RATING_ID)
+            .orElseThrow(() -> new RuntimeException("Default rating tier not found"));
+        user.setRatingid(defaultRating);
 
         user.setAddressid(address);
-        user.setBadgeid(badge);
-        user.setRatingid(rating);
 
         User savedUser = userRepository.save(user);
         Settings defaultSettings = new Settings();
 
-        defaultSettings.setUserId(savedUser.getUserid());
+        defaultSettings.setUser(savedUser);
         defaultSettings.setLastSeen(Instant.now());
         defaultSettings.setShowStatus(true);
         defaultSettings.setShowPhoneNo(false);
@@ -137,6 +185,39 @@ public AuthController(
 
         settingsRepository.save(defaultSettings);
 
+        List<Badges> allBadges = badgesRepository.findAll();
+        for(Badges badge: allBadges){
+            UserAchievement userAchievement = new UserAchievement();
+            userAchievement.setUserId(savedUser);
+            userAchievement.setBadgeId(badge);
+            userAchievement.setProgressCurrent(0);
+            userAchievement.setProgressTarget(badge.getXpReward());
+            userAchievement.setAwardedOn(null);
+            userAchievementRepository.save(userAchievement);
+        }
+
+        if(!"Admin".equals(savedUser.getUserType())){
+            Helper helper = new Helper();
+            helper.setUserid(savedUser);
+            helper.setHelperXp(0);
+            helper.setAvailable(false);
+            helperRepository.save(helper);
+
+            String analyticsId = "HELPER_" + savedUser.getFirstName().toUpperCase();
+            if(helperAnalyticsRepository.existsById(analyticsId)){
+                analyticsId = analyticsId + "_" + savedUser.getUserid();
+            }
+
+            HelperAnalytics helperAnalytics = new HelperAnalytics();
+            helperAnalytics.setHelperAnalyticsid(analyticsId);
+            helperAnalytics.setUserid(savedUser);
+            helperAnalytics.setAverageRating(0.0f);
+            helperAnalyticsRepository.save(helperAnalytics);
+
+            Dependent dependent = new Dependent();
+            dependent.setUserId(savedUser);
+            dependentRepository.save(dependent);
+        }
         return ResponseEntity.ok(user);
     }
 
@@ -153,12 +234,29 @@ public AuthController(
      * @throws RuntimeException if no user exists for the authenticated Firebase account
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestHeader("Authorization") String idToken) throws FirebaseAuthException {
-        System.out.println("REGISTER ENDPOINT HIT");
+    @Operation(summary = "Login an existing user", description = "Authenticates an existing user using a Firebase ID token")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Login successful"),
+        @ApiResponse(responseCode = "401", description = "Invalid Firebase token", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Account is banned or suspended", content = @Content),
+        @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
+    public ResponseEntity<?> login(
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
+        @RequestHeader("Authorization") String idToken
+    ) throws FirebaseAuthException {
         String token = idToken.replace("Bearer ", "");
         FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
 
-        User user =userRepository.findByFirebaseUid(decodedToken.getUid()).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByFirebaseUid(decodedToken.getUid()).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if(moderationActionService.isBanned(user)){
+            return ResponseEntity.status(HttpStatus.SC_FORBIDDEN).body("Your account has been permanently banned");
+        }
+
+        if(moderationActionService.isSuspended(user)){
+            return ResponseEntity.status(HttpStatus.SC_FORBIDDEN).body("Your account is currently suspended");
+        }
 
         return ResponseEntity.ok(user);
     }
@@ -170,27 +268,93 @@ public AuthController(
      * @return the authenticated {@link User}
      */
     @GetMapping("/profile")
+    @Operation(summary = "Get current user profile", description = "Returns the profile of the currently authenticated user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
     public ResponseEntity<User> getProfile(Authentication authentication) {
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) authentication.getPrincipal();
         return ResponseEntity.ok(authenticatedUser.getUser());
     } 
 
     // POST /api/auth/logout
-/**
- * Logs the authenticated user out by revoking their Firebase refresh tokens.
- *
- * @param authHeader the Authorization header, expected as "Bearer <token>"
- * @return 200 OK on success, or 401 if the token is invalid
- */
-@PostMapping("/logout")
-public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader){
-    try{
-        String token = authHeader.replace("Bearer ", "");
-        String uid = firebaseAuthService.verifyIdToken(token).getUid();
-        firebaseAuthService.revokeUserSessions(uid);
-        return ResponseEntity.ok("Logged out successfully");
-    }catch(FirebaseAuthException e) {
-        return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(null);
+    /**
+     * Logs the authenticated user out by revoking their Firebase refresh tokens.
+     *
+     * @param authHeader the Authorization header, expected as "Bearer <token>"
+     * @return 200 OK on success, or 401 if the token is invalid
+     */
+    @PostMapping("/logout")
+    @Operation(summary = "Logout current user", description = "Logs the authenticated user out by revoking their Firebase refresh tokens")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Logged out successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid Firebase token", content = @Content)
+    })
+    public ResponseEntity<String> logout(
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
+        @RequestHeader("Authorization") String authHeader
+    ){
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            String uid = firebaseAuthService.verifyIdToken(token).getUid();
+            firebaseAuthService.revokeUserSessions(uid);
+            return ResponseEntity.ok("Logged out successfully");
+        }catch(FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(null);
+        }
     }
-}
+
+    /**
+     * Authenticates an admin user using a Firebase ID token.
+     * <p>
+     * The authentication flow consists of:
+     * <ul>
+     *     <li>Extracting and validating the Firebase ID token from the Authorization header</li>
+     *     <li>Retrieving the user from the database using the Firebase UID</li>
+     *     <li>Verifying that the user has admin privileges</li>
+     * </ul>
+     * </p>
+     * 
+     * @param authHeader the Authorization header containing the Bearer token
+     *                   (format: "Bearer &lt;firebase-token&gt;")
+     * @return a {@link ResponseEntity} containing:
+     *         <ul>
+     *             <li><b>200 OK</b> with the authenticated admin {@link User} if successful</li>
+     *             <li><b>401 UNAUTHORIZED</b> with message "Invalid or expired token" 
+     *                 if the Firebase token is invalid or expired</li>
+     *             <li><b>404 NOT FOUND</b> with message "User not found" 
+     *                 if no user exists with the given Firebase UID</li>
+     *             <li><b>403 FORBIDDEN</b> with message "Not an admin" 
+     *                 if the authenticated user does not have admin privileges</li>
+     *         </ul>
+     */
+    @PostMapping("/admin/login")
+    @Operation(summary = "Admin login", description = "Authenticates an admin user using a Firebase ID token")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Admin login successful"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired token", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Not an admin", content = @Content),
+        @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
+    public ResponseEntity<?> adminLogin(
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
+        @RequestHeader("Authorization") String authHeader
+    ){
+        User user;
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            FirebaseToken decodedToken = firebaseAuthService.verifyIdToken(token);
+            user = userRepository.findByFirebaseUid(decodedToken.getUid()).orElseThrow(() -> new RuntimeException("User not found"));
+        } catch (FirebaseAuthException e) {
+                return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body("Invalid or expired token");
+        } catch (RuntimeException e) {
+                return ResponseEntity.status(HttpStatus.SC_NOT_FOUND).body("User not found");
+        }
+        if(!Boolean.TRUE.equals(user.getIsAdmin())){
+            return ResponseEntity.status(HttpStatus.SC_FORBIDDEN).body("Not an admin");
+        }
+
+        return ResponseEntity.ok(user);
+    }
 }

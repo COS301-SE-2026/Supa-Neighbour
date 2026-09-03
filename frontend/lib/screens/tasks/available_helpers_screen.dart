@@ -5,10 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../../components/custom_button.dart';
 import '../../constants/app_colors.dart';
 import '../../models/task_model.dart';
+import '../leaderboard/helper_profile_preview_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-
-
-class AvailableHelpersScreen extends StatefulWidget {
+class AvailableHelpersScreen extends ConsumerStatefulWidget {
   final Task task;
 
   const AvailableHelpersScreen({
@@ -17,10 +17,10 @@ class AvailableHelpersScreen extends StatefulWidget {
   });
 
   @override
-  State<AvailableHelpersScreen> createState() => _AvailableHelpersScreenState();
+  ConsumerState<AvailableHelpersScreen> createState() => _AvailableHelpersScreenState();
 }
 
-class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
+class _AvailableHelpersScreenState extends ConsumerState<AvailableHelpersScreen> {
   bool _isLoading = true;
   bool _showVerifiedOnly = false;
 
@@ -30,36 +30,51 @@ class _AvailableHelpersScreenState extends State<AvailableHelpersScreen> {
     _loadHelpers();
   }
 
-List<Map<String, dynamic>> _matchedHelpers = [];
+  List<Map<String, dynamic>> _matchedHelpers = [];
 
-Future<void> _loadHelpers() async {
-  setState(() => _isLoading = true);
-  try {
-    final taskId = int.tryParse(widget.task.id);
-    if (taskId == null) throw Exception('Invalid task ID');
-    final token = await fb.FirebaseAuth.instance.currentUser?.getIdToken();
-    final dio = Dio(BaseOptions(baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net'));
-    final res = await dio.get(
-      '/api/task-invitations',
-      options: token != null
-          ? Options(headers: {'Authorization': 'Bearer $token'})
-          : null,
-    );
-    final all = res.data as List<dynamic>;
-    final filtered = all
-        .where((inv) => inv['taskId']?['taskid'] == taskId || inv['taskId']?['task_id'] == taskId)
-        .toList();
-    if (!mounted) return;
-    setState(() {
-      _matchedHelpers = filtered.cast<Map<String, dynamic>>();
-      _isLoading = false;
-    });
-  } catch (_) {
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+  Future<void> _loadHelpers() async {
+    setState(() => _isLoading = true);
+    try {
+      final taskId = int.tryParse(widget.task.id);
+      if (taskId == null) throw Exception('Invalid task ID');
+      final token = await fb.FirebaseAuth.instance.currentUser?.getIdToken();
+      final dio = Dio(BaseOptions(baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net'));
+      final res = await dio.post(
+        '/api/task-invitations/$taskId/match',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      final data = res.data as Map<String, dynamic>;
+      final helpers = data['helpers'] as List<dynamic>? ?? [];
+      final mapped = helpers.map((h) {
+        final m = h as Map<String, dynamic>;
+        return {
+          'helperId': m['helperId'],
+          'helperName': m['helperName'],
+          'neighbourhoodZone': m['neighbourhoodZone'],
+          'skillMatched': m['skillMatched'],
+          'helperXp': m['helperXp'],
+          'status': m['invitationStatus'],
+        };
+      }).toList();
+      if (!mounted) return;
+      setState(() {
+        _matchedHelpers = mapped.cast<Map<String, dynamic>>();
+        _isLoading = false;
+      });
+    } on Exception catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: AppColors.error(context),
+          ),
+        );
+      }
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -305,91 +320,104 @@ Future<void> _loadHelpers() async {
     );
   }
 
+  Widget _buildMatchedHelperCard(Map<String, dynamic> inv) {
+    final fullName = inv['helperName'] as String? ?? 'Helper';
+    final status = inv['status'] as String? ?? '';
+    final firstName = fullName.isNotEmpty ? fullName.split(' ').first : 'H';
+    final isInvited = status == 'Accepted';
+    final helperId = inv['helperId'] as int?;
 
-  Widget _buildMatchedHelperCard(Map<String, dynamic> invitation) {
-  final helper = invitation['helperId'] as Map<String, dynamic>?;
-  final user = helper?['userid'] as Map<String, dynamic>?;
-  final firstName = user?['firstName'] as String? ?? 'Helper';
-  final lastName = user?['lastName'] as String? ?? '';
-  final fullName = '$firstName $lastName'.trim();
-  final status = invitation['status'] as String? ?? 'Invited';
-  final isInvited = status == 'Accepted';
-
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.04),
-          blurRadius: 8,
-          offset: const Offset(0, 2),
-        ),
-      ],
-      border: isInvited ? Border.all(color: AppColors.success(context), width: 2) : null,
-    ),
-    child: Row(
-      children: [
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
-          child: Text(
-            firstName.isNotEmpty ? firstName[0] : '?',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryTeal(context),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HelperProfilePreviewScreen(
+              helperId: helperId,
+              taskId: widget.task.id,
+              showRequestButton: true,
             ),
           ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.white(context),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+          border: isInvited
+              ? Border.all(color: AppColors.success(context), width: 2)
+              : null,
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                fullName,
-                style: GoogleFonts.poppins(
-                  color: AppColors.charcoal(context),
-                  fontSize: 16,
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 28,
+              backgroundColor:
+                  AppColors.primaryTeal(context).withValues(alpha: 0.1),
+              child: Text(
+                firstName.isNotEmpty ? firstName[0] : '?',
+                style: TextStyle(
+                  fontSize: 24,
                   fontWeight: FontWeight.w600,
+                  color: AppColors.primaryTeal(context),
                 ),
               ),
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: (status == 'Accepted'
-                          ? AppColors.success(context)
-                          : status == 'Declined'
-                              ? Colors.red
-                              : AppColors.primaryTeal(context))
-                      .withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  status,
-                  style: GoogleFonts.openSans(
-                    color: status == 'Accepted'
-                        ? AppColors.success(context)
-                        : status == 'Declined'
-                            ? Colors.red
-                            : AppColors.primaryTeal(context),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    fullName,
+                    style: GoogleFonts.poppins(
+                      color: AppColors.charcoal(context),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: (status == 'Accepted'
+                              ? AppColors.success(context)
+                              : status == 'Declined'
+                                  ? Colors.red
+                                  : AppColors.primaryTeal(context))
+                          .withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      status,
+                      style: GoogleFonts.openSans(
+                        color: status == 'Accepted'
+                            ? AppColors.success(context)
+                            : status == 'Declined'
+                                ? Colors.red
+                                : AppColors.primaryTeal(context),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
-}
-
-
+      ),
+    );
+  }
 
   Widget _buildEmptyState() {
     return Center(

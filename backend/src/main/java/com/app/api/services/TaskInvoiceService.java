@@ -3,9 +3,10 @@ package com.app.api.services;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import com.app.api.models.Dependent;
-
+import com.app.api.models.TaskImage;
 import com.app.api.models.TaskInvoice;
 import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.TaskImageRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 
 /**
@@ -17,15 +18,21 @@ public class TaskInvoiceService {
 
     private final TaskInvoiceRepository taskInvoiceRepository;
     private final DependentRepository dependentRepository;
+    private final TaskImageRepository taskImageRepository;
 
     /**
-     * Constructs the service with its required repository dependency.
+     * Constructs the service with its required repository dependencies.
      *
-     * @param taskInvoiceRepository repository providing analytics data for taskInvoice
+     * @param taskInvoiceRepository repository for task invoices
+     * @param dependentRepository repository for dependents
+     * @param taskImageRepository repository for task images
      */
-    public TaskInvoiceService(TaskInvoiceRepository taskInvoiceRepository, DependentRepository dependentRepository) {
+    public TaskInvoiceService(TaskInvoiceRepository taskInvoiceRepository,
+            DependentRepository dependentRepository,
+            TaskImageRepository taskImageRepository) {
         this.taskInvoiceRepository = taskInvoiceRepository;
         this.dependentRepository = dependentRepository;
+        this.taskImageRepository = taskImageRepository;
     }
 
     // Get all
@@ -135,5 +142,26 @@ public class TaskInvoiceService {
      */
     public void deleteTaskInvoice(int id) {
         taskInvoiceRepository.deleteById(id);
+    }
+
+    /**
+     * Saves a list of image URLs as TaskImage records linked to the given task.
+     *
+     * @param taskId the ID of the task invoice to attach images to
+     * @param imageUrls the list of Azure Blob Storage URLs to persist
+     * @return the number of images saved, or -1 if the task was not found
+     */
+    public int addImagesToTask(int taskId, List<String> imageUrls) {
+        TaskInvoice invoice = taskInvoiceRepository.findById(taskId).orElse(null);
+        if (invoice == null) {
+            return -1;
+        }
+        for (String url : imageUrls) {
+            TaskImage image = new TaskImage();
+            image.setTaskid(invoice);
+            image.setImageUrl(url);
+            taskImageRepository.save(image);
+        }
+        return imageUrls.size();
     }
 }

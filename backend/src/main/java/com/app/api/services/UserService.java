@@ -74,16 +74,36 @@ public class UserService {
         if (existing == null){  
             return null;
         }
-        existing.setBadgeid(updated.getBadgeid());
-        existing.setAddressid(updated.getAddressid());
-        existing.setDateOfBirth(updated.getDateOfBirth());
-        existing.setEmail(updated.getEmail());
-        existing.setFirstName(updated.getFirstName());
-        existing.setGender(updated.getGender());
-        existing.setLastName(updated.getLastName());
-        existing.setPhoneNumber(updated.getPhoneNumber());
-        existing.setRatingid(updated.getRatingid());
-        existing.setUserType(updated.getUserType());
+        if (updated.getFirebaseUid() != null) {
+            existing.setFirebaseUid(updated.getFirebaseUid());
+        }
+        if (updated.getUsername() != null) {
+            existing.setUsername(updated.getUsername());
+        }
+        if (updated.getFirstName() != null){
+            existing.setFirstName(updated.getFirstName());
+        }
+        if (updated.getLastName() != null) {
+            existing.setLastName(updated.getLastName());
+        }
+        if (updated.getEmail() != null){ 
+            existing.setEmail(updated.getEmail());
+        }
+        if (updated.getPhoneNumber() != null){ 
+            existing.setPhoneNumber(updated.getPhoneNumber());
+        }
+        if (updated.getDateOfBirth() != null){ 
+            existing.setDateOfBirth(updated.getDateOfBirth());
+        }
+        if (updated.getGender() != null){
+             existing.setGender(updated.getGender());
+        }
+        if (updated.getIsAdmin() != null){ 
+            existing.setIsAdmin(updated.getIsAdmin());
+        }
+        if (updated.getUserType() != null) {
+            existing.setUserType(updated.getUserType());
+        }
 
         return userRepository.save(existing);
     }

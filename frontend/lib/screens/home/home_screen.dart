@@ -12,9 +12,9 @@ import '../chat/inbox_screen.dart';
 import '../tasks/my_tasks_screen.dart';
 import '../profile/profile_screen.dart';
 import '../tasks/task_detail_screen.dart';
-import '../../services/task_service.dart';
-
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/service_providers.dart';
+import '../notifications/notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,6 +34,13 @@ class _HomeScreenState extends State<HomeScreen> {
     const ProfileScreen(),
   ];
 
+  // Method to change tab from outside
+  void changeTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,19 +58,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class HomeContent extends StatefulWidget {
+class HomeContent extends ConsumerStatefulWidget {
   const HomeContent({super.key});
 
   @override
-  State<HomeContent> createState() => _HomeContentState();
+  ConsumerState<HomeContent> createState() => _HomeContentState();
 }
 
-class _HomeContentState extends State<HomeContent> {
+class _HomeContentState extends ConsumerState<HomeContent> {
   List<Task> _nearbyTasks = [];
   List<Task> _availableTasks = [];
    
   User? _currentUser;
-  final TaskService _taskService = TaskService();
   double _trustScore = 0.0;
   bool _isLoadingStats = true;
   int _helpsGiven = 0;
@@ -88,24 +94,18 @@ class _HomeContentState extends State<HomeContent> {
       return;
     }
     try {
-      final results = await Future.wait([
-        _taskService.getTasksByUserId(userId),
-        _taskService.getUserById(userId),
-      ]);
-      final tasks = results[0] as List<Task>;
-      final userMap = results[1] as Map<String, dynamic>;
+      final taskService = ref.read(taskServiceProvider);
+      final tasks = await taskService.getTasksByUserId(userId);
+      final profileService = ref.read(profileServiceProvider); 
+      final profile = await profileService.getMyProfile();
       if (!mounted) return;
       setState(() {
         _nearbyTasks = tasks;
         _helpsGiven = tasks.where((t) => t.status == 'completed').length;
-        final ratingData = userMap['rating'];
-        if (ratingData != null && ratingData is Map) {
-          final score = ratingData['averageRating'];
-          _trustScore = score != null ? (score as num).toDouble() : 0.0;
-        }
+        _trustScore = profile.trustScore ?? 0.0;
         _isLoadingStats = false;
       });
-      final available = await _taskService.getAvailableTasks(userId);
+      final available = await taskService.getAvailableTasks(userId);
       if (mounted) setState(() => _availableTasks = available);
     } catch (_) {
       if (!mounted) return;
@@ -131,6 +131,9 @@ class _HomeContentState extends State<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
+    // Get the parent HomeScreen state to call changeTab
+    final homeScreenState = context.findAncestorStateOfType<_HomeScreenState>();
+
     return Scaffold(
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
@@ -154,7 +157,19 @@ class _HomeContentState extends State<HomeContent> {
         actions: [
           IconButton(
             icon: Icon(Icons.notifications_none, color: AppColors.primaryTeal(context)),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationsScreen(
+                    onNotificationTap: (int tabIndex) {
+                      // Call the changeTab method on the parent HomeScreen
+                      homeScreenState?.changeTab(tabIndex);
+                    },
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -517,18 +532,16 @@ class _HomeContentState extends State<HomeContent> {
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
-      case 'Plants':
-        return Icons.eco;
-      case 'Pets':
+      case 'Medical Assistance':
+        return Icons.medical_services;
+      case 'Pet Care':
         return Icons.pets;
-      case 'Bins':
-        return Icons.delete;
-      case 'Packages':
-        return Icons.inventory;
-      case 'Home Check-in':
-        return Icons.home;
-      case 'Pool Pump':
-        return Icons.water;
+      case 'Technology Support':
+        return Icons.computer;
+      case 'Transportation Support':
+        return Icons.directions_car;
+      case 'Home Repair':
+        return Icons.home_repair_service;
       default:
         return Icons.assignment;
     }
