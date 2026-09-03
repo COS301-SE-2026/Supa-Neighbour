@@ -349,7 +349,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
-            onPressed: () => _downloadUserManual(context),
+            onPressed: _downloadUserManual,
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: AppColors.primaryTeal(context)),
               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -371,7 +371,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
     ),
   );
 }
-  Future<void> _downloadUserManual(BuildContext context) async {
+  Future<void> _downloadUserManual() async {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final filePath = '${documentsDirectory.path}/SupaNeighbour_User_Manual_V3.pdf';
     final file = File(filePath);
@@ -388,6 +388,9 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
       await file.writeAsBytes(manualData.buffer.asUint8List());
       await OpenFile.open(filePath);
     } catch (error) {
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error opening user manual: $error'),
