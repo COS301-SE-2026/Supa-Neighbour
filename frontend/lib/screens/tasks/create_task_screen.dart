@@ -131,7 +131,13 @@ Future<void> _submitTask() async {
         final createdTask = await taskService.createTask(
           dependentId: dependentId,
           taskTypeId: Task.resolveTaskTypeId(_selectedCategory!),
-          startDate: _selectedDate,
+          startDate: DateTime{
+            _selectDate.year,
+            _selectDate.month,
+            _selectDate.day,
+            _selectDate.hour,
+            _selectDate.minute,
+          },
           isImmediate: false,
           needsSpecialist: false,
           title: _titleController.text.trim(),
