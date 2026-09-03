@@ -3,16 +3,16 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../models/user_profile_response.dart';
 
-class EditProfileScreen extends StatefulWidget {
+class EditUsernameScreen extends StatefulWidget {
   final UserProfileResponse profile;
 
-  const EditProfileScreen({super.key, required this.profile});
+  const EditUsernameScreen({super.key, required this.profile});
 
   @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
+  State<EditUsernameScreen> createState() => _EditUsernameScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
+class _EditUsernameScreenState extends State<EditUsernameScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _displayNameController;
   late TextEditingController _neighbourhoodController;
@@ -51,7 +51,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Profile updated successfully!'),
+       content: Text('Username updated successfully!'),
         backgroundColor: AppColors.success(context),
         duration: const Duration(seconds: 2),
       ),
@@ -84,7 +84,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Edit Profile',
+          'Edit Username',
           style: GoogleFonts.poppins(
             color: AppColors.primaryTeal(context),
             fontSize: 24,
@@ -114,7 +114,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Display Name',
+                'Username',
                 style: GoogleFonts.openSans(
                   color: AppColors.charcoal(context),
                   fontSize: 14,
@@ -125,7 +125,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               TextFormField(
                 controller: _displayNameController,
                 decoration: InputDecoration(
-                  hintText: 'Enter your display name',
+                  hintText: 'Enter your username',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: AppColors.primaryTeal(context)),
@@ -141,7 +141,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a display name';
+                    return 'Please enter a username';
                   }
                   return null;
                 },
@@ -155,7 +155,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 8),
+              //Add this back once Neighbourhood Zones exist in the Admin Dashboard
+              /*const SizedBox(height: 8),
               TextFormField(
                 controller: _neighbourhoodController,
                 decoration: InputDecoration(
@@ -179,7 +180,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   }
                   return null;
                 },
-              ),
+              ), */
               const Spacer(),
               SizedBox(
                 width: double.infinity,
