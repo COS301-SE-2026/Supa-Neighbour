@@ -7,6 +7,29 @@ enum NotificationCategory {
   systemUpdate,
   achievement,
   taskComplete,
+  accountAlert, // NEW: warnings/suspensions/bans
+}
+
+/// Single source of truth for mapping a backend `type` string to a category.
+/// Used by both the push-tap handler and the notification list, so they
+/// can't drift apart like they had before.
+class NotificationTypeMapper {
+  static NotificationCategory categoryFromType(String? type) {
+    switch (type) {
+      case 'TASK_CREATED':
+      case 'TASK_START':
+        return NotificationCategory.newTask;
+      case 'POST_CREATED':
+      case 'POST_COMMENT':
+        return NotificationCategory.newBulletin;
+      case 'ACCOUNT_WARNING':
+      case 'ACCOUNT_SUSPENDED':
+      case 'ACCOUNT_BANNED':
+        return NotificationCategory.accountAlert;
+      default:
+        return NotificationCategory.systemUpdate;
+    }
+  }
 }
 
 class AppNotification {
@@ -16,6 +39,8 @@ class AppNotification {
   final String title;
   final String body;
   final bool isRead;
+  final String? type;     // raw backend type, e.g. 'TASK_START'
+  final String? entityId; // raw backend entityId, e.g. taskId/postId/reportId as string
 
   AppNotification({
     required this.id,
@@ -24,9 +49,24 @@ class AppNotification {
     required this.title,
     required this.body,
     this.isRead = false,
+    this.type,
+    this.entityId,
   });
 
-  // Create a copy with updated fields
+  factory AppNotification.fromJson(Map<String, dynamic> json) {
+    final type = json['type'] as String?;
+    return AppNotification(
+      id: json['notificationId'].toString(),
+      timestamp: DateTime.parse(json['createdAt'] as String),
+      category: NotificationTypeMapper.categoryFromType(type),
+      title: json['title'] as String? ?? '',
+      body: json['body'] as String? ?? '',
+      isRead: json['isRead'] as bool? ?? false,
+      type: type,
+      entityId: json['entityId'] as String?,
+    );
+  }
+
   AppNotification copyWith({
     String? id,
     DateTime? timestamp,
@@ -34,6 +74,8 @@ class AppNotification {
     String? title,
     String? body,
     bool? isRead,
+    String? type,
+    String? entityId,
   }) {
     return AppNotification(
       id: id ?? this.id,
@@ -42,6 +84,8 @@ class AppNotification {
       title: title ?? this.title,
       body: body ?? this.body,
       isRead: isRead ?? this.isRead,
+      type: type ?? this.type,
+      entityId: entityId ?? this.entityId,
     );
   }
 }
@@ -62,49 +106,44 @@ class NotificationCategoryStyle {
   factory NotificationCategoryStyle.fromCategory(NotificationCategory cat) {
     const tealColor = Color(0xFF2A9D8F);
     const tealBgColor = Color(0xFFE8F6F3);
-    
+    const alertColor = Color(0xFFD64545);
+    const alertBgColor = Color(0xFFFBEAEA);
+
     switch (cat) {
       case NotificationCategory.newTask:
         return NotificationCategoryStyle(
-          label: 'TASK',
-          color: tealColor,
-          bgColor: tealBgColor,
+          label: 'TASK', color: tealColor, bgColor: tealBgColor,
           icon: Icons.assignment_outlined,
         );
       case NotificationCategory.newChat:
         return NotificationCategoryStyle(
-          label: 'CHAT',
-          color: tealColor,
-          bgColor: tealBgColor,
+          label: 'CHAT', color: tealColor, bgColor: tealBgColor,
           icon: Icons.chat_bubble_outline,
         );
       case NotificationCategory.newBulletin:
         return NotificationCategoryStyle(
-          label: 'BULLETIN',
-          color: tealColor,
-          bgColor: tealBgColor,
+          label: 'BULLETIN', color: tealColor, bgColor: tealBgColor,
           icon: Icons.push_pin_outlined,
         );
       case NotificationCategory.systemUpdate:
         return NotificationCategoryStyle(
-          label: 'SYSTEM',
-          color: tealColor,
-          bgColor: tealBgColor,
+          label: 'SYSTEM', color: tealColor, bgColor: tealBgColor,
           icon: Icons.settings_outlined,
         );
       case NotificationCategory.achievement:
         return NotificationCategoryStyle(
-          label: 'ACHIEVEMENT',
-          color: tealColor,
-          bgColor: tealBgColor,
+          label: 'ACHIEVEMENT', color: tealColor, bgColor: tealBgColor,
           icon: Icons.emoji_events_outlined,
         );
       case NotificationCategory.taskComplete:
         return NotificationCategoryStyle(
-          label: 'COMPLETE',
-          color: tealColor,
-          bgColor: tealBgColor,
+          label: 'COMPLETE', color: tealColor, bgColor: tealBgColor,
           icon: Icons.check_circle_outline,
+        );
+      case NotificationCategory.accountAlert:
+        return NotificationCategoryStyle(
+          label: 'ACCOUNT', color: alertColor, bgColor: alertBgColor,
+          icon: Icons.warning_amber_outlined,
         );
     }
   }
