@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supa_neighbour/providers/service_providers.dart';
 import 'package:supa_neighbour/screens/profile/profile_screen.dart';
+import 'package:supa_neighbour/screens/profile/edit_profile_screen.dart' show EditUsernameScreen;
 import '../../mocks/mock_achievement_service.dart';
 import '../../mocks/mock_chat_service.dart';
 import '../../mocks/mock_profile_service.dart';
@@ -120,7 +121,7 @@ void main() {
 
         expect(find.text('Privacy Settings'), findsOneWidget);
         expect(find.text('Log Out'), findsOneWidget);
-        expect(find.text('Edit Profile'), findsOneWidget);
+        expect(find.text('Edit Username'), findsOneWidget);
       });
     });
 
@@ -319,21 +320,22 @@ void main() {
       });
     });
 
-    group('Edit Profile', () {
-      testWidgets('should show snackbar when Edit Profile is tapped', (tester) async {
-        await tester.binding.setSurfaceSize(const Size(800, 1000));
-        await tester.pumpWidget(buildTestableWidget());
-        await tester.pumpAndSettle(const Duration(seconds: 2));
+  group('Edit Username', () {
+    testWidgets('should navigate to edit username screen when Edit Username is tapped', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 1000));
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pumpAndSettle(const Duration(seconds: 2));
 
-        final editProfile = find.text('Edit Profile');
-        expect(editProfile, findsOneWidget);
+      final editUsername = find.text('Edit Username');
+      expect(editUsername, findsOneWidget);
 
-        await tester.tap(editProfile);
-        await tester.pumpAndSettle();
+      await tester.tap(editUsername);
+      await tester.pumpAndSettle();
 
-        expect(find.text('Edit Profile coming soon'), findsOneWidget);
-      });
+      // Verify navigation to edit username screen
+      expect(find.byType(EditUsernameScreen), findsOneWidget);
     });
+  });
 
     group('Error States', () {
       testWidgets('should show error message when profile fails to load', (tester) async {

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared/constants/constants.dart';
 import '../../models/report_model.dart';
+import '../../services/report_service.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -14,11 +15,13 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
-  String _selectedStatusFilter = 'All';
-  String _selectedSeverityFilter = 'All';
+  final ReportService _reportService = ReportService();
+  ReportStatus? _selectedStatusFilter;
+  ReportType? _selectedTypeFilter;
   String _searchQuery = '';
   List<Report> _reports = [];
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -27,33 +30,38 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _loadReports() async {
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 500));
     setState(() {
-      _reports = _getMockReports();
-      _isLoading = false;
+      _isLoading = true;
+      _errorMessage = null;
     });
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    try{
+      final reports = await _reportService.getAssignedReports(
+        status: _selectedStatusFilter,
+        reportType: _selectedTypeFilter,
+      );
+
+      setState(() {
+        _reports = reports;
+        _isLoading = false;
+      });
+    }on ReportServiceException catch(e){
+      setState(() {
+        _errorMessage = e.message;
+        _isLoading = false;
+      });
+    } catch (e){
+      setState(() {
+        _errorMessage = 'Failed to load reports';
+        _isLoading = false;
+      });
+    }
   }
 
   List<Report> _getFilteredReports() {
-    var filtered = _reports;
-
-    if (_selectedStatusFilter != 'All') {
-      filtered = filtered.where((r) => r.statusDisplay == _selectedStatusFilter).toList();
-    }
-
-    if (_selectedSeverityFilter != 'All') {
-      filtered = filtered.where((r) => r.severityDisplay == _selectedSeverityFilter).toList();
-    }
-
-    if (_searchQuery.isNotEmpty) {
-      filtered = filtered.where((r) =>
-        r.id.toString().contains(_searchQuery) ||
-        r.reporterName.toLowerCase().contains(_searchQuery.toLowerCase())
-      ).toList();
-    }
-
-    return filtered;
+    if (_searchQuery.isEmpty)  return _reports;
+    return _reports.where((r) => r.reportId.toString().contains(_searchQuery)).toList();
   }
 
   @override
@@ -92,20 +100,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            _buildFilterDropdown(
-              value: _selectedStatusFilter,
-              items: ['All', 'Submitted', 'In Review', 'Reviewed', 'Resolved'],
-              onChanged: (value) => setState(() => _selectedStatusFilter = value!),
-            ),
+            _buildTypeDropdown(),
             const SizedBox(width: 12),
-            _buildFilterDropdown(
-              value: _selectedSeverityFilter,
-              items: ['All', 'Minor', 'Moderate', 'Severe'],
-              onChanged: (value) => setState(() => _selectedSeverityFilter = value!),
-            ),
+            _buildTypeDropdown(),
           ],
         ),
         const SizedBox(height: 16),
+        if(_errorMessage != null) _buildErrorBanner(),
 
         // Report list
         Expanded(
@@ -121,6 +122,28 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     ),
         ),
       ],
+    );
+  }
+
+  Widget _buildErrorBanner() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              _errorMessage!,
+              style: const TextStyle(color: AppColors.error, fontSize: 13),
+            ),
+          ),
+          TextButton(onPressed: _loadReports, child: const Text('Retry')),
+        ],
+      ),
     );
   }
 
@@ -156,26 +179,64 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildFilterDropdown({
-    required String value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-  }) {
+  /*Widget _buildStatusDropdown() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.textGrey.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: DropdownButton<String>(
-        value: value,
-        items: items.map((item) {
-          return DropdownMenuItem(
-            value: item,
-            child: Text(item, style: GoogleFonts.openSans(fontSize: 13)),
-          );
-        }).toList(),
-        onChanged: onChanged,
+      child: DropdownButton<ReportStatus?>(
+        value: _selectedStatusFilter,
+        hint: Text('All statuses', style: GoogleFonts.openSans(fontSize: 13)),
+        items: [
+          DropdownMenuItem<ReportStatus?>(
+            value: null,
+            child: Text('All', style: GoogleFonts.openSans(fontSize: 13)),
+          ),
+          ...ReportStatus.values.where((s) => s != ReportStatus.unknown).map(
+                (s) => DropdownMenuItem<ReportStatus?>(
+                  value: s,
+                  child: Text(s.display, style: GoogleFonts.openSans(fontSize: 13)),
+                ),
+              ),
+        ],
+        onChanged: (value) {
+          setState(() => _selectedStatusFilter = value);
+          _loadReports();
+        },
+        underline: const SizedBox(),
+        icon: const Icon(Icons.arrow_drop_down, size: 20),
+      ),
+    );
+  }*/
+
+  Widget _buildTypeDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.textGrey.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButton<ReportType?>(
+        value: _selectedTypeFilter,
+        hint: Text('All types', style: GoogleFonts.openSans(fontSize: 13)),
+        items: [
+          DropdownMenuItem<ReportType?>(
+            value: null,
+            child: Text('All', style: GoogleFonts.openSans(fontSize: 13)),
+          ),
+          ...ReportType.values.where((t) => t != ReportType.unknown).map(
+                (t) => DropdownMenuItem<ReportType?>(
+                  value: t,
+                  child: Text(t.display, style: GoogleFonts.openSans(fontSize: 13)),
+                ),
+              ),
+        ],
+        onChanged: (value) {
+          setState(() => _selectedTypeFilter = value);
+          _loadReports();
+        },
         underline: const SizedBox(),
         icon: const Icon(Icons.arrow_drop_down, size: 20),
       ),
@@ -185,7 +246,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget _buildReportCard(BuildContext context, Report report) {
     return GestureDetector(
       onTap: () {
-        context.go('/reports/${report.id}');
+        context.go('/reports/${report.reportId}');
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -200,13 +261,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
               offset: const Offset(0, 2),
             ),
           ],
-          border: report.isUrgent
-              ? Border.all(color: AppColors.error, width: 2)
-              : null,
         ),
         child: Row(
           children: [
-            if (report.isUrgent)
+            /*if (report.isUrgent)
               Container(
                 width: 4,
                 height: 50,
@@ -215,8 +273,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-            if (report.isUrgent) const SizedBox(width: 12),
-
+            if (report.isUrgent) const SizedBox(width: 12),*/
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,7 +281,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   Row(
                     children: [
                       Text(
-                        '#${report.id}',
+                        '#${report.reportId}',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -239,7 +296,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          report.statusDisplay,
+                          report.status.display,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
@@ -255,11 +312,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          report.severityDisplay,
-                          style: TextStyle(
+                          report.reportType.display,
+                          style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: report.severityColor,
                           ),
                         ),
                       ),
@@ -267,7 +323,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    report.violationTypeDisplay,
+                    report.contentPreview,
                     style: GoogleFonts.openSans(
                       fontSize: 12,
                       color: AppColors.textGrey,
@@ -305,7 +361,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               children: [
                 TextButton(
                   onPressed: () {
-                    context.go('/reports/${report.id}');
+                    context.go('/reports/${report.reportId}');
                   },
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.primaryTeal,
@@ -315,7 +371,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 if (report.status != ReportStatus.resolved)
                   ElevatedButton(
                     onPressed: () {
-                      context.go('/reports/${report.id}');
+                      context.go('/reports/${report.reportId}');
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryTeal,
@@ -376,83 +432,5 @@ class _ReportsScreenState extends State<ReportsScreen> {
     } else {
       return 'Just now';
     }
-  }
-
-  List<Report> _getMockReports() {
-    return [
-      Report(
-        id: 102,
-        reportType: ReportType.user,
-        reporterUserId: 1,
-        reporterName: 'John Doe',
-        status: ReportStatus.submitted,
-        reportedUserId: 2,
-        reportedUserName: 'mike_helps',
-        reason: 'User posted abusive content targeting multiple community members.',
-        violationType: ViolationType.harassment,
-        severity: Severity.moderate,
-        suggestedAction: SuggestedAction.suspend7d,
-        createdAt: DateTime.now().subtract(const Duration(minutes: 2)),
-      ),
-      Report(
-        id: 101,
-        reportType: ReportType.post,
-        reporterUserId: 3,
-        reporterName: 'Sarah J.',
-        status: ReportStatus.submitted,
-        reportedPostId: 42,
-        postContent: 'Suspicious advertisement for cheap services...',
-        reason: 'Suspected spam/scam post.',
-        violationType: ViolationType.spamScam,
-        severity: Severity.minor,
-        suggestedAction: SuggestedAction.warning,
-        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-      ),
-      Report(
-        id: 100,
-        reportType: ReportType.comment,
-        reporterUserId: 4,
-        reporterName: 'Emily R.',
-        status: ReportStatus.assigned,
-        reportedCommentId: 31,
-        commentContent: 'I have your address saved...',
-        reason: 'Sharing personal information without consent.',
-        violationType: ViolationType.privacyViolation,
-        severity: Severity.severe,
-        suggestedAction: SuggestedAction.suspend30d,
-        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-      ),
-      Report(
-        id: 99,
-        reportType: ReportType.taskDispute,
-        reporterUserId: 5,
-        reporterName: 'Helper User',
-        status: ReportStatus.assigned,
-        taskId: 128,
-        taskTitle: 'Water Plants',
-        disputeReason: 'No-show',
-        reason: 'Helper accepted the task but never arrived.',
-        violationType: ViolationType.taskNoShow,
-        severity: Severity.moderate,
-        suggestedAction: SuggestedAction.suspend7d,
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      Report(
-        id: 98,
-        reportType: ReportType.user,
-        reporterUserId: 6,
-        reporterName: 'Anonymous',
-        status: ReportStatus.resolved,
-        reportedUserId: 7,
-        reportedUserName: 'user_456',
-        reason: 'User posted hate speech in multiple threads.',
-        violationType: ViolationType.hateSpeech,
-        severity: Severity.severe,
-        suggestedAction: SuggestedAction.ban,
-        actualAction: SuggestedAction.ban,
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        resolvedAt: DateTime.now().subtract(const Duration(hours: 4)),
-      ),
-    ];
   }
 }

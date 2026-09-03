@@ -1,7 +1,7 @@
 package com.app.api.controllers;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -64,7 +64,7 @@ public class SuggestionController {
      *         a 400 if the enum values are invalid or no rule exists for
      *         that pair, or a 401 if the Firebase token is invalid or expired
      */
-    @GetMapping
+    @PostMapping
     @Operation(
         summary = "Get suggested action for violation",
         description = "Returns the suggested action for a given violation type and severity. " +

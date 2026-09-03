@@ -5,158 +5,64 @@ import '../../constants/app_colors.dart';
 import '../../models/notification_model.dart';
 import '../profile/settings_screen.dart';
 import '../profile/achievements_screen.dart';
+import '../../services/notification_api_service.dart';
 
 // Provider for notifications
-final notificationsProvider = StateNotifierProvider<NotificationsNotifier, List<AppNotification>>((ref) {
-  return NotificationsNotifier();
+final notificationsApiServiceProvider = Provider<NotificationsApiService>((ref) {
+  return NotificationsApiService();
+});
+
+final notificationsProvider =
+    StateNotifierProvider<NotificationsNotifier, List<AppNotification>>((ref) {
+  return NotificationsNotifier(ref.read(notificationsApiServiceProvider));
 });
 
 class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
-  NotificationsNotifier() : super(_generateMockNotifications());
+  final NotificationsApiService _apiService;
 
-  static List<AppNotification> _generateMockNotifications() {
-    final now = DateTime.now();
-    return [
-      AppNotification(
-        id: '1',
-        timestamp: now.subtract(const Duration(minutes: 5)),
-        category: NotificationCategory.newTask,
-        title: 'Plant watering needed this weekend',
-        body: 'Sarah needs someone to water her indoor plants while she\'s away for 3 days.',
-        isRead: false,
-      ),
-      AppNotification(
-        id: '2',
-        timestamp: now.subtract(const Duration(hours: 2)),
-        category: NotificationCategory.newChat,
-        title: 'New message from Mike Johnson',
-        body: '"Thanks for helping with the bins yesterday! Really appreciate it."',
-        isRead: false,
-      ),
-      AppNotification(
-        id: '3',
-        timestamp: now.subtract(const Duration(hours: 4)),
-        category: NotificationCategory.newBulletin,
-        title: 'Community garden cleanup this Saturday',
-        body: 'Join us at 10 AM for the monthly neighbourhood garden maintenance session. All tools provided!',
-        isRead: false,
-      ),
-      AppNotification(
-        id: '4',
-        timestamp: now.subtract(const Duration(days: 1)),
-        category: NotificationCategory.achievement,
-        title: '🏆 New Achievement Unlocked!',
-        body: 'You\'ve completed 10 tasks! You\'re now a "Community Helper" - keep up the great work!',
-        isRead: true,
-      ),
-      AppNotification(
-        id: '5',
-        timestamp: now.subtract(const Duration(days: 1, hours: 3)),
-        category: NotificationCategory.systemUpdate,
-        title: 'App Updated to Version 2.4.0',
-        body: 'New achievements system and improved chat notifications are now live. Check out what\'s new!',
-        isRead: true,
-      ),
-      AppNotification(
-        id: '6',
-        timestamp: now.subtract(const Duration(days: 1, hours: 8)),
-        category: NotificationCategory.taskComplete,
-        title: 'Task Completed: Dog Walking',
-        body: 'Great job! Your task "Walk Max the Golden Retriever" has been marked as completed. +50 XP earned!',
-        isRead: true,
-      ),
-      AppNotification(
-        id: '7',
-        timestamp: now.subtract(const Duration(days: 2)),
-        category: NotificationCategory.newTask,
-        title: 'Grocery shopping assistance needed',
-        body: 'Emma is looking for someone to help with grocery shopping on Thursday afternoon.',
-        isRead: true,
-      ),
-      AppNotification(
-        id: '8',
-        timestamp: now.subtract(const Duration(days: 2, hours: 5)),
-        category: NotificationCategory.newChat,
-        title: 'New message from David Chen',
-        body: '"Are you available to help with tutoring this weekend?"',
-        isRead: true,
-      ),
-      AppNotification(
-        id: '9',
-        timestamp: now.subtract(const Duration(days: 3)),
-        category: NotificationCategory.newBulletin,
-        title: 'Neighbourhood watch meeting',
-        body: 'Monthly neighbourhood watch meeting will be held at the community center at 7 PM.',
-        isRead: true,
-      ),
-      AppNotification(
-        id: '10',
-        timestamp: now.subtract(const Duration(days: 4)),
-        category: NotificationCategory.achievement,
-        title: '🎉 5-Star Helper Rating',
-        body: 'You\'ve received your 10th 5-star rating! You\'re one of the most trusted helpers in the community.',
-        isRead: true,
-      ),
-      AppNotification(
-        id: '11',
-        timestamp: now.subtract(const Duration(days: 5)),
-        category: NotificationCategory.taskComplete,
-        title: 'Task Completed: Home Repair',
-        body: 'Your task "Fix kitchen faucet" has been completed. Thank you for being a helpful neighbour!',
-        isRead: true,
-      ),
-      AppNotification(
-        id: '12',
-        timestamp: now.subtract(const Duration(days: 6)),
-        category: NotificationCategory.systemUpdate,
-        title: 'New Features Available',
-        body: 'You can now add photos to task descriptions and track your achievements in the profile section.',
-        isRead: true,
-      ),
-      AppNotification(
-        id: '13',
-        timestamp: now.subtract(const Duration(days: 7)),
-        category: NotificationCategory.newTask,
-        title: 'Pet sitting needed for 2 days',
-        body: 'Looking for a responsible helper to take care of a friendly cat for the weekend.',
-        isRead: true,
-      ),
-      AppNotification(
-        id: '14',
-        timestamp: now.subtract(const Duration(days: 8)),
-        category: NotificationCategory.newChat,
-        title: 'New message from Lisa Park',
-        body: '"Thank you so much for helping with my plants! They look great."',
-        isRead: true,
-      ),
+  NotificationsNotifier(this._apiService) : super ([]){
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    try{
+      final notifications = await _apiService.fetchNotifications();
+      state = notifications;
+    }catch(e){
+      debugPrint('Failed to load notificatons : $e');
+    }
+  }
+
+  Future<void> refresh() => _loadNotifications();
+
+  void markAsRead(String id){
+   state = [
+      for (final n in state)
+        if (n.id == id) n.copyWith(isRead: true) else n
     ];
+    _apiService.markAsRead(id).catchError((e) {
+      debugPrint('Failed to persist read state for $id: $e');
+    });
   }
 
-  void markAsRead(String id) {
-    state = state.map((notification) {
-      if (notification.id == id) {
-        return notification.copyWith(isRead: true);
-      }
-      return notification;
-    }).toList();
+  void markAllAsRead(){
+    for (final n in state.where((n) => !n.isRead)) {
+      _apiService.markAsRead(n.id).catchError((e) {
+        debugPrint('Failed to persist read state for ${n.id}: $e');
+      });
+    }
+    state = [for (final n in state) n.copyWith(isRead: true)];
   }
 
-  void markAllAsRead() {
-    state = state.map((notification) {
-      return notification.copyWith(isRead: true);
-    }).toList();
+  void deleteNotification(String id){
+    state = state.where((n) => n.id != id).toList();
   }
 
-  void deleteNotification(String id) {
-    state = state.where((notification) => notification.id != id).toList();
-  }
-
-  void clearAll() {
+  void clearAll(){
     state = [];
   }
 
-  /// Add a new notification to the list (used for push notifications)
-  void addNotification(AppNotification notification) {
+  void addNotification(AppNotification  notification){
     state = [notification, ...state];
   }
 }
@@ -434,7 +340,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         Navigator.pop(context);
         break;
 
-      // REMOVED the default case since all enum values are covered
+      case NotificationCategory.accountAlert:
+        // TODO: route to a dedicated account-status screen once it exists.
+        // For now, stay on the notifications list (already open) — no-op.
+        break;
     }
   }
 }
