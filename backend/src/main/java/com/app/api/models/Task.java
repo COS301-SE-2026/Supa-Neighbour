@@ -59,6 +59,11 @@ public class Task {
     @Column(name = "start_date")
     private Date startDate;
 
+    /** The start time. */
+    @Column(name = "start_time")
+    private String startTime;
+
+
     /** The end date. */
     @Column(name = "end_date")
     private Date endDate;
@@ -96,6 +101,7 @@ public class Task {
     @JsonIgnore
     @OneToMany(mappedBy = "taskid", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TaskImage> images;
+
 
     /**
      * Default constructor required by JPA.
@@ -246,6 +252,23 @@ public class Task {
      */
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
+    }
+
+
+    /**
+     * Gets the expected start time.
+     * @return the start time as HH:mm:ss
+     */
+    public String getStartTime() {
+        return startTime;
+    }
+
+    /**
+     * Sets the expected start time.
+     * @param startTime the start time as HH:mm:ss
+     */
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
     }
 
     /**
