@@ -1,13 +1,11 @@
 package com.app.api.unit.services;
 
-import com.app.api.dtos.AdminDashboardDTO;
+
 import com.app.api.dtos.PatchReportDTO;
 import com.app.api.dtos.PatchReportResponseDTO;
-import com.app.api.dtos.ReportDTO;
-import com.app.api.dtos.ReportMatchResponseDTO;
 import com.app.api.dtos.ReportRequestDTO;
 import com.app.api.dtos.ReportResponseDTO;
-import com.app.api.models.Admin;
+
 import com.app.api.models.Comments;
 import com.app.api.models.Posts;
 import com.app.api.models.Report;
