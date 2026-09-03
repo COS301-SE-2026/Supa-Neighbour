@@ -138,6 +138,7 @@ Future<void> _submitTask() async {
             _selectDate.hour,
             _selectDate.minute,
           },
+          startTime: '${selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}:00',
           isImmediate: false,
           needsSpecialist: false,
           title: _titleController.text.trim(),
