@@ -595,4 +595,3 @@ public class ReportService {
         return new AdminDashboardDTO(assignedCount, reportsByType, completedCount, reviewedCount);
     }
 }
-
