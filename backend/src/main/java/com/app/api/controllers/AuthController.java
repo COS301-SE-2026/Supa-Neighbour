@@ -166,6 +166,7 @@ public class AuthController {
         user.setDateOfBirth(request.getDateOfBirth());
         user.setGender(request.getGender());
         user.setUserType(request.getUserType());
+        user.setIsAdmin(false);
 
         Ratings defaultRating = ratingsRepository.findById(DEFAULT_RATING_ID)
             .orElseThrow(() -> new RuntimeException("Default rating tier not found"));

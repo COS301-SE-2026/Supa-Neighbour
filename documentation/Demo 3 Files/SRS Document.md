@@ -661,5 +661,6 @@ Please refer to the file for the Domain model: [Domain Model](Images/SNR-Domain-
 | 1.0         | 2026-05-20 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Initial release for SupaNeighbour |
 | 2.0         | 2026-07-25 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Made changes to ensure it meets requirements for Demo 2 |
 | 3.0         | 2026-07-28 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Added table of contents and reviewed document structure |
+| 4.0 | 2026-09-03 | Blessing Gibendi | Blessing Gibendi | Added the NFR tests |
 |4.0     | 2026-09-03 | Michelle Njoroge | Blessing Gibendi (Team Lead) | Added Admin user stories for administration features and added Usability NFR|
 |5.0          | 2026-09-03 | Amantle Temo     | Blessing Gibendi (Team Lead) | Correct link to domain model and corrected numbering for R4 |
