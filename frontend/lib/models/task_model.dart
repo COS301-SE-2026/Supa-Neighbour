@@ -93,7 +93,7 @@ class Task {
     : _resolveCategoryName(json['taskTypeId'] as int?),
     category: _resolveCategoryName(json['taskTypeId'] as int?),
     date: startDate,
-    time: TimeOfDay(hour: startDate.hour, minute: startDate.minute),
+   time: _parseStartTime(json['startTime'] as String?) ?? TimeOfDay(hour: startDate.hour, minute: startDate.minute),
     xpReward: _resolveXpReward(json['taskTypeId'] as int?),
     instructions: json['instructions'] as String? ?? '',
     status: status,
@@ -505,6 +505,17 @@ class Task {
   static void deleteMockTask(String taskId) {
     _mockTasks.removeWhere((task) => task.id == taskId);
   }
+
+    static TimeOfDay? _parseStartTime(String? startTime) {
+    if (startTime == null) return null;
+    final parts = startTime.split(':');
+    if (parts.length < 2) return null;
+    return TimeOfDay(
+      hour: int.tryParse(parts[0]) ?? 0,
+      minute: int.tryParse(parts[1]) ?? 0,
+    );
+  }
+
   /////////////////////////////////////////////
   /////////////////////////////////////////////
 }

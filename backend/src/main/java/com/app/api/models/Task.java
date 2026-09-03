@@ -59,10 +59,9 @@ public class Task {
     @Column(name = "start_date")
     private Date startDate;
 
-    /** The start time. */
+    /** The expected start time. */
     @Column(name = "start_time")
-    private String startTime;
-
+    private java.time.LocalTime startTime;
 
     /** The end date. */
     @Column(name = "end_date")
@@ -259,7 +258,7 @@ public class Task {
      * Gets the expected start time.
      * @return the start time as HH:mm:ss
      */
-    public String getStartTime() {
+    public java.time.LocalTime getStartTime() {
         return startTime;
     }
 
@@ -267,7 +266,7 @@ public class Task {
      * Sets the expected start time.
      * @param startTime the start time as HH:mm:ss
      */
-    public void setStartTime(String startTime) {
+    public void setStartTime(java.time.LocalTime startTime) {
         this.startTime = startTime;
     }
 
