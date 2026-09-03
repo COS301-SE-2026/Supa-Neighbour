@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:supa_neighbour/providers/theme_mode_provider.dart';
 import 'package:supa_neighbour/screens/auth/splash_screen.dart';
 import '../../constants/app_colors.dart';
@@ -55,6 +56,123 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to sign you out. Please try again')),
+        );
+      }
+    }
+  }
+
+  Future<void> _sendPasswordResetEmail() async {
+    final email = fb.FirebaseAuth.instance.currentUser?.email;
+    if (email == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'No email associated with this account.',
+            style: GoogleFonts.openSans(),
+          ),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Change Password',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            color: AppColors.charcoal(context),
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'We\'ll send a password reset link to:',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              email,
+              style: GoogleFonts.openSans(
+                color: AppColors.primaryTeal(context),
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Check your inbox and follow the link to set a new password.',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryTeal(context),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: Text(
+              'Send Link',
+              style: GoogleFonts.openSans(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    try {
+      await fb.FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Reset link sent to $email. Check your inbox.',
+              style: GoogleFonts.openSans(),
+            ),
+            backgroundColor: AppColors.primaryTeal(context),
+          ),
+        );
+      }
+    } on fb.FirebaseAuthException catch (e) {
+      if (mounted) {
+        final message = e.code == 'invalid-email'
+            ? 'Invalid email address.'
+            : 'Failed to send reset link. Please try again.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message, style: GoogleFonts.openSans()),
+            backgroundColor: AppColors.error(context),
+          ),
         );
       }
     }
@@ -258,9 +376,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.lock_outline,
               title: 'Change Password',
               subtitle: 'Update your account password',
-              onTap: () {
-                // TODO: Navigate to change password
-              },
+              onTap: _sendPasswordResetEmail,
             ),
           ],
         ),
