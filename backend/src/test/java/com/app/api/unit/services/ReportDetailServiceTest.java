@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
-
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -167,29 +167,43 @@ public class ReportDetailServiceTest {
         PostSummaryDTO dto = (PostSummaryDTO) result;
     }
 
-    @Test
-    void resolveDetails_whenPostAuthorIsNull_returnPostSummary() {
-        
-        when(report.getReportType()).thenReturn("POST");
-        when(report.getReportedPostId()).thenReturn(1);
+@Test
+void resolveDetails_whenPostAuthorIsNull_returnPostSummary() {
 
-        when(postsRepository.findById(1)).thenReturn(Optional.of(post));
+    // Report information
+    when(report.getReportType()).thenReturn("POST");
+    when(report.getReportedPostId()).thenReturn(1);
 
-        when(post.getPostid()).thenReturn(1);
-        when(post.getPostContent()).thenReturn("test post");
-        when(post.getCategory()).thenReturn("GENERAL");
-        when(post.getMediaURL()).thenReturn(null);
-        when(post.getUserid()).thenReturn(null);
+    // Repository finds the post
+    when(postsRepository.findById(1))
+            .thenReturn(Optional.of(post));
 
-        Object result = reportDetailService.resolveDetails(report);
+    // Post information
+    when(post.getPostid()).thenReturn(1);
+    when(post.getPostContent()).thenReturn("Test post");
+    when(post.getCategory()).thenReturn("GENERAL");
+    when(post.getMediaURL()).thenReturn(null);
 
-        assertTrue(result instanceof PostSummaryDTO);
+    // IMPORTANT: author is null
+    when(post.getUserid()).thenReturn(null);
 
-        PostSummaryDTO dto =(PostSummaryDTO)result;
+    // Execute
+    Object result = reportDetailService.resolveDetails(report);
 
-        assertEquals(151, dto.getContentSnippet().length());
-        assertTrue(dto.getContentSnippet().endsWith("…"));
-    }
+    // Verify
+    
+    assertNotNull(result);
+    assertTrue(result instanceof PostSummaryDTO);
+
+    PostSummaryDTO dto = (PostSummaryDTO) result;
+
+    assertEquals(1, dto.getPostId());
+    assertEquals("Test post", dto.getContentSnippet());
+    assertEquals("GENERAL", dto.getCategory());
+    assertNull(dto.getAuthorUserId());
+
+    verify(postsRepository).findById(1);
+}
     //comments section 
 
     @Test
@@ -420,4 +434,19 @@ public class ReportDetailServiceTest {
         assertTrue(result instanceof PostSummaryDTO);
     }
 
+    @Test 
+    void resolveDetails_whenCommentContentIsNull_returnsCommentSummary() {
+        when(report.getReportType()).thenReturn("COMMENT");
+        when(report.getReportedCommentId()).thenReturn(5);
+
+        when(commentsRepository.findById(5)).thenReturn(Optional.of(comment));
+
+        when(comment.getCommentid()).thenReturn(5);
+        when(comment.getCommentContent()).thenReturn(null);
+        when(comment.getUserid()).thenReturn(null);
+        when(comment.getPostid()).thenReturn(null);
+
+        Object result = reportDetailService.resolveDetails(report);
+        assertTrue(result instanceof CommentSummaryDTO);
+    }
 }
