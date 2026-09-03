@@ -560,3 +560,4 @@ Please refer to the file for the Domain model: [Domain Model](/documentation/Dem
 | 1.0         | 2026-05-20 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Initial release for SupaNeighbour |
 | 2.0         | 2026-07-25 | Blessing Gibendi | Blessing Gibendi(Team Lead)  | Made changes to ensure it meets requirements for Demo 2|
 | 3.0         | 2026-07-28 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Added table of contents and reviewed document structure |
+| 4.0 | 2026-09-03 | Blessing Gibendi | Blessing Gibendi | Added the NFR tests |
