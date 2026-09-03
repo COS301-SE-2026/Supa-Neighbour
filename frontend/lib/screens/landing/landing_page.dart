@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../auth/auth_screen.dart';
 import '../style_guide/style_guide_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -18,6 +18,18 @@ class _LandingPageState extends State<LandingPage> {
   final GlobalKey _feature4Key = GlobalKey();
   final GlobalKey _feature5Key = GlobalKey();
 
+  static const String _apkDownloadUrl = 
+  'https://github.com/COS301-SE-2026/Supa-Neighbour/releases/download/latest-dev/supa-neighbour.apk';
+
+  Future<void> _downloadApk() async {
+    final uri = Uri.parse(_apkDownloadUrl);
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if(!launched && mounted){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open download link')),
+      );
+    }
+  }
   void _scrollToFeature(String feature) {
     GlobalKey targetKey;
     switch (feature) {
@@ -136,14 +148,7 @@ class _LandingPageState extends State<LandingPage> {
                   ],
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AuthScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: _downloadApk,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2A9D8F),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -259,14 +264,7 @@ class _LandingPageState extends State<LandingPage> {
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AuthScreen(),
-                          ),
-                        );
-                      },
+                      onPressed: _downloadApk,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2A9D8F),
                         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
@@ -380,14 +378,7 @@ class _LandingPageState extends State<LandingPage> {
         Row(
           children: [
             ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AuthScreen(),
-                  ),
-                );
-              },
+              onPressed: _downloadApk,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2A9D8F),
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
@@ -1059,14 +1050,7 @@ class _LandingPageState extends State<LandingPage> {
           ),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AuthScreen(),
-                ),
-              );
-            },
+            onPressed: _downloadApk,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
