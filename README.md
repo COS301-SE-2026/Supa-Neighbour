@@ -59,7 +59,7 @@ To install the app:
 2. Click the **Get Started** button to begin the download.
 3. Depending on your browser, you may see security warnings before the download completes (e.g. "This file can be harmful," or Windows SmartScreen/Google Safe Browsing prompts). This is expected for APKs downloaded outside the Play Store — click through the browser's warning to allow the download.
 4. Once downloaded, open the APK file on your Android device. You may need to enable **"Install from unknown sources"** in your device settings if prompted.
-5. Follow the on-screen instructions to complete installation.
+5. You may also reference the [User Manual](/documentation/Demo%203%20Files/SupaNeighbour_User_Manual_V3.pdf) for any questiona about the app and it's functionality
 
 ---
 
