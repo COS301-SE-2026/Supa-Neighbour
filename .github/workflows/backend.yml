@@ -114,7 +114,7 @@ jobs:
 
       - name: Install oasdiff
         run: |
-          curl -fsSL https://raw.githubusercontent.com/oasdiff/oasdiff/main/install.sh | sh
+          curl -fsSL https://raw.githubusercontent.com/oasdiff/oasdiff/main/install.sh | version=1.11.7 sh
 
       - name: Diff against committed baseline
         run: oasdiff breaking backend/openapi.yaml openapi-current.yaml --fail-on ERR
