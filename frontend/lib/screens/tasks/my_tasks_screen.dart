@@ -433,6 +433,7 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
     ),
     child: Row(
       children: [
+        // Category Icon Container
         Container(
           width: 50,
           height: 50,
@@ -447,10 +448,12 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
           ),
         ),
         const SizedBox(width: 12),
+        // Main Content - Expanded to take remaining space
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Task Title
               Text(
                 task.title,
                 style: GoogleFonts.poppins(
@@ -458,32 +461,40 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Row(
                 children: [
                   const Icon(Icons.category, size: 14, color: Color(0xFF2A9D8F)),
                   const SizedBox(width: 4),
-                  Text(
-                    task.category,
-                    style: GoogleFonts.openSans(
-                      color: AppColors.textGrey(context),
-                      fontSize: 12,
+                  Flexible(
+                    child: Text(
+                      task.category,
+                      style: GoogleFonts.openSans(
+                        color: AppColors.textGrey(context),
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   const SizedBox(width: 12),
                   const Icon(Icons.access_time, size: 14, color: Color(0xFF2A9D8F)),
                   const SizedBox(width: 4),
-                  Text(
-                    '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
-                    style: GoogleFonts.openSans(
-                     color: AppColors.textGrey(context),
-                     fontSize: 12,
+                  Flexible(
+                    child: Text(
+                      '${task.date.day}/${task.date.month} · ${task.time.format(context)}',
+                      style: GoogleFonts.openSans(
+                        color: AppColors.textGrey(context),
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 6),
+              // Status Badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
@@ -538,7 +549,6 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
     ),
   );
 }
-
 void _acceptTask(Task task) async {
   try {
     final taskService = ref.read(taskServiceProvider);
