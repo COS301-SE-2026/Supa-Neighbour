@@ -7,6 +7,7 @@ import '../../models/chat_thread.dart';
 import '../../constants/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import '../leaderboard/helper_profile_preview_screen.dart';
 
 class ChatDetailScreen extends ConsumerStatefulWidget {
   final ChatThread chat;
@@ -229,6 +230,26 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     return '$displayHour:$minute $ampm';
   }
 
+  void _navigateToProfile() {
+    final otherUserId = widget.chat.otherUserId;
+    if (otherUserId == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to view profile')),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HelperProfilePreviewScreen(
+          helperId: otherUserId,
+          isUserId: true,
+          showRequestButton: false,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -238,52 +259,55 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryTeal(context),
         elevation: 0,
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.white,
-              child: Text(
-                widget.chat.name[0],
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primaryTeal(context),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.chat.name,
-                  style: GoogleFonts.poppins(
+        title: GestureDetector(
+          onTap: _navigateToProfile,
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.white,
+                child: Text(
+                  widget.chat.name[0],
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.primaryTeal(context),
                   ),
                 ),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on,
-                      size: 12,
-                      color: Colors.white70,
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.chat.name,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
-                    const SizedBox(width: 2),
-                    Text(
-                      widget.chat.location,
-                      style: GoogleFonts.openSans(
-                        fontSize: 11,
+                  ),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        size: 12,
                         color: Colors.white70,
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                      const SizedBox(width: 2),
+                      Text(
+                        widget.chat.location,
+                        style: GoogleFonts.openSans(
+                          fontSize: 11,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         centerTitle: false,
         leading: IconButton(
@@ -292,6 +316,14 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onPressed: () {
+              // Optional: additional options
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
