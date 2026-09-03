@@ -11,6 +11,7 @@ import '../profile/privacy_settings_screen.dart';
 import '../help/help_menu_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import 'edit_profile_screen.dart' show EditUsernameScreen;
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -374,13 +375,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         const SizedBox(height: 12),
         OutlinedButton(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Edit Profile coming soon'),
-                duration: Duration(seconds: 1),
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EditUsernameScreen(profile: profile),
               ),
             );
+            if (result == true) {
+              _loadProfile(); // Refresh profile data
+            }
           },
           style: OutlinedButton.styleFrom(
             side: BorderSide(color: AppColors.primaryTeal(context)),
@@ -390,7 +394,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
           ),
           child: Text(
-            'Edit Profile',
+            'Edit Username',
             style: GoogleFonts.openSans(
               color: AppColors.primaryTeal(context),
               fontSize: 12,
@@ -815,7 +819,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             padding: const EdgeInsets.symmetric(vertical: 14),
           ),
           child: Text(
-            'Logout',
+            'Log Out',
             style: GoogleFonts.openSans(
               color: AppColors.error(context),
               fontSize: 16,
@@ -829,64 +833,56 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 }
 
   void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'Logout?',
-          style: GoogleFonts.poppins(
-            color: AppColors.charcoal(context),
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to logout?',
-          style: GoogleFonts.openSans(
-            color: AppColors.charcoal(context),
-            fontSize: 14,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.openSans(
-                color: AppColors.textGrey(context),
-                fontSize: 14,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _performLogout();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error(context),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Logout',
-              style: GoogleFonts.openSans(
-                color: Theme.of(context).brightness == Brightness.dark 
-              ? AppColors.surfaceGrey(context) 
-              : Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
       ),
-    );
-  }
+      title: Text(
+        'Log Out?',
+        style: GoogleFonts.poppins(
+          color: AppColors.charcoal(context),
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      content: Text(
+        'Are you sure you want to log out?',
+        style: GoogleFonts.openSans(
+          color: AppColors.charcoal(context),
+          fontSize: 14,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: Text(
+            'Cancel',
+            style: GoogleFonts.openSans(
+              color: AppColors.textGrey(context),
+              fontSize: 14,
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            Navigator.pop(dialogContext);
+            await _performLogout();
+          },
+          child: Text(
+            'Log Out',
+            style: GoogleFonts.openSans(
+              color: AppColors.error(context),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   Future<void> _performLogout() async{
     try{

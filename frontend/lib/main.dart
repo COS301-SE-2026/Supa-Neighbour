@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-//import 'screens/auth/splash_screen.dart';
+import 'screens/auth/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import 'firebase_options.dart';
 import 'providers/theme_mode_provider.dart'; 
 //import 'screens/style_guide/style_guide_page.dart';
 // one more change
-import 'screens/landing/landing_page.dart';
+//import 'screens/landing/landing_page.dart';
 import 'services/notification_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -48,8 +48,8 @@ class MyApp extends ConsumerWidget {
         fontFamily: 'Google Sans Flex',
         brightness: Brightness.dark,
       ),
-      //home: const SplashScreen(),
-      home: LandingPage(),
+      home: const SplashScreen(),
+      //home: LandingPage(),
     );
   }
 }

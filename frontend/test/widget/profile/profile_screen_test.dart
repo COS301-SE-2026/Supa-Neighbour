@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supa_neighbour/providers/service_providers.dart';
 import 'package:supa_neighbour/screens/profile/profile_screen.dart';
+import 'package:supa_neighbour/screens/profile/edit_profile_screen.dart' show EditUsernameScreen;
 import '../../mocks/mock_achievement_service.dart';
 import '../../mocks/mock_chat_service.dart';
 import '../../mocks/mock_profile_service.dart';
@@ -119,8 +120,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Privacy Settings'), findsOneWidget);
-        expect(find.text('Logout'), findsOneWidget);
-        expect(find.text('Edit Profile'), findsOneWidget);
+        expect(find.text('Log Out'), findsOneWidget);
+        expect(find.text('Edit Username'), findsOneWidget);
       });
     });
 
@@ -252,8 +253,8 @@ void main() {
       });
     });
 
-    group('Logout', () {
-      testWidgets('should show logout dialog when Logout is tapped', (tester) async {
+    group('Log Out', () {
+      testWidgets('should show logout dialog when Log Out is tapped', (tester) async {
         await tester.binding.setSurfaceSize(const Size(800, 1000));
         await tester.pumpWidget(buildTestableWidget());
         await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -262,14 +263,14 @@ void main() {
         await tester.drag(scrollable, const Offset(0, -500));
         await tester.pumpAndSettle();
 
-        final logoutButton = find.text('Logout').last;
+        final logoutButton = find.text('Log Out').last;
         expect(logoutButton, findsOneWidget);
 
         await tester.tap(logoutButton);
         await tester.pumpAndSettle();
 
-        expect(find.text('Logout?'), findsOneWidget);
-        expect(find.text('Are you sure you want to logout?'), findsOneWidget);
+        expect(find.text('Log Out?'), findsOneWidget);
+        expect(find.text('Are you sure you want to log out?'), findsOneWidget);
         expect(find.text('Cancel'), findsOneWidget);
       });
 
@@ -282,7 +283,7 @@ void main() {
         await tester.drag(scrollable, const Offset(0, -500));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Logout').last);
+        await tester.tap(find.text('Log Out').last);
         await tester.pumpAndSettle();
 
         final cancelButton = find.text('Cancel');
@@ -291,7 +292,7 @@ void main() {
         await tester.tap(cancelButton);
         await tester.pumpAndSettle();
 
-        expect(find.text('Logout?'), findsNothing);
+        expect(find.text('Log Out?'), findsNothing);
       });
 
       testWidgets('should navigate to splash screen when Logout is confirmed', (tester) async {
@@ -303,12 +304,12 @@ void main() {
         await tester.drag(scrollable, const Offset(0, -500));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Logout').last);
+        await tester.tap(find.text('Log Out').last);
         await tester.pumpAndSettle();
 
         final confirmLogout = find.descendant(
           of: find.byType(AlertDialog),
-          matching: find.text('Logout'),
+          matching: find.text('Log Out'),
         );
         expect(confirmLogout, findsOneWidget);
 
@@ -319,21 +320,22 @@ void main() {
       });
     });
 
-    group('Edit Profile', () {
-      testWidgets('should show snackbar when Edit Profile is tapped', (tester) async {
-        await tester.binding.setSurfaceSize(const Size(800, 1000));
-        await tester.pumpWidget(buildTestableWidget());
-        await tester.pumpAndSettle(const Duration(seconds: 2));
+  group('Edit Username', () {
+    testWidgets('should navigate to edit username screen when Edit Username is tapped', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 1000));
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pumpAndSettle(const Duration(seconds: 2));
 
-        final editProfile = find.text('Edit Profile');
-        expect(editProfile, findsOneWidget);
+      final editUsername = find.text('Edit Username');
+      expect(editUsername, findsOneWidget);
 
-        await tester.tap(editProfile);
-        await tester.pumpAndSettle();
+      await tester.tap(editUsername);
+      await tester.pumpAndSettle();
 
-        expect(find.text('Edit Profile coming soon'), findsOneWidget);
-      });
+      // Verify navigation to edit username screen
+      expect(find.byType(EditUsernameScreen), findsOneWidget);
     });
+  });
 
     group('Error States', () {
       testWidgets('should show error message when profile fails to load', (tester) async {
