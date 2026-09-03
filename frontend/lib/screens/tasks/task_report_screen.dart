@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../models/report_request.dart';
-import '../../services/report_service.dart';
+import '../../providers/service_providers.dart';
 
 class TaskReportScreen extends ConsumerStatefulWidget {
   final int taskId;
@@ -49,7 +49,7 @@ class _TaskReportScreenState extends ConsumerState<TaskReportScreen> {
         description: _descriptionController.text.trim(),
       );
 
-      final reportService = ReportService();
+      final reportService = ref.read(reportServiceProvider);
       await reportService.submitTaskReport(request);
 
       if (!mounted) return;
