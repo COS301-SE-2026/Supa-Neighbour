@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
+import 'dart:io';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
 
 class HelpMenuScreen extends StatefulWidget {
   const HelpMenuScreen({super.key});
@@ -345,15 +349,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
-            onPressed: () {
-              // TODO: Open User Manual (PDF or web page)
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('User Manual coming soon'),
-                  duration: Duration(seconds: 1),
-                ),
-              );
-            },
+            onPressed: () => _downloadUserManual(context),
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: AppColors.primaryTeal(context)),
               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -375,6 +371,31 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
     ),
   );
 }
+  Future<void> _downloadUserManual(BuildContext context) async {
+    final documentsDirectory = await getApplicationDocumentsDirectory();
+    final filePath = '${documentsDirectory.path}/SupaNeighbour_User_Manual_V3.pdf';
+    final file = File(filePath);
+
+    if (await file.exists()) {
+      await OpenFile.open(filePath);
+      return;
+    }
+
+    try {
+      final manualData = await rootBundle.load(
+        'assets/pdf/SupaNeighbour_User_Manual_V3.pdf',
+      );
+      await file.writeAsBytes(manualData.buffer.asUint8List());
+      await OpenFile.open(filePath);
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error opening user manual: $error'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
 
   Widget _buildSupportSection() {
     return Container(
