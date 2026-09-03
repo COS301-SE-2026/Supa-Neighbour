@@ -413,6 +413,88 @@ The system shall calculate a user's trust score as the average rating they have 
 - **AC 25.2:** The score is recalculated and updated when a new rating is added.
 - **AC 25.3:** The calculated trust score is displayed on the user's profile and used for matching purposes.
 
+
+
+## 6. Administration (R7)
+
+
+**US-R26: Admin Login**
+
+
+The system shall allow an administrator to securely log in to the admin dashboard using their credentials.
+
+
+**Acceptance Criteria**
+
+- **AC 26.1:** The system provides a dedicated admin login screen separate from the standard user login.
+- **AC 26.2:** The system authenticates the admin against stored credentials and verifies admin privileges.
+- **AC 26.3:** Upon successful authentication, the admin is redirected to the admin dashboard.
+- **AC 26.4:** The system returns a `403 Forbidden` error if a non-admin user attempts to access the dashboard.
+
+
+**US-R27: View Admin Dashboard**
+
+
+The system shall allow an administrator to view key platform metrics and recent activity on the dashboard.
+
+
+**Acceptance Criteria**
+
+- **AC 27.1:** The dashboard displays summary statistics including total reports, pending reports, and resolved reports.
+- **AC 27.2:** The dashboard shows a breakdown of reports by type (User, Post, Comment, Task Dispute).
+- **AC 27.3:** The dashboard displays the number of reports currently assigned to the logged-in admin.
+- **AC 27.4:** The dashboard highlights urgent or high-severity reports for immediate attention.
+
+
+**US-R28: View Reports List**
+
+
+The system shall allow an administrator to view all user-submitted reports.
+
+
+**Acceptance Criteria**
+
+- **AC 28.1:** The admin can view a list of all reports showing report type, status, severity, and submission date.
+- **AC 28.2:** The admin can filter reports by status (Submitted, Assigned, Reviewed, Resolved).
+- **AC 28.3:** The admin can filter reports by severity (Minor, Moderate, Severe).
+- **AC 28.4:** The admin can filter reports by type (User, Post, Comment, Task Dispute).
+- **AC 28.5:** The admin can search for reports by ID or reporter name.
+- **AC 28.6:** Urgent/severe reports are visually highlighted.
+
+
+**US-R29: View Report Details**
+
+
+The system shall allow an administrator to view the full details of a specific report.
+
+
+**Acceptance Criteria**
+
+- **AC 29.1:** The admin can view the report ID, type, status, and severity.
+- **AC 29.2:** The admin can view the reporter's information and the reported entity.
+- **AC 29.3:** The admin can view the reason for the report and any additional description.
+- **AC 29.4:** The admin can view the current assigned admin (if any).
+- **AC 29.5:** The admin can view the report's creation and resolution dates.
+
+
+**US-R30: Action a Report**
+
+
+The system shall allow an administrator to take action on a submitted report.
+
+
+**Acceptance Criteria**
+
+- **AC 30.1:** The admin can select a violation type from a predefined list (Harassment, Privacy Violation, Task No-Show, Inappropriate Content, etc.).
+- **AC 30.2:** The admin can select a severity level (Minor, Moderate, Severe).
+- **AC 30.3:** The system provides a suggested action based on the violation type and severity.
+- **AC 30.4:** The admin can accept the suggested action or override it with a different action.
+- **AC 30.5:** The admin can add notes explaining their decision.
+- **AC 30.6:** The admin can approve, dismiss, or escalate the report.
+- **AC 30.7:** The system records both the suggested action and the actual action taken.
+- **AC 30.8:** The system sends a notification to the affected user with the outcome.
+- **AC 30.9:** The report status is updated to "Resolved" once action is taken.
+
 # 4. Use cases
 
 ## 4.1 Use Cases
@@ -549,6 +631,25 @@ Maintainability is implemented through a containerized CI/CD pipeline (GitHub Ac
 Availability is supported by Azure's managed infrastructure — Postgres Flexible Server and App Service — which provide documented uptime SLAs, with scheduled maintenance windows communicated in advance and kept under 2 hours/month.
 
 
+## 6.4 Usability
+
+**Target:** A new user should be able to complete core tasks within 5 minutes of first using the system, with at least 85% user satisfaction during usability testing.
+
+Usability is achieved through a user-centered design approach, consistent UI patterns, and intuitive navigation. The mobile application follows a familiar bottom navigation bar pattern with clearly labelled tabs (Home, Tasks, Chat, Profile), making core functionality discoverable. Task creation and acceptance workflows are streamlined with minimal required inputs and clear visual feedback at each step.
+
+The admin dashboard follows a similar design philosophy with a collapsible sidebar, clear information hierarchy, and consistent interaction patterns. All interfaces use large fonts (minimum 14pt body text), high-contrast colour combinations (WCAG 2.1 AA compliant), and accessible touch targets (minimum 44pt) to support users of all ages and abilities.
+
+A Help Menu is available throughout the application, providing users with quick access to FAQs, user manual, and support contact information.
+
+**Usability Testing Plan:**
+
+| Metric | Method | Target |
+|--------|--------|--------|
+| Task Completion Rate | Moderated usability testing with 5-8 participants | > 90% |
+| Time on Task | Timed observation of core tasks | < 5 minutes |
+| User Satisfaction | System Usability Scale (SUS) questionnaire | Average score > 70 |
+| Error Recovery | Observation of user errors and recovery | < 5% abandonment rate |
+
 # 7. Domain Model
 
 Please refer to the file for the Domain model: [Domain Model](/documentation/Demo%203%20Files/Images/SNR-Domain-Model.drawio%20V3.png)
@@ -558,6 +659,7 @@ Please refer to the file for the Domain model: [Domain Model](/documentation/Dem
 | **Version** | **Date** | **Author** | **Approved By** | **Change Description** |
 |-------------|----------|------------|-----------------|--------------------------|
 | 1.0         | 2026-05-20 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Initial release for SupaNeighbour |
-| 2.0         | 2026-07-25 | Blessing Gibendi | Blessing Gibendi(Team Lead)  | Made changes to ensure it meets requirements for Demo 2|
+| 2.0         | 2026-07-25 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Made changes to ensure it meets requirements for Demo 2 |
 | 3.0         | 2026-07-28 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Added table of contents and reviewed document structure |
 | 4.0 | 2026-09-03 | Blessing Gibendi | Blessing Gibendi | Added the NFR tests |
+|4.0     | 2026-09-03 | Michelle Njoroge | Blessing Gibendi (Team Lead) | Added Admin user stories for administration features and added Usability NFR|

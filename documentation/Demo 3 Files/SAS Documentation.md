@@ -331,7 +331,7 @@ The `main` branch deploys automatically to the production environment via GitHub
 
 ### Deployment Diagram
 
-Please refer to this for the Deployment Diagram: [Deployment Diagram](../Demo%202%20Files/Images/DeploymentDiagram_.drawio.svg)
+Please refer to this for the Deployment Diagram: [Deployment Diagram](Images/DeplymentDiagram_v3.drawio.svg)
 
 ## 6. Quality Requirements to Architectural Decisions Mapping
 
@@ -358,3 +358,4 @@ Please refer to this for the Deployment Diagram: [Deployment Diagram](../Demo%20
 | QR-11  | DB-backed endpoints fail within ~5s when the database is unreachable, not 30s+           | HikariCP `connection-timeout` configuration                                                      | `docker stop` DB container + `curl` timing | <5s / TBD (config presence in `application-azure.yml` unverified; retest pending) |
 | QR-12  | Task creation does not silently fail to notify helpers when the matching service errors  | Event-driven matching via `ApplicationEventPublisher` + `@TransactionalEventListener(AFTER_COMMIT)` (planned refactor, same pattern as FCM) | Simulated 500 on `/match` endpoint     | 0 stranded tasks / currently fails — fire-and-forget gap confirmed, GitHub issue open |
 | QR-13  | System available 24/7, excluding ≤2 hours/month of scheduled maintenance                 | `/health` endpoint + external uptime monitoring                                                  | UptimeRobot                            | ≥99.9% / TBD (monitoring live since 2026-08-30; insufficient data window for a reportable figure yet) |
+| QR-14 | A new user should be able to complete core tasks within 5 minutes of first using the system, with at least 85% user satisfaction during usability testing | User-centered design approach; consistent UI patterns; intuitive navigation with bottom navigation bar and collapsible sidebar; Help Menu; WCAG 2.1 AA compliant (14pt body text, 44pt touch targets, high-contrast colours) | Moderated usability testing with 5-8 participants; Timed observation of core tasks; System Usability Scale (SUS) questionnaire | <5 min / TBD; SUS > 70 / TBD |

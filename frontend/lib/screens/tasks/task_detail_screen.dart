@@ -458,6 +458,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            if (widget.task.status == 'completed' || widget.task.status == 'pending_approval')
             Row(
               children: [
                 Expanded(

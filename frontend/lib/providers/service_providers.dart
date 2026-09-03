@@ -8,6 +8,7 @@ import '../services/helper_profile_service.dart';
 import '../services/settings_service.dart';
 import '../services/achievement_service.dart';
 import '../services/leaderboard_service.dart';
+import '../services/report_service.dart';
 
 // AUTH SERVICE PROVIDER
 final authServiceProvider = Provider<IAuthService>((ref) {
@@ -52,4 +53,9 @@ final helperProfileServiceProvider = Provider<IHelperProfileService>((ref) {
 // SETTINGS SERVICE PROVIDER
 final settingsServiceProvider = Provider<ISettingsService>((ref) {
   return SettingsService();
+});
+
+// REPORT SERVICE PROVIDER
+final reportServiceProvider = Provider<ReportService>((ref) {
+  return ReportService();
 });

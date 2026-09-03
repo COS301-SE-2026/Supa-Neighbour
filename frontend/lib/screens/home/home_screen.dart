@@ -15,12 +15,6 @@ import '../tasks/task_detail_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 import '../notifications/notifications_screen.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/services.dart';
-import '../../models/notification_model.dart';
-import 'package:dio/dio.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fb;
-
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -79,7 +73,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   double _trustScore = 0.0;
   bool _isLoadingStats = true;
   int _helpsGiven = 0;
-  bool _isSendingTestNotification = false;
 
   int? get _currentUserId {
     final id = AuthSession.instance.currentUser?.id;
@@ -136,212 +129,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     return 'Good evening';
   }
 
-  // ============ DEBUG METHODS ============
-
-  /// Show FCM token
-  Future<void> _showFcmToken() async {
-    try {
-      final token = await FirebaseMessaging.instance.getToken();
-      
-      if (token == null) {
-        _showInfoDialog(
-          title: ' No Token',
-          content: 'No FCM token found. Make sure you are logged in.',
-        );
-        return;
-      }
-      
-      _showInfoDialog(
-        title: '📱 FCM Token',
-        content: token,
-        isToken: true,
-      );
-    } catch (e) {
-      _showInfoDialog(
-        title: ' Error',
-        content: 'Failed to get FCM token: $e',
-      );
-    }
-  }
-
-  void _showInfoDialog({
-    required String title, 
-    required String content,
-    bool isToken = false,
-  }) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          title,
-          style: GoogleFonts.poppins(
-            color: AppColors.primaryTeal(context),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: SingleChildScrollView(
-          child: isToken
-              ? SelectableText(
-                  content,
-                  style: GoogleFonts.openSans(
-                    fontSize: 13,
-                    color: AppColors.charcoal(context),
-                  ),
-                )
-              : Text(
-                  content,
-                  style: GoogleFonts.openSans(
-                    fontSize: 14,
-                    color: AppColors.charcoal(context),
-                  ),
-                ),
-        ),
-        actions: [
-          if (isToken)
-            TextButton(
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: content));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Token copied to clipboard!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              child: Text(
-                'Copy',
-                style: GoogleFonts.openSans(
-                  color: AppColors.primaryTeal(context),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Close',
-              style: GoogleFonts.openSans(
-                color: AppColors.textGrey(context),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Send test notification via backend
-  Future<void> _sendTestNotification() async {
-    setState(() => _isSendingTestNotification = true);
-
-    try {
-      // Get FCM token
-      final token = await FirebaseMessaging.instance.getToken();
-      
-      if (token == null) {
-        _showInfoDialog(
-          title: ' Error',
-          content: 'No FCM token found. Please login again.',
-        );
-        setState(() => _isSendingTestNotification = false);
-        return;
-      }
-
-      // Get Firebase ID token
-      final user = fb.FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        _showInfoDialog(
-          title: ' Error',
-          content: 'No Firebase user found. Please login again.',
-        );
-        setState(() => _isSendingTestNotification = false);
-        return;
-      }
-
-      final idToken = await user.getIdToken();
-      if (idToken == null) {
-        _showInfoDialog(
-          title: ' Error',
-          content: 'Failed to get ID token.',
-        );
-        setState(() => _isSendingTestNotification = false);
-        return;
-      }
-
-      // Send notification via backend
-      final dio = Dio();
-      dio.options.baseUrl = 'http://localhost:8080';
-      dio.options.connectTimeout = const Duration(seconds: 10);
-      dio.options.receiveTimeout = const Duration(seconds: 10);
-
-      final response = await dio.post(
-        '/api/test/notification',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $idToken',
-            'Content-Type': 'application/json',
-          },
-        ),
-        data: {
-          'fcmToken': token,
-          'title': ' Test Notification',
-          'body': 'Supa Neighbour is working! 🎉',
-          'type': 'TASK_CREATED',
-          'entityId': '123',
-        },
-      );
-
-      setState(() => _isSendingTestNotification = false);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        _showInfoDialog(
-          title: ' Success!',
-          content: 'Test notification sent!\n\n'
-                   'Check your device:\n'
-                   '• Foreground: SnackBar appears\n'
-                   '• Background: System notification\n'
-                   '• Terminated: System notification',
-        );
-        
-        // Add to in-app list
-        final now = DateTime.now();
-        final testNotification = AppNotification(
-          id: now.millisecondsSinceEpoch.toString(),
-          timestamp: now,
-          category: NotificationCategory.newTask,
-          title: ' Test Notification',
-          body: 'Supa Neighbour is working! 🎉',
-          isRead: false,
-        );
-        ref.read(notificationsProvider.notifier).addNotification(testNotification);
-        
-      } else {
-        _showInfoDialog(
-          title: ' Error',
-          content: 'Backend returned: ${response.statusCode}',
-        );
-      }
-      
-    } catch (e) {
-      setState(() => _isSendingTestNotification = false);
-      
-      if (e.toString().contains('Connection refused')) {
-        _showInfoDialog(
-          title: ' Connection Error',
-          content: 'Make sure:\n\n'
-                   '1. Backend is running\n'
-                   '2. ADB reverse is set:\n'
-                   '   adb reverse tcp:8080 tcp:8080',
-        );
-      } else {
-        _showInfoDialog(
-          title: ' Error',
-          content: 'Failed: $e',
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     // Get the parent HomeScreen state to call changeTab
@@ -384,39 +171,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
               );
             },
           ),
-          //  DEBUG MENU
-          PopupMenuButton<String>(
-            icon: Icon(Icons.developer_mode, color: AppColors.primaryTeal(context)),
-            onSelected: (value) {
-              if (value == 'token') {
-                _showFcmToken();
-              } else if (value == 'test') {
-                _sendTestNotification();
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'token',
-                child: Row(
-                  children: [
-                    Icon(Icons.key, size: 20),
-                    SizedBox(width: 8),
-                    Text('Show FCM Token'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'test',
-                child: Row(
-                  children: [
-                    Icon(Icons.notifications_active, size: 20),
-                    SizedBox(width: 8),
-                    Text(' Test Notification'),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ],
       ),
       body: RefreshIndicator(
@@ -424,45 +178,23 @@ class _HomeContentState extends ConsumerState<HomeContent> {
          await  _loadNearbyTasks();
           return Future.value();
         },
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildWelcomeSection(),
-                  const SizedBox(height: 24),
-                  _buildStatsRow(),
-                  const SizedBox(height: 24),
-                  _buildNearbyTasksSection(context),
-                  const SizedBox(height: 12),
-                  _nearbyTasks.isEmpty && _availableTasks.isEmpty
-                      ? _buildEmptyState()
-                      : _buildNearbyTaskList(context),
-                  const SizedBox(height: 80),
-                ],
-              ),
-            ),
-            // Loading overlay when sending test notification
-            if (_isSendingTestNotification)
-              Container(
-                color: Colors.black.withOpacity(0.3),
-                child: const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(color: Colors.white),
-                      SizedBox(height: 16),
-                      Text(
-                        'Sending test notification...',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWelcomeSection(),
+              const SizedBox(height: 24),
+              _buildStatsRow(),
+              const SizedBox(height: 24),
+              _buildNearbyTasksSection(context),
+              const SizedBox(height: 12),
+              _nearbyTasks.isEmpty && _availableTasks.isEmpty
+                  ? _buildEmptyState()
+                  : _buildNearbyTaskList(context),
+              const SizedBox(height: 80),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(

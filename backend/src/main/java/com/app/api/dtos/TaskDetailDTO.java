@@ -35,6 +35,9 @@ public class TaskDetailDTO {
     /** The start date. */
     private Date startDate;
 
+    /** The expected start time. */
+    private java.time.LocalTime startTime;
+
     /** The end date. */
     private Date endDate;
 
@@ -221,6 +224,22 @@ public class TaskDetailDTO {
      */
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
+    }
+
+    /**
+     * Gets the expected start time.
+     * @return the start time
+     */
+    public java.time.LocalTime getStartTime() {
+        return startTime;
+    }
+
+    /**
+     * Sets the expected start time.
+     * @param startTime the start time
+     */
+    public void setStartTime(java.time.LocalTime startTime) {
+        this.startTime = startTime;
     }
 
     /**
