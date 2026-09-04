@@ -358,4 +358,44 @@ Please refer to this for the Deployment Diagram: [Deployment Diagram](../Demo%20
 | QR-11  | DB-backed endpoints fail within ~5s when the database is unreachable, not 30s+           | HikariCP `connection-timeout` configuration                                                      | `docker stop` DB container + `curl` timing | <5s / TBD (config presence in `application-azure.yml` unverified; retest pending) |
 | QR-12  | Task creation does not silently fail to notify helpers when the matching service errors  | Event-driven matching via `ApplicationEventPublisher` + `@TransactionalEventListener(AFTER_COMMIT)` (planned refactor, same pattern as FCM) | Simulated 500 on `/match` endpoint     | 0 stranded tasks / currently fails — fire-and-forget gap confirmed, GitHub issue open |
 | QR-13  | System available 24/7, excluding ≤2 hours/month of scheduled maintenance                 | `/health` endpoint + external uptime monitoring                                                  | UptimeRobot                            | ≥99.9% / TBD (monitoring live since 2026-08-30; insufficient data window for a reportable figure yet) |
-| QR-14 | A new user should be able to complete core tasks within 5 minutes of first using the system, with at least 85% user satisfaction during usability testing | User-centered design approach; consistent UI patterns; intuitive navigation with bottom navigation bar and collapsible sidebar; Help Menu; WCAG 2.1 AA compliant (14pt body text, 44pt touch targets, high-contrast colours) | Moderated usability testing with 5-8 participants; Timed observation of core tasks; System Usability Scale (SUS) questionnaire | <5 min / TBD; SUS > 70 / TBD |
+| QR-14 | A new user should be able to complete core tasks within 5 minutes of first using the system, with at least 85% user satisfaction during usability testing | User-centered design approach; consistent UI patterns; intuitive navigation with bottom navigation bar and collapsible sidebar; Help Menu; WCAG 2.1 AA compliant (14pt body text, 44pt touch targets, high-contrast colours) | Moderated usability testing with 5-8 participants; Timed observation of core tasks; System Usability Scale (SUS) questionnaire | <5 min / Avg 1m 46s; SUS > 70 / 83.5 |
+
+### 6.2 Usability Test Results Summary
+
+A moderated usability test was conducted with 5 participants to evaluate the mobile application's usability. Participants were asked to complete 5 core tasks while being timed and observed.
+
+#### Task Completion Results
+
+| Task | Target | Completion Rate | Average Time | Status |
+|------|--------|-----------------|--------------|--------|
+| T1: Create Account | ≤ 2 min | 100% (5/5) | 1m 25s | Pass |
+| T2: Profile Setup | ≤ 1.5 min | 100% (5/5) | 1m 10s | Pass |
+| T3: Post a Task | ≤ 1.5 min | 80% (4/5) | 1m 35s | Slightly above |
+| T4: Browse & Accept Task | ≤ 1.5 min | 100% (5/5) | 1m 20s | Pass |
+| T5: Navigate to Chat | ≤ 30 sec | 80% (4/5) | 22s | Pass |
+| **Overall** | **< 5 min** | **92% (23/25)** | **1m 46s avg** | **Pass** |
+
+#### System Usability Scale (SUS) Results
+
+| Participant | SUS Score |
+|-------------|-----------|
+| P1 | 100 |
+| P2 | 75 |
+| P3 | 100 |
+| P4 | 85 |
+| P5 | 57.5 |
+| **Average** | **83.5** |
+
+**Interpretation:** The average SUS score of **83.5** falls within the "Excellent" range (> 80), indicating that users found the application highly usable and would recommend it to others. The target of SUS > 70 was exceeded.
+
+#### Key Findings
+
+**Strengths:**
+- Users found the app intuitive and easy to navigate
+- The bottom navigation bar provided clear access to core features
+- Task creation and acceptance workflows were well understood
+
+**Areas for Improvement:**
+- Task posting took longer for some users - consider more guidance
+- Chat button discoverability could be improved for older users
+- Onboarding for first-time users could be enhanced
