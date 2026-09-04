@@ -331,7 +331,7 @@ The `main` branch deploys automatically to the production environment via GitHub
 
 ### Deployment Diagram
 
-Please refer to this for the Deployment Diagram: [Deployment Diagram](../Demo%202%20Files/Images/DeploymentDiagram_.drawio.svg)
+Please refer to this for the Deployment Diagram: [Deployment Diagram](Images/DeplymentDiagram_v3.drawio.svg)
 
 ## 6. Quality Requirements to Architectural Decisions Mapping
 

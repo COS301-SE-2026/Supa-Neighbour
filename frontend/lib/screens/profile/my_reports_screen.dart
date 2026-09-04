@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../models/report_dto.dart';
-import '../../services/report_service.dart';
+import '../../providers/service_providers.dart';
 
 class MyReportsScreen extends ConsumerStatefulWidget {
   const MyReportsScreen({super.key});
@@ -35,7 +35,7 @@ class _MyReportsScreenState extends ConsumerState<MyReportsScreen> {
     });
 
     try {
-      final reportService = ReportService();
+      final reportService = ref.read(reportServiceProvider);
       final status = _selectedStatus == 'All' ? null : _selectedStatus;
       final type = _selectedType == 'All' ? null : _selectedType;
 

@@ -22,6 +22,7 @@ abstract class ITaskService {
     required bool needsSpecialist,
     String? title,
     String? instructions,
+    String? startTime,
   });
 
   Future<Task> updateTask({
@@ -57,7 +58,7 @@ class TaskService implements ITaskService {
       : _dio = dio ??
             Dio(BaseOptions(
              // baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
-              baseUrl: 'http://localhost:8080',
+              baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               connectTimeout: const Duration(seconds: 10),// will update timeut if needed
               receiveTimeout: const Duration(seconds: 10),
             ));
@@ -132,6 +133,7 @@ class TaskService implements ITaskService {
     required bool needsSpecialist,
     String? title,
     String? instructions,
+    String? startTime,
   }) async {
     try {
       final token = await _getToken();
@@ -141,6 +143,7 @@ class TaskService implements ITaskService {
           'dependentId': dependentId,
           'taskTypeId': taskTypeId,
           'startDate': startDate.toIso8601String().split('T').first,
+          if(startTime != null ) 'startTime': startTime,
           'isImmediate': isImmediate,
           'needsSpecialist': needsSpecialist,
           'title': title,

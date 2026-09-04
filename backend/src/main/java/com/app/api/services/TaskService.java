@@ -244,6 +244,7 @@ public class TaskService {
         dto.setNeedsSpecialist(task.isNeedsSpecialist());
         dto.setSignedAdminId(task.getSignedAdminId());
         dto.setStartDate(task.getStartDate());
+        dto.setStartTime(task.getStartTime());
         dto.setEndDate(task.getEndDate());
         dto.setHelperBadgeId(task.getHelperBadgeId());
         dto.setDependentRatingId(task.getDependentRatingId());

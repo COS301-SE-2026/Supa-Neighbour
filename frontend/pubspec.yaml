@@ -42,6 +42,9 @@ dependencies:
   firebase_auth: ^6.6.1
   shared_preferences: ^2.3.2
   firebase_messaging: ^16.6.0
+  url_launcher: ^6.3.1
+  path_provider: ^2.1.2  # To get storage paths
+  open_file: ^3.4.1  # To open the downloaded file
 
   shared:
     path: ../shared
@@ -77,6 +80,7 @@ flutter:
     - assets/Logo.svg
     - assets/Logo.png
     - assets/screenshots/
+    - assets/pdf/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -39,7 +39,7 @@ class AuthService implements IAuthService {
       : _dio = dio ??
             Dio(BaseOptions(
               //baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
-              baseUrl: 'http://localhost:8080',
+              baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
             )),
@@ -102,20 +102,21 @@ class AuthService implements IAuthService {
   // ============ AUTH METHODS ============
 
   @override
-  Future<User> login(String email, String password) async {
+Future<User> login(String email, String password) async {
+  try {
     // sign in with fb
     final fb.UserCredential credential = await _firebaseAuth
         .signInWithEmailAndPassword(email: email, password: password);
 
     // get the id token of fb usr.
-    final String? idToken =
-        await credential.user?.getIdToken(false);
+    final String? idToken = await credential.user?.getIdToken(false);
 
     if (idToken == null) {
       throw Exception('Failed to retrieve Firebase ID token.');
     }
 
-    final Response<Map<String, dynamic>> res = await _dio.post(
+    // No generic type here — the error-path body is a plain string, not a Map
+    final Response res = await _dio.post(
       '/api/auth/login',
       options: Options(
         headers: {'Authorization': 'Bearer $idToken'},
@@ -124,11 +125,25 @@ class AuthService implements IAuthService {
 
     if (res.statusCode == 200 && res.data != null) {
       await _registerFcmToken();
-      return User.fromJson(res.data!);
+      return User.fromJson(res.data as Map<String, dynamic>);
     }
 
     throw Exception('Login failed: unexpected response from server.');
+  } on fb.FirebaseAuthException catch (e) {
+    throw Exception('Authentication failed: ${e.message}');
+  } on DioException catch (e) {
+    if (e.response != null) {
+      final data = e.response!.data;
+      final message = data is String && data.trim().isNotEmpty
+          ? data
+          : (e.response!.statusCode == 404
+              ? 'No account found for this user.'
+              : 'Login failed. Please try again.');
+      throw Exception(message);
+    }
+    throw Exception('Connection error: ${e.message}');
   }
+}
 
 @override
 Future<User> loginWithToken(String idToken) async {

@@ -555,11 +555,11 @@ The system shall encourage ongoing participation through gamification and build 
 - **R4.1.2** — The system must support helper progression levels (Bronze → Silver → Gold) based on accumulated XP.
 
 ### R4.2: The system shall provide community recognition features.
-- **R5.2.1** — The system must display a neighbourhood leaderboard showing helper rankings.
+- **R4.2.1** — The system must display a neighbourhood leaderboard showing helper rankings.
 
 ### R4.3: The system shall maintain a trust score for each user.
-- **R5.3.1** — The system must allow users to rate helpers after task completion.
-- **R5.3.2** — The system must calculate and display trust scores based on completed tasks and ratings received.
+- **R4.3.1** — The system must allow users to rate helpers after task completion.
+- **R4.3.2** — The system must calculate and display trust scores based on completed tasks and ratings received.
 
 ---
 
@@ -652,7 +652,7 @@ A Help Menu is available throughout the application, providing users with quick 
 
 # 7. Domain Model
 
-Please refer to the file for the Domain model: [Domain Model](/documentation/Demo%202%20Files/Images/SNR-Domain-Model.drawio.png)
+Please refer to the file for the Domain model: [Domain Model](Images/SNR-Domain-Model.drawio%20V3.png)
 
 ---
 
@@ -661,4 +661,6 @@ Please refer to the file for the Domain model: [Domain Model](/documentation/Dem
 | 1.0         | 2026-05-20 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Initial release for SupaNeighbour |
 | 2.0         | 2026-07-25 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Made changes to ensure it meets requirements for Demo 2 |
 | 3.0         | 2026-07-28 | Blessing Gibendi | Blessing Gibendi (Team Lead) | Added table of contents and reviewed document structure |
+| 4.0 | 2026-09-03 | Blessing Gibendi | Blessing Gibendi | Added the NFR tests |
 |4.0     | 2026-09-03 | Michelle Njoroge | Blessing Gibendi (Team Lead) | Added Admin user stories for administration features and added Usability NFR|
+|5.0          | 2026-09-03 | Amantle Temo     | Blessing Gibendi (Team Lead) | Correct link to domain model and corrected numbering for R4 |
