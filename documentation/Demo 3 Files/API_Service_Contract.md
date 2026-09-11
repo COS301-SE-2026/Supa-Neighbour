@@ -65,14 +65,22 @@
 9. [Admin & Reporting](#9--admin--reporting)
    - [9.1 POST /api/auth/admin/login](#91-post-apiauthadminlogin)
    - [9.2 GET /api/admin/dashboard](#92-get-apiadmindashboard)
-   - [9.3 GET /api/report](#94-get-apireport)
-   - [9.4 GET /api/suggestion](#95-get-apisuggestion)
-   - [9.5 PUT /api/report](#96-put-apireport)
-   - [9.6 PATCH /api/report](#97-patch-apireport)
-   - [9.7 PUT /api/user (deregister admin)](#98-put-apiuser-deregister-admin) 
-   - [9.8 GET /api/report/me](#99-get-apireportme)
-   - [9.9 POST /api/report/match](#910-post-apireportmatch)
-10.  [Http Status Code Reference](#8-http-status-code-reference)
+   - [9.3 GET /api/report](#93-get-apireport)
+   - [9.4 GET /api/suggestion](#94-get-apisuggestion)
+   - [9.5 PUT /api/report](#95-put-apireport)
+   - [9.6 PATCH /api/report](#96-patch-apireport)
+   - [9.7 PUT /api/user (deregister admin)](#97-put-apiuser-deregister-admin)
+   - [9.8 GET /api/report/me](#98-get-apireportme)
+   - [9.9 POST /api/report/match](#99-post-apireportmatch)
+
+10. [Admin Applications (to become an Admin)](#10-admin-applications)
+    - [10.1 POST /api/admin/applications](#101-post-apiadminapplications)
+    - [10.2 GET /api/admin/applications](#102-get-apiadminapplications)
+    - [10.3 GET /api/admin/applications/me](#103-get-apiadminapplicationsme)
+    - [10.4 PATCH /api/admin/applications/{applicationId}/approve](#104-patch-apiadminapplicationsapplicationidapprove)
+    - [10.5 PATCH /api/admin/applications/{applicationId}/reject](#105-patch-apiadminapplicationsapplicationidreject)
+11. [Http Status Code Reference](#11-http-status-code-reference)
+
 ---
 
 
@@ -2521,7 +2529,7 @@ Authorization: Bearer <Firebase ID Token>
 
 ---
 
-### 9.4 GET /api/report
+### 9.3 GET /api/report
 
 | Field | Details |
 |---|---|
@@ -2568,7 +2576,7 @@ Authorization: Bearer <Firebase ID Token>
 
 ---
 
-### 9.5 GET /api/suggestion
+### 9.4 GET /api/suggestion
 
 | Field | Details |
 |---|---|
@@ -2604,7 +2612,7 @@ Authorization: Bearer <Firebase ID Token>
 
 ---
 
-### 9.6 PUT /api/report
+### 9.5 PUT /api/report
 
 | Field | Details |
 |---|---|
@@ -2651,7 +2659,7 @@ Only the field(s) matching `reportType` should be populated — `reportedUserId`
 
 ---
 
-### 9.7 PATCH /api/report
+### 9.6 PATCH /api/report
 
 | Field | Details |
 |---|---|
@@ -2696,7 +2704,7 @@ Only the field(s) matching `reportType` should be populated — `reportedUserId`
 
 ---
 
-### 9.8 PUT /api/user (deregister admin)
+### 9.7 PUT /api/user (deregister admin)
 
 | Field | Details |
 |---|---|
@@ -2734,7 +2742,7 @@ Only the field(s) matching `reportType` should be populated — `reportedUserId`
 
 ---
 
-### 9.9 GET /api/report/me
+### 9.8 GET /api/report/me
  
 | Field | Details |
 |---|---|
@@ -2784,21 +2792,6 @@ Note: `actualAction` and `resolvedAt` are `null` while `status` is `submitted` o
 **Note on scope:** since this only returns reports where `reporter_user_id` matches the token's resolved user, there's no ownership check needed beyond that filter — same pattern as resolving ownership from the token rather than trusting a client-supplied ID, used elsewhere in the API.
 
 ---
-## 10. HTTP Status Code Reference
-
-
-| Code | Meaning | When used |
-|---|---|---|
-| `200 OK` | Request succeeded | Successful GET, PUT, PATCH |
-| `201 Created` | Resource created successfully | Successful POST |
-| `400 Bad Request` | Invalid input or field value | Validation failures |
-| `401 Unauthorized` | Missing or invalid JWT token | All protected endpoints |
-| `403 Forbidden` | Authenticated but not permitted | Accessing another user's data |
-| `404 Not Found` | Resource does not exist | Invalid IDs |
-| `409 Conflict` | Resource conflict | Duplicate accounts, invalid state transitions |
-| `422 Unprocessable Entity` | Missing required fields | Incomplete request bodies |
-| `500 Internal Server Error` | Unexpected server failure | All endpoints |
-
 
 ### 9.9 POST /api/report/match
 
@@ -2857,3 +2850,304 @@ Authorization: Bearer <Firebase ID Token>
 - An already-assigned report cannot be re-matched through this endpoint — use `PATCH /api/report` to update `adminId` manually if reassignment is needed.
 
 ---
+
+# 10. Admin Applications (to become an Admin)
+
+> Backing table: `admin_application_table` (application_id, user_id, application_status, application_date, reviewed_by_admin_id, reviewed_date, justification)
+> Renumber section headers (`9.x` used here as placeholder) to fit wherever this slots into the existing contract.
+
+---
+
+### 10.1 POST /api/admin/applications
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/admin/applications`                                               |
+| **Method**         | `POST`                                                                   |
+| **Purpose**        | Allows a normal user to apply to become an admin                        |
+| **Authentication** | Firebase ID Token required                                              |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+Content-Type: application/json
+```
+
+#### Request Body
+
+```json
+{
+  "justification": "I've been an active helper for 6 months and want to help moderate task disputes."
+}
+```
+
+| Field           | Type   | Required | Description                              |
+| ---------------- | ------ | -------- | ----------------------------------------- |
+| `justification`  | string | Yes      | Free-text reason for applying             |
+
+> `userId` is **not** accepted in the body — it's resolved server-side from the Firebase token (JWT → `user_id`), consistent with the "never trust client-supplied ownership IDs" rule.
+
+#### Success Response — `201 Created`
+
+```json
+{
+  "applicationId": 14,
+  "userId": 27,
+  "applicationStatus": "Pending",
+  "applicationDate": "2026-09-10",
+  "justification": "I've been an active helper for 6 months and want to help moderate task disputes."
+}
+```
+
+#### Error Responses
+
+| Status Code            | Scenario                                                  | Response Body                                  |
+| ----------------------- | ------------------------------------------------------------ | ------------------------------------------------- |
+| `401 Unauthorized`      | Missing or invalid Firebase ID token                         | `"Invalid Firebase Token"`                         |
+| `403 Forbidden`         | User is already an admin (row exists in `admin_table`)       | `"User is already an admin"`                       |
+| `409 Conflict`          | User already has a `Pending` application                     | `"An application is already pending for this user"` |
+
+#### Notes
+
+* **Open design question:** can a user re-apply after a `Rejected` outcome? If yes, does the new row create a fresh `application_id` (keeping history) or does the old row get reset? Recommend keeping history — insert a new row each time, only block on an existing `Pending` one.
+* Server must check `admin_table` for an existing row on this `user_id` before allowing the application, otherwise an existing admin could "apply" redundantly.
+
+---
+
+### 10.2 GET /api/admin/applications
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/admin/applications`                                               |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Retrieves all admin applications, for the super admin review page       |
+| **Authentication** | Firebase ID Token required — caller must resolve to an admin with `admin_access_level = 2` |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Query Parameters
+
+| Parameter | Type   | Required | Description                                                    |
+| --------- | ------ | -------- | ---------------------------------------------------------------- |
+| `status`  | string | No       | Filter by `Pending` / `Approved` / `Rejected`. Omit for all.    |
+
+#### Success Response — `200 OK`
+
+```json
+[
+  {
+    "applicationId": 14,
+    "userId": 27,
+    "username": "jane_doe",
+    "applicationStatus": "Pending",
+    "applicationDate": "2026-09-10",
+    "justification": "I've been an active helper for 6 months...",
+    "reviewedByAdminId": null,
+    "reviewedDate": null
+  }
+]
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                                                      | Response Body                        |
+| ------------------- | ------------------------------------------------------------- | --------------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token                           | `"Invalid Firebase Token"`              |
+| `403 Forbidden`     | Caller is authenticated but not a super admin (`access_level` != 2), or not an admin at all | `"Super admin access required"`         |
+
+#### Notes
+
+* Returned as a flat DTO (`AdminApplicationDTO`), not the raw entity — join in `user_table.user_username` for display so the frontend doesn't need a second lookup per row.
+* Access check must resolve the caller's tier server-side via JWT → `user_id` → `admin_table` row → `admin_access_level`. Never trust a client-supplied role/tier claim.
+
+---
+
+### 10.3 GET /api/admin/applications/me
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/admin/applications/me`                                            |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Retrieves the applications the calling user has made                    |
+| **Authentication** | Firebase ID Token required                                              |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Success Response — `200 OK`
+
+```json
+[
+  {
+    "applicationId": 14,
+    "applicationStatus": "Pending",
+    "applicationDate": "2026-09-10",
+    "justification": "I've been an active helper for 6 months...",
+    "reviewedDate": null
+  }
+]
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                             | Response Body                  |
+| ------------------- | --------------------------------------- | --------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token    | `"Invalid Firebase Token"`        |
+
+#### Notes
+
+* Scoped to the caller's own `user_id` resolved from the token — **no path/query `userId` parameter**, unlike 8.6/8.5's pattern. This one should *not* repeat that gap, since applications are personal and there's no reason another user's application list needs to be fetchable this way.
+* `reviewedByAdminId` deliberately omitted from this response — the applicant doesn't need to know which specific admin reviewed them, just the outcome and date.
+
+---
+
+### 10.4 PATCH /api/admin/applications/{applicationId}/approve
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/admin/applications/{applicationId}/approve`                       |
+| **Method**         | `PATCH`                                                                  |
+| **Purpose**        | Approves a pending admin application; provisions the applicant as an admin |
+| **Authentication** | Firebase ID Token required — caller must be a super admin (`admin_access_level = 2`) |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Path Parameters
+
+| Parameter        | Type | Description                       |
+| ------------------ | ---- | ------------------------------------ |
+| `applicationId`  | int  | ID of the application to approve   |
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "applicationId": 14,
+  "applicationStatus": "Approved",
+  "reviewedByAdminId": 2,
+  "reviewedDate": "2026-09-10",
+  "newAdminId": 11
+}
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                                                     | Response Body                        |
+| ------------------- | -------------------------------------------------------------- | --------------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token                            | `"Invalid Firebase Token"`              |
+| `403 Forbidden`     | Caller is not a super admin                                     | `"Super admin access required"`         |
+| `404 Not Found`     | No application with that ID                                     | `"Application not found"`               |
+| `409 Conflict`      | Application is not in `Pending` status (already reviewed)       | `"Application has already been reviewed"` |
+
+#### Notes
+
+* On approval, the backend must **atomically**: (1) update `admin_application_table` row to `Approved` with `reviewed_by_admin_id` + `reviewed_date`, and (2) insert a new `admin_table` row for the applicant's `user_id` with `admin_access_level = 1`. Wrap in a single `@Transactional` method — a partial write here (application marked approved but no `admin_table` row created) is a real bug class given the self-invocation issues already seen elsewhere in this codebase.
+* Approving always grants **tier 1** (normal admin). Promoting to tier 2 is a separate, explicit action — not exposed via this endpoint.
+* `reviewedByAdminId` in the response is the super admin's own `admin_id`, resolved server-side from their token — not client-supplied.
+
+---
+
+### 10.5 PATCH /api/admin/applications/{applicationId}/reject
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/admin/applications/{applicationId}/reject`                        |
+| **Method**         | `PATCH`                                                                  |
+| **Purpose**        | Rejects a pending admin application                                     |
+| **Authentication** | Firebase ID Token required — caller must be a super admin (`admin_access_level = 2`) |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+Content-Type: application/json
+```
+
+#### Path Parameters
+
+| Parameter        | Type | Description                       |
+| ------------------ | ---- | ------------------------------------ |
+| `applicationId`  | int  | ID of the application to reject    |
+
+#### Request Body
+
+```json
+{
+  "rejectionReason": "Insufficient activity history on the platform."
+}
+```
+
+| Field              | Type   | Required | Description                          |
+| -------------------- | ------ | -------- | --------------------------------------- |
+| `rejectionReason`  | string | No       | Optional note shown to the applicant  |
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "applicationId": 14,
+  "applicationStatus": "Rejected",
+  "reviewedByAdminId": 2,
+  "reviewedDate": "2026-09-10"
+}
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                                                     | Response Body                        |
+| ------------------- | ------------------------------------------------------------- | --------------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token                            | `"Invalid Firebase Token"`              |
+| `403 Forbidden`     | Caller is not a super admin                                     | `"Super admin access required"`         |
+| `404 Not Found`     | No application with that ID                                     | `"Application not found"`               |
+| `409 Conflict`      | Application is not in `Pending` status (already reviewed)       | `"Application has already been reviewed"` |
+
+#### Notes
+
+* **Open design question:** does `rejectionReason` need its own column on `admin_application_table`, or does it reuse `justification`? Right now `justification` is the *applicant's* text — overwriting it with the reviewer's reason would destroy the original submission. Recommend adding a separate `rejection_reason text` column rather than repurposing `justification`.
+* No `admin_table` row is touched on rejection — this endpoint only updates the application row.
+
+---
+
+## Cross-cutting notes for all five endpoints
+
+* All five should use the same access-check helper (resolve JWT → `user_id` → `admin_table` row → check `admin_access_level`), not duplicated inline logic per controller method — same pattern as the helper identity resolution already used elsewhere.
+* **10.2, 10.4, and 10.5** are the three endpoints that actually need the `access_level = 2` (super admin) gate. **10.1 and 10.3** only need "authenticated user," no admin tier at all.
+* None of these currently appear in `openapi-baseline.yaml` — will need `operationId` values added for each when they're implemented, per the existing OpenAPI contract enforcement gap already tracked.
+
+ ---
+
+
+
+## 11. HTTP Status Code Reference
+
+
+| Code | Meaning | When used |
+|---|---|---|
+| `200 OK` | Request succeeded | Successful GET, PUT, PATCH |
+| `201 Created` | Resource created successfully | Successful POST |
+| `400 Bad Request` | Invalid input or field value | Validation failures |
+| `401 Unauthorized` | Missing or invalid JWT token | All protected endpoints |
+| `403 Forbidden` | Authenticated but not permitted | Accessing another user's data |
+| `404 Not Found` | Resource does not exist | Invalid IDs |
+| `409 Conflict` | Resource conflict | Duplicate accounts, invalid state transitions |
+| `422 Unprocessable Entity` | Missing required fields | Incomplete request bodies |
+| `500 Internal Server Error` | Unexpected server failure | All endpoints |
+
+
