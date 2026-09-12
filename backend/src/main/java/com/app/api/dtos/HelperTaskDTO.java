@@ -39,7 +39,7 @@ public class HelperTaskDTO {
      * @param requesterName the name of the user who requested the task
      * @param requesterUserId the unique identifier of the user who requested the task
      */
-    public HelperTaskDTO(int taskId, String taskType, String status, String startDate, String endDate, Integer xpAwarded, String completionNote, String requesterName, Integer requesterUserId, List<String> completionPhotos){
+    public HelperTaskDTO(int taskId, String taskType, String status, String startDate, String endDate, Integer xpAwarded, String completionNote, String requesterName, Integer requesterUserId){
         this.taskId = taskId;
         this.taskType = taskType;
         this.status = status;
@@ -49,7 +49,6 @@ public class HelperTaskDTO {
         this.completionNote = completionNote;
         this.requesterName = requesterName;
         this.requesterUserId = requesterUserId;
-        this.completionPhotos = completionPhotos;
     }
 
     /**

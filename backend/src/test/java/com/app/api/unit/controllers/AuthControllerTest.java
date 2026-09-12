@@ -33,6 +33,7 @@ import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
 import com.app.api.models.Badges;
 import com.app.api.models.Dependent;
+import com.app.api.models.Helper;
 import com.app.api.models.HelperAnalytics;
 import com.app.api.models.Ratings;
 import com.app.api.models.Settings;
@@ -53,7 +54,6 @@ import com.app.api.services.ModerationActionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import com.app.api.models.Helper;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
@@ -371,7 +371,6 @@ void registerUser_WhenNewUser_ReturnsOkWithUser() throws Exception {
         when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.of(user));
         
         when(moderationActionService.isBanned(user)).thenReturn(true);
-        //when(moderationActionService.isSuspended(user)).thenReturn(false);
 
         mockMvc.perform(post("/api/auth/login")
                 .header("Authorization", BEARER_TOKEN)
