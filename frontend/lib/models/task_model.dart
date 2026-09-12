@@ -131,7 +131,7 @@ class Task {
       requesterName: json['requesterName'] as String?,
       helperName: null,
       completionNote: json['completionNote'] as String?,
-      completionPhotos: null,
+      completionPhotos: json['completionPhotos'] != null ? List<String>.from(json['completionPhotos'] as List) : null,
     );
 }
 

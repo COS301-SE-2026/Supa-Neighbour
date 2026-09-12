@@ -226,8 +226,8 @@ public class BlobStorageServiceTest {
         verify(postsContainerClient, never()).getBlobClient(anyString());
         }
 
-    @Test
-    void uploadImage_withNoExtensionInFilename_producesBlobNameWithoutExtension() throws IOException {
+        @Test
+        void uploadImage_withNoExtensionInFilename_producesBlobNameWithoutExtension() throws IOException {
     
     
         when(multipartFile.isEmpty()).thenReturn(false);
@@ -244,6 +244,20 @@ public class BlobStorageServiceTest {
         ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
         verify(postsContainerClient).getBlobClient(nameCaptor.capture());
         assertTrue(!nameCaptor.getValue().contains("."), "Blob name should not contain a dot when original filename has no extension");
+        }
+
+        
+        @Test
+        void uploadReportImage_usesReportsContainer() throws IOException {
+            stubValidJpegFile(100L);
+            when(reportsContainerClient.getBlobClient(anyString())).thenReturn(blobClient);
+            when(blobClient.getBlobUrl()).thenReturn("https://example.com/report.jpg");
+
+            String url = service.uploadReportImage(multipartFile);
+
+            assertEquals("https://example.com/report.jpg", url);
+            verify(reportsContainerClient).getBlobClient(anyString());
+            verify(postsContainerClient, never()).getBlobClient(anyString());
         }
     }
 

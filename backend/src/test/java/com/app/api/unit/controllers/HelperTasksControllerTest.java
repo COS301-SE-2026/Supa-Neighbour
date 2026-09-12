@@ -1,13 +1,16 @@
 package com.app.api.unit.controllers;
 
-import com.app.api.dtos.HelperTaskDTO;
-import com.app.api.dtos.HelperTaskResponse;
-import com.app.api.security.FirebaseAuthenticationFilter; // ASSUMPTION: adjust to your actual package if different
-import com.app.api.services.FirebaseAuthService;
-import com.app.api.services.HelperTasksService;
-import com.google.firebase.auth.FirebaseAuthException;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Test; // ASSUMPTION: adjust to your actual package if different
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,15 +18,18 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import com.app.api.controllers.HelperTaskController;
-
-
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.app.api.controllers.HelperTaskController;
+import com.app.api.dtos.HelperTaskDTO;
+import com.app.api.dtos.HelperTaskResponse;
+import com.app.api.security.FirebaseAuthenticationFilter;
+import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.HelperTasksService;
+import com.google.firebase.auth.FirebaseAuthException;
 
 @WebMvcTest(
     controllers = HelperTaskController.class,
@@ -33,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     )
 )
 @AutoConfigureMockMvc(addFilters = false)
-public class HelperTasksControllerTest {
+class HelperTasksControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
