@@ -23,6 +23,7 @@ azure:
     profiles-container: profiles
     task-images-container: task-images
     chat-images-container: chat-images
+    report-container: reports
 management:
   endpoint:
     health:

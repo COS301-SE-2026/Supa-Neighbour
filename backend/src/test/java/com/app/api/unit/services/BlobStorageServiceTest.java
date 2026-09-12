@@ -43,6 +43,9 @@ public class BlobStorageServiceTest {
         private BlobContainerClient profilesContainerClient;
 
         @Mock
+        private BlobContainerClient reportsContainerClient;
+
+        @Mock
         private BlobClient blobClient;
 
         @Mock
@@ -53,7 +56,13 @@ public class BlobStorageServiceTest {
 
         @BeforeEach
         void setUp() {
-            service = new BlobStorageService(postsContainerClient, taskImagesContainerClient, chatImagesContainerClient, profilesContainerClient);
+            service = new BlobStorageService(
+                    postsContainerClient,
+                    taskImagesContainerClient,
+                    chatImagesContainerClient,
+                    profilesContainerClient,
+                    reportsContainerClient
+            );
         }
 
     private void stubValidJpegFile(long size) throws IOException {

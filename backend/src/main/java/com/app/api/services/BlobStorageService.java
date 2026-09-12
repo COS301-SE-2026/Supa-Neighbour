@@ -35,6 +35,7 @@ public class BlobStorageService {
     private final BlobContainerClient taskImagesContainerClient;
     private final BlobContainerClient chatImagesContainerClient;
     private final BlobContainerClient profilesContainerClient;
+    private final BlobContainerClient reportsContainerClient;
 
     /**
      * Constructs a new {@code BlobStorageService}.
@@ -46,12 +47,14 @@ public class BlobStorageService {
             @Qualifier("postsContainerClient") BlobContainerClient postsContainerClient,
             @Qualifier("taskImagesContainerClient") BlobContainerClient taskImagesContainerClient,
             @Qualifier("chatImagesContainerClient") BlobContainerClient chatImagesContainerClient,
-            @Qualifier("profilesContainerClient") BlobContainerClient profilesContainerClient
+            @Qualifier("profilesContainerClient") BlobContainerClient profilesContainerClient,
+            @Qualifier("reportsContainerClient") BlobContainerClient reportsContainerClient
         ){
         this.postsContainerClient = postsContainerClient;
         this.taskImagesContainerClient = taskImagesContainerClient;
         this.chatImagesContainerClient = chatImagesContainerClient;
         this.profilesContainerClient = profilesContainerClient;
+        this.reportsContainerClient = reportsContainerClient;
     }
 
     /**
@@ -106,6 +109,17 @@ public class BlobStorageService {
     public String uploadProfileImage(MultipartFile file) throws IOException{
         return uploadImage(file, profilesContainerClient);
     }
+
+    /** * Uploads a profile image to the profiles container.
+     *  @param file the profile image to upload 
+     * @return the URL of the uploaded profile image 
+     * @throws IOException if an error occurs while reading or uploading the file 
+     */
+    public String uploadReportImage(MultipartFile file) throws IOException{
+        return uploadImage(file, reportsContainerClient);
+    }
+
+
 
     /** Validates and uploads an image file to the specified Azure Blob Storage container. 
      * A unique blob name is generated using a UUID while preserving * the file's original extension. 

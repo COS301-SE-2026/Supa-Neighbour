@@ -239,4 +239,26 @@ public class ImageUploadController {
             return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occured. Please try again"));
         }
     }
+
+
+    /**
+     * Uploads a report image and returns its stored URL.
+     *
+     * @param file the image file to upload (JPEG, PNG, or GIF)
+     * @return 201 with the image URL, 400 if the file is invalid, or 500 on upload failure
+     */
+    @PostMapping("/report/image")
+    public ResponseEntity<?> uploadReportImage(
+        @Parameter(description = "The image file to upload (JPEG, PNG, or GIF)", required = true)
+        @RequestParam("file") MultipartFile file
+    ){
+        try{
+            String imageUrl = blobStorageService.uploadReportImage(file);
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("imageUrl", imageUrl));
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }catch(IOException e){
+            return ResponseEntity.internalServerError().body(Map.of("error", "An unexpected error occured. Please try again"));
+        }
+    }
 }
