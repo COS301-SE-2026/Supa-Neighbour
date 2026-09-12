@@ -7,4 +7,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AdminApplicationRepository extends JpaRepository<AdminApplication, Integer> {
 
+    /**
+     * Find all applications submitted by a specific user, most recent first.
+     *
+     * @param user the user who submitted the applications
+     * @return list of the user's applications
+     */
+    List<AdminApplication> findByUserOrderByApplicationDateDesc(User user);
 }
