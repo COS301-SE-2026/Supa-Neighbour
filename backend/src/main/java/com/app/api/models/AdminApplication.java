@@ -11,6 +11,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 
+import com.google.auto.value.AutoValue.Builder;
+
+@Data
+@Builder
 @Entity
 @Table(name = "admin_application_table")
 public class AdminApplication {
