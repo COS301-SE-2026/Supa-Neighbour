@@ -1,7 +1,7 @@
 package com.app.api.services;
 
 import com.app.api.dtos.AchievementDTO;
-import com.app.api.dtos.AchievementResponse;
+import com.app.api.dtos.AchievementResponseDTO;
 import com.app.api.repositories.AchievementRepository;
 import org.springframework.stereotype.Service;
  
@@ -33,10 +33,10 @@ public class AchievementService {
      * completion.</p>
      *
      * @param userId the identifier of the user whose achievements are requested
-     * @return an {@link AchievementResponse} containing the user's earned
+     * @return an {@link AchievementResponseDTO} containing the user's earned
      *         and unearned achievements
      */
-    public AchievementResponse getAchievements(int userId){
+    public AchievementResponseDTO getAchievements(int userId){
         List<AchievementDTO> earned = achievementRepository.findEarned(userId)
                 .stream()
                 .map(row -> new AchievementDTO(
@@ -57,6 +57,6 @@ public class AchievementService {
                 ((Number) row[4]).intValue()
             )).toList();
 
-        return new AchievementResponse(earned, unearned);
+        return new AchievementResponseDTO(earned, unearned);
     }
 }

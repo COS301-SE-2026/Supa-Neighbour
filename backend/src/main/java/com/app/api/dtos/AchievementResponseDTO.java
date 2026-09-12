@@ -7,7 +7,7 @@ import java.util.List;
  * <p>The response contains two collections: achievements that have
  * already been earned and achievements that are still in progress.</p>
  */
-public class AchievementResponse {
+public class AchievementResponseDTO {
     private List<AchievementDTO> earned;
     private List<AchievementDTO> unearned;
 
@@ -17,7 +17,7 @@ public class AchievementResponse {
      * @param earned the list of achievements earned by the user
      * @param unearned the list of achievements the user has not yet earned
      */
-    public AchievementResponse(List<AchievementDTO> earned, List<AchievementDTO> unearned){
+    public AchievementResponseDTO(List<AchievementDTO> earned, List<AchievementDTO> unearned){
         this.earned = earned;
         this.unearned = unearned;
     }

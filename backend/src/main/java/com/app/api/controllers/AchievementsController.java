@@ -1,6 +1,6 @@
 package com.app.api.controllers;
 
-import com.app.api.dtos.AchievementResponse;
+import com.app.api.dtos.AchievementResponseDTO;
 import com.app.api.services.AchievementService;
 import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -68,7 +68,7 @@ public class AchievementsController {
             description = "Successfully retrieved user achievements",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = AchievementResponse.class),
+                schema = @Schema(implementation = AchievementResponseDTO.class),
                 examples = @ExampleObject(
                     name = "Achievements Response",
                     value = """
@@ -105,7 +105,7 @@ public class AchievementsController {
         try{
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
-            AchievementResponse response = achievementService.getAchievements(userId);
+            AchievementResponseDTO response = achievementService.getAchievements(userId);
             return ResponseEntity.ok(response);
         } catch (FirebaseAuthException e) {
             return ResponseEntity.status(401).body("Invalid or expired Firebase token");

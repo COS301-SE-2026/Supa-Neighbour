@@ -2,7 +2,7 @@ package com.app.api.unit.controllers;
 
 import com.app.api.controllers.AchievementsController;
 import com.app.api.dtos.AchievementDTO;
-import com.app.api.dtos.AchievementResponse;
+import com.app.api.dtos.AchievementResponseDTO;
 import com.app.api.repositories.UserRepository;
 import com.app.api.services.AchievementService;
 import com.app.api.services.FirebaseAuthService;
@@ -71,7 +71,7 @@ public class AchievementControllerTest {
             );
             unearned.setProgress("18/25");
 
-            AchievementResponse mockResponse = new AchievementResponse(
+            AchievementResponseDTO mockResponse = new AchievementResponseDTO(
                     List.of(earned), List.of(unearned)
             );
 
@@ -101,7 +101,7 @@ public class AchievementControllerTest {
         void getAchievements_noAchivementsYet_returnsEmptyLists() throws Exception{
             
             when(firebaseAuthService.getUserIdFromToken(VALID_TOKEN)).thenReturn(USER_ID);
-            when(achievementService.getAchievements(USER_ID)).thenReturn(new AchievementResponse(List.of(), List.of()));
+            when(achievementService.getAchievements(USER_ID)).thenReturn(new AchievementResponseDTO(List.of(), List.of()));
 
             
             mockMvc.perform(get("/api/users/me/achievements").header("Authorization", AUTH_HEADER))

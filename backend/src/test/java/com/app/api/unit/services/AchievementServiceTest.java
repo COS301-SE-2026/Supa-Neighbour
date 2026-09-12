@@ -1,7 +1,7 @@
 package com.app.api.unit.services;
 
 import com.app.api.dtos.AchievementDTO;
-import com.app.api.dtos.AchievementResponse;
+import com.app.api.dtos.AchievementResponseDTO;
 import com.app.api.repositories.AchievementRepository;
 import com.app.api.services.AchievementService;
 
@@ -37,7 +37,7 @@ public class AchievementServiceTest {
         when(achievementRepository.findEarned(USER_ID)).thenReturn(earnedList);
         when(achievementRepository.findUnearned(USER_ID)).thenReturn(List.of());
 
-        AchievementResponse response = achievementService.getAchievements(USER_ID);
+        AchievementResponseDTO response = achievementService.getAchievements(USER_ID);
 
         assertThat(response.getEarned()).hasSize(1);
         AchievementDTO dto = response.getEarned().get(0);
@@ -56,7 +56,7 @@ public class AchievementServiceTest {
 
         when(achievementRepository.findEarned(USER_ID)).thenReturn(earnedList);//
 
-        AchievementResponse response = achievementService.getAchievements(USER_ID);
+        AchievementResponseDTO response = achievementService.getAchievements(USER_ID);
 
         assertThat(response.getEarned().get(0).getAwardedOn()).isNull();
     }
@@ -69,7 +69,7 @@ public class AchievementServiceTest {
         when(achievementRepository.findEarned(USER_ID)).thenReturn(List.of());
         when(achievementRepository.findUnearned(USER_ID)).thenReturn(unearnedList);//
 
-        AchievementResponse response = achievementService.getAchievements(USER_ID);
+        AchievementResponseDTO response = achievementService.getAchievements(USER_ID);
 
         assertThat(response.getUnearned()).hasSize(1);
         AchievementDTO dto = response.getUnearned().get(0);
@@ -85,7 +85,7 @@ public class AchievementServiceTest {
         when(achievementRepository.findEarned(USER_ID)).thenReturn(List.of());
         when(achievementRepository.findUnearned(USER_ID)).thenReturn(List.of());
 
-        AchievementResponse response = achievementService.getAchievements(USER_ID);
+        AchievementResponseDTO response = achievementService.getAchievements(USER_ID);
 
         assertThat(response.getEarned()).isEmpty();
         assertThat(response.getUnearned()).isEmpty();
@@ -100,7 +100,7 @@ public class AchievementServiceTest {
 
         when(achievementRepository.findEarned(USER_ID)).thenReturn(List.of(earned1, earned2));
         when(achievementRepository.findUnearned(USER_ID)).thenReturn(unearnedList);//
-        AchievementResponse response = achievementService.getAchievements(USER_ID);
+        AchievementResponseDTO response = achievementService.getAchievements(USER_ID);
 
         assertThat(response.getEarned()).extracting(AchievementDTO::getBadgeId).containsExactly(1, 3);
         assertThat(response.getUnearned()).extracting(AchievementDTO::getBadgeId).contains(2);
