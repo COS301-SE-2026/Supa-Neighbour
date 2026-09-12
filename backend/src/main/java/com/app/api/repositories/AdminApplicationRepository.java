@@ -17,4 +17,19 @@ public interface AdminApplicationRepository extends JpaRepository<AdminApplicati
      * @return list of the user's applications
      */
     List<AdminApplication> findByUserOrderByApplicationDateDesc(User user);
+
+    /**
+     * Find all applications, most recent first.
+     *
+     * @return list of all applications
+     */
+    List<AdminApplication> findAllByOrderByApplicationDateDesc();
+
+    /**
+     * Find all applications with a specific status, most recent first.
+     *  
+     * @param status the status of the applications to find
+     * @return list of applications with the specified status
+     */
+    List<AdminApplication> findByApplicationStatusOrderByApplicationDateDesc(String status);
 }

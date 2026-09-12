@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Param;
+
 
 /**
  * Repository for Admin entities.
@@ -27,5 +29,16 @@ public interface AdminRepository extends JpaRepository<Admin, Integer> {
             LIMIT 1
             """, nativeQuery = true)
     Optional<Admin> findAdminWithLeastAssignedReports();
+
+    
+    /**
+     * Returns the admin associated with the given user ID.
+     * 
+     * @param userId the user ID of the admin
+     * @return an Optional containing the admin if found, or empty if not found
+     */
+    @Query("SELECT a FROM Admin a WHERE a.userid.userid = :userId")
+    Optional<Admin> findByUserId(@Param("userId") int userId);
+
 }
 
