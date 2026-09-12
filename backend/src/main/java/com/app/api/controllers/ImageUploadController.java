@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -248,6 +249,18 @@ public class ImageUploadController {
      * @return 201 with the image URL, 400 if the file is invalid, or 500 on upload failure
      */
     @PostMapping("/report/image")
+    @Operation(
+        summary = "Upload a report image",
+        description = "Uploads a report image (JPEG, PNG, or GIF) and returns its stored URL.",
+        responses = {
+            @ApiResponse(responseCode = "201", description = "Image uploaded successfully",
+                content = @Content(schema = @Schema(example = "{\"imageUrl\": \"https://...\"}"))),
+            @ApiResponse(responseCode = "400", description = "Invalid file",
+                content = @Content(schema = @Schema(example = "{\"error\": \"...\"}"))),
+            @ApiResponse(responseCode = "500", description = "Unexpected upload error",
+                content = @Content(schema = @Schema(example = "{\"error\": \"An unexpected error occured. Please try again\"}")))
+        }
+    )
     public ResponseEntity<?> uploadReportImage(
         @Parameter(description = "The image file to upload (JPEG, PNG, or GIF)", required = true)
         @RequestParam("file") MultipartFile file
