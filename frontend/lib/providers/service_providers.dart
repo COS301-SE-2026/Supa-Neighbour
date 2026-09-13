@@ -9,6 +9,7 @@ import '../services/settings_service.dart';
 import '../services/achievement_service.dart';
 import '../services/leaderboard_service.dart';
 import '../services/report_service.dart';
+import '../services/admin_application_service.dart';
 
 // AUTH SERVICE PROVIDER
 final authServiceProvider = Provider<IAuthService>((ref) {
@@ -58,4 +59,9 @@ final settingsServiceProvider = Provider<ISettingsService>((ref) {
 // REPORT SERVICE PROVIDER
 final reportServiceProvider = Provider<ReportService>((ref) {
   return ReportService();
+});
+
+// ADMIN APPLICATION SERVICE PROVIDER
+final adminApplicationServiceProvider = Provider<IAdminApplicationService>((ref) {
+  return AdminApplicationService();
 });
