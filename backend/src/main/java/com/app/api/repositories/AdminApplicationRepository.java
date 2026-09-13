@@ -3,10 +3,15 @@ package com.app.api.repositories;
 import com.app.api.models.AdminApplication;
 import com.app.api.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository for AdminApplication entities.
+ */
 @Repository
 public interface AdminApplicationRepository extends JpaRepository<AdminApplication, Integer> {
 
@@ -19,17 +24,22 @@ public interface AdminApplicationRepository extends JpaRepository<AdminApplicati
     List<AdminApplication> findByUserOrderByApplicationDateDesc(User user);
 
     /**
-     * Find all applications, most recent first.
+     * Find all applications with their applicant eagerly loaded, most recent first.
      *
      * @return list of all applications
      */
+    @Query("SELECT a FROM AdminApplication a JOIN FETCH a.user ORDER BY a.applicationDate DESC")
     List<AdminApplication> findAllByOrderByApplicationDateDesc();
 
     /**
-     * Find all applications with a specific status, most recent first.
-     *  
-     * @param status the status of the applications to find
-     * @return list of applications with the specified status
+     * Find all applications with a specific status, with their applicant eagerly loaded,
+     * most recent first.
+     *
+     * @param status the status to filter by
+     * @return list of matching applications
      */
-    List<AdminApplication> findByApplicationStatusOrderByApplicationDateDesc(String status);
+    @Query("SELECT a FROM AdminApplication a JOIN FETCH a.user "
+            + "WHERE a.applicationStatus = :status ORDER BY a.applicationDate DESC")
+    List<AdminApplication> findByApplicationStatusOrderByApplicationDateDesc(
+            @Param("status") String status);
 }

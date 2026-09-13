@@ -40,6 +40,6 @@ public class AdminApplicationDTO {
     public String getRejectionReason() { return rejectionReason; }
     public LocalDate getReviewedDate() { return reviewedDate; }
     public Integer getUserId() { return userId; }
-    public String getUserName() { return username; }
-    public Integer getReviewdAdminId() { return reviewedByAdminId; }
+    public String getUsername() { return username; }
+    public Integer getReviewedByAdminId() { return reviewedByAdminId; }
 }
