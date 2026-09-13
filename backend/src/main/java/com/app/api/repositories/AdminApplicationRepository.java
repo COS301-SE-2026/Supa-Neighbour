@@ -42,4 +42,15 @@ public interface AdminApplicationRepository extends JpaRepository<AdminApplicati
             + "WHERE a.applicationStatus = :status ORDER BY a.applicationDate DESC")
     List<AdminApplication> findByApplicationStatusOrderByApplicationDateDesc(
             @Param("status") String status);
+
+
+      /**
+     * Check if a user has an existing application with a given status.
+     *
+     * @param user   the user to check
+     * @param status the status to check for
+     * @return true if a matching application exists
+     */
+     boolean existsByUserAndApplicationStatus(User user, String status);
+
 }
