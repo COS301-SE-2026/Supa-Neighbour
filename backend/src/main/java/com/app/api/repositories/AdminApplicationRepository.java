@@ -44,7 +44,7 @@ public interface AdminApplicationRepository extends JpaRepository<AdminApplicati
             @Param("status") String status);
 
 
-      /**
+    /**
      * Check if a user has an existing application with a given status.
      *
      * @param user   the user to check
