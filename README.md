@@ -13,7 +13,7 @@
 
 [![dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)](https://github.com/COS301-SE-2026/Supa-Neighbour)
 
-![Uptime](https://img.shields.io/badge/Uptime-Pending%20Deployment-lightgrey)
+![Uptime Ratio](https://img.shields.io/uptimerobot/ratio/30/m803864011-dea90215f99a73d8ed54c2c8?label=30-day%20uptime)
 ![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
 ![Azure](https://img.shields.io/badge/Azure-Cloud-blue?logo=microsoftazure)
