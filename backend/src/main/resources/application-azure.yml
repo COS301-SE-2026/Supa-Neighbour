@@ -36,6 +36,6 @@ management:
         include: health
 google:
   oauth:
-    client-id: ${GOOGLE_CLIENT_ID}
-    client-secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: ""
+    client-id: ${GOOGLE_CLIENT_ID:YOUR_CLIENT_ID.apps.googleusercontent.com}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:}
