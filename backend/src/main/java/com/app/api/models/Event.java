@@ -52,7 +52,8 @@ public class Event {
     @Column(name ="event_end_date_time",nullable = false)
     private LocalDateTime eventEndDateTime;
 
-    @Column(name = "event_location")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_id")
     private Location eventLocation;
 
     @Column(name = "max_participants")
