@@ -4,6 +4,7 @@ import com.app.api.dtos.AdminApplicationDTO;
 import com.app.api.models.AdminApplication;
 import com.app.api.models.User;
 import com.app.api.models.Admin;
+import com.app.api.dtos.ApproveApplicationResponseDTO;
 import com.app.api.repositories.AdminApplicationRepository;
 import com.app.api.repositories.AdminRepository;
 import com.app.api.repositories.UserRepository;
@@ -25,11 +26,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.sql.Date;
 
 /**
  * REST controller for admin application operations.
@@ -230,6 +236,88 @@ public class AdminApplicationController {
         }
     }
 
+
+    /**
+     * Approves a pending admin application and provisions the applicant
+     * as a tier-1 admin.
+     * <p>
+     * Atomically: updates the application row to Approved and inserts a
+     * new row into admin_table with admin_access_level = 1.
+     * Caller must be a super admin (admin_access_level = 2).
+     * </p>
+     *
+     * @param authHeader Firebase Bearer token
+     * @param applicationId the ID of the application to approve
+     * @return 200 with approval details, 401 on bad token,
+     *         403 if not super admin, 404 if not found,
+     *         409 if not Pending
+     */
+    @PatchMapping("/{applicationId}/approve")
+    @Transactional
+    @Operation(
+        summary = "Approve an admin application.",
+        description = "Super admin only. Approves the application and creates an admin_table row.",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Application approved successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token"),
+        @ApiResponse(responseCode = "403", description = "Super admin access required"),
+        @ApiResponse(responseCode = "404", description = "Application not found"),
+        @ApiResponse(responseCode = "409", description = "Application has already been reviewed")
+    })
+    public ResponseEntity<?> approveApplication(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer applicationId) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+
+            Admin superAdmin = adminRepository.findByUserId(userId).orElse(null);
+            if (superAdmin == null || superAdmin.getAdminaccesslevel() != 2) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Super admin access required"));
+            }
+
+            AdminApplication application = applicationRepository
+                    .findById(applicationId).orElse(null);
+            if (application == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Application not found"));
+            }
+
+            if (!"Pending".equals(application.getApplicationStatus())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", "Application has already been reviewed"));
+            }
+
+            User reviewer = userRepository.findById(userId).orElse(null);
+            LocalDate dateReviewed = LocalDate.now();
+
+            application.setApplicationStatus("Approved");
+            application.setReviewedByUser(reviewer);
+            application.setReviewedDate(dateReviewed);
+            applicationRepository.save(application);
+
+            Admin newAdmin = Admin.builder()
+                    .userid(application.getUser())
+                    .adminaccesslevel(1)
+                    .admincreatedate(Date.valueOf(dateReviewed))
+                    .build();
+            Admin savedAdmin = adminRepository.save(newAdmin);
+
+            return ResponseEntity.ok(new ApproveApplicationResponseDTO(
+                    application.getApplicationId(),
+                    application.getApplicationStatus(),
+                    userId,
+                    dateReviewed,
+                    savedAdmin.getAdminid()));
+
+        } catch (FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid or expired Firebase token"));
+        }
+    }
 
 
 
