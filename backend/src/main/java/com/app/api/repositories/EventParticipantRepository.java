@@ -1,5 +1,11 @@
 package com.app.api.repositories;
 
-public class EventParticipantRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.app.api.models.EventParticipant;
+
+@Repository
+public interface EventParticipantRepository extends JpaRepository<EventParticipant, Integer> {
     
 }
