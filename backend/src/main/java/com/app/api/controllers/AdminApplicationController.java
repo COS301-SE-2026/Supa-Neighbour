@@ -5,6 +5,7 @@ import com.app.api.models.AdminApplication;
 import com.app.api.models.User;
 import com.app.api.models.Admin;
 import com.app.api.dtos.ApproveApplicationResponseDTO;
+import com.app.api.dtos.RejectApplicationResponseDTO;
 import com.app.api.repositories.AdminApplicationRepository;
 import com.app.api.repositories.AdminRepository;
 import com.app.api.repositories.UserRepository;
@@ -319,6 +320,88 @@ public class AdminApplicationController {
         }
     }
 
+
+    /**
+     * Rejects a pending admin application.
+     * <p>
+     * Only updates the application row — no admin_table changes.
+     * An optional rejectionReason can be supplied in the request body.
+     * Caller must be a super admin (admin_access_level = 2).
+     * </p>
+     *
+     * @param authHeader Firebase Bearer token
+     * @param applicationId the ID of the application to reject
+     * @param body optional body containing {@code rejectionReason}
+     * @return 200 with rejection details, 401 on bad token,
+     *         403 if not super admin, 404 if not found,
+     *         409 if not Pending
+     * 
+     */
+    @PatchMapping("/{applicationId}/reject")
+    @Transactional
+    @Operation(
+        summary = "Reject an admin application ",
+        description = "Super admin only. Rejects the application with an optional reason.",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Application rejected successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token"),
+        @ApiResponse(responseCode = "403", description = "Super admin access required"),
+        @ApiResponse(responseCode = "404", description = "Application not found"),
+        @ApiResponse(responseCode = "409", description = "Application has already been reviewed")
+    })
+    public ResponseEntity<?> rejectApplication(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer applicationId,
+            @RequestBody(required = false) Map<String, String> body) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+
+            Admin superAdmin = adminRepository.findByUserId(userId).orElse(null);
+            if (superAdmin == null || superAdmin.getAdminaccesslevel() != 2) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Super admin access required"));
+            }
+
+            AdminApplication application = applicationRepository
+                    .findById(applicationId).orElse(null);
+            if (application == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Application not found"));
+            }
+
+            if (!"Pending".equals(application.getApplicationStatus())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", "Application has already been reviewed"));
+            }
+
+            User reviewer = userRepository.findById(userId).orElse(null);
+            LocalDate today = LocalDate.now();
+
+            application.setApplicationStatus("Rejected");
+            application.setReviewedByUser(reviewer);
+            application.setReviewedDate(today);
+
+            if (body != null && body.get("rejectionReason") != null
+                    && !body.get("rejectionReason").isBlank()) {
+                application.setRejectionReason(body.get("rejectionReason"));
+            }
+
+            applicationRepository.save(application);
+
+            return ResponseEntity.ok(new RejectApplicationResponseDTO(
+                    application.getApplicationId(),
+                    application.getApplicationStatus(),
+                    userId,
+                    today));
+
+        } catch (FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid or expired Firebase token"));
+        }
+    }
 
 
 
