@@ -1,14 +1,14 @@
 package com.app.api.controllers;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.app.api.services.GoogleCalenderTokenService;
 import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.GoogleCalenderTokenService;
 import com.google.firebase.auth.FirebaseAuthException;
 
 @RestController 
@@ -17,6 +17,14 @@ public class GoogleCalenderController {
     private final GoogleCalenderTokenService tokenService;
     private final FirebaseAuthService firebaseAuthService;
 
+    /**
+     * Constructs a new {@code GoogleCalenderController}.
+     *
+     * @param tokenService service responsible for exchanging and storing
+     *                     Google Calendar authorization credentials
+     * @param firebaseAuthService service responsible for validating Firebase
+     *                            authentication tokens and retrieving user IDs
+     */
     public GoogleCalenderController(
             GoogleCalenderTokenService tokenService, 
             FirebaseAuthService firebaseAuthService
@@ -25,6 +33,18 @@ public class GoogleCalenderController {
         this.firebaseAuthService = firebaseAuthService;
     }
 
+    /**
+     * Connects the authenticated user's Google Calendar account.
+     *
+     * <p>Validates the Firebase authentication token, retrieves the user's ID,
+     * and exchanges the provided Google authorization code for calendar
+     * credentials.</p>
+     *
+     * @param authHeader the Firebase Bearer authentication token
+     * @param body the request containing the Google Calendar authorization code
+     * @return a successful response if the account was connected, or an error
+     *         response if authentication or connection fails
+     */
     @PostMapping("/connect")
     public ResponseEntity<String> connect(
         @RequestHeader("Authorization") String authHeader, 
@@ -41,5 +61,10 @@ public class GoogleCalenderController {
         return ResponseEntity.status(500).body("Failed to connect Google Calendar");
         }
     }
+    /**
+     * Request body containing the Google Calendar authorization code.
+     *
+     * @param authCode the authorization code provided by Google
+     */
     public record ConnectRequest(String authCode) {}
 }
