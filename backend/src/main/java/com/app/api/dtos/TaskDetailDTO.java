@@ -1,6 +1,7 @@
 package com.app.api.dtos;
 
 import java.sql.Date;
+import java.util.List;
 
 /**
  * Represents a task along with resolved requester and helper display names,
@@ -74,6 +75,8 @@ public class TaskDetailDTO {
     /** The task instructions. */
     private String instructions;
 
+    /** Url of completed-proof images attached to the task */
+    private List<String> completionPhotos;
 
     /**
      * Default constructor required for serialization.
@@ -431,7 +434,24 @@ public class TaskDetailDTO {
      * @param instructions the specified instructions
      */
     public void setInstructions(String instructions) {
-         this.instructions = instructions; 
-        }
+        this.instructions = instructions; 
+    }
 
+      /**
+     * Returns the completion note provided for the task.
+     * 
+     * @return the completion note
+     */
+    public List<String> getCompletionPhotos(){
+        return completionPhotos;
+    }
+
+    /**
+     * Returns the name of the requester who created the task.
+     *
+     * @return the requester's name
+     */
+    public void setCompletionPhotos(List<String> completionPhotos){
+        this.completionPhotos = completionPhotos;
+    }
 }
