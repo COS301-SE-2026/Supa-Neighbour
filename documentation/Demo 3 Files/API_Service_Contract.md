@@ -79,7 +79,16 @@
     - [10.3 GET /api/admin/applications/me](#103-get-apiadminapplicationsme)
     - [10.4 PATCH /api/admin/applications/{applicationId}/approve](#104-patch-apiadminapplicationsapplicationidapprove)
     - [10.5 PATCH /api/admin/applications/{applicationId}/reject](#105-patch-apiadminapplicationsapplicationidreject)
-11. [Http Status Code Reference](#11-http-status-code-reference)
+11. [Events](#11-events)
+    - [11.1 POST /api/events](#111-post-apievents)
+    - [11.2 GET /api/events](#112-get-apievents)
+    - [11.3 GET /api/events/{eventId}](#113-get-apieventseventid)
+    - [11.4 PATCH /api/events/{eventId}](#114-patch-apieventseventid)
+    - [11.5 DELETE /api/events/{eventId}](#115-delete-apieventseventid)
+    - [11.6 POST /api/events/{eventId}/attending](#116-post-apieventseventidattending)
+    - [11.7 GET /api/events/{eventId}/participants](#117-get-apieventseventidparticipants)
+    - [11.8 POST /api/events/{eventId}/absent](#118-post-apieventseventidabsent)
+12. [HTTP Status Code Reference](#12-http-status-code-reference)
 
 ---
 
@@ -3133,9 +3142,465 @@ Content-Type: application/json
 
  ---
 
+# 11. Events
+### 11.1 POST /api/events
 
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/events`                                                           |
+| **Method**         | `POST`                                                                   |
+| **Purpose**        | Creates a new community event; caller becomes the organizer            |
+| **Authentication** | Firebase ID Token required — `user_id` resolved from token, never from request body |
+| **Content-Type**   | `application/json`                                                      |
 
-## 11. HTTP Status Code Reference
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Request Body
+
+```json
+{
+  "eventTitle": "Neighbourhood Cleanup Day",
+  "description": "Bring gloves, we'll cover the park and main road.",
+  "eventStartDateTime": "2026-10-04T08:00:00",
+  "eventEndDateTime": "2026-10-04T11:00:00",
+  "eventLocation": "Willow Park, Main Entrance",
+  "maxParticipants": 20
+}
+```
+
+| Field                  | Type     | Required | Notes                                              |
+| ----------------------- | -------- | -------- | --------------------------------------------------- |
+| `eventTitle`            | string   | Yes      | Max 255 chars                                       |
+| `description`           | string   | No       |                                                      |
+| `eventStartDateTime`    | datetime | Yes      | Must be before `eventEndDateTime` (`chk_event_dates`) |
+| `eventEndDateTime`      | datetime | Yes      | Must be after `eventStartDateTime`                  |
+| `eventLocation`         | string   | Yes      | Max 255 chars                                       |
+| `maxParticipants`       | int      | No      | Must be > 0 if passed in (`chk_max_participants`)                |
+
+#### Success Response — `201 Created`
+
+```json
+{
+  "eventId": 7,
+  "organizerId": 48,
+  "eventTitle": "Neighbourhood Cleanup Day",
+  "description": "Bring gloves, we'll cover the park and main road.",
+  "eventCreatedAt": "2026-09-15T14:02:11",
+  "eventStartDateTime": "2026-10-04T08:00:00",
+  "eventEndDateTime": "2026-10-04T11:00:00",
+  "eventLocation": "Willow Park, Main Entrance",
+  "maxParticipants": 20,
+  "isLive": false,
+  "currentParticipants": 0
+}
+```
+
+#### Error Responses
+
+| Status Code           | Scenario                                              | Response Body                              |
+| ----------------------- | -------------------------------------------------------- | ---------------------------------------------- |
+| `400 Bad Request`      | `eventEndDateTime` <= `eventStartDateTime`               | `"Event end time must be after start time"`   |
+| `400 Bad Request`      | `maxParticipants` <= 0                                    | `"Max participants must be greater than 0"`   |
+| `401 Unauthorized`     | Missing or invalid Firebase ID token                      | `"Invalid Firebase Token"`                    |
+
+---
+
+### 11.2 GET /api/events
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/events`                                                           |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Lists events, with optional filters                                     |
+| **Authentication** | Firebase ID Token required                                              |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Query Parameters
+
+| Parameter    | Type    | Required | Description                                                   |
+| ------------- | ------- | -------- | ----------------------------------------------------------------- |
+| `isLive`      | boolean | No       | Filter to only live/non-live events                              |
+| `organizerId` | int     | No       | Filter to events created by a specific user                      |
+| `upcoming`    | boolean | No       | Filter to events where `eventStartDateTime` is in the future      |
+| `page`        | int     | No       | Default `0`                                                       |
+| `limit`       | int     | No       | Default `20`                                                      |
+
+> **Note (flag to Divo/team):** `events_table` has no neighbourhood/zone column, so this endpoint currently can't scope results to the caller's neighbourhood the way task matching does. If UC8-style zone filtering is wanted here, we'd need to join through `user_table` → `address_table` → `location_table` (same trap pattern as UC3 — filter on `location_table.neighbourhood_id`, not `address_table.neighbourhood_id`).
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "events": [
+    {
+      "eventId": 7,
+      "organizerId": 48,
+      "eventTitle": "Neighbourhood Cleanup Day",
+      "eventStartDateTime": "2026-10-04T08:00:00",
+      "eventEndDateTime": "2026-10-04T11:00:00",
+      "eventLocation": "Willow Park, Main Entrance",
+      "maxParticipants": 20,
+      "currentParticipants": 6,
+      "isLive": false
+    }
+  ],
+  "page": 0,
+  "limit": 20,
+  "totalCount": 1
+}
+```
+
+> List responses intentionally omit `description` and `eventCreatedAt` (kept to the detail endpoint) to match the flat-DTO pattern used elsewhere.
+
+#### Error Responses
+
+| Status Code        | Scenario                              | Response Body            |
+| -------------------- | ------------------------------------------ | ---------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token       | `"Invalid Firebase Token"`   |
+
+---
+
+### 11.3 GET /api/events/{eventId}
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/events/{eventId}`                                                 |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Retrieves full event detail, including the participant list             |
+| **Authentication** | Firebase ID Token required                                              |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Path Parameters
+
+| Parameter | Type | Description               |
+| ----------- | ---- | ----------------------------- |
+| `eventId`  | int  | ID of the event to retrieve  |
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "eventId": 7,
+  "organizerId": 48,
+  "eventTitle": "Neighbourhood Cleanup Day",
+  "description": "Bring gloves, we'll cover the park and main road.",
+  "eventCreatedAt": "2026-09-15T14:02:11",
+  "eventStartDateTime": "2026-10-04T08:00:00",
+  "eventEndDateTime": "2026-10-04T11:00:00",
+  "eventLocation": "Willow Park, Main Entrance",
+  "maxParticipants": 20,
+  "isLive": false,
+  "currentParticipants": 6,
+  "participants": [
+    {
+      "participantId": 3,
+      "userId": 22,
+      "participantStatus": "ATTENDING"
+    }
+  ]
+}
+```
+
+> **Flag:** `participant_status` is a Postgres enum but only the default (`ATTENDING`) is visible from `\d`. Need the full enum value list from Divo (e.g. is there `WAITLISTED` / `CANCELLED` / `DECLINED`?) before the Flutter side hardcodes a status dropdown.
+
+#### Error Responses
+
+| Status Code        | Scenario                              | Response Body            |
+| -------------------- | ------------------------------------------ | ---------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token       | `"Invalid Firebase Token"`   |
+| `404 Not Found`     | No event with that ID                      | `"Event not found"`          |
+
+---
+
+### 11.4 PATCH /api/events/{eventId}
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/events/{eventId}`                                                 |
+| **Method**         | `PATCH`                                                                  |
+| **Purpose**        | Updates an event's details; organizer-only                              |
+| **Authentication** | Firebase ID Token required — caller must be the event's `user_id` (organizer) |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Path Parameters
+
+| Parameter | Type | Description             |
+| ----------- | ---- | --------------------------- |
+| `eventId`  | int  | ID of the event to update  |
+
+#### Request Body
+
+All fields optional; only supplied fields are updated.
+
+```json
+{
+  "eventTitle": "Neighbourhood Cleanup Day (Rescheduled)",
+  "eventStartDateTime": "2026-10-05T08:00:00",
+  "eventEndDateTime": "2026-10-05T11:00:00",
+  "maxParticipants": 25,
+  "isLive": true
+}
+```
+
+> **Note:** `maxParticipants` can be lowered below the current `currentParticipants` count — the DB only enforces `> 0`, not `>= current signups`. Needs an application-layer check (probably a `409 Conflict` if attempted) rather than relying on the schema.
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "eventId": 7,
+  "organizerId": 48,
+  "eventTitle": "Neighbourhood Cleanup Day (Rescheduled)",
+  "description": "Bring gloves, we'll cover the park and main road.",
+  "eventCreatedAt": "2026-09-15T14:02:11",
+  "eventStartDateTime": "2026-10-05T08:00:00",
+  "eventEndDateTime": "2026-10-05T11:00:00",
+  "eventLocation": "Willow Park, Main Entrance",
+  "maxParticipants": 25,
+  "isLive": true,
+  "currentParticipants": 6
+}
+```
+
+#### Error Responses
+
+| Status Code           | Scenario                                                | Response Body                                   |
+| ----------------------- | ------------------------------------------------------------ | ----------------------------------------------------- |
+| `400 Bad Request`      | Resulting `eventEndDateTime` <= `eventStartDateTime`         | `"Event end time must be after start time"`           |
+| `400 Bad Request`      | `maxParticipants` <= 0                                        | `"Max participants must be greater than 0"`           |
+| `401 Unauthorized`     | Missing or invalid Firebase ID token                          | `"Invalid Firebase Token"`                             |
+| `403 Forbidden`        | Caller is not the event organizer                             | `"Only the event organizer can update this event"`    |
+| `404 Not Found`        | No event with that ID                                         | `"Event not found"`                                    |
+| `409 Conflict`         | `maxParticipants` lowered below current `currentParticipants` | `"Max participants cannot be less than current signups"` |
+
+---
+
+### 11.5 DELETE /api/events/{eventId}
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/events/{eventId}`                                                 |
+| **Method**         | `DELETE`                                                                 |
+| **Purpose**        | Deletes an event; cascades to all `event_participants` rows             |
+| **Authentication** | Firebase ID Token required — caller must be the event's `user_id` (organizer) or an admin |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Path Parameters
+
+| Parameter | Type | Description             |
+| ----------- | ---- | --------------------------- |
+| `eventId`  | int  | ID of the event to delete  |
+
+#### Success Response — `204 No Content`
+
+_(no body)_
+
+#### Error Responses
+
+| Status Code        | Scenario                                              | Response Body                                    |
+| -------------------- | ---------------------------------------------------------- | ------------------------------------------------------ |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token                        | `"Invalid Firebase Token"`                              |
+| `403 Forbidden`     | Caller is neither the event organizer nor an admin          | `"Only the event organizer or an admin can delete this event"` |
+| `404 Not Found`     | No event with that ID                                       | `"Event not found"`                                      |
+
+---
+
+### 11.6 POST /api/events/{eventId}/attending
+ 
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/events/{eventId}/attending`                                       |
+| **Method**         | `POST`                                                                   |
+| **Purpose**        | RSVPs the calling user to an event, enforcing capacity if `maxParticipants` is set |
+| **Authentication** | Firebase ID Token required — `user_id` resolved from token, never from request body |
+| **Content-Type**   | `application/json`                                                      |
+ 
+#### Request Headers
+ 
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description           |
+| ----------- | ---- | -------------------------- |
+| `eventId`  | int  | ID of the event to RSVP to |
+ 
+#### Request Body
+ 
+_(none)_
+ 
+#### Logic
+ 
+1. Look up the event by `eventId`. `404` if it doesn't exist.
+2. If `maxParticipants` is `NULL` → skip capacity check entirely, proceed to step 4.
+3. If `maxParticipants` is set → `COUNT(*)` the event's rows in `event_participants` and compare against `maxParticipants`. If `count >= maxParticipants` → `409 Conflict` ("event full"), do not insert.
+4. Insert `(event_id, user_id)` into `event_participants` with default `participant_status = 'ATTENDING'`. The `unique_event_participant` constraint means a user who's already RSVPed will hit a conflict here too — surface that as its own `409` rather than a generic 500.
+ 
+#### Success Response — `201 Created`
+ 
+```json
+{
+  "participantId": 12,
+  "eventId": 7,
+  "userId": 22,
+  "participantStatus": "ATTENDING"
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code        | Scenario                                                     | Response Body                    |
+| -------------------- | ------------------------------------------------------------------ | ------------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token                                | `"Invalid Firebase Token"`            |
+| `404 Not Found`     | No event with that ID                                               | `"Event not found"`                   |
+| `409 Conflict`      | `maxParticipants` is set and the event is already at capacity       | `"Event is at full capacity"`         |
+| `409 Conflict`      | Caller has already RSVPed to this event                              | `"You have already RSVPed to this event"` |
+ 
+---
+ 
+### 11.7 GET /api/events/{eventId}/participants
+ 
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/events/{eventId}/participants`                                    |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Lists the users RSVPed to an event                                      |
+| **Authentication** | Firebase ID Token required                                              |
+| **Content-Type**   | `application/json`                                                      |
+ 
+#### Request Headers
+ 
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description                             |
+| ----------- | ---- | -------------------------------------------- |
+| `eventId`  | int  | ID of the event to list participants for     |
+ 
+#### Query — implementation note
+ 
+Join `event_participants` → `user_table` on `user_id` and project only `user_id` and `user_name` (plus `participantStatus`, since it's already on hand and cheap to include). This is a flat DTO projection, not a raw `user_table` return, in line with the no-raw-entity pattern used elsewhere.
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "eventId": 7,
+  "participants": [
+    {
+      "userId": 22,
+      "userName": "Thabo",
+      "participantStatus": "ATTENDING"
+    },
+    {
+      "userId": 31,
+      "userName": "Naledi",
+      "participantStatus": "ATTENDING"
+    }
+  ],
+  "totalCount": 2
+}
+```
+ 
+> Kept to `userId` + `userName` per spec. `userSurname` is a one-line addition later if the frontend needs to disambiguate duplicate first names — flag if that becomes necessary rather than adding it speculatively now.
+ 
+#### Error Responses
+ 
+| Status Code        | Scenario                              | Response Body            |
+| -------------------- | ------------------------------------------ | ---------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token       | `"Invalid Firebase Token"`   |
+| `404 Not Found`     | No event with that ID                      | `"Event not found"`          |
+
+---
+### 11.8 POST /api/events/{eventId}/absent
+ 
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/events/{eventId}/absent`                                          |
+| **Method**         | `POST`                                                                   |
+| **Purpose**        | Lets a user who previously RSVPed mark themselves as no longer attending |
+| **Authentication** | Firebase ID Token required — `user_id` resolved from token, never from request body |
+| **Content-Type**   | `application/json`                                                      |
+ 
+#### Request Headers
+ 
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+ 
+#### Path Parameters
+ 
+| Parameter | Type | Description                 |
+| ----------- | ---- | -------------------------------- |
+| `eventId`  | int  | ID of the event to decline       |
+ 
+#### Request Body
+ 
+_(none)_
+ 
+#### Logic
+ 
+1. Look up the event by `eventId`. `404` if it doesn't exist.
+2. Look up the caller's row in `event_participants` for `(eventId, userId)`. If none exists → `404` ("you haven't RSVPed to this event") — this is intentionally *not* a generic RSVP-toggle; you can only decline something you'd previously accepted, per the ask.
+3. If the row exists but its `participant_status` is already `'ABSENT'` → `409 Conflict` ("already marked as not attending").
+4. Otherwise, update that row's `participant_status` to `'ABSENT'` (in place — the row is not deleted, so history/capacity accounting stays intact).
+ 
+#### Success Response — `200 OK`
+ 
+```json
+{
+  "participantId": 12,
+  "eventId": 7,
+  "userId": 22,
+  "participantStatus": "ABSENT"
+}
+```
+ 
+#### Error Responses
+ 
+| Status Code        | Scenario                                                     | Response Body                                      |
+| -------------------- | ------------------------------------------------------------------ | -------------------------------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token                                | `"Invalid Firebase Token"`                                |
+| `404 Not Found`     | No event with that ID                                               | `"Event not found"`                                       |
+| `404 Not Found`     | Caller has no existing RSVP for this event                          | `"You have not RSVPed to this event"`                     |
+| `409 Conflict`      | Caller's RSVP is already marked `ABSENT`                            | `"You are already marked as not attending this event"`    |
+ 
+---
+
+## 12. HTTP Status Code Reference
 
 
 | Code | Meaning | When used |
