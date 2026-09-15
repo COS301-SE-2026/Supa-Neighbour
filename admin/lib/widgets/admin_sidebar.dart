@@ -97,25 +97,36 @@ class AdminSidebar extends StatelessWidget {
                   index: 1,
                   route: '/reports',
                 ),
-                _buildNavItem(
+                               _buildNavItem(
                   context: context,
                   icon: Icons.people,
                   label: 'Users',
                   index: 2,
                   route: '/users',
                 ),
+                // TODO: Role-gate this item — only show for super admins
+                // (admin_access_level = 2). Waiting on backend to return
+                // adminAccessLevel in /api/auth/admin/login response.
+                // Then wrap in: if (currentUser.isSuperAdmin) ...[
+                _buildNavItem(
+                  context: context,
+                  icon: Icons.admin_panel_settings,
+                  label: 'Applications',
+                  index: 3,
+                  route: '/applications',
+                ),
                 _buildNavItem(
                   context: context,
                   icon: Icons.location_on,
                   label: 'Zones',
-                  index: 3,
+                  index: 4,
                   route: '/zones',
                 ),
                 _buildNavItem(
                   context: context,
                   icon: Icons.settings,
                   label: 'Settings',
-                  index: 4,
+                  index: 5,
                   route: '/settings',
                 ),
               ],
