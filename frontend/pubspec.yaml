@@ -45,6 +45,7 @@ dependencies:
   url_launcher: ^6.3.1
   path_provider: ^2.1.2  # To get storage paths
   open_file: ^3.4.1  # To open the downloaded file
+  flutter_local_notifications: ^17.2.3
 
   shared:
     path: ../shared
