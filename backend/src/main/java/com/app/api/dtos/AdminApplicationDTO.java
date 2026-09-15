@@ -33,13 +33,39 @@ public class AdminApplicationDTO {
         this.reviewedByAdminId = reviewedByAdminId;
     }
 
-    public Integer getApplicationId() { return applicationId; }
-    public String getApplicationStatus() { return applicationStatus; }
-    public LocalDate getApplicationDate() { return applicationDate; }
-    public String getJustification() { return justification; }
-    public String getRejectionReason() { return rejectionReason; }
-    public LocalDate getReviewedDate() { return reviewedDate; }
-    public Integer getUserId() { return userId; }
-    public String getUsername() { return username; }
-    public Integer getReviewedByAdminId() { return reviewedByAdminId; }
+    public Integer getApplicationId() { 
+        return applicationId; 
+    }
+
+    public String getApplicationStatus() { 
+        return applicationStatus; 
+    }
+
+    public LocalDate getApplicationDate() { 
+        return applicationDate; 
+    }
+
+    public String getJustification() { 
+        return justification; 
+    }
+
+    public String getRejectionReason() { 
+        return rejectionReason; 
+    }
+
+    public LocalDate getReviewedDate() { 
+        return reviewedDate; 
+    }
+
+    public Integer getUserId() {
+        return userId; 
+    }
+
+    public String getUsername() { 
+        return username; 
+    }
+    
+    public Integer getReviewedByAdminId() { 
+        return reviewedByAdminId; 
+    }
 }
