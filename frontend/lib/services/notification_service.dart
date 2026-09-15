@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../screens/notifications/notifications_screen.dart';
-import '../models/notification_model.dart';
 
 // Global navigator key - set in main.dart
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
