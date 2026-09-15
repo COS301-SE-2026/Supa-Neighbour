@@ -1,20 +1,23 @@
 // admin/lib/screens/applications/applications_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared/shared.dart';
+import '../../providers/service_providers.dart';
 import '../../services/admin_application_service.dart';
 
-class ApplicationsScreen extends StatefulWidget {
+class ApplicationsScreen extends ConsumerStatefulWidget {
   const ApplicationsScreen({super.key});
 
   @override
-  State<ApplicationsScreen> createState() => _ApplicationsScreenState();
+  ConsumerState<ApplicationsScreen> createState() =>
+      _ApplicationsScreenState();
 }
 
-class _ApplicationsScreenState extends State<ApplicationsScreen> {
-  final AdminApplicationService _service = AdminApplicationService();
+class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
+  late final IAdminApplicationService _service;
 
   String? _selectedStatusFilter;
   String _searchQuery = '';
@@ -25,6 +28,7 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
   @override
   void initState() {
     super.initState();
+    _service = ref.read(adminApplicationServiceProvider);
     _loadApplications();
   }
 

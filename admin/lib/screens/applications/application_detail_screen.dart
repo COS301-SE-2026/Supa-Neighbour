@@ -1,12 +1,14 @@
 // admin/lib/screens/applications/application_detail_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared/shared.dart';
 import '../../services/admin_application_service.dart';
+import '../../providers/service_providers.dart';
 
-class ApplicationDetailScreen extends StatefulWidget {
+class ApplicationDetailScreen extends ConsumerStatefulWidget {
   final int applicationId;
 
   const ApplicationDetailScreen({
@@ -15,12 +17,13 @@ class ApplicationDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<ApplicationDetailScreen> createState() =>
+  ConsumerState<ApplicationDetailScreen> createState() =>
       _ApplicationDetailScreenState();
 }
 
-class _ApplicationDetailScreenState extends State<ApplicationDetailScreen> {
-  final AdminApplicationService _service = AdminApplicationService();
+class _ApplicationDetailScreenState
+    extends ConsumerState<ApplicationDetailScreen> {
+  late final IAdminApplicationService _service;
 
   AdminApplication? _application;
   bool _isLoading = true;
@@ -30,6 +33,7 @@ class _ApplicationDetailScreenState extends State<ApplicationDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _service = ref.read(adminApplicationServiceProvider);
     _loadApplication();
   }
 
