@@ -14,7 +14,19 @@ class AdminApplicationServiceException implements Exception {
   String toString() => message;
 }
 
-class AdminApplicationService {
+
+// Interface for the admin application service.
+// Allows swapping between the real service and a mock for testing.
+abstract class IAdminApplicationService {
+  Future<List<AdminApplication>> getAllApplications({String? status});
+  Future<AdminApplication> approveApplication(int applicationId);
+  Future<AdminApplication> rejectApplication(
+    int applicationId, {
+    String? rejectionReason,
+  });
+}
+
+class AdminApplicationService implements IAdminApplicationService {
   final Dio _dio;
   final fb.FirebaseAuth _firebaseAuth;
 
@@ -30,6 +42,7 @@ class AdminApplicationService {
 
   /// Fetches all admin applications. Optional filter by status:
   /// 'Pending', 'Approved', 'Rejected'.
+  @override
   Future<List<AdminApplication>> getAllApplications({String? status}) async {
     final String? idToken = await _firebaseAuth.currentUser?.getIdToken();
     if (idToken == null) {
@@ -76,6 +89,7 @@ class AdminApplicationService {
   }
 
   /// Approves a pending application. Grants tier-1 admin on the backend.
+  @override
   Future<AdminApplication> approveApplication(int applicationId) async {
     final String? idToken = await _firebaseAuth.currentUser?.getIdToken();
     if (idToken == null) {
@@ -123,6 +137,7 @@ class AdminApplicationService {
   }
 
   /// Rejects a pending application. Optional reason shown to the applicant.
+  @override
   Future<AdminApplication> rejectApplication(
     int applicationId, {
     String? rejectionReason,
