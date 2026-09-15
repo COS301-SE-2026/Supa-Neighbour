@@ -1,6 +1,7 @@
 // admin/lib/screens/login/admin_login_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,10 +21,6 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   bool _obscurePassword = true;
   String? _errorMessage;
 
-  //MOCK LOGIN - Bypass for development
-  /*void _mockLogin() {
-    context.go('/dashboard');
-  }*/
 
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
@@ -168,19 +165,21 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 ),
               ),
               
-              // DEV MODE: Skip login button
-              /*const SizedBox(height: 12),
-              TextButton(
-                onPressed: _mockLogin,
-                child: const Text(
-                  'Skip Login (Dev Mode)',
-                  style: TextStyle(
-                    color: AppColors.textGrey,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+              // DEV MODE ONLY: Skip login button — automatically hidden in release builds
+              if (kDebugMode) ...[
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => context.go('/dashboard'),
+                  child: const Text(
+                    'Skip Login (Dev Mode)',
+                    style: TextStyle(
+                      color: AppColors.textGrey,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-              ),*/
+              ],
             ],
           ),
         ),
