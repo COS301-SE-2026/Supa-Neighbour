@@ -242,8 +242,11 @@ public class TaskInvitationService {
             }
         }
 
-        int requesterId = taskInvoice.getDependentid().getUserId().getUserid();
-        eventPublisher.publishEvent(new TaskAcceptedEvent(taskId, helperId, requesterId));
+        if (taskInvoice != null && taskInvoice.getDependentid() != null
+                && taskInvoice.getDependentid().getUserId() != null) {
+            int requesterId = taskInvoice.getDependentid().getUserId().getUserid();
+            eventPublisher.publishEvent(new TaskAcceptedEvent(taskId, helperId, requesterId));
+        }
         return accepted;
     }
 
