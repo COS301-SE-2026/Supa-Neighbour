@@ -17,7 +17,7 @@ class _ConnectCalenderScreenState extends State<ConnectCalenderScreen> {
 
   static const String _localBackendUrl = String.fromEnvironment(
     'LOCAL_BACKEND_URL',
-    defaultValue: 'http://10.0.1.121:8080',
+    defaultValue: 'http://localhost:8080',
   );
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -38,6 +38,10 @@ class _ConnectCalenderScreenState extends State<ConnectCalenderScreen> {
 
       final idToken = await fb.FirebaseAuth.instance.currentUser?.getIdToken();
       if (idToken == null) throw Exception('No authenticated Firebase user');
+
+      debugPrint('--- FIREBASE ID TOKEN ---');
+debugPrint(idToken);
+debugPrint('-------------------------');
 
       final localDio = Dio(
         BaseOptions(
