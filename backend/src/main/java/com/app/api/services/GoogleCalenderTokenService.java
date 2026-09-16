@@ -72,6 +72,14 @@ public class GoogleCalenderTokenService {
      * @throws IOException if an error occurs while communicating with
      *                     Google's OAuth service
      */
+    /**
+     * Exchanges a Google OAuth authorization code for a fresh token pair and stores
+     * the resulting credentials for the specified user.
+     *
+     * @param userId the ID of the user connecting their Google Calendar account
+     * @param authCode the authorization code returned by Google after consent
+     * @throws IOException if the token exchange request fails
+     */
     public void exchangeAndStore(int userId, String authCode) throws IOException {
         GoogleTokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
                 new NetHttpTransport(),
@@ -91,6 +99,12 @@ public class GoogleCalenderTokenService {
         tokenRepo.save(token);
     }
 
+    /**
+     * Creates Google Calendar events for both the helper and the requester once a
+     * task has been accepted and the transaction has been committed.
+     *
+     * @param event the task acceptance event containing the task and participant IDs
+     */
     @TransactionalEventListener( phase = org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT)
     public void onTaskAccepted(TaskAcceptedEvent event) {
         TaskInvoice task = taskInvoiceRepository.findById(event.getTaskId()).orElse(null);
@@ -115,10 +129,20 @@ public class GoogleCalenderTokenService {
         }
     }
 
+    /**
+     * Creates a single Google Calendar event for the given user using the stored
+     * OAuth credentials and the task details.
+     *
+     * @param userId the user ID whose calendar should receive the event
+     * @param task the task to convert into a calendar event
+     * @return the ID of the newly created event, or null if creation fails
+     */
     private String createEventFor(int userId, TaskInvoice task){
         Optional<GoogleCalendarToken> tokenOpt = tokenRepo.findByUserId(userId);
 
-        if(tokenOpt.isEmpty()) return null;
+        if(tokenOpt.isEmpty()) {
+            return null;
+        }
 
         try{
             Calendar calendarService = buildCalendarClient(tokenOpt.get());
@@ -129,6 +153,13 @@ public class GoogleCalenderTokenService {
         }
     }
 
+    /**
+     * Builds an authenticated Google Calendar client for the provided user token.
+     *
+     * @param token the Google Calendar token containing the refresh token
+     * @return an authenticated calendar client ready for API calls
+     * @throws Exception if the client cannot be created or refreshed
+     */
     private Calendar buildCalendarClient(GoogleCalendarToken token) throws Exception {
         GoogleCredential credential = new GoogleCredential.Builder()
                 .setTransport(GoogleNetHttpTransport.newTrustedTransport())
@@ -147,6 +178,12 @@ public class GoogleCalenderTokenService {
                 .build();
     }
 
+    /**
+     * Builds the Google Calendar event payload from task data.
+     *
+     * @param task the task details to populate into the event
+     * @return the event payload with summary, description, and date/time values
+     */
     private Event buildEvent(TaskInvoice task) {
         LocalDate startDate = task.getStartdate();
         LocalTime startTime = LocalTime.of(9, 0);
