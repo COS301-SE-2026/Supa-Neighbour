@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
+import com.app.api.events.TaskAcceptedEvent;
 import com.app.api.models.Helper;
 import com.app.api.models.TaskInvitation;
 import com.app.api.models.TaskInvoice;
 import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.repositories.HelperRepository;
+
+import org.springframework.context.ApplicationEventPublisher;
 
 import jakarta.transaction.Transactional;
 
@@ -27,6 +30,7 @@ public class TaskInvitationService {
     private final TaskInvitationRepository taskInvitationRepository;
     private final TaskInvoiceRepository taskInvoiceRepository;
     private final HelperRepository helperRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Constructs the service with its required repository dependencies.
@@ -34,10 +38,11 @@ public class TaskInvitationService {
      * @param taskInvitationRepository repository for {@link TaskInvitation} persistence operations
      * @param taskInvoiceRepository    repository for {@link TaskInvoice} persistence operations
      */
-    TaskInvitationService(TaskInvitationRepository taskInvitationRepository, TaskInvoiceRepository taskInvoiceRepository, HelperRepository helperRepository) {
+    TaskInvitationService(TaskInvitationRepository taskInvitationRepository, TaskInvoiceRepository taskInvoiceRepository, HelperRepository helperRepository, ApplicationEventPublisher eventPublisher) {
         this.taskInvitationRepository = taskInvitationRepository;
         this.taskInvoiceRepository = taskInvoiceRepository;
         this.helperRepository = helperRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     // Get all
@@ -237,6 +242,8 @@ public class TaskInvitationService {
             }
         }
 
+        int requesterId = taskInvoice.getDependentid().getUserId().getUserid();
+        eventPublisher.publishEvent(new TaskAcceptedEvent(taskId, helperId, requesterId));
         return accepted;
     }
 
