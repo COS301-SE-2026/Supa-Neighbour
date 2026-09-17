@@ -133,6 +133,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   Widget build(BuildContext context) {
     // Get the parent HomeScreen state to call changeTab
     final homeScreenState = context.findAncestorStateOfType<_HomeScreenState>();
+    final unreadCount = ref.watch(notificationsProvider).where((n) => !n.isRead).length;
 
     return Scaffold(
       backgroundColor: AppColors.background(context),
@@ -156,7 +157,29 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications_none, color: AppColors.primaryTeal(context)),
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(Icons.notifications_none, color: AppColors.primaryTeal(context)),
+                if(unreadCount > 0)
+                Positioned(
+                  right: -1,
+                  top: -1,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: AppColors.error(context),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.background(context),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             onPressed: () {
               Navigator.push(
                 context,
