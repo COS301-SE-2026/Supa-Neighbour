@@ -9,7 +9,7 @@ abstract class INotificationsApiService {
 
 class NotificationsApiService implements INotificationsApiService {
   final Dio _dio;
-  final fb.FirebaseAuth _firebaseAuth;
+  final fb.FirebaseAuth? _firebaseAuth;
 
   NotificationsApiService({Dio? dio, fb.FirebaseAuth? firebaseAuth})
       : _dio = dio ??
@@ -18,10 +18,12 @@ class NotificationsApiService implements INotificationsApiService {
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
             )),
-        _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
+        _firebaseAuth = firebaseAuth;
 
   Future<String> _authHeader() async {
-    final idToken = await _firebaseAuth.currentUser?.getIdToken(false);
+    final idToken = await (_firebaseAuth ?? fb.FirebaseAuth.instance)
+        .currentUser
+        ?.getIdToken(false);
     if (idToken == null) {
       throw Exception('No authenticated user.');
     }
