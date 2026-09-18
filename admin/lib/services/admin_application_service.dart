@@ -24,6 +24,7 @@ abstract class IAdminApplicationService {
     int applicationId, {
     String? rejectionReason,
   });
+  Future<AdminApplication> getApplicationById(int applicationId);
 }
 
 class AdminApplicationService implements IAdminApplicationService {
@@ -87,6 +88,44 @@ class AdminApplicationService implements IAdminApplicationService {
       }
     }
   }
+
+  // Fetches an appplication via its id to fetch a specific one rather than all.
+  @override
+  Future<AdminApplication> getApplicationById(int applicationId) async {
+    final String? idToken = await _firebaseAuth.currentUser?.getIdToken();
+    if (idToken == null) {
+      throw AdminApplicationServiceException('Not signed in.', statusCode: 401);
+    }
+
+    try {
+      final response = await _dio.get(
+        '/api/admin/applications/$applicationId',
+        options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+      );
+      return AdminApplication.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      switch (statusCode) {
+        case 401:
+          throw AdminApplicationServiceException(
+              'Session expired — please log in again.', statusCode: 401);
+        case 403:
+          throw AdminApplicationServiceException(
+              'Super admin access required.', statusCode: 403);
+        case 404:
+          throw AdminApplicationServiceException(
+              'Application not found.', statusCode: 404);
+        default:
+          throw AdminApplicationServiceException(
+            'Failed to load application: ${e.message ?? 'unknown error'}',
+            statusCode: statusCode,
+          );
+      }
+    }
+  }
+
+
+
 
   /// Approves a pending application. Grants tier-1 admin on the backend.
   @override
