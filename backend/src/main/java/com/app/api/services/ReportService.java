@@ -39,6 +39,9 @@ import com.app.api.repositories.PostsRepository;
 import com.app.api.repositories.ReportRepository;
 import com.app.api.repositories.TaskRepository;
 import com.app.api.repositories.UserRepository;
+import com.app.api.dtos.ReportImageResponseDTO;
+import com.app.api.models.ReportImage;
+import com.app.api.repositories.ReportImageRepository;
 
 /**
  * Service layer for report-related business logic.
@@ -67,6 +70,7 @@ public class ReportService {
     private final HelperRepository helperRepository;
     private final DependentRepository dependentRepository;
     private final AdminRepository adminRepository;
+    private final ReportImageRepository reportImageRepo;
 
     private static final Pattern SUSPEND_PATTERN =
             Pattern.compile("^SUSPEND_(\\d+)D$", Pattern.CASE_INSENSITIVE);
@@ -93,7 +97,8 @@ public class ReportService {
             ApplicationEventPublisher applicationEventPublisher,
             DependentRepository dependentRepository,
             HelperRepository helperRepository,
-            AdminRepository adminRepository) {
+            AdminRepository adminRepository,
+            ReportImageRepository reportImageRepo) {
         this.reportRepository = reportRepository;
         this.userRepository = userRepository;
         this.reportDetailService = reportDetailService;
@@ -105,6 +110,7 @@ public class ReportService {
         this.dependentRepository = dependentRepository;
         this.helperRepository = helperRepository;
         this.adminRepository = adminRepository;
+        this.reportImageRepo = reportImageRepo;
     }
 
     /**
@@ -593,5 +599,27 @@ public class ReportService {
         }
 
         return new AdminDashboardDTO(assignedCount, reportsByType, completedCount, reviewedCount);
+    }
+
+    /**
+     * Links an image to a report owned by the calling user.
+     *
+     * <p>Throws 404 if the report does not exist, or 403 if the caller is not
+     * the owner. Runs in a single transaction that rolls back on failure.</p>
+     *
+     * @param reportId      the ID of the report to link the image to
+     * @param callingUserId the ID of the user performing the operation
+     * @param imageUrl      the URL of the image to attach
+     * @return the saved image's ID, URL, and upload timestamp
+     * @throws org.springframework.web.server.ResponseStatusException 404 if the report
+     *         is not found, 403 if the caller does not own the report
+     */
+    @Transactional
+    public ReportImageResponseDTO linkImageToReport(Integer reportId, int callingUserId, String imageUrl){
+        Report report = reportRepository.findById(reportId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found"));
+        ReportImage image = new ReportImage(report, imageUrl);
+        ReportImage saved = reportImageRepo.save(image);
+         
+        return new ReportImageResponseDTO(saved.getReportImageId(), saved.getImageUrl(), saved.getUploadedAt());
     }
 }
