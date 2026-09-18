@@ -117,12 +117,10 @@ class _ApplicationDetailScreenState
 
       if (!mounted) return;
 
-      setState(() {
-        _application = updated;
-        _isSubmitting = false;
-      });
-
       _showSnack('Application rejected.', AppColors.error);
+      await _loadApplication();
+      if (mounted) setState(() => _isSubmitting = false);
+
     } on AdminApplicationServiceException catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
