@@ -17,6 +17,7 @@ spring:
         hibernate:
           dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+
 azure:
   storage:
     connection-string: ${BLOB_CONNECTION_STRING}
@@ -25,6 +26,31 @@ azure:
     task-images-container: task-images
     chat-images-container: chat-images
     report-container: reports
+
+supaneighbour:
+  vision:
+    azure-openai:
+      endpoint: ${AZURE_OPENAI_ENDPOINT}       # https://<resource-name>.openai.azure.com
+      key: ${AZURE_OPENAI_KEY}
+      deployment: ${AZURE_OPENAI_DEPLOYMENT}   # the DEPLOYMENT name Gendac chose, not the model name
+      api-version: "2024-10-21"                # confirm against what the resource supports
+      max-image-edge-px: 1600                  # downscale before sending (see §5.1)
+      timeout-seconds: 30
+  verification:
+    geofence-radius-m: 75
+    arrival-geofence-radius-m: 150
+    task-window-grace-minutes: 30
+    weights:
+      ai: 0.45
+      geo: 0.25
+      meta: 0.15
+      time: 0.15
+    thresholds:
+      verified: 0.75
+      needs-review: 0.45
+    max-upload-bytes: 12582912
+    allowed-mime: ["image/jpeg", "image/png"]
+    
 management:
   endpoint:
     health:
