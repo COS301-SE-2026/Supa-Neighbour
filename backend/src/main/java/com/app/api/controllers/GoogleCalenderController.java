@@ -51,14 +51,21 @@ public class GoogleCalenderController {
         @RequestBody ConnectRequest body
     ){
         try{
+            if (body == null || body.authCode() == null || body.authCode().isBlank()) {
+                return ResponseEntity.badRequest().body("Google authorization code is required");
+            }
+
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
             tokenService.exchangeAndStore(userId, body.authCode());
             return ResponseEntity.ok("connected");
         }catch(FirebaseAuthException e){
             return ResponseEntity.status(401).body("Invalid or expired Firebase token");
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }catch (Exception e) {
-        return ResponseEntity.status(500).body("Failed to connect Google Calendar");
+            String message = e.getMessage() == null ? "Unknown OAuth error" : e.getMessage();
+            return ResponseEntity.status(500).body("Failed to connect Google Calendar: " + message);
         }
     }
     /**

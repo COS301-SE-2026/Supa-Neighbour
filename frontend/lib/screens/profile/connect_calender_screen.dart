@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:google_sign_in/google_sign_in.dart';
 
-//import 'package:shared/services/api_client.dart';
+import 'package:shared/services/api_client.dart';
 
 
 class ConnectCalenderScreen extends StatefulWidget {
@@ -14,11 +14,6 @@ class ConnectCalenderScreen extends StatefulWidget {
 
 class _ConnectCalenderScreenState extends State<ConnectCalenderScreen> {
   bool _connecting = false;
-
-  static const String _localBackendUrl = String.fromEnvironment(
-    'LOCAL_BACKEND_URL',
-    defaultValue: 'http://localhost:8080',
-  );
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes : ['https://www.googleapis.com/auth/calendar.events'],
@@ -34,32 +29,17 @@ class _ConnectCalenderScreenState extends State<ConnectCalenderScreen> {
       if(account == null) return;
 
       final authCode = account.serverAuthCode;
+      debugPrint('AUTH CODE: $authCode');
       if(authCode == null) throw Exception('No server code returned');
 
       final idToken = await fb.FirebaseAuth.instance.currentUser?.getIdToken();
       if (idToken == null) throw Exception('No authenticated Firebase user');
 
-      debugPrint('--- FIREBASE ID TOKEN ---');
-debugPrint(idToken);
-debugPrint('-------------------------');
-
-      final localDio = Dio(
-        BaseOptions(
-          baseUrl: _localBackendUrl,
-          connectTimeout: const Duration(seconds: 20),
-          receiveTimeout: const Duration(seconds: 20),
-        ),
-      );
-
-      debugPrint('Calling backend URL: ${localDio.options.baseUrl}/api/users/me/google-calender/connect');
-
-      await localDio.post(
+      await ApiClient().dio.post(
         '/api/users/me/google-calender/connect',
-        data: {'authCode': authCode},
+        data: {'authCode' : authCode},
         options: Options(
-          headers: {
-            'Authorization': 'Bearer $idToken',
-          },
+          headers: {'Authorization': 'Bearer $idToken'},
         ),
       );
 
@@ -68,15 +48,32 @@ debugPrint('-------------------------');
           const SnackBar(content: Text('Google Calender connected')),
         );
       }
-    }catch (e){
-      debugPrint('Google Calendar connect error: $e');
+    } catch (e) {
       if (mounted) {
+        String errorMessage = 'Failed to connect';
+
+        if (e is DioException) {
+          final responseData = e.response?.data;
+
+          if (responseData is Map && responseData['message'] != null) {
+            errorMessage = 'Failed to connect: ${responseData['message']}';
+          } else if (responseData is String && responseData.isNotEmpty) {
+            errorMessage = 'Failed to connect: $responseData';
+          } else if (e.message != null) {
+            errorMessage = 'Failed to connect: ${e.message}';
+          } else {
+            errorMessage = 'Failed to connect: $e';
+          }
+        } else {
+          errorMessage = 'Failed to connect: $e';
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to connect: $e')),
+          SnackBar(content: Text(errorMessage)),
         );
       }
     } finally {
-        if(mounted) setState(() => _connecting = false);
+      if (mounted) setState(() => _connecting = false);
     }
   }
 
