@@ -12,7 +12,20 @@
           "package_name": "com.app.supa_neighbour"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "791892980644-k1cskhceobg78dclgkmhadin0eh9civt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.supa_neighbour",
+            "certificate_hash": "738a63b004f6d1e9e39f81610b94d65bc251f34c"
+          }
+        },
+        {
+          "client_id": "791892980644-ntsn6lh4mfuvs2jsnu6eouk8lhl0m7fd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCTs0Y6cQZBM41VLmIowoq9VQC6ZyM3b3U"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "791892980644-ntsn6lh4mfuvs2jsnu6eouk8lhl0m7fd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
