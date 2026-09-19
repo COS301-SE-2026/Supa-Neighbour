@@ -81,6 +81,15 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   @override
+  void initState() {
+    super.initState();
+    // Pull the latest list from the backend every time the screen opens.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationsProvider.notifier).refresh();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final notifications = ref.watch(notificationsProvider);
     final unreadCount = notifications.where((n) => !n.isRead).length;
@@ -127,12 +136,18 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 if (unreadCount > 0)
                   _buildUnreadBanner(context, unreadCount),
                 Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    itemCount: notifications.length,
-                    itemBuilder: (context, index) {
-                      final notif = notifications[index];
-                      final style = NotificationCategoryStyle.fromCategory(notif.category);
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      await ref.read(notificationsProvider.notifier).refresh();
+                    },
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      itemCount: notifications.length,
+                      itemBuilder: (context, index) {
+                        final notif = notifications[index];
+                        final style =
+                            NotificationCategoryStyle.fromCategory(notif.category);
 
                       // Show section header if date changes
                       final showHeader = index == 0 ||
@@ -196,6 +211,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         ],
                       );
                     },
+                    ),
                   ),
                 ),
               ],
