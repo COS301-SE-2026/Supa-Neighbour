@@ -131,7 +131,7 @@ public class VerificationEngine {
         /**
          * Fluent builder for {@link Input}. Not thread-safe.
          */
-        private static final class Builder{
+        public static final class Builder{
             private boolean aiAvailable;
             private double aiConfidence;
             private boolean aiTaskLooksComplete;

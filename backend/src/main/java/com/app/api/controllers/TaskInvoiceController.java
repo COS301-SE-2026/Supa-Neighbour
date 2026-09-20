@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.api.models.TaskInvoice;
@@ -209,6 +210,7 @@ public class TaskInvoiceController {
         @Parameter(description = "ID of the task invoice", example = "1")
         @PathVariable int id,
         @RequestBody Map<String, List<String>> body,
+        @RequestParam(name = "type", defaultValue = "COMPLETION") String type,
         @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true)
         @RequestHeader("Authorization") String authHeader
     ) {
@@ -221,7 +223,7 @@ public class TaskInvoiceController {
                 return ResponseEntity.badRequest().body(Map.of("error", "No image URLs provided"));
             }
 
-            int saved = taskInvoiceService.addImagesToTask(id, imageUrls);
+            int saved = taskInvoiceService.addImagesToTask(id, imageUrls, type);
             if (saved == -1) {
                 return ResponseEntity.notFound().build();
             }

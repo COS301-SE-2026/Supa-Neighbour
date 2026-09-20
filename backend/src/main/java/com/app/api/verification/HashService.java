@@ -62,7 +62,7 @@ public class HashService {
      *                                  empty, cannot be decoded, or decodes to
      *                                  {@code null} (unsupported/corrupt format)
      */
-    public long perpetualHash(byte[] imageBytes){
+    public long perceptualHash(byte[] imageBytes){
         if(imageBytes == null || imageBytes.length == 0){
             throw new IllegalArgumentException("Image data is empy");
         }

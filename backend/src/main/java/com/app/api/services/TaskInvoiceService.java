@@ -151,7 +151,10 @@ public class TaskInvoiceService {
      * @param imageUrls the list of Azure Blob Storage URLs to persist
      * @return the number of images saved, or -1 if the task was not found
      */
-    public int addImagesToTask(int taskId, List<String> imageUrls) {
+    public int addImagesToTask(int taskId, List<String> imageUrls, String imageType) {
+        if (!"REFERENCE".equals(imageType) && !"COMPLETION".equals(imageType)) {
+            throw new IllegalArgumentException("imageType must be REFERENCE or COMPLETION");
+        }
         TaskInvoice invoice = taskInvoiceRepository.findById(taskId).orElse(null);
         if (invoice == null) {
             return -1;
@@ -163,5 +166,9 @@ public class TaskInvoiceService {
             taskImageRepository.save(image);
         }
         return imageUrls.size();
+    }
+    /** Backwards-compatible overload: existing callers keep getting COMPLETION rows. */
+    public int addImagesToTask(int taskId, List<String> imageUrls) {
+        return addImagesToTask(taskId, imageUrls, "COMPLETION");
     }
 }

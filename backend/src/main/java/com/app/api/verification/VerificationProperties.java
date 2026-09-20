@@ -8,9 +8,13 @@ import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 
 @Component
+@Getter
+@Setter
 @ConfigurationProperties(prefix = "supaneighbour.verification")
 public class VerificationProperties implements InitializingBean {
 
@@ -19,25 +23,60 @@ public class VerificationProperties implements InitializingBean {
         private double geo = 0.25;
         private double meta = 0.15;
         private double time = 0.15;
- 
-        public double getAi() { return ai; }
-        public void setAi(double ai) { this.ai = ai; }
-        public double getGeo() { return geo; }
-        public void setGeo(double geo) { this.geo = geo; }
-        public double getMeta() { return meta; }
-        public void setMeta(double meta) { this.meta = meta; }
-        public double getTime() { return time; }
-        public void setTime(double time) { this.time = time; }
+        /** @return the AI sub-score weight */
+        public double getAi() { 
+            return ai; 
+        }
+        /** @param ai the AI sub-score weight */
+        public void setAi(double ai) {
+             this.ai = ai; 
+        }
+         /** @return the geographic sub-score weight */
+        public double getGeo() {
+             return geo;
+        }
+        /** @param geo the geographic sub-score weight */
+        public void setGeo(double geo) { 
+            this.geo = geo; 
+        }
+        /** @return the metadata sub-score weight */
+        public double getMeta() { 
+            return meta; 
+        }
+        /** @param meta the metadata sub-score weight */
+        public void setMeta(double meta) { 
+            this.meta = meta; 
+        }
+         /** @return the time sub-score weight */
+        public double getTime() { 
+            return time; 
+        }
+        /** @param time the time sub-score weight */
+        public void setTime(double time) { 
+            this.time = time; 
+        }
     }
  
     public static class Thresholds {
         private double verified = 0.75;
         private double needsReview = 0.45;
  
-        public double getVerified() { return verified; }
-        public void setVerified(double verified) { this.verified = verified; }
-        public double getNeedsReview() { return needsReview; }
-        public void setNeedsReview(double needsReview) { this.needsReview = needsReview; }
+        /** @return the verified threshold */
+        public double getVerified() { 
+            return verified; 
+        }
+        /** @param verified the verified threshold */
+        public void setVerified(double verified) { 
+            this.verified = verified;
+        }
+        /** @return the needs-review threshold */
+        public double getNeedsReview() { 
+            return needsReview; 
+        }
+        /** @param needsReview the needs-review threshold */
+        public void setNeedsReview(double needsReview) { 
+            this.needsReview = needsReview; 
+        }
     }
 
 
@@ -53,17 +92,41 @@ public class VerificationProperties implements InitializingBean {
     private int captureMaxAgeMinutes = 15;
     private int exifToleranceMinutes = 5;
 
-
-     public VerificationEngine.Config toEngineConfig() {
+    /**
+     * Converts the current weight and threshold values into a
+     * {@link VerificationEngine.Config}.
+     *
+     * @return an engine configuration built from this properties object
+     * @throws IllegalArgumentException if the values violate the constraints
+     *         enforced by {@link VerificationEngine.Config}
+     */
+    public VerificationEngine.Config toEngineConfig() {
         return new VerificationEngine.Config(
                 weights.ai, weights.geo, weights.meta, weights.time,
                 thresholds.verified, thresholds.needsReview);
     }
 
+    /**
+     * Resolves {@link #zone} into a {@link ZoneId}.
+     *
+     * @return the resolved zone
+     * @throws java.time.DateTimeException if {@code zone} is not a valid zone ID
+     * @throws NullPointerException        if {@code zone} is {@code null}
+     */
     public ZoneId resolveZone(){
         return ZoneId.of(zone);
     }
 
+    /**
+     * Validates this configuration after Spring has bound all properties.
+     *
+     * <p>Checks that radii, upload limits, and durations are in range,
+     * that {@link #allowedMime} is non-empty, that {@link #zone} resolves,
+     * and that the weights and thresholds form a valid engine configuration.
+     * Invalid values cause startup to fail immediately.</p>
+     *
+     * @throws IllegalStateException if any property is invalid
+     */
     @Override 
     public void afterPropertiesSet(){
         if (geofenceRadiusM <= 0) {
