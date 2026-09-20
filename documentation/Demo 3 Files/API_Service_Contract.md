@@ -13,55 +13,56 @@
 
 ## Table of Contents
 
-
 1. [Authentication](#1-authentication)
-   - [POST /api/auth/login](#11-post-apiauthlogin)
-   - [POST /api/auth/register](#12-post-apiauthregister)
+   - [1.1 POST /api/auth/login](#11-post-apiauthlogin)
+   - [1.2 POST /api/auth/register](#12-post-apiauthregister)
 2. [Dashboard](#2-dashboard)
-   - [GET /api/dashboard](#21-get-apidashboard)
+   - [2.1 GET /api/dashboard](#21-get-apidashboard)
 3. [Task Management](#3-task-management)
-   - [POST /api/task/create](#31-post-apitaskcreate)
-   - [PUT /api/task/{taskID}](#32-put-apitasktaskid)
-   - [PATCH /api/task/{taskID}/complete](#33-patch-apitasktaskidcomplete)
-   - [PATCH /api/task/{taskID}/status](#34-patch-apitasktaskidstatus)
-   - [GET /api/task/assigned/{userID}](#35-get-apitaskassigneduserid)
-   - [GET /api/task/created/{userID}](#36-get-apitaskcreateduserid)
+   - [3.1 POST /api/task/create](#31-post-apitaskcreate)
+   - [3.2 PUT /api/task/{taskID}](#32-put-apitasktaskid)
+   - [3.3 PATCH /api/task/{taskID}/complete](#33-patch-apitasktaskidcomplete)
+   - [3.4 PATCH /api/task/{taskID}/status](#34-patch-apitasktaskidstatus)
+   - [3.5 GET /api/task/assigned/{userID}](#35-get-apitaskassigneduserid)
+   - [3.6 GET /api/task/created/{userID}](#36-get-apitaskcreateduserid)
 4. [Chat](#4-chat)
-   - [GET /api/chats/{userID}](#41-get-apichatsuserid)
-   - [GET /api/chats/{chatID}/messages](#42-get-apichatschatidmessages)
+   - [4.1 GET /api/chats/{userID}](#41-get-apichatsuserid)
+   - [4.2 GET /api/chats/{chatID}/messages](#42-get-apichatschatidmessages)
 5. [Matching & Helpers](#5-matching--helpers)
-   - [GET /api/helpers/available](#51-get-apihelpersavailable)
-   - [GET /api/helpers/{helperId}/profile](#52-get-apihelpershelperidprofile)
-   - [POST /api/task/{taskId}/invite](#53-post-apitasktaskidinvite)
-   - [POST /api/task/{taskId}/accept](#54-post-apitasktaskidaccept)
-   - [POST /api/task/{taskId}/decline](#55-post-apitasktaskiddecline)
-   - [GET /api/helpers/me/tasks](#56-get-apihelpersmetasks)
+   - [5.1 GET /api/helpers/available](#51-get-apihelpersavailable)
+   - [5.2 GET /api/helpers/{helperId}/profile](#52-get-apihelpershelperidprofile)
+   - [5.3 POST /api/task/{taskId}/invite](#53-post-apitasktaskidinvite)
+   - [5.4 POST /api/task/{taskId}/accept](#54-post-apitasktaskidaccept)
+   - [5.5 POST /api/task/{taskId}/decline](#55-post-apitasktaskiddecline)
+   - [5.6 GET /api/helpers/me/tasks](#56-get-apihelpersmetasks)
 6. [Profile & Gamification](#6-profile--gamification)
-   - [GET /api/users/me/profile](#61-get-apiusersmeprofile)
-   - [PATCH /api/users/me/profile](#62-patch-apiusersmeprofile)
-   - [GET /api/leaderboard](#63-get-apileaderboard)
-   - [GET /api/users/me/achievements](#64-get-apiusersmeachievements)
-   - [POST /api/tasks/{taskId}/rate](#65-post-apitaskstaskidrate)
+   - [6.1 GET /api/users/me/profile](#61-get-apiusersmeprofile)
+   - [6.2 PATCH /api/users/me/profile](#62-patch-apiusersmeprofile)
+   - [6.3 GET /api/leaderboard](#63-get-apileaderboard)
+   - [6.4 GET /api/users/me/achievements](#64-get-apiusersmeachievements)
+   - [6.5 POST /api/tasks/{taskId}/rate](#65-post-apitaskstaskidrate)
 7. [Community Bulletin Board](#7-community-bulletin-board)
-   - [GET /api/bulletin/posts](#71-get-apibulletinposts)
-   - [GET /api/bulletin/posts/{postId}](#72-get-apibulletinpostspostid)
-   - [POST /api/bulletin/posts](#73-post-apibulletinposts)
-   - [POST /api/upload/image](#74-post-apiuploadimage)
-   - [DELETE /api/bulletin/posts/{postId}](#75-delete-apibulletinpostspostid)
-   - [POST /api/bulletin/posts/{postId}/like](#76-post-apibulletinpostspostidlike)
-   - [DELETE /api/bulletin/posts/{postId}/like](#77-delete-apibulletinpostspostidlike)
-   - [GET /api/bulletin/posts/{postId}/comments](#78-get-apibulletinpostspostidcomments)
-   - [POST /api/comments/bulletin/{postId}](#79-post-apicommentsbulletinpostid)
-   - [POST /api/bulletin/posts/{postId}/dislike](#710-post-apibulletinpostspostiddislike)
-   - [DELETE /api/bulletin/posts/{postId}/dislike](#711-delete-apireactionpostspostiddislike)
-   - [DELETE /api/bulletin/posts/{postId}/comments/{commentId}](#712-delete-apicommentsbulletinpostspostidcommentid)
-8. [Settings & Privacy](#8-settings-and-privacy)
-   - [GET /api/settings/users/show-status](#81-get-apisettingsusersshow-status)
-   - [POST /api/settings/users/show-status](#82-post-apisettingsusersshow-status)
-   - [GET /api/settings/users/mode](#83-get-apisettingsusersmode)
-   - [POST /api/settings/users/mode](#84-post-apisettingsusersmode)
-   - [GET api/settings//users/{userId}/status](#85-get-apisettingsusersuseridstatus)
-   - [GET /api/settings/users/information/{userId}](#86-get-apisettingsusersinformationuserid)
+   - [7.1 GET /api/bulletin/posts](#71-get-apibulletinposts)
+   - [7.2 GET /api/bulletin/posts/{postId}](#72-get-apibulletinpostspostid)
+   - [7.3 POST /api/bulletin/posts](#73-post-apibulletinposts)
+   - [7.4 POST /api/upload/image](#74-post-apiuploadimage)
+   - [7.5 DELETE /api/bulletin/posts/{postId}](#75-delete-apibulletinpostspostid)
+   - [7.6 POST /api/bulletin/posts/{postId}/like](#76-post-apibulletinpostspostidlike)
+   - [7.7 DELETE /api/bulletin/posts/{postId}/like](#77-delete-apibulletinpostspostidlike)
+   - [7.8 GET /api/bulletin/posts/{postId}/comments](#78-get-apibulletinpostspostidcomments)
+   - [7.9 POST /api/comments/bulletin/{postId}](#79-post-apicommentsbulletinpostid)
+   - [7.10 POST /api/bulletin/posts/{postId}/dislike](#710-post-apibulletinpostspostiddislike)
+   - [7.11 DELETE /api/reaction/posts/{postId}/dislike](#711-delete-apireactionpostspostiddislike)
+   - [7.12 DELETE /api/comments/bulletin/posts/{postId}/{commentId}](#712-delete-apicommentsbulletinpostspostidcommentid)
+8. [Settings and Privacy](#8-settings-and-privacy)
+   - [8.1 GET /api/settings/users/show-status](#81-get-apisettingsusersshow-status)
+   - [8.2 POST /api/settings/users/show-status](#82-post-apisettingsusersshow-status)
+   - [8.3 GET /api/settings/users/mode](#83-get-apisettingsusersmode)
+   - [8.4 POST /api/settings/users/mode](#84-post-apisettingsusersmode)
+   - [8.5 GET /api/settings/users/{userId}/status](#85-get-apisettingsusersuseridstatus)
+   - [8.6 GET /api/settings/users/information/{userId}](#86-get-apisettingsusersinformationuserid)
+   - [8.7 PUT /api/settings/me/phoneNumber](#87-put-apisettingsmephonenumber)
+   - [8.8 DELETE /api/settings/me/user](#88-delete-apisettingsmeuser)
 9. [Admin & Reporting](#9--admin--reporting)
    - [9.1 POST /api/auth/admin/login](#91-post-apiauthadminlogin)
    - [9.2 GET /api/admin/dashboard](#92-get-apiadmindashboard)
@@ -72,23 +73,30 @@
    - [9.7 PUT /api/user (deregister admin)](#97-put-apiuser-deregister-admin)
    - [9.8 GET /api/report/me](#98-get-apireportme)
    - [9.9 POST /api/report/match](#99-post-apireportmatch)
-
 10. [Admin Applications (to become an Admin)](#10-admin-applications)
-    - [10.1 POST /api/admin/applications](#101-post-apiadminapplications)
-    - [10.2 GET /api/admin/applications](#102-get-apiadminapplications)
-    - [10.3 GET /api/admin/applications/me](#103-get-apiadminapplicationsme)
-    - [10.4 PATCH /api/admin/applications/{applicationId}/approve](#104-patch-apiadminapplicationsapplicationidapprove)
-    - [10.5 PATCH /api/admin/applications/{applicationId}/reject](#105-patch-apiadminapplicationsapplicationidreject)
+   - [10.1 POST /api/admin/applications](#101-post-apiadminapplications)
+   - [10.2 GET /api/admin/applications](#102-get-apiadminapplications)
+   - [10.3 GET /api/admin/applications/me](#103-get-apiadminapplicationsme)
+   - [10.4 PATCH /api/admin/applications/{applicationId}/approve](#104-patch-apiadminapplicationsapplicationidapprove)
+   - [10.5 PATCH /api/admin/applications/{applicationId}/reject](#105-patch-apiadminapplicationsapplicationidreject)
 11. [Events](#11-events)
-    - [11.1 POST /api/events](#111-post-apievents)
-    - [11.2 GET /api/events](#112-get-apievents)
-    - [11.3 GET /api/events/{eventId}](#113-get-apieventseventid)
-    - [11.4 PATCH /api/events/{eventId}](#114-patch-apieventseventid)
-    - [11.5 DELETE /api/events/{eventId}](#115-delete-apieventseventid)
-    - [11.6 POST /api/events/{eventId}/attending](#116-post-apieventseventidattending)
-    - [11.7 GET /api/events/{eventId}/participants](#117-get-apieventseventidparticipants)
-    - [11.8 POST /api/events/{eventId}/absent](#118-post-apieventseventidabsent)
-12. [HTTP Status Code Reference](#12-http-status-code-reference)
+   - [11.1 POST /api/events](#111-post-apievents)
+   - [11.2 GET /api/events](#112-get-apievents)
+   - [11.3 GET /api/events/{eventId}](#113-get-apieventseventid)
+   - [11.4 PATCH /api/events/{eventId}](#114-patch-apieventseventid)
+   - [11.5 DELETE /api/events/{eventId}](#115-delete-apieventseventid)
+   - [11.6 POST /api/events/{eventId}/attending](#116-post-apieventseventidattending)
+   - [11.7 GET /api/events/{eventId}/participants](#117-get-apieventseventidparticipants)
+   - [11.8 POST /api/events/{eventId}/absent](#118-post-apieventseventidabsent)
+12. [Endorsements & Trust Graph](#12-endorsements--trust-graph)
+   - [12.1 POST /api/endorsements](#121-post-apiendorsements)
+   - [12.2 GET /api/endorsements/me](#122-get-apiendorsementsme)
+   - [12.3 GET /api/endorsements/me/summary](#123-get-apiendorsementsmesummary)
+   - [12.4 GET /api/endorsements/me/graph](#124-get-apiendorsementsmegraph)
+   - [12.5 GET /api/endorsements/trust-paths](#125-get-apiendorsementstrust-paths)
+   - [12.6 GET /api/endorsements/skills](#126-get-apiendorsementsskills)
+   - [12.7 GET /api/admin/endorsements/zone/{zoneId}/graph](#127-get-apiadminendorsementszonezoneidgraph)
+13. [HTTP Status Code Reference](#13-http-status-code-reference)
 
 ---
 
@@ -3600,7 +3608,361 @@ _(none)_
  
 ---
 
-## 12. HTTP Status Code Reference
+# 12. Endorsements & Trust Graph
+
+## 12.1 POST /api/endorsements
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/endorsements`                                                     |
+| **Method**         | `POST`                                                                   |
+| **Purpose**        | Endorse another user for a skill, optionally tied to a completed task   |
+| **Authentication** | Firebase ID Token required — `endorserId` resolved from token, never from request body |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Request Body
+
+```json
+{
+  "endorseeId": 22,
+  "skillTag": "pet_care",
+  "taskId": 101
+}
+```
+
+> ⚠️ **Open question**: is `taskId` required or optional? The DB column is nullable, but if it's optional here, `zone_id` (see Logic step 5) has no fallback source and needs one defined (e.g. endorsee's current address) before this can ship.
+
+#### Logic
+
+#### Logic
+
+1. Resolve `endorserId` from Firebase token.
+2. `400` if `endorserId == endorseeId` — self-endorsement is blocked (mirrors the `chk_endorsement_not_self` DB constraint).
+3. `404` if `endorseeId` has no matching user.
+4. `404` if `skillTag` doesn't exist in `endorsement_skill_table`; `400` if it exists but `approved = false`.
+5. Derive `zoneId`: look up the endorser's `user_table.user_address_id` → `address_table.address_id` → `address_table.neighbourhood_id`. That value is a `location_table.location_id` (per the schema trap — `address_table.neighbourhood_id` is an FK into `location_table`, not the real neighbourhood grouping column), so it can be used directly as `endorsement_table.zone_id`. `404` if the endorser has no address on file.
+6. If `taskId` provided: `404` if no matching `task_invoice_table` row. **Recommended (not yet confirmed): reject with `403` unless both `endorserId` and `endorseeId` were the requester/helper pair on that task.** `taskId` is now optional — it no longer feeds `zone_id`, so nothing else in this endpoint depends on it.
+7. Compute `weight` from the endorser's trust score. **No numeric trust score field exists yet** — proposing a placeholder `weight = 1` for now with a `// TODO: derive from trust score once numeric field exists` comment.
+8. Insert the row.
+
+#### Success Response — `201 Created`
+
+```json
+{
+  "endorsementId": 15,
+  "endorserId": 8,
+  "endorseeId": 22,
+  "zoneId": 4,
+  "skillTag": "pet_care",
+  "taskId": 101,
+  "weight": 1,
+  "createdAt": "2026-09-19T10:15:00"
+}
+```
+
+#### Error Responses
+
+| Status Code         | Scenario                                              | Response Body                                     |
+| -------------------- | ------------------------------------------------------ | ---------------------------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token                  | `"Invalid Firebase Token"`                        |
+| `400 Bad Request`   | `endorserId == endorseeId`                            | `"You cannot endorse yourself"`                   |
+| `404 Not Found`     | `endorseeId` doesn't exist                            | `"User not found"`                                |
+| `404 Not Found`     | `skillTag` doesn't exist                              | `"Skill tag not found"`                           |
+| `400 Bad Request`   | `skillTag` exists but not yet approved                | `"This skill tag has not been approved"`          |
+| `404 Not Found`     | `taskId` provided but doesn't exist                   | `"Task not found"`                                |
+| `403 Forbidden`     | `taskId` provided but doesn't involve both users      | `"This task does not involve both users"`         |
+
+---
+
+### 12.2 GET /api/endorsements/me
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/endorsements/me`                                                  |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | List endorsements received by the caller, grouped by skill tag          |
+| **Authentication** | Firebase ID Token required — `userId` resolved from token                |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Request Headers
+
+```http
+Authorization: Bearer <Firebase ID Token>
+```
+
+#### Query Parameters
+
+| Parameter  | Type   | Required | Description                                  |
+| ---------- | ------ | -------- | --------------------------------------------- |
+| `skillTag` | string | No       | Filter results to a single skill tag          |
+
+#### Logic
+
+1. Resolve `userId` from token.
+2. Query `endorsement_table` where `endorsee_id = userId`, optionally filtered by `skill_tag`.
+3. Group results by `skill_tag`.
+
+> ⚠️ Shape below groups results as an array even when `skillTag` is passed (trivially one group), for a consistent response shape regardless of filter — confirm this is preferred over returning a flat list when filtered.
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "groups": [
+    {
+      "skillTag": "pet_care",
+      "displayName": "Pet Care",
+      "count": 3,
+      "endorsements": [
+        {
+          "endorsementId": 1,
+          "endorserId": 5,
+          "endorserName": "Thabo M.",
+          "zoneId": 4,
+          "taskId": 101,
+          "weight": 1,
+          "createdAt": "2026-09-10T14:00:00"
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                              | Response Body               |
+| -------------------- | ---------------------------------------- | ------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token   | `"Invalid Firebase Token"`  |
+
+---
+
+### 12.3 GET /api/endorsements/me/summary
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/endorsements/me/summary`                                          |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Compact endorsement summary for profile cards                           |
+| **Authentication** | Firebase ID Token required — `userId` resolved from token                |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Logic
+
+1. `totalCount` = count of all endorsements where `endorsee_id = userId`.
+2. `topSkills` = skill tags for this user ordered by count desc, capped at top 5 (**cap not specified in the ask — confirm 5 is right**).
+3. `miniGraphNodes` — **underspecified in the ask.** Proposing: the user's direct (1-hop) endorsers, `{userId, name, avatarUrl}`, capped at 8, ordered by summed endorsement weight — meant for a small graph-preview widget. This could just as easily mean *skill* nodes rather than *person* nodes — confirm against the actual UI mock before building.
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "totalCount": 14,
+  "topSkills": [
+    { "tag": "pet_care", "count": 6 },
+    { "tag": "gardening", "count": 4 }
+  ],
+  "miniGraphNodes": [
+    { "userId": 5, "name": "Thabo M.", "avatarUrl": "https://..." }
+  ]
+}
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                              | Response Body               |
+| -------------------- | ---------------------------------------- | ------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token   | `"Invalid Firebase Token"`  |
+
+---
+
+### 12.4 GET /api/endorsements/me/graph
+
+> Written in the ask as `/api/endorsement/me/graph` (singular) — using plural here for consistency with the rest of this section; flag if singular was intentional.
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/endorsements/me/graph`                                            |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Return the caller's N-hop trust-graph neighbourhood                     |
+| **Authentication** | Firebase ID Token required — `userId` resolved from token, used as graph root |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description                                                |
+| --------- | ---- | -------- | ------------------------------------------------------------ |
+| `depth`   | int  | No       | Hop count from the root user; default 1, **max 3 proposed** (unbounded traversal is a real cost/response-size risk — confirm the cap) |
+
+#### Logic
+
+1. Resolve `userId` from token as the root node.
+2. Clamp/reject `depth` above the agreed max.
+3. **Assumes endorsement edges are treated as undirected** for graph traversal (an endorsement in either direction counts as one connection) — confirm this matches the "trust network" intent, since it changes both the recursive CTE and what "depth" means.
+4. BFS via recursive CTE (native SQL through `EntityManager`, per existing convention) out to `depth` hops from the root, collecting visited users as nodes and endorsement rows between them as edges.
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "nodes": [
+    { "userId": 8, "name": "Ble K.", "avatarUrl": "https://..." },
+    { "userId": 22, "name": "Naledi P.", "avatarUrl": "https://..." }
+  ],
+  "edges": [
+    { "source": 8, "target": 22, "skillTag": "pet_care", "weight": 1 }
+  ]
+}
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                              | Response Body                     |
+| -------------------- | ---------------------------------------- | -------------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token   | `"Invalid Firebase Token"`        |
+| `400 Bad Request`   | `depth` exceeds max allowed             | `"depth exceeds maximum of 3"`    |
+
+---
+
+### 12.5 GET /api/endorsements/trust-paths
+
+> Written in the ask as `/api/endorsement/trust-paths` (singular) — same pluralization note as 12.4.
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/endorsements/trust-paths`                                         |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Return the shortest trust path(s) between the caller and another user   |
+| **Authentication** | Firebase ID Token required — `fromUserId` resolved from token, never from query params |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Query Parameters
+
+| Parameter  | Type | Required | Description                          |
+| ---------- | ---- | -------- | --------------------------------------- |
+| `toUserId` | int  | Yes      | The other user to find a path to        |
+
+#### Logic
+
+1. Resolve `fromUserId` from Firebase token.
+2. `400` if `toUserId == fromUserId`.
+3. `404` if `toUserId` doesn't exist.
+4. BFS shortest-path search over the endorsement graph (same undirected assumption as 12.4), **capped at max depth 6** (proposed — an unbounded search over a growing graph is a real cost concern; confirm the cap).
+5. If multiple paths tie for shortest length, return all of them, **capped at 5 results** (proposed).
+6. If no path is found within the cap, return `200` with an empty `paths` array — treating "no connection" as a normal result rather than an error (confirm this is preferred over `404`).
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "fromUserId": 8,
+  "toUserId": 40,
+  "paths": [
+    {
+      "users": [
+        { "userId": 8, "name": "Ble K." },
+        { "userId": 22, "name": "Naledi P." },
+        { "userId": 40, "name": "Sipho D." }
+      ],
+      "totalWeight": 2
+    }
+  ]
+}
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                              | Response Body                     |
+| -------------------- | ---------------------------------------- | -------------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token   | `"Invalid Firebase Token"`        |
+| `400 Bad Request`   | `toUserId` equals caller's own ID       | `"Cannot search a path to yourself"` |
+| `404 Not Found`     | `toUserId` doesn't exist                | `"User not found"`                |
+
+---
+
+### 12.6 GET /api/endorsements/skills
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/endorsements/skills`                                              |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Static catalogue of approved skill tags, grouped by category            |
+| **Authentication** | **None assumed** — public catalogue, mirroring the existing `/api/badges` pattern from the UC5 audit. Confirm if this should actually require auth. |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Logic
+
+1. Select all rows from `endorsement_skill_table` where `approved = true`.
+2. Group by `category`.
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "categories": [
+    {
+      "category": "household",
+      "skills": [
+        { "skillTag": "pet_care", "displayName": "Pet Care" },
+        { "skillTag": "gardening", "displayName": "Gardening" }
+      ]
+    }
+  ]
+}
+```
+
+#### Error Responses
+
+_(none — public endpoint with no user-supplied input)_
+
+---
+
+### 12.7 GET /api/admin/endorsements/zone/{zoneId}/graph
+
+| Field              | Details                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
+| **Endpoint**       | `/api/admin/endorsements/zone/{zoneId}/graph`                           |
+| **Method**         | `GET`                                                                    |
+| **Purpose**        | Zone-wide trust graph for admin insights                                |
+| **Authentication** | Firebase ID Token required, **plus admin check**. Proposing `admin_access_level >= 1` (any admin) since this is read-only insight, not a destructive action — confirm if level 2 (super admin) should be required instead. |
+| **Content-Type**   | `application/json`                                                      |
+
+#### Path Parameters
+
+| Parameter | Type | Description                                                                 |
+| --------- | ---- | ------------------------------------------------------------------------------ |
+| `zoneId`  | int  | **Ambiguous — needs a decision.** Since `endorsement_table.zone_id` now FKs to `location_table.location_id` (per your last message), does `zoneId` here mean a single `location_id`, or a `neighbourhood_id` spanning multiple `location_table` rows? Admins almost certainly think in terms of neighbourhoods, not individual location rows — if it's the latter, this endpoint needs to join `location_table` and aggregate across all `location_id`s sharing that `neighbourhood_id`, not just filter `endorsement_table.zone_id = zoneId` directly. |
+
+#### Logic
+
+1. Verify caller is an admin (see auth note above).
+2. **Pending the `zoneId` decision above** — either filter `endorsement_table` directly by `zone_id`, or resolve all `location_id`s under the given `neighbourhood_id` first and filter by that set.
+3. Build the same `{nodes, edges}` shape as 12.4, scoped to endorsements within the zone.
+
+#### Success Response — `200 OK`
+
+```json
+{
+  "nodes": [ { "userId": 8, "name": "Ble K.", "avatarUrl": "https://..." } ],
+  "edges": [ { "source": 8, "target": 22, "skillTag": "pet_care", "weight": 1 } ]
+}
+```
+
+#### Error Responses
+
+| Status Code        | Scenario                              | Response Body                     |
+| -------------------- | ---------------------------------------- | -------------------------------------- |
+| `401 Unauthorized`  | Missing or invalid Firebase ID token   | `"Invalid Firebase Token"`        |
+| `403 Forbidden`     | Caller is not an admin                  | `"Admin access required"`         |
+| `404 Not Found`     | `zoneId` doesn't correspond to any location/neighbourhood | `"Zone not found"` |
+
+## 13. HTTP Status Code Reference
 
 
 | Code | Meaning | When used |
