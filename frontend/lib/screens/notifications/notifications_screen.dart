@@ -8,7 +8,7 @@ import '../profile/achievements_screen.dart';
 import '../../services/notification_api_service.dart';
 
 // Provider for notifications
-final notificationsApiServiceProvider = Provider<NotificationsApiService>((ref) {
+final notificationsApiServiceProvider = Provider<INotificationsApiService>((ref) {
   return NotificationsApiService();
 });
 
@@ -18,7 +18,7 @@ final notificationsProvider =
 });
 
 class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
-  final NotificationsApiService _apiService;
+  final INotificationsApiService _apiService;
 
   NotificationsNotifier(this._apiService) : super ([]){
     _loadNotifications();
