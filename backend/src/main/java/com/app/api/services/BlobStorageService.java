@@ -186,6 +186,30 @@ public class BlobStorageService {
         return filename.substring(filename.lastIndexOf("."));
     }
 
+        /**
+     * Downloads the bytes of an image previously stored by {@link #uploadTaskImage(MultipartFile)}.
+     * <p>
+     * Only blobs inside the task-images container can be read: the URL must start with that
+     * container's URL, so a client-supplied URL can never make the server fetch anything else.
+     * </p>
+     *
+     * @param blobUrl the URL stored in task_image_table.image_url
+     * @return the file's bytes
+     * @throws IllegalArgumentException if the URL is not a task-images container URL
+     * @throws com.azure.storage.blob.models.BlobStorageException if the blob does not exist
+     */
+    public byte[] downloadTaskImage(String blobUrl) {
+        String containerPrefix = taskImagesContainerClient.getBlobContainerUrl() + "/";
+        if (blobUrl == null || !blobUrl.startsWith(containerPrefix)) {
+            throw new IllegalArgumentException("URL is not a task image");
+        }
+        String blobName = extractBlobName(blobUrl, taskImagesContainerClient.getBlobContainerName());
+        if (blobName.isBlank()) {
+            throw new IllegalArgumentException("URL is not a task image");
+        }
+        return taskImagesContainerClient.getBlobClient(blobName).downloadContent().toBytes();
+    }
+
 
     /**
      * Generates a time-limited Shared Access Signature (SAS) URL for a blob.

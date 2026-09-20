@@ -142,6 +142,14 @@ public class TaskImage {
     private LocalDateTime uploadedAt;
 
     /**
+     * Perceptual hash of the image, used to detect near-duplicate images
+     * that differ only slightly (recompression, minor edits, resizing).
+     * See {@code HashService#perpetualHash(byte[])} for how it is computed.
+     */
+    @Column(name = "perceptual_hash")
+    private Long perceptualHash;
+
+    /**
      * Gets the task image identifier.
      *
      * @return the task image id
@@ -472,5 +480,23 @@ public class TaskImage {
      */
     public LocalDateTime getUploadedAt() {
         return uploadedAt;
+    }
+
+    /**
+     * Gets the perceptual hash of the image.
+     *
+     * @return the perceptual hash, or {@code null} if not computed
+     */
+    public Long getPerceptualHash() {
+        return perceptualHash;
+    }
+
+    /**
+     * Sets the perceptual hash of the image.
+     *
+     * @param perceptualHash the perceptual hash, or {@code null} to clear it
+     */
+    public void setPerceptualHash(Long perceptualHash) {
+        this.perceptualHash = perceptualHash;
     }
 }
