@@ -54,14 +54,14 @@ public class GeoService {
     ){
         double phi1 = Math.toRadians(lat1);
         double phi2 = Math.toRadians(lat2);
-        double dPhi = Math.toRadians(lng2 - lng1);
+        double dPhi = Math.toRadians(lat2 - lat1);
         double dLambda = Math.toRadians(lng2 - lng1);
 
-        double a = Math.sin(dPhi /2) * Math.sin(dPhi /2)
-        + Math.cos(phi1) * Math.cos(phi2) * Math.sin(dLambda / 2) * Math.sin(dLambda /2);
+        double a = Math.sin(dPhi / 2.0) * Math.sin(dPhi / 2.0)
+            + Math.cos(phi1) * Math.cos(phi2) * Math.sin(dLambda / 2.0) * Math.sin(dLambda / 2.0);
 
         a = Math.min(1.0, a);
-        double c = 2* Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double c = 2.0 * Math.atan2(Math.sqrt(a), Math.sqrt(1.0 - a));
 
         return EARTH_RADIUS_M * c;
     }

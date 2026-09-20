@@ -392,6 +392,8 @@ public class VerificationEngine {
             metaScore += META_EXIF_GPS;
         }
 
+        metaScore = clamp01(metaScore);
+
         double timeScore = 0;
         if(in.withinTaskWindow()){
             timeScore = 1.0;

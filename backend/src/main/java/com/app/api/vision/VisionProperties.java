@@ -71,7 +71,7 @@ public class VisionProperties {
          *
          * @param outcome the outcome
          */
-        public void setOutcom(Outcome outcome){
+        public void setOutcome(Outcome outcome){
             this.outcome = outcome;
         }
     }

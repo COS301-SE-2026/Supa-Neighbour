@@ -46,9 +46,10 @@ abstract class ITaskService {
   Future<void> matchHelpersForTask(int taskId);
 
   Future<String?> uploadTaskImage(XFile imageFile);
-  Future<void> saveTaskImages(int taskId, List<String> imageUrls);
+  Future<void> saveTaskImages(int taskId, List<String> imageUrls, {required TaskImageType type});
 }
 
+enum TaskImageType { reference, completion }
 
 /// responsible for all task-related API calls.
 class TaskService implements ITaskService {
@@ -415,12 +416,13 @@ Future<void> declineTaskInvitation(int taskId) async {
   /// POST /api/taskinvoices/{taskId}/images
   /// Saves a list of uploaded image URLs to the task in the database.
   @override
-  Future<void> saveTaskImages(int taskId, List<String> imageUrls) async {
+  Future<void> saveTaskImages(int taskId, List<String> imageUrls, {required TaskImageType type}) async {
     try {
       final token = await _getToken();
       await _dio.post(
         '/api/taskinvoices/$taskId/images',
         data: {'imageUrls': imageUrls},
+        queryParameters: {'type': type.name.toUpperCase()},
         options: token != null
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,

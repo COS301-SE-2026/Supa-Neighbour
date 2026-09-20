@@ -11,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
 
 @Service
 public class HashService {
-    private static final int NEAR_DUPLICATE_MAX_DISTANCE = 8;
+    public static final int NEAR_DUPLICATE_MAX_DISTANCE = 8;
 
     private static final int GRID_W = 9;
     private static final int GRID_H = 8;
