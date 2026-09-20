@@ -4,6 +4,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:supa_neighbour/models/auth_session.dart';
 import 'package:supa_neighbour/models/user_model.dart';
 import 'package:supa_neighbour/screens/home/home_screen.dart';
+import 'package:supa_neighbour/screens/notifications/notifications_screen.dart';
+import 'package:supa_neighbour/services/notification_api_service.dart';
+
+// Fake implementation of NotificationsApiService that avoids Firebase.
+class FakeNotificationsApiService implements NotificationsApiService {
+  @override
+  Future<List<dynamic>> getNotifications() async => []; // Adjust return type to match your model, e.g. List<AppNotification>
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 void main() {
   group('HomeScreen Widget Tests', () {
@@ -34,6 +45,12 @@ void main() {
 
     Widget buildTestWidget() {
       return ProviderScope(
+        overrides: [
+          // Override the notification API service so it doesn't use Firebase
+          notificationsApiServiceProvider.overrideWithValue(
+            FakeNotificationsApiService(),
+          ),
+        ],
         child: const MaterialApp(
           home: HomeScreen(),
         ),
