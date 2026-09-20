@@ -8,6 +8,7 @@ import '../../constants/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 import '../leaderboard/helper_profile_preview_screen.dart';
+import '../reports/report_screen.dart';
 
 class ChatDetailScreen extends ConsumerStatefulWidget {
   final ChatThread chat;
@@ -250,6 +251,20 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     );
   }
 
+  /// Opens the unified ReportScreen for the other user in this chat.
+  void _reportUser() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReportScreen(
+          targetType: ReportTargetType.chat,
+          targetId: widget.chat.otherUserId,
+          targetPreview: widget.chat.name,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -317,11 +332,32 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           },
         ),
         actions: [
-          IconButton(
+          // Overflow menu — Report user
+          PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {
-              // Optional: additional options
+            onSelected: (value) {
+              if (value == 'report') {
+                _reportUser();
+              }
             },
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'report',
+                child: Row(
+                  children: [
+                    Icon(Icons.flag_outlined,
+                        size: 20, color: AppColors.error(context)),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Report user',
+                      style: GoogleFonts.openSans(
+                        color: AppColors.charcoal(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

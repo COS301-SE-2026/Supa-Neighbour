@@ -20,6 +20,10 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.AndroidConfig;
+import com.google.firebase.messaging.AndroidNotification;
+import com.google.firebase.messaging.ApnsConfig;
+import com.google.firebase.messaging.Aps;
 
 /**
  * Sends push notifications via Firebase Cloud Messaging (FCM) to a user's
@@ -198,8 +202,8 @@ public class NotificationsService {
 
     /**
      * Core send method: fans out one FCM message per registered device for the user.
-     * Dead tokens are deleted so they stop being retried.
-     * Failures are logged and never thrown – a push failure must not break the calling flow.
+     * Uses HIGH priority on Android so the notification is delivered immediately
+     * even under Doze mode. Dead tokens are deleted so they stop being retried.
      *
      * @param userId   the user to notify
      * @param title    notification title
@@ -223,6 +227,20 @@ public class NotificationsService {
                             .build())
                     .putData("type", type)
                     .putData("entityId", entityId)
+                    .setAndroidConfig(AndroidConfig.builder()
+                            .setPriority(AndroidConfig.Priority.HIGH)
+                            .setNotification(AndroidNotification.builder()
+                                    .setChannelId("supa_neighbour_channel")
+                                    .setSound("default")
+                                    .setDefaultVibrateTimings(true)
+                                    .build())
+                            .build())
+                    .setApnsConfig(ApnsConfig.builder()
+                            .setAps(Aps.builder()
+                                    .setSound("default")
+                                    .setContentAvailable(true)
+                                    .build())
+                            .build())
                     .build();
 
             try {

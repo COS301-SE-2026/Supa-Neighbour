@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../models/bulletin_post_model.dart';
 import '../../models/bulletin_comment_model.dart';
+import '../reports/report_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
@@ -157,6 +158,43 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
     }
   }
 
+  /// Opens the unified ReportScreen for the post.
+  void _reportPost() {
+    if (_post == null) return;
+    final preview = _post!.postContent.length > 40
+        ? '${_post!.postContent.substring(0, 40)}…'
+        : _post!.postContent;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReportScreen(
+          targetType: ReportTargetType.post,
+          targetId: _post!.id,
+          targetPreview: preview,
+        ),
+      ),
+    );
+  }
+
+  /// Opens the unified ReportScreen for a specific comment.
+  void _reportComment(BulletinComment comment) {
+    final preview = comment.content.length > 40
+        ? '${comment.content.substring(0, 40)}…'
+        : comment.content;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReportScreen(
+          targetType: ReportTargetType.comment,
+          targetId: comment.id,
+          targetPreview: preview,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -218,6 +256,13 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
         ),
         centerTitle: true,
         actions: [
+          // Flag — report the post
+          IconButton(
+            icon: Icon(Icons.flag_outlined, color: AppColors.textGrey(context)),
+            tooltip: 'Report post',
+            onPressed: _reportPost,
+          ),
+          // Delete — only shown to owner
           if (post.isOwner)
             IconButton(
               icon: const Icon(Icons.delete_outline, color: Colors.red),
@@ -415,6 +460,16 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
                                       fontSize: 10,
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
+                                  // Small flag — report this comment
+                                  GestureDetector(
+                                    onTap: () => _reportComment(comment),
+                                    child: Icon(
+                                      Icons.flag_outlined,
+                                      size: 16,
+                                      color: AppColors.textGrey(context),
+                                    ),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 4),
@@ -437,13 +492,13 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
           ),
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: Color(0x0A000000),
                   blurRadius: 8,
-                  offset: const Offset(0, -2),
+                  offset: Offset(0, -2),
                 ),
               ],
             ),
@@ -466,7 +521,7 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
                       ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     ),
                     onSubmitted: (_) => _submitComment(),
                   ),
