@@ -13,9 +13,9 @@ spring:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
 
 azure:
@@ -29,10 +29,13 @@ azure:
 
 supaneighbour:
   vision:
+    mode: stub
+    stub:
+      outcome: error          # fail-safe: nothing auto-verifies until the real client exists
     azure-openai:
-      endpoint: ${AZURE_OPENAI_ENDPOINT}       # https://<resource-name>.openai.azure.com
-      key: ${AZURE_OPENAI_KEY}
-      deployment: ${AZURE_OPENAI_DEPLOYMENT}   # the DEPLOYMENT name Gendac chose, not the model name
+      endpoint: ${AZURE_OPENAI_ENDPOINT:}
+      key: ${AZURE_OPENAI_KEY:}
+      deployment: ${AZURE_OPENAI_DEPLOYMENT:}  # the DEPLOYMENT name Gendac chose, not the model name
       api-version: "2024-10-21"                # confirm against what the resource supports
       max-image-edge-px: 1600                  # downscale before sending (see §5.1)
       timeout-seconds: 30
@@ -40,6 +43,7 @@ supaneighbour:
     geofence-radius-m: 75
     arrival-geofence-radius-m: 150
     task-window-grace-minutes: 30
+    zone: Africa/Johannesburg
     weights:
       ai: 0.45
       geo: 0.25
