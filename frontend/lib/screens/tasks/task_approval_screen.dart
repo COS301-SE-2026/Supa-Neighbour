@@ -7,6 +7,7 @@ import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import '../endorsement/endorsement_prompt_sheet.dart';
 
 class TaskApprovalScreen extends ConsumerStatefulWidget {
   final Task task;
@@ -443,15 +444,28 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
 
       Task.updateTaskStatus(widget.task.id, 'completed');
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Task approved! XP awarded to helper.'),
-            backgroundColor: Color(0xFF4CAF50),
-          ),
-        );
-        Navigator.pop(context);
-      }
+      if (!context.mounted) return;
+
+      // Show success snackbar first
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Task approved! XP awarded to helper.'),
+          backgroundColor: Color(0xFF4CAF50),
+        ),
+      );
+
+      // Prompt for endorsement (non-blocking, user can skip)
+      await EndorsementPromptSheet.show(
+        context,
+        endorseeId: widget.task.helperId ?? '',
+        endorseeName: widget.task.helperName ?? 'this helper',
+        taskId: widget.task.id,
+      );
+
+      if (!context.mounted) return;
+      Navigator.pop(context);
+
+
     } on Exception catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
