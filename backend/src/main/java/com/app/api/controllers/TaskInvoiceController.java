@@ -285,6 +285,20 @@ public class TaskInvoiceController {
         return ResponseEntity.noContent().build();
     }
 
+/**
+ * Submits a helper completion photo for AI and location verification.
+ *
+ * @param id the task invoice ID
+ * @param file the uploaded completion image
+ * @param captureSource the capture source reported by the client
+ * @param capturedAt the client capture timestamp
+ * @param lat the client latitude
+ * @param lng the client longitude
+ * @param accuracyM the GPS accuracy in metres
+ * @param deviceId the client device identifier
+ * @param authHeader the bearer token for the authenticated caller
+ * @return the verification result response
+ */
     @PostMapping(value = "/{id}/completion-evidence", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
         summary = "Submit a completion photo for verification",

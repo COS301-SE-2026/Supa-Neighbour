@@ -38,7 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service 
 public class TaskEvidenceService {
     
-    private static final Logger log = LoggerFactory.getLogger(TaskEvidenceService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TaskEvidenceService.class);
 
     static final String IMAGE_TYPE_REFERENCE = "REFERENCE";
     static final String IMAGE_TYPE_COMPLETION = "COMPLETION";
@@ -164,19 +164,21 @@ public class TaskEvidenceService {
         try{
             return blobStorageService.downloadTaskImage(reference.get().getImageUrl());
         }catch(RuntimeException e){
-            log.warn("Could not read reference photo for task {}: {}", taskId, e.getMessage());
+            LOG.warn("Could not read reference photo for task {}: {}", taskId, e.getMessage());
             return null;
         }
     }
 
     private TaskFacts toFacts(Task task){
         String typeDescription = task.getTaskTypeId() == null ? null : taskTypeRepository.findById(task.getTaskTypeId()).map(TaskType::getDescription).orElse(null);
+        java.sql.Date startDate = task.getStartDate();
+        java.sql.Date endDate = task.getEndDate();
         return new TaskFacts(
             task.getTaskLat(),
             task.getTaskLng(),
-            task.getStartDate().toLocalDate(),
+            startDate == null ? null : startDate.toLocalDate(),
             task.getStartTime(),
-            task.getEndDate() == null ? null : task.getEndDate().toLocalDate(),
+            endDate == null ? null : endDate.toLocalDate(),
             task.getTitle(),
             task.getInstructions(),
             typeDescription
