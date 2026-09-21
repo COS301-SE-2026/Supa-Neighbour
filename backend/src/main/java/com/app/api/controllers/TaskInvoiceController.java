@@ -1,8 +1,13 @@
 package com.app.api.controllers;
 
 import java.util.List;
+import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.Objects;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,11 +21,20 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.app.api.models.TaskInvoice;
+import com.app.api.repositories.HelperRepository;
+import com.app.api.repositories.TaskRepository;
 import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.TaskInvoiceService;
+import com.app.api.verification.VerificationService.ClientHints;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.rpc.context.AttributeContext.Response;
+import com.app.api.services.TaskEvidenceService;
+import com.app.api.models.Helper;
+import com.app.api.models.Task;
+import com.app.api.dtos.VerificationResultDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,6 +43,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
+
 
 /**
  * REST controller for task invoice.
@@ -40,15 +56,22 @@ public class TaskInvoiceController {
 
     private final TaskInvoiceService taskInvoiceService;
     private final FirebaseAuthService firebaseAuthService;
+    private final TaskEvidenceService taskEvidenceService;
+    private final TaskRepository taskRepository;
+    private final HelperRepository helperRepository;
+
 
     /**
      * Constructs the controller with its required service dependency.
      *
      * @param taskInvoiceService service providing analytics data for taskInvoice
      */
-    public TaskInvoiceController(TaskInvoiceService taskInvoiceService, FirebaseAuthService firebaseAuthService) {
+    public TaskInvoiceController(TaskInvoiceService taskInvoiceService, FirebaseAuthService firebaseAuthService, TaskEvidenceService taskEvidenceService, TaskRepository taskRepository, HelperRepository helperRepository) {
         this.taskInvoiceService = taskInvoiceService;
         this.firebaseAuthService = firebaseAuthService;
+        this.taskEvidenceService = taskEvidenceService;
+        this.taskRepository = taskRepository;
+        this.helperRepository = helperRepository;
     }
 
     // GET /api/taskinvoices    
@@ -261,5 +284,89 @@ public class TaskInvoiceController {
         }
         taskInvoiceService.deleteTaskInvoice(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/{id}/completion-evidence", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+        summary = "Submit a completion photo for verification",
+        description = "Verifies the assigned helper's completion photo (location, capture time, duplicates and an AI comparison with the reference photo) and stores it",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Photo verified and stored"),
+        @ApiResponse(responseCode = "400", description = "Missing, oversized or unsupported image", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Caller is not the helper assigned to this task", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Task not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Task is closed or the photo was already submitted", content = @Content)
+    })
+    public ResponseEntity<?> submitCompletionEvidence(
+        @Parameter(description = "ID of the task", example = "1")
+        @PathVariable int id,
+
+        @Parameter(description = "The completion photo (JPEG or PNG)", required = true)
+        @RequestParam("file") MultipartFile file,
+
+        @Parameter(description = "CAMERA for a photo taken in-app", example = "CAMERA")
+        @RequestParam(name = "captureSource", required = false) String captureSource,
+
+        @Parameter(description = "When the photo was taken, ISO-8601 with UTC offset", example = "2026-09-20T12:00:00+02:00")
+        @RequestParam(name = "capturedAt", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime capturedAt,
+
+        @Parameter(description = "Helper latitude when the photo was taken")
+        @RequestParam(name = "lat", required = false) Double lat,
+        @Parameter(description = "Helper longitude when the photo was taken")
+        @RequestParam(name = "lng", required = false) Double lng,
+
+        @Parameter(description = "GPS accuracy in metres")
+        @RequestParam(name = "accuracyM", required = false) Double accuracyM,
+        @Parameter(description = "Identifier for the capturing device")
+        @RequestParam(name = "deviceId", required = false) String deviceId,
+
+        @Parameter(description = "Firebase authentication token in format: 'Bearer <token>'", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...")
+        @RequestHeader("Authorization") String authHeader
+    ){
+        int callerId;
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            callerId = firebaseAuthService.getUserIdFromToken(token);
+        }catch(FirebaseAuthException e){
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        Task task = taskRepository.findById(id).orElse(null);
+        if(task == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Task not found"));
+        }
+
+        Helper helper = helperRepository.findByUserid_Userid(callerId).orElse(null);
+
+        boolean assignHelper = helper != null && Objects.equals(task.getHelperId(), helper.getHelperid());
+
+
+        if(!assignHelper){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "You are not the helper assigned to this task"));
+        }
+
+        String status = task.getStatus();
+        if("cancelled".equalsIgnoreCase(status) || "completed".equalsIgnoreCase(status)){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "This task is no longer accepting evidence"));
+        }
+
+
+        ClientHints hints = new ClientHints(captureSource, capturedAt, lat, lng, accuracyM, deviceId);
+
+        try{
+            VerificationResultDTO result = taskEvidenceService.submitCompletionEvidence(task, file, hints);
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }catch(DataIntegrityViolationException e){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "This photot has already been submitted"));
+        }catch(IOException e){
+            return ResponseEntity.internalServerError().body(Map.of("error", "An expected error has occured. Please try again"));
+        }
+
     }
 }

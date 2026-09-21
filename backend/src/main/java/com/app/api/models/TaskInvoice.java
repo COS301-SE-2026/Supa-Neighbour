@@ -105,6 +105,14 @@ public class TaskInvoice {
     @OneToMany(mappedBy = "taskid", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TaskImage> images;
 
+    /** The task latitude in decimal degrees, or {@code null} if not set. */
+    @Column(name = "task_lat")
+    private Double taskLat;
+
+    /** The task longitude in decimal degrees, or {@code null} if not set. */
+    @Column(name = "task_lng")
+    private Double taskLng;
+
     /**
      * Gets the task identifier.
      *
@@ -448,4 +456,21 @@ public class TaskInvoice {
         this.images = images;
     }
 
+    /**
+     * Gets the task longitude in decimal degrees.
+     *
+     * @return the task longitude, or {@code null} if not set
+     */
+    public Double getTaskLng() {
+        return taskLng;
+    }
+
+    /**
+     * Sets the task longitude in decimal degrees.
+     *
+     * @param taskLng the task longitude, or {@code null} to clear it
+     */
+    public void setTaskLng(Double taskLng) {
+        this.taskLng = taskLng;
+    }
 }
