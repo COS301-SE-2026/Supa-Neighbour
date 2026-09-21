@@ -9,6 +9,8 @@ import '../services/settings_service.dart';
 import '../services/achievement_service.dart';
 import '../services/leaderboard_service.dart';
 import '../services/report_service.dart';
+import '../services/endorsement_service.dart';
+import '../services/endorsement_service_mock.dart';
 import '../services/admin_application_service.dart';
 
 // AUTH SERVICE PROVIDER
@@ -64,4 +66,14 @@ final reportServiceProvider = Provider<ReportService>((ref) {
 // ADMIN APPLICATION SERVICE PROVIDER
 final adminApplicationServiceProvider = Provider<IAdminApplicationService>((ref) {
   return AdminApplicationService();
+});
+
+// ENDORSEMENT SERVICE PROVIDER
+// Currently returns the mock so the UI works before the backend is deployed.
+// To switch to the real service:
+//   need to comment out the mock line below
+//   then uncomment the real line
+final endorsementServiceProvider = Provider<IEndorsementService>((ref) {
+  // return EndorsementService();            // real
+  return EndorsementServiceMock();           // mock
 });
