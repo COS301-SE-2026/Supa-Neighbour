@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared/shared.dart' hide AppColors, UserProfileResponse;
 import '../../constants/app_colors.dart';
 import '../../constants/skill_options.dart';
 import '../../constants/badge_visuals.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 import 'edit_profile_screen.dart' show EditUsernameScreen;
 import 'admin_application_screen.dart';
+import '../../widgets/endorsement/trust_network_card.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -27,6 +29,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   String? _errorMessage;
 
   List<String> _localSkillEdits = [];
+  EndorsementSummary? _endorsementSummary;
+  bool _isLoadingEndorsements = false;
 
   @override
   void initState() {
@@ -42,17 +46,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     });
 
     try{
-       final profileService = ref.read(profileServiceProvider);
+      final profileService = ref.read(profileServiceProvider);
       final profile = await profileService.getMyProfile();
       setState(() {
         _profile = profile;
         _localSkillEdits = List.from(profile.skills);
         _isLoading = false;
       });
+      // Load endorsement summary in parallel (non-blocking)
+      _loadEndorsementSummary();
     }catch(e){
       setState((){
         _errorMessage = 'Failed to load profile. Please try again.';
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadEndorsementSummary() async {
+    if (!mounted) return;
+    setState(() => _isLoadingEndorsements = true);
+
+    try {
+      final service = ref.read(endorsementServiceProvider);
+      final summary = await service.getMySummary();
+      if (!mounted) return;
+      setState(() {
+        _endorsementSummary = summary;
+        _isLoadingEndorsements = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _endorsementSummary = EndorsementSummary.empty();
+        _isLoadingEndorsements = false;
       });
     }
   }
@@ -278,6 +305,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ],
               _buildStatsRow(profile),
               const SizedBox(height: 20),
+              _buildTrustNetworkSection(),
+              const SizedBox(height: 20),
               _buildSkillsSection(),
               const SizedBox(height: 20),
               _buildAchievementsSection(profile),
@@ -492,6 +521,48 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ],
   );
 }
+
+Widget _buildTrustNetworkSection() {
+    if (_isLoadingEndorsements) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.surfaceGrey(context)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+
+    final summary = _endorsementSummary ?? EndorsementSummary.empty();
+
+    return TrustNetworkCard(
+      summary: summary,
+      onViewNetwork: () {
+        // Placeholder...this will navigate to EndorsementGraphScreen when i am done with it
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Full network view coming soon'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildStatItem(String value, String label) {
     return Container(
