@@ -30,7 +30,6 @@ import com.app.api.services.FirebaseAuthService;
 import com.app.api.services.TaskInvoiceService;
 import com.app.api.verification.VerificationService.ClientHints;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.google.rpc.context.AttributeContext.Response;
 import com.app.api.services.TaskEvidenceService;
 import com.app.api.models.Helper;
 import com.app.api.models.Task;

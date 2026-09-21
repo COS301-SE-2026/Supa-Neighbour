@@ -206,10 +206,10 @@ public class TaskEvidenceService {
         ClientHints hints,
         String imageUrl
     ){
-        Optional<TaskInvoice> task1 = taskInvoiceRepository.findById(task.getTaskId());
+        TaskInvoice task1 = taskInvoiceRepository.findById(task.getTaskId()).orElseThrow(() -> new IllegalArgumentException("No TaskInvoice found for taskId " + task.getTaskId()));
         VisionResult vision = outcome.vision();
         return TaskImage.builder()
-        .taskid(task1.get())
+        .taskid(task1)
         .imageUrl(imageUrl)
         .imageType(IMAGE_TYPE_COMPLETION)
         .aiLabels(vision.available() ? toJson(vision.labels()) : null)
@@ -234,11 +234,11 @@ public class TaskEvidenceService {
         Task task,
         Outcome outcome
     ){
-        Optional<TaskInvoice> task1 = taskInvoiceRepository.findById(task.getTaskId());
+        TaskInvoice task1 = taskInvoiceRepository.findById(task.getTaskId()).orElseThrow(() -> new IllegalArgumentException("No TaskInvoice found for taskId " + task.getTaskId()));
         var result = outcome.result();
         var geo = outcome.geo();
         return TaskVerification.builder()
-        .task(task1.get())
+        .task(task1)
         .score(result.score())
         .status(TaskVerification.VerificationStatus.valueOf(result.status().name()))
         .locationVerified(geo.available() ? geo.locationVerified() : null)
