@@ -53,6 +53,12 @@ public interface AdminApplicationRepository extends JpaRepository<AdminApplicati
      */
      boolean existsByUserAndApplicationStatus(User user, String status);
 
+     /**
+      * Find an application by its id with the associated user eagerly loaded.
+      *
+      * @param applicationId the id of the application
+      * @return an Optional containing the application if found
+      */
     @Query("SELECT a FROM AdminApplication a JOIN FETCH a.user WHERE a.applicationId = :applicationId")
      Optional<AdminApplication> findByIdWithUser(@Param("applicationId") Integer applicationId);
 
