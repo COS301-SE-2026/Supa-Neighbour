@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../models/task_model.dart';
 import '../../models/auth_session.dart';
 import '../../constants/app_colors.dart';
@@ -23,6 +26,12 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
   String? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
+
+  // ===== REQUIRED EVIDENCE PHOTOS (CAMERA ONLY) =====
+  final List<File> _selectedImages = [];
+  final ImagePicker _picker = ImagePicker();
+  static const int _minImages = 1;
+  static const int _maxImages = 5;
 
   // Categories
   final List<String> _categories = [
@@ -88,6 +97,77 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
     }
   }
 
+  Future<void> _captureImage() async {
+    if (_selectedImages.length >= _maxImages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('You can attach up to $_maxImages photos.'),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
+      return;
+    }
+
+    try {
+      final XFile? picked = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 75,
+        maxWidth: 1600,
+      );
+      if (picked == null) return;
+
+      setState(() => _selectedImages.add(File(picked.path)));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to capture image: $e'),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() => _selectedImages.removeAt(index));
+  }
+
+  Widget _buildImageThumbnail(int index) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Image.file(
+            _selectedImages[index],
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
+          ),
+        ),
+        Positioned(
+          top: -6,
+          right: -6,
+          child: GestureDetector(
+            onTap: () => _removeImage(index),
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: AppColors.error(context),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.background(context),
+                  width: 1.5,
+                ),
+              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   // Service
   bool _isSubmit = false;
 
@@ -101,6 +181,18 @@ Future<void> _submitTask() async {
   if (_selectedCategory == null) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Please select a category')),
+    );
+    return;
+  }
+
+  if (_selectedImages.length < _minImages) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Please capture at least $_minImages photos '
+          '(${_selectedImages.length}/$_minImages added).',
+        ),
+      ),
     );
     return;
   }
@@ -435,6 +527,99 @@ Future<void> _submitTask() async {
             ),
             const SizedBox(height: 16),
 
+            // ===== TASK PHOTOS (REQUIRED, CAMERA ONLY) =====
+            Row(
+              children: [
+                Text(
+                  'Task Photos',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.charcoal(context),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '*',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.error(context),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${_selectedImages.length}/$_minImages',
+                  style: GoogleFonts.openSans(
+                    color: _selectedImages.length >= _minImages
+                        ? AppColors.primaryTeal(context)
+                        : AppColors.textGrey(context),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Take at least $_minImages photos of the task using your camera.',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            if (_selectedImages.isNotEmpty) ...[
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (int i = 0; i < _selectedImages.length; i++)
+                    _buildImageThumbnail(i),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
+
+            if (_selectedImages.length < _maxImages)
+              GestureDetector(
+                onTap: _captureImage,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceGrey(context),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color:
+                          AppColors.primaryTeal(context).withValues(alpha: 0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.camera_alt_outlined,
+                        color: AppColors.primaryTeal(context),
+                        size: 22,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Take photo',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.primaryTeal(context),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 16),
+
             // Instructions
             Text(
               'Instructions',
@@ -490,6 +675,7 @@ Future<void> _submitTask() async {
               child: ElevatedButton(
                 onPressed: (_titleController.text.isNotEmpty &&
                         _selectedCategory != null &&
+                        _selectedImages.length >= _minImages &&
                         !_isSubmit)
                     ? _submitTask
                     : null,

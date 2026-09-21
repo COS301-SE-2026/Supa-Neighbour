@@ -33,6 +33,10 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   bool _isSubmitting = false;
   final ImagePicker _picker = ImagePicker();
 
+  // ===== REQUIRED EVIDENCE PHOTOS (CAMERA ONLY) =====
+  static const int _minImages = 1;
+  static const int _maxImages = 5;
+
   @override
   void dispose() {
     _noteController.dispose();
@@ -40,16 +44,36 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   }
 
   Future<void> _addPhoto() async {
-    final XFile? picked = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-      maxWidth: 1920,
-    );
+    if (_selectedImages.length >= _maxImages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('You can attach up to $_maxImages photos.'),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
+      return;
+    }
 
-    if(picked != null) {
-      setState(() {
-        _selectedImages.add(picked);
-      });
+    try {
+      final XFile? picked = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+        maxWidth: 1920,
+      );
+
+      if (picked != null) {
+        setState(() {
+          _selectedImages.add(picked);
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to capture image: $e'),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
     }
   }
 
@@ -60,6 +84,18 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   }
 
   Future<void> _showCompletionDialog() async {
+    if (_selectedImages.length < _minImages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please capture at least $_minImages photos '
+            '(${_selectedImages.length}/$_minImages added).',
+          ),
+        ),
+      );
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -264,17 +300,41 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
             const SizedBox(height: 24),
 
             // Completion Proof Section
-            Text(
-              'Completion Proof',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.charcoal(context),
-              ),
+            Row(
+              children: [
+                Text(
+                  'Completion Proof',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.charcoal(context),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '*',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.error(context),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${_selectedImages.length}/$_minImages',
+                  style: GoogleFonts.openSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _selectedImages.length >= _minImages
+                        ? AppColors.primaryTeal(context)
+                        : AppColors.textGrey(context),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             Text(
-              'Add photos to show your work (optional)',
+              'Take at least $_minImages photos of your work using the camera.',
               style: GoogleFonts.openSans(
                 fontSize: 12,
                 color: AppColors.textGrey(context),
@@ -291,6 +351,9 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
                 itemBuilder: (context, index) {
                   // Add Photo Button
                   if (index == _selectedImages.length) {
+                    if (_selectedImages.length >= _maxImages) {
+                      return const SizedBox.shrink();
+                    }
                     return GestureDetector(
                       onTap: _addPhoto,
                       child: Container(
@@ -309,13 +372,13 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.add,
+                              Icons.camera_alt_outlined,
                               color: AppColors.primaryTeal(context),
                               size: 32,
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Add Photo',
+                              'Take Photo',
                               style: GoogleFonts.openSans(
                                 fontSize: 10,
                                 color: AppColors.primaryTeal(context),
@@ -415,7 +478,9 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _showCompletionDialog,
+                onPressed: (_isSubmitting || _selectedImages.length < _minImages)
+                    ? null
+                    : _showCompletionDialog,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryTeal(context),
                   foregroundColor: Colors.white,
