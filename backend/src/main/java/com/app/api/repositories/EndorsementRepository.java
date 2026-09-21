@@ -139,3 +139,5 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
         Integer getWeigh();
     }
 } 
+
+
