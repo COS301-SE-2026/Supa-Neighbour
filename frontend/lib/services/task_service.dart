@@ -47,6 +47,11 @@ abstract class ITaskService {
 
   Future<String?> uploadTaskImage(XFile imageFile);
   Future<void> saveTaskImages(int taskId, List<String> imageUrls);
+  Future<Map<String, dynamic>> rateTask({
+    required int taskId,
+    required int rating,
+    String? reviewSnippet,
+  });
 }
 
 
@@ -427,6 +432,38 @@ Future<void> declineTaskInvitation(int taskId) async {
       );
     } on DioException catch (e) {
       throw Exception("Couldn't save task images: ${e.message}");
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> rateTask({
+    required int taskId,
+    required int rating,
+    String? reviewSnippet,
+  }) async {
+    try{
+      final token = await _getToken();
+      final Response<Map<String, dynamic>> res = await _dio.post(
+        '/api/tasks/$taskId/rate',
+        data: {
+          'rating': rating,
+          if(reviewSnippet != null && reviewSnippet.isNotEmpty)
+            'reviewSnippet': reviewSnippet,
+        },
+        options: token != null ? Options(headers: {'Authorization': 'Bearer $token'}) : null,
+      );
+      return res.data!;
+    }on DioException catch (e) {
+      final data = e.response?.data;
+      String message;
+      if (data is Map && data['error'] != null) {
+        message = data['error'].toString();
+      } else if (data is String && data.isNotEmpty) {
+        message = data;
+      } else {
+        message = e.message ?? 'Failed to submit rating';
+      }
+      throw Exception(message);
     }
   }
 

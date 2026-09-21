@@ -20,6 +20,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -54,10 +57,18 @@ class RatingControllerTest {
     }
 
     private String ratingRequestJson(String rating, String reviewSnippet) throws Exception {
-        RatingRequest request = new RatingRequest();
-        request.setRating(rating);
-        request.setReviewSnippet(reviewSnippet);
-        return objectMapper.writeValueAsString(request);
+        Map<String, Object> payload = new LinkedHashMap<>();
+        if (rating != null && !rating.isBlank()) {
+            try {
+                payload.put("rating", Integer.valueOf(rating));
+            } catch (NumberFormatException ex) {
+                payload.put("rating", rating);
+            }
+        }
+        if (reviewSnippet != null) {
+            payload.put("reviewSnippet", reviewSnippet);
+        }
+        return objectMapper.writeValueAsString(payload);
     }
 
     // ---------- POST /api/tasks/{taskId}/rate ----------
@@ -65,7 +76,7 @@ class RatingControllerTest {
     @Test
     void rateTask_WhenSuccessful_ReturnsOk() throws Exception {
 
-        RatingResponse response = new RatingResponse("Rating submitted successfully.", 3, "Excellent", "Great help!");
+        RatingResponse response = new RatingResponse("Rating submitted successfully.", 3, 5, "Great help!");
         when(firebaseAuthService.getUserIdFromToken(RAW_TOKEN)).thenReturn(CALLER_ID);
         when(ratingService.submitRating(eq(3), eq(CALLER_ID), any(RatingRequest.class))).thenReturn(response);
 
@@ -73,11 +84,11 @@ class RatingControllerTest {
                 .header("Authorization", BEARER_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(ratingRequestJson("Excellent", "Great help!")))
+                .content(ratingRequestJson("5", "Great help!")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Rating submitted successfully."))
                 .andExpect(jsonPath("$.taskId").value(3))
-                .andExpect(jsonPath("$.rating").value("Excellent"));
+                .andExpect(jsonPath("$.rating").value(5));
 
         verify(ratingService, times(1)).submitRating(eq(3), eq(CALLER_ID), any(RatingRequest.class));
     }
@@ -210,4 +221,6 @@ class RatingControllerTest {
                 .content(ratingRequestJson("NotAValidRating", null)))
                 .andExpect(status().isBadRequest());
     }
+
+    
 }

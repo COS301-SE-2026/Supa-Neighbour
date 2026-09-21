@@ -24,7 +24,7 @@ class RatingServiceTest {
     @InjectMocks
     private RatingService ratingService;
 
-    private RatingRequest buildRequest(String rating, String reviewSnippet) {
+    private RatingRequest buildRequest(Integer rating, String reviewSnippet) {
         RatingRequest request = new RatingRequest();
         request.setRating(rating);
         request.setReviewSnippet(reviewSnippet);
@@ -33,7 +33,7 @@ class RatingServiceTest {
 
     @Test
     void submitRating_WhenUserNotFound_ThrowsNotFound() {
-        RatingRequest request = buildRequest("Excellent", null);
+        RatingRequest request = buildRequest(5, null);
         when(ratingRepository.findUserType(42)).thenReturn(null);
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
@@ -43,7 +43,7 @@ class RatingServiceTest {
 
     @Test
     void submitRating_WhenCallerIsAdmin_ThrowsForbidden() {
-        RatingRequest request = buildRequest("Excellent", null);
+        RatingRequest request = buildRequest(5, null);
         when(ratingRepository.findUserType(42)).thenReturn("Admin");
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
@@ -53,7 +53,7 @@ class RatingServiceTest {
 
     @Test
     void submitRating_WhenTaskNotFound_ThrowsNotFound() {
-        RatingRequest request = buildRequest("Excellent", null);
+        RatingRequest request = buildRequest(5, null);
         when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(null);
 
@@ -64,7 +64,7 @@ class RatingServiceTest {
 
     @Test
     void submitRating_WhenTaskNotCompleted_ThrowsUnprocessableEntity() {
-        RatingRequest request = buildRequest("Excellent", null);
+        RatingRequest request = buildRequest(5, null);
         Object[] task = new Object[] { 3, 7, null, "in_progress" };
         when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(task);
@@ -76,7 +76,7 @@ class RatingServiceTest {
 
     @Test
     void submitRating_WhenAlreadyRated_ThrowsConflict() {
-        RatingRequest request = buildRequest("Excellent", null);
+        RatingRequest request = buildRequest(5, null);
         Object[] task = new Object[] { 3, 7, "Good", "completed" };
         when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(task);
@@ -88,7 +88,7 @@ class RatingServiceTest {
 
     @Test
     void submitRating_WhenNoDependentAssociatedWithTask_ThrowsForbidden() {
-        RatingRequest request = buildRequest("Excellent", null);
+        RatingRequest request = buildRequest(5, null);
         Object[] task = new Object[] { 3, 7, null, "completed" };
         when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(task);
@@ -101,7 +101,7 @@ class RatingServiceTest {
 
     @Test
     void submitRating_WhenCallerIsNotTheDependent_ThrowsForbidden() {
-        RatingRequest request = buildRequest("Excellent", null);
+        RatingRequest request = buildRequest(5, null);
         Object[] task = new Object[] { 3, 7, null, "completed" };
         when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(task);
@@ -114,12 +114,12 @@ class RatingServiceTest {
 
     @Test
     void submitRating_WhenRatingValueInvalid_ThrowsBadRequest() {
-        RatingRequest request = buildRequest("NotAValidRating", null);
+        RatingRequest request = buildRequest(6, null);
         Object[] task = new Object[] { 3, 7, null, "completed" };
         when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(task);
         when(ratingRepository.findDependentUserId(3)).thenReturn(42);
-        when(ratingRepository.isValidRating("NotAValidRating")).thenReturn(false);
+        when(ratingRepository.isValidRating(6)).thenReturn(false);
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> ratingService.submitRating(3, 42, request));
@@ -128,22 +128,21 @@ class RatingServiceTest {
 
     @Test
     void submitRating_WhenValid_ReturnsResponseAndPersistsRatingAndRecalculatesAverage() {
-        RatingRequest request = buildRequest("Excellent", "Great help!");
+        RatingRequest request = buildRequest(5, "Great help!");
         Object[] task = new Object[] { 3, 7, null, "completed" };
         when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(task);
         when(ratingRepository.findDependentUserId(3)).thenReturn(42);
-        when(ratingRepository.isValidRating("Excellent")).thenReturn(true);
+        when(ratingRepository.isValidRating(5)).thenReturn(true);
 
         RatingResponse response = ratingService.submitRating(3, 42, request);
 
         assertNotNull(response);
         assertEquals("Rating submitted successfully.", response.getMessage());
         assertEquals(3, response.getTaskId());
-        assertEquals("Excellent", response.getRating());
+        assertEquals(5, response.getRating());
         assertEquals("Great help!", response.getReviewSnippet());
-        verify(ratingRepository, times(1)).submitRating(3, "Excellent", "Great help!");
-        verify(ratingRepository, times(1)).recalculateAverageRating(7);
+        verify(ratingRepository, times(1)).recalculateAverageRating(7, 3);
     }
 
     @Test

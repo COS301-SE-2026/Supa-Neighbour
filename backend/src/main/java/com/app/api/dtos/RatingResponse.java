@@ -13,7 +13,7 @@ public class RatingResponse {
     private String message;
     private int taskId;
     private String reviewSnippet;
-    private String rating;
+    private int rating;
 
     /**
      * Creates a rating response.
@@ -23,7 +23,7 @@ public class RatingResponse {
      * @param rating the submitted rating
      * @param reviewSnippet the optional review snippet
      */
-    public RatingResponse(String message, int taskId, String rating, String reviewString){
+    public RatingResponse(String message, int taskId, int rating, String reviewString){
         this.message = message;
         this.taskId = taskId;
         this.rating = rating;
@@ -54,7 +54,7 @@ public class RatingResponse {
      *
      * @return the rating
      */
-    public String getRating(){
+    public int getRating(){
         return rating;
     }
 

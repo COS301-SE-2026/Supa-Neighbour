@@ -431,14 +431,35 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
 
     setState(() => _isSubmitting = true);
 
+    final taskService = ref.read(taskServiceProvider);
     try {
-      final taskService = ref.read(taskServiceProvider);
       await taskService.updateTask(
         taskId: int.parse(widget.task.id),
         status: 'completed',
         dependentRatingId: _reviewController.text.isNotEmpty
-          ? _reviewController.text
-          : null,
+            ? _reviewController.text
+            : null,
+      );
+    } on Exception catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      if (mounted) setState(() => _isSubmitting = false);
+      return;
+    }
+
+    try {
+      await taskService.rateTask(
+        taskId: int.parse(widget.task.id),
+        rating: _rating.toInt(),
+        reviewSnippet: _reviewController.text.isNotEmpty
+            ? _reviewController.text
+            : null,
       );
 
       Task.updateTaskStatus(widget.task.id, 'completed');
@@ -456,7 +477,10 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
+            content: Text(
+              'Task approved, but the rating failed to save: '
+              '${e.toString().replaceAll('Exception: ', '')}',
+            ),
             backgroundColor: Colors.red,
           ),
         );
