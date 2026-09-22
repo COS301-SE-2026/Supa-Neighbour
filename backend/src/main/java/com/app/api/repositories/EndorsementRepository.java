@@ -133,6 +133,20 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
             """)
     List<EdgeRow> findEdgesByZone(@Param("zoneId") Integer zoneId);
 
+    /**
+     * any edge touching one of the supplied users, in either direction
+     */
+    @Query("""
+            select e.endorserid.userid  as fromUserId,
+                e.endorseeid.userid  as toUserId,
+                e.skillTag.skillTag  as skillTag,
+                e.weight             as weight
+            from Endorsement e
+            where e.endorserid.userid in :userIds
+            or e.endorseeid.userid in :userIds
+            """)
+    List<EdgeRow> findAllEdges(@Param("userIds") Collection<Integer> userIds);
+
     @Query("""
         select e.endorserid.userid                                   as userId,
             concat(e.endorserid.firstName, ' ', e.endorserid.lastName) as name,

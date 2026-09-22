@@ -3811,13 +3811,31 @@ Authorization: Bearer <Firebase ID Token>
 
 ```json
 {
-  "nodes": [
-    { "userId": 8, "name": "Ble K."},
-    { "userId": 22, "name": "Naledi P."}
-  ],
-  "edges": [
-    { "source": 8, "target": 22, "skillTag": "pet_care", "weight": 1 }
-  ]
+    "rootUserId": 20,
+    "zoneId": null,
+    "depth": 2,
+    "direction": "BOTH",
+    "nodes": [
+        {
+            "userId": 20,
+            "displayName": "Marcus Diaz",
+            "hop": 0
+        },
+        {
+            "userId": 23,
+            "displayName": "Priya Nair",
+            "hop": 1
+        }
+    ],
+    "edges": [
+        {
+            "fromUserId": 23,
+            "toUserId": 20,
+            "skillTag": "pet_care",
+            "weight": 4
+        }
+    ],
+    "truncated": false
 }
 ```
 

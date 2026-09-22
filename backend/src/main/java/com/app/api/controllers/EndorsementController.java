@@ -166,8 +166,7 @@ public class EndorsementController {
             if(user == null) {
                 return ResponseEntity.notFound().build();
             }
-            User user2 = endorsementService.requireCurrentUser();
-            return ResponseEntity.ok(endorsementService.neighbourhood(user2, depth, direction, limit));
+            return ResponseEntity.ok(endorsementService.neighbourhood(user, depth, direction, limit));
         }
         catch(FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
@@ -182,10 +181,24 @@ public class EndorsementController {
      * @param maxPaths result cap, clamped server-side
      * @return 200 with the paths, or a disconnected result
      */
-    @GetMapping(path = "trust-paths",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TrustPathResponseDTO> trustPaths(@RequestParam @NotNull Integer toUserId,@RequestParam(defaultValue = "4") int maxDepth,@RequestParam(defaultValue = "5") int maxPaths) {
-        User user = endorsementService.requireCurrentUser();
-        return ResponseEntity.ok(endorsementService.trustPaths(user, toUserId, maxDepth, maxPaths));
+    @GetMapping(path = "/trust-paths", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TrustPathResponseDTO> trustPaths(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam Integer toUserId,
+            @RequestParam(defaultValue = "4") int maxDepth,
+            @RequestParam(defaultValue = "5") int maxPaths) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(endorsementService.trustPaths(user, toUserId, maxDepth, maxPaths));
+        }
+        catch (FirebaseAuthException e) {
+            return ResponseEntity.status(401).build();
+        }
     }
 
     /**

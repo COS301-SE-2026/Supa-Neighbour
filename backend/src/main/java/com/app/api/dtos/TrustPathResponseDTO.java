@@ -25,8 +25,8 @@ public record TrustPathResponseDTO(
      * @param hops        the edges joining those nodes
      * @param totalWeight summed weight of the hops, useful for ranking ties
      */
-    public record Path(List<Integer> userIds,List<Hop> hops, int totalWeight){
-    } 
+    public record Path(List<PathUser> users, List<Hop> hops, int totalWeight) {}
+    public record PathUser(Integer userId, String name) {}
 
     /**
      * One edge on a path.

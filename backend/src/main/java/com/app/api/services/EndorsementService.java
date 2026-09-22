@@ -392,27 +392,28 @@ public class EndorsementService {
         for(int hop =1; hop<=effectiveDepth && !frontier.isEmpty();hop++) {
             Set<Integer> next = new LinkedHashSet<>();
 
-            for(EdgeRow row : fetchEdges(frontier,dir)) {
+            for (EdgeRow row : fetchEdges(frontier, dir)) {
                 List<Integer> unknown = new ArrayList<>(2);
-                if(!hopByUser.containsKey(row.getFromUserId())){
+                if (!hopByUser.containsKey(row.getFromUserId())) {
                     unknown.add(row.getFromUserId());
                 }
-                if(!hopByUser.containsKey(row.getFromUserId()) && !row.getFromUserId().equals(row.getFromUserId())) {
-                    unknown.add(row.getFromUserId());
+                if (!hopByUser.containsKey(row.getToUserId())) {
+                    unknown.add(row.getToUserId());
                 }
-                if(hopByUser.size() +unknown.size()>nodeCap) {
-                    truncated=true;
+
+                if (hopByUser.size() + unknown.size() > nodeCap) {
+                    truncated = true;
                     continue;
                 }
 
-                for(Integer userid : unknown) {
+                for (Integer userid : unknown) {
                     hopByUser.put(userid, hop);
                     next.add(userid);
                 }
 
-                if(seenEdges.add(edgeKey(row))) {
+                if (seenEdges.add(edgeKey(row))) {
                     edges.add(new TrustGraphResponseDTO.Edge(
-                        row.getFromUserId(),row.getToUserId(),row.getSkillTag(),row.getWeight()));
+                        row.getFromUserId(), row.getToUserId(), row.getSkillTag(), row.getWeight()));
                 }
             }
             frontier = next;
@@ -458,8 +459,11 @@ public class EndorsementService {
         return new TrustGraphResponseDTO(
             null,zoneId,1,GraphDirection.OUT,toNodes(hopByUser), edges,truncated);
     }
+    
 
-        /**
+    /** Pairs a predecessor node with the hop that connects it to the node it was discovered from. */
+    private record PredecessorEdge(Integer predecessorId, TrustPathResponseDTO.Hop hop) {}
+    /**
      * Finds every shortest chain of endorsements running from the caller to a
      * target user, following edges in the vouching direction.
      *
@@ -477,59 +481,99 @@ public class EndorsementService {
      */
     //api/endorsements/trust-paths
     @Transactional(readOnly = true)
-    public TrustPathResponseDTO trustPaths(User from, Integer toUserId,int maxDepth,int maxPaths) {
+    public TrustPathResponseDTO trustPaths(User from, Integer toUserId, int maxDepth, int maxPaths) {
         Integer sourceId = from.getUserid();
 
-        if(sourceId.equals(toUserId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"bad request");
+        if (sourceId.equals(toUserId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot search a path to yourself");
         }
-        if(!userRepository.existsById(toUserId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"path not found");
+        if (!userRepository.existsById(toUserId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
-        int depthLimit = clamp(maxDepth,1,MAX_GRAPH_DEPTH);
-        int pathLimit = clamp(maxPaths,1,MAX_PATHS_RETURNED);
+        int depthLimit = clamp(maxDepth, 1, 6); // separate constant from graph's MAX_GRAPH_DEPTH
+        int pathLimit = clamp(maxPaths, 1, MAX_PATHS_RETURNED);
 
-        Map<Integer,Integer> distance = new HashMap<>();
-        Map<Integer,List<TrustPathResponseDTO.Hop>> predecessors = new HashMap<>();
+        Map<Integer, Integer> distance = new HashMap<>();
+        Map<Integer, List<PredecessorEdge>> predecessors = new HashMap<>();
         distance.put(sourceId, 0);
 
         Set<Integer> frontier = new LinkedHashSet<>(List.of(sourceId));
         int found = -1;
 
-        for(int hop = 1; hop<= depthLimit && !frontier.isEmpty() && found <0;hop++) {
+        for (int hop = 1; hop <= depthLimit && !frontier.isEmpty() && found < 0; hop++) {
             Set<Integer> next = new LinkedHashSet<>();
 
-            for(EdgeRow row : endorsementRepository.findoutgoEdges(frontier)) {
-                Integer tail = row.getFromUserId();
-                Integer head = row.getToUserId();
+            for (EdgeRow row : endorsementRepository.findAllEdges(frontier)) {
+                Integer endorser = row.getFromUserId();
+                Integer endorsee = row.getToUserId();
 
-                Integer tailDistance=distance.get(tail);
-                if (tailDistance == null || tailDistance != hop-1) {
-                    continue;
+                // forward: endorser already known at hop-1 -> endorsee newly/still reachable at hop
+                Integer endorserDist = distance.get(endorser);
+                if (endorserDist != null && endorserDist == hop - 1) {
+                    Integer endorseeDist = distance.get(endorsee);
+                    if (endorseeDist == null) {
+                        distance.put(endorsee, hop);
+                        next.add(endorsee);
+                        predecessors.computeIfAbsent(endorsee, k -> new ArrayList<>())
+                            .add(new PredecessorEdge(endorser, toHop(row)));
+                    } else if (endorseeDist == hop) {
+                        predecessors.computeIfAbsent(endorsee, k -> new ArrayList<>())
+                            .add(new PredecessorEdge(endorser, toHop(row)));
+                    }
                 }
 
-                Integer headDistance = distance.get(head);
-                if(headDistance == null) {
-                    distance.put(head,hop);
-                    next.add(head);
-                    predecessors.computeIfAbsent(head, k-> new ArrayList<>()).add(toHop(row));
-                }else if(headDistance == hop) {
-                    predecessors.computeIfAbsent(head,k -> new ArrayList<>()).add(toHop(row));
+                // backward: endorsee already known at hop-1 -> endorser newly/still reachable at hop
+                Integer endorseeDist2 = distance.get(endorsee);
+                if (endorseeDist2 != null && endorseeDist2 == hop - 1) {
+                    Integer endorserDist2 = distance.get(endorser);
+                    if (endorserDist2 == null) {
+                        distance.put(endorser, hop);
+                        next.add(endorser);
+                        predecessors.computeIfAbsent(endorser, k -> new ArrayList<>())
+                            .add(new PredecessorEdge(endorsee, toHop(row)));
+                    } else if (endorserDist2 == hop) {
+                        predecessors.computeIfAbsent(endorser, k -> new ArrayList<>())
+                            .add(new PredecessorEdge(endorsee, toHop(row)));
+                    }
                 }
             }
-            if(distance.containsKey(toUserId)) {
+
+            if (distance.containsKey(toUserId)) {
                 found = distance.get(toUserId);
             }
-            frontier=next;
+            frontier = next;
         }
-        if(found < 0) {
-            return new TrustPathResponseDTO(sourceId,toUserId,false,-1,List.of());
-        }
-        List<TrustPathResponseDTO.Path> paths = new ArrayList<>();
-        collectPath(toUserId,sourceId,predecessors,new ArrayDeque<>(),paths,pathLimit);
 
-        return new TrustPathResponseDTO(sourceId,toUserId,true,found,paths);
+        if (found < 0) {
+            return new TrustPathResponseDTO(sourceId, toUserId, false, -1, List.of());
+        }
+
+        // Build paths with raw user IDs first, then enrich with names in one batch lookup.
+        List<List<Integer>> rawPaths = new ArrayList<>();
+        List<List<TrustPathResponseDTO.Hop>> rawHops = new ArrayList<>();
+        List<Integer> rawWeights = new ArrayList<>();
+        collectPath(toUserId, sourceId, predecessors, new ArrayDeque<>(), rawPaths, rawHops, rawWeights, pathLimit);
+
+        Set<Integer> allUserIds = rawPaths.stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toSet());
+        Map<Integer, User> users = userRepository.findAllById(allUserIds).stream()
+            .collect(Collectors.toMap(User::getUserid, u -> u));
+
+        List<TrustPathResponseDTO.Path> paths = new ArrayList<>();
+        for (int i = 0; i < rawPaths.size(); i++) {
+            List<TrustPathResponseDTO.PathUser> pathUsers = rawPaths.get(i).stream()
+                .map(id -> {
+                    User u = users.get(id);
+                    String name = u == null ? null : (u.getFirstName() + " " + u.getLastName()); // confirm real field names
+                    return new TrustPathResponseDTO.PathUser(id, name);
+                })
+                .toList();
+            paths.add(new TrustPathResponseDTO.Path(pathUsers, rawHops.get(i), rawWeights.get(i)));
+        }
+
+        return new TrustPathResponseDTO(sourceId, toUserId, true, found, paths);
     }
 
     /**
@@ -595,8 +639,8 @@ public class EndorsementService {
     private List<EdgeRow> fetchEdges(Set<Integer> frontier,GraphDirection direction) {
         return switch (direction) {
             case OUT -> endorsementRepository.findoutgoEdges(frontier);
-            case IN -> endorsementRepository.findoutgoEdges(frontier);
-            case BOTH -> endorsementRepository.findoutgoEdges(frontier);
+            case IN -> endorsementRepository.findIncomingEdges(frontier);
+            case BOTH -> endorsementRepository.findAllEdges(frontier);
         };
     }
 
@@ -604,38 +648,42 @@ public class EndorsementService {
      * walks the predecessor map brackwards from the ytarget
      */
     private void collectPath(Integer current,
-                              Integer sourceId,
-                              Map<Integer, List<TrustPathResponseDTO.Hop>> predecessors,
-                              Deque<TrustPathResponseDTO.Hop> stack,
-                              List<TrustPathResponseDTO.Path> out,
-                              int maxPaths) {
-        if (out.size() >= maxPaths) {
-            return;
-        }
- 
-        if (current.equals(sourceId)) {
-            // The stack was pushed target-first, so iterating it yields source-to-target order.
-            List<TrustPathResponseDTO.Hop> hops = new ArrayList<>(stack);
-            List<Integer> userIds = new ArrayList<>(hops.size() + 1);
-            userIds.add(sourceId);
-            int totalWeight = 0;
-            for (TrustPathResponseDTO.Hop h : hops) {
-                userIds.add(h.toUserId());
-                totalWeight += h.weight() == null ? 0 : h.weight();
-            }
-            out.add(new TrustPathResponseDTO.Path(userIds, hops, totalWeight));
-            return;
-        }
- 
-        for (TrustPathResponseDTO.Hop hop : predecessors.getOrDefault(current, List.of())) {
-            if (out.size() >= maxPaths) {
+                          Integer sourceId,
+                          Map<Integer, List<PredecessorEdge>> predecessors,
+                          Deque<TrustPathResponseDTO.Hop> stack,
+                          List<List<Integer>> outUserIds,
+                          List<List<TrustPathResponseDTO.Hop>> outHops,
+                          List<Integer> outWeights,
+                          int maxPaths) {
+            if (outUserIds.size() >= maxPaths) {
                 return;
             }
-            stack.push(hop);
-            collectPath(hop.fromUserId(), sourceId, predecessors, stack, out, maxPaths);
-            stack.pop();
+
+            if (current.equals(sourceId)) {
+                // The stack was pushed target-first, so iterating it yields source-to-target order.
+                List<TrustPathResponseDTO.Hop> hops = new ArrayList<>(stack);
+                List<Integer> userIds = new ArrayList<>(hops.size() + 1);
+                userIds.add(sourceId);
+                int totalWeight = 0;
+                for (TrustPathResponseDTO.Hop h : hops) {
+                    userIds.add(h.toUserId());
+                    totalWeight += h.weight() == null ? 0 : h.weight();
+                }
+                outUserIds.add(userIds);
+                outHops.add(hops);
+                outWeights.add(totalWeight);
+                return;
+            }
+
+            for (PredecessorEdge pe : predecessors.getOrDefault(current, List.of())) {
+                if (outUserIds.size() >= maxPaths) {
+                    return;
+                }
+                stack.push(pe.hop());
+                collectPath(pe.predecessorId(), sourceId, predecessors, stack, outUserIds, outHops, outWeights, maxPaths);
+                stack.pop();
+            }
         }
-    }
 
      /**
      * Converts the discovered hop map into response nodes, root first.
@@ -644,16 +692,15 @@ public class EndorsementService {
      * once its name field is confirmed, ideally with a single
      * {@code findAllById(hopByUser.keySet())} lookup rather than per node.</p>
      */
-     private List<TrustGraphResponseDTO.Node> toNodes(
-        Map<Integer, Integer> hopByUser) {
+     private List<TrustGraphResponseDTO.Node> toNodes(Map<Integer, Integer> hopByUser) {
+        Map<Integer, User> users = userRepository.findAllById(hopByUser.keySet()).stream()
+            .collect(Collectors.toMap(User::getUserid, u -> u));
+
         List<TrustGraphResponseDTO.Node> nodes = new ArrayList<>(hopByUser.size());
-
         for (Map.Entry<Integer, Integer> entry : hopByUser.entrySet()) {
-
-            User user = userRepository.findById(entry.getKey()).orElse(null);
-
-            String displayName = user == null ? null : user.getUsername();
-            nodes.add(new TrustGraphResponseDTO.Node(entry.getKey(), null, entry.getValue()));
+            User user = users.get(entry.getKey());
+            String displayName = user == null ? null : (user.getFirstName() + " " + user.getLastName()); // confirm actual field names/style
+            nodes.add(new TrustGraphResponseDTO.Node(entry.getKey(), displayName, entry.getValue()));
         }
         return nodes;
     }
