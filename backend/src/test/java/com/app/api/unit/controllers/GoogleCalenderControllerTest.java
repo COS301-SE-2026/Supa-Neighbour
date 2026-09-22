@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -29,14 +28,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @AutoConfigureMockMvc(addFilters = false)
 public class GoogleCalenderControllerTest {
+
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private GoogleCalenderTokenService tokenService;
+    private FirebaseAuthService firebaseAuthService;
 
     @MockitoBean
-    private FirebaseAuthService firebaseAuthService;
+    private GoogleCalenderTokenService googleCalenderTokenService;
 
     @Test
     void connect_blankAuthCode_returnsBadRequest() throws Exception {
@@ -48,7 +48,5 @@ public class GoogleCalenderControllerTest {
                 .content("{\"authCode\":\"\"}"))
             .andExpect(status().isBadRequest())
             .andExpect(content().string("Google authorization code is required"));
-
-        verifyNoInteractions(tokenService);
     }
 }

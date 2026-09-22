@@ -18,6 +18,7 @@ import lombok.Setter;
 public class GoogleCalendarToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "token_id")
     private int tokenId;
 
     @Column(name = "user_id", nullable = false, unique = true)

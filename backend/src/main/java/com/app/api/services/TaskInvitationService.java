@@ -245,7 +245,8 @@ public class TaskInvitationService {
         if (taskInvoice != null && taskInvoice.getDependentid() != null
                 && taskInvoice.getDependentid().getUserId() != null) {
             int requesterId = taskInvoice.getDependentid().getUserId().getUserid();
-            eventPublisher.publishEvent(new TaskAcceptedEvent(taskId, helperId, requesterId));
+            int helperUserId = helper.getUserid().getUserid(); 
+            eventPublisher.publishEvent(new TaskAcceptedEvent(taskId, helperUserId, requesterId));
         }
         return accepted;
     }

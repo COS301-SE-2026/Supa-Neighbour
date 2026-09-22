@@ -31,11 +31,14 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class GoogleCalenderTokenService {
     private static final String TIMEZONE = "Africa/Johannesburg";
     private static final String APP_NAME = "Supa-Neighbour";
+    private static final Logger LOG = LoggerFactory.getLogger(GoogleCalenderTokenService.class);
 
     private final GoogleCalenderTokenRepository tokenRepo;
     private final TaskInvoiceRepository taskInvoiceRepository;
@@ -102,27 +105,14 @@ public class GoogleCalenderTokenService {
      */
     public static List<String> resolveRedirectUriCandidates(String value) {
         String normalized = normalizeGoogleConfigValue(value);
-        List<String> candidates = new ArrayList<>();
-        Set<String> seen = new LinkedHashSet<>();
+        Set<String> candidates = new LinkedHashSet<>();
 
-        if (normalized.isBlank()) {
-            candidates.add("postmessage");
-            return candidates;
+        candidates.add("");                 // Android/iOS native serverAuthCode
+        candidates.add("postmessage");      // web popup flow
+        if (!normalized.isBlank()) {
+            candidates.add(normalized);     // explicit configured URI
         }
-
-        if ("postmessage".equalsIgnoreCase(normalized)) {
-            candidates.add("postmessage");
-            return candidates;
-        }
-
-        if (seen.add("postmessage")) {
-            candidates.add("postmessage");
-        }
-        if (seen.add(normalized)) {
-            candidates.add(normalized);
-        }
-
-        return candidates;
+        return new ArrayList<>(candidates);
     }
 
     /**
@@ -277,6 +267,7 @@ public class GoogleCalenderTokenService {
         Optional<GoogleCalendarToken> tokenOpt = tokenRepo.findByUserId(userId);
 
         if(tokenOpt.isEmpty()) {
+            LOG.warn("No Google Calendar token for user {}, skipping event creation", userId);
             return null;
         }
 
@@ -285,6 +276,8 @@ public class GoogleCalenderTokenService {
             Event created = calendarService.events().insert("primary", buildEvent(task)).execute();
             return created.getId();
         }catch (Exception e) {
+            LOG.error("Failed to create calendar event for user {} on task {}: {}",
+                userId, task.getTaskid(), e.getMessage(), e);
             return null;
         }
     }

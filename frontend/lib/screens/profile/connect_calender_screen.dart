@@ -3,9 +3,6 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:google_sign_in/google_sign_in.dart';
 
-import 'package:shared/services/api_client.dart';
-
-
 class ConnectCalenderScreen extends StatefulWidget {
   const ConnectCalenderScreen({super.key});
   @override
@@ -15,9 +12,23 @@ class ConnectCalenderScreen extends StatefulWidget {
 class _ConnectCalenderScreenState extends State<ConnectCalenderScreen> {
   bool _connecting = false;
 
+  static const String _backendBaseUrl = String.fromEnvironment(
+    'LOCAL_BACKEND_URL',
+    defaultValue: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
+  );
+
+  late final Dio _localDio = Dio(
+    BaseOptions(
+      baseUrl: _backendBaseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+    ),
+  );
+
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes : ['https://www.googleapis.com/auth/calendar.events'],
     serverClientId: '791892980644-ntsn6lh4mfuvs2jsnu6eouk8lhl0m7fd.apps.googleusercontent.com', 
+    forceCodeForRefreshToken: true,
   );
 
   Future<void> _connect() async{
@@ -35,9 +46,9 @@ class _ConnectCalenderScreenState extends State<ConnectCalenderScreen> {
       final idToken = await fb.FirebaseAuth.instance.currentUser?.getIdToken();
       if (idToken == null) throw Exception('No authenticated Firebase user');
 
-      await ApiClient().dio.post(
+      await _localDio.post(
         '/api/users/me/google-calender/connect',
-        data: {'authCode' : authCode},
+        data: {'authCode': authCode},
         options: Options(
           headers: {'Authorization': 'Bearer $idToken'},
         ),
