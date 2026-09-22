@@ -46,6 +46,7 @@ dependencies:
   path_provider: ^2.1.2  # To get storage paths
   open_file: ^3.4.1  # To open the downloaded file
   flutter_local_notifications: ^17.2.3
+  geolocator: ^13.0.1
 
   shared:
     path: ../shared

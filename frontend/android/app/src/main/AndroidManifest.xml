@@ -10,6 +10,11 @@
     <!-- Required for FCM to keep the device reachable while idle -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     
+    <!-- ===== LOCATION PERMISSIONS ===== -->
+    <!-- Required to get the user's current location when creating a task -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
     <application
         android:label="supa_neighbour"
         android:name="${applicationName}"
