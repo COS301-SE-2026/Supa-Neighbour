@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,6 +37,10 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   // ===== REQUIRED EVIDENCE PHOTOS (CAMERA ONLY) =====
   static const int _minImages = 1;
   static const int _maxImages = 5;
+
+  // ===== REQUIRED LOCATION =====
+  Position? _location;
+  bool _isFetchingLocation = false;
 
   @override
   void dispose() {
@@ -83,6 +88,195 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
     });
   }
 
+  // ===== LOCATION HANDLING =====
+
+  Future<void> _requestLocation() async {
+    if (_isFetchingLocation) return;
+    setState(() => _isFetchingLocation = true);
+
+    try {
+      // 1) Is location service enabled on the device?
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                  'Location services are disabled. Please enable them.'),
+              backgroundColor: AppColors.error(context),
+            ),
+          );
+        }
+        return;
+      }
+
+      // 2) Permission status
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                  'Location permission denied. Location is required to complete a task.'),
+              backgroundColor: AppColors.error(context),
+            ),
+          );
+        }
+        return;
+      }
+
+      // 3) Get current position
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      if (!mounted) return;
+      setState(() => _location = position);
+
+      _showLocationModal(position);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to get location: $e'),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isFetchingLocation = false);
+    }
+  }
+
+  void _showLocationModal(Position position) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color:
+                          AppColors.textGrey(context).withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: AppColors.primaryTeal(context),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Location Captured',
+                      style: GoogleFonts.poppins(
+                        color: AppColors.charcoal(context),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceGrey(context),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.primaryTeal(context)
+                          .withValues(alpha: 0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Latitude',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.textGrey(context),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        position.latitude.toStringAsFixed(6),
+                        style: GoogleFonts.openSans(
+                          color: AppColors.charcoal(context),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Longitude',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.textGrey(context),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        position.longitude.toStringAsFixed(6),
+                        style: GoogleFonts.openSans(
+                          color: AppColors.charcoal(context),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryTeal(context),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Got it',
+                      style: GoogleFonts.openSans(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _showCompletionDialog() async {
     if (_selectedImages.length < _minImages) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -92,6 +286,14 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
             '(${_selectedImages.length}/$_minImages added).',
           ),
         ),
+      );
+      return;
+    }
+
+    if (_location == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Please provide your location before completing.')),
       );
       return;
     }
@@ -433,6 +635,105 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
 
             const SizedBox(height: 24),
 
+            // ===== LOCATION (REQUIRED) =====
+            Row(
+              children: [
+                Text(
+                  'Location',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.charcoal(context),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '*',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.error(context),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                if (_location != null)
+                  Icon(
+                    Icons.check_circle,
+                    size: 16,
+                    color: AppColors.primaryTeal(context),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'We need your location to confirm where the task was completed.',
+              style: GoogleFonts.openSans(
+                fontSize: 12,
+                color: AppColors.textGrey(context),
+              ),
+            ),
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: _isFetchingLocation ? null : _requestLocation,
+              child: Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: _location != null
+                        ? AppColors.primaryTeal(context)
+                        : AppColors.surfaceGrey(context),
+                    width: _location != null ? 1.5 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  color: isDarkMode
+                      ? AppColors.surfaceGrey(context)
+                      : Colors.white,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      size: 20,
+                      color: AppColors.primaryTeal(context),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _location == null
+                            ? 'Tap to capture your location'
+                            : 'Lat ${_location!.latitude.toStringAsFixed(5)}, '
+                                'Lng ${_location!.longitude.toStringAsFixed(5)}',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.charcoal(context),
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (_isFetchingLocation)
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    else
+                      Text(
+                        _location == null ? 'Get' : 'Update',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.primaryTeal(context),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
             // Completion Note
             Text(
               'Completion Note (optional)',
@@ -478,7 +779,9 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: (_isSubmitting || _selectedImages.length < _minImages)
+                onPressed: (_isSubmitting ||
+                        _selectedImages.length < _minImages ||
+                        _location == null)
                     ? null
                     : _showCompletionDialog,
                 style: ElevatedButton.styleFrom(
