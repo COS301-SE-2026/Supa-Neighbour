@@ -10,6 +10,7 @@ import com.app.api.dtos.TrustGraphResponseDTO;
 import com.app.api.dtos.TrustPathResponseDTO;
 import com.app.api.models.User;
 import com.app.api.services.EndorsementService;
+import org.springframework.http.HttpStatus;
 
 import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -74,7 +75,7 @@ public class EndorsementController {
     @ApiResponse(responseCode = "201", description =" created successfully")
     public ResponseEntity<EndorsementResponseDTO> create(@RequestHeader("Authorization") String authHeader,@Valid @RequestBody CreateEndorsementRequestDTO request) {
         try {
-            String token = authHeader.replace("Bearer ", " ");
+            String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
             User endorser = userRepository.findById(userId)
                 .orElse(null);
@@ -85,7 +86,7 @@ public class EndorsementController {
 
             EndorsementResponseDTO created = endorsementService.create(endorser, request);
 
-            return ResponseEntity.ok(created);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
         }
         catch(FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
@@ -98,9 +99,11 @@ public class EndorsementController {
      * @return 200 with the grouped listing
      */
     @GetMapping(path = "/me",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<MyEndorsementResponseDTO> myEndorsements(@RequestHeader("Authorization") String authHeader,@RequestBody (required = false)String skillTag) {
+    public ResponseEntity<MyEndorsementResponseDTO> myEndorsements(
+        @RequestHeader("Authorization") String authHeader,
+        @RequestParam(required = false)String skillTag) {
         try {
-            String token = authHeader.replace("Bearer", " ");
+            String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
 
             User user = userRepository.findById(userId)
@@ -109,7 +112,7 @@ public class EndorsementController {
             if(user == null) {
                 return ResponseEntity.notFound().build();
             }
-            return ResponseEntity.ok(endorsementService.listReceived(user));
+            return ResponseEntity.ok(endorsementService.listReceived(user, skillTag));
         }
         catch(FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
@@ -124,7 +127,7 @@ public class EndorsementController {
     @GetMapping(path = "/me/summary", produces= MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EndorsementSummaryResponseDTO>mySummary(@RequestHeader ("Authorization") String authHeader) {
         try {
-            String token = authHeader.replace("Bearer", " ");
+            String token = authHeader.replace("Bearer ", "");
             int userId= firebaseAuthService.getUserIdFromToken(token);
             User user= userRepository.findById(userId)
                 .orElse(null);
@@ -155,7 +158,7 @@ public class EndorsementController {
             @RequestParam(defaultValue = "200")int limit) 
             {
         try {
-            String token = authHeader.replace("Bearer", " ");
+            String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
             User user= userRepository.findById(userId)
                 .orElse(null);

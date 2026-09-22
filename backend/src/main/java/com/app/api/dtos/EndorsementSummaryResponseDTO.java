@@ -22,7 +22,8 @@ public record EndorsementSummaryResponseDTO(
     int distinctSkills,
     long distinctEndorsers,
     List<SkillSummary> topSkills,
-    LocalDateTime lastEndorsedAt
+    LocalDateTime lastEndorsedAt,
+    List<EndorserNode> miniGraphNodes
 ) {
 /**
  * Per-skill totals with no nested endorsement list.
@@ -41,5 +42,10 @@ public record EndorsementSummaryResponseDTO(
         long totalWeight
     ) {
     }
+
+    public record EndorserNode(
+        Integer userId,
+        String name
+    ) {}
 }
 

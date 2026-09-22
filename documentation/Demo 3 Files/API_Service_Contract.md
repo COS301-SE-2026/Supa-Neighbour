@@ -3648,7 +3648,7 @@ Authorization: Bearer <Firebase ID Token>
 4. `404` if `skillTag` doesn't exist in `endorsement_skill_table`; `400` if it exists but `approved = false`.
 5. Derive `zoneId`: look up the endorser's `user_table.user_address_id` → `address_table.address_id` → `address_table.neighbourhood_id`. That value is a `location_table.location_id` (per the schema trap — `address_table.neighbourhood_id` is an FK into `location_table`, not the real neighbourhood grouping column), so it can be used directly as `endorsement_table.zone_id`. `404` if the endorser has no address on file.
 6. If `taskId` provided: `404` if no matching `task_invoice_table` row. **Recommended (not yet confirmed): reject with `403` unless both `endorserId` and `endorseeId` were the requester/helper pair on that task.** `taskId` is now optional — it no longer feeds `zone_id`, so nothing else in this endpoint depends on it.
-7. Compute `weight` from the endorser's trust score. **No numeric trust score field exists yet** — proposing a placeholder `weight = 1` for now with a `// TODO: derive from trust score once numeric field exists` comment.
+7. Compute `weight` from the endorser's trust score. 
 8. Insert the row.
 
 #### Success Response — `201 Created`
@@ -3769,7 +3769,7 @@ Authorization: Bearer <Firebase ID Token>
     { "tag": "gardening", "count": 4 }
   ],
   "miniGraphNodes": [
-    { "userId": 5, "name": "Thabo M.", "avatarUrl": "https://..." }
+    { "userId": 5, "name": "Thabo M." }
   ]
 }
 ```
@@ -3812,8 +3812,8 @@ Authorization: Bearer <Firebase ID Token>
 ```json
 {
   "nodes": [
-    { "userId": 8, "name": "Ble K.", "avatarUrl": "https://..." },
-    { "userId": 22, "name": "Naledi P.", "avatarUrl": "https://..." }
+    { "userId": 8, "name": "Ble K."},
+    { "userId": 22, "name": "Naledi P."}
   ],
   "edges": [
     { "source": 8, "target": 22, "skillTag": "pet_care", "weight": 1 }

@@ -27,24 +27,9 @@ public record CreateEndorsementRequestDTO(
     @Size(max=50, message = "skilltag must be at most 50 characters")
     String skillTag,
 
-    @NotNull(message = "zoneId is required")
-    Integer zoneId,
-
-    Integer taskId,
-
-    @Min(value = 1,message= "weight must be at least 1")
-    @Max(value = 5, message = "weight must be at most 5")
-    Integer weight
+    Integer taskId
 )
 {
-    /**Default weight when one isn't provided */
-    public static final Integer DEFAULT_WEIGHT = 1;
     
-    /**
-     * @return the supplied weight, or {@link #DEFAULT_WEIGHT}
-     */
-    public int weightOrDefault() {
-        return weight ==null ? DEFAULT_WEIGHT: weight;
-    }
 }
 

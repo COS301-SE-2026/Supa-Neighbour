@@ -1,5 +1,6 @@
 package com.app.api.repositories;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,11 +39,27 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
         join fetch e.endorserid
         join fetch e.endorseeid
         join fetch e.skillTag
-        join fetch e.zoneid
+        left join fetch e.zoneid
         left join fetch e.taskid
         where e.endorseeid.userid = :userId
         order by e.skillTag.skillTag asc, e.createdAt desc""")
         List<Endorsement> findReceiveWithDetails(@Param("userId") Integer userId);
+
+    @Query
+    ("""
+        select e 
+        from Endorsement e
+        join fetch e.endorserid
+        join fetch e.endorseeid
+        join fetch e.skillTag
+        join fetch e.zoneid
+        left join fetch e.taskid
+        where e.endorseeid.userid = :userId
+        and e.skillTag.skillTag = :skillTag
+        order by e.skillTag.skillTag asc, e.createdAt desc""")
+        List<Endorsement> findReceiveWithDetailsBySkillTag(
+            @Param("userId") Integer userId,
+            @Param("skillTag") String skillTag);
     
     /**
     * GET /api/endorsements/me/summary
@@ -87,7 +104,7 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
             from Endorsement e 
             where e.endorserid.userid in :userIds
             """)
-    List<EdgeRow> findoutgoEdges(@Param("userId") Collection<Integer> userIds);
+    List<EdgeRow> findoutgoEdges(@Param("userIds") Collection<Integer> userIds);
 
 
     /**
@@ -116,6 +133,17 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
             """)
     List<EdgeRow> findEdgesByZone(@Param("zoneId") Integer zoneId);
 
+    @Query("""
+        select e.endorserid.userid                                   as userId,
+            concat(e.endorserid.firstName, ' ', e.endorserid.lastName) as name,
+            coalesce(sum(e.weight),0)                                as totalWeight
+        from Endorsement e
+        where e.endorseeid.userid = :userId
+        group by e.endorserid.userid, e.endorserid.firstName, e.endorserid.lastName
+        order by coalesce(sum(e.weight),0) desc
+        """)
+    List<EndorserAggregate> aggregateTopEndorsers(@Param("userId") Integer userId, Pageable pageable);
+
     /**
      * projections
      */
@@ -142,6 +170,12 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
         Integer getToUserId();
         String getSkillTag();
         Integer getWeight();
+    }
+
+    public interface EndorserAggregate {
+        Integer getUserId();
+        String getName();
+        long getTotalWeight();
     }
 } 
 

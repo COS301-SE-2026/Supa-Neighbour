@@ -9,19 +9,24 @@ import com.app.api.dtos.TrustPathResponseDTO;
 import com.app.api.dtos.TrustGraphResponseDTO.GraphDirection;
 import com.app.api.models.Endorsement;
 import com.app.api.models.EndorsementSkill;
+import com.app.api.models.HelperAnalytics;
 import com.app.api.models.Location;
 import com.app.api.models.TaskInvoice;
+import com.app.api.models.Address;
 import com.app.api.models.User;
 import com.app.api.repositories.EndorsementRepository;
 import com.app.api.repositories.EndorsementSkillsRepository;
 import com.app.api.repositories.EndorsementRepository.EdgeRow;
+import com.app.api.repositories.EndorsementRepository.EndorserAggregate;
 import com.app.api.repositories.EndorsementRepository.SkillAggregate;
 
 
 import com.app.api.repositories.LocationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.repositories.UserRepository;
- 
+ import com.app.api.repositories.HelperAnalyticsRepository;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -67,6 +72,7 @@ public class EndorsementService {
     public static final int MAX_PATH_DEPTH = 6;
     public static final int MAX_PATHS_RETURNED = 10;
     public static final int SUMMARY_TOP_SKILLS = 5;
+    private static final int SUMMARY_MAX_GRAPH_NODES = 8;
 
     private final EndorsementRepository endorsementRepository;
     private final EndorsementSkillsRepository endorsementSkillsRepository;
@@ -74,6 +80,7 @@ public class EndorsementService {
     private final LocationRepository locationRepository;
     private final TaskInvoiceRepository taskInvoiceRepository;
     private final EndorsementSkillService endorsementSkillService;
+    private final HelperAnalyticsRepository helperAnalyticsRepository;
 
     /**
      * @param endorsementRepository endorsement persistence and graph projections
@@ -84,13 +91,14 @@ public class EndorsementService {
      */
     
     public EndorsementService(EndorsementRepository endorsementRepository, EndorsementSkillsRepository endorsementSkillsRepository,
-        UserRepository userRepository, LocationRepository locationRepository, TaskInvoiceRepository  taskInvoiceRepository,EndorsementSkillService endorsementSkillService) {
+        UserRepository userRepository, LocationRepository locationRepository, TaskInvoiceRepository  taskInvoiceRepository,EndorsementSkillService endorsementSkillService,HelperAnalyticsRepository helperAnalyticsRepository) {
             this.endorsementRepository=endorsementRepository;
             this.endorsementSkillsRepository=endorsementSkillsRepository;
             this.locationRepository=locationRepository;
             this.userRepository=userRepository;
             this.taskInvoiceRepository=taskInvoiceRepository;
             this.endorsementSkillService=endorsementSkillService;
+            this.helperAnalyticsRepository = helperAnalyticsRepository;
         }
 
     /**
@@ -119,43 +127,75 @@ public class EndorsementService {
     }
     //POST api/endorsements
 
-    @Transactional 
-    public EndorsementResponseDTO create(User endorser,CreateEndorsementRequestDTO request) {
+    @Transactional
+    public EndorsementResponseDTO create(User endorser, CreateEndorsementRequestDTO request) {
         Integer endorserId = endorser.getUserid();
 
-        if(endorserId.equals(request.endorseeId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You cannot endorse yourself");
+        if (endorserId.equals(request.endorseeId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot endorse yourself");
         }
 
         User endorsee = userRepository.findById(request.endorseeId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Skill tag not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        Location zone = locationRepository.findById(request.endorseeId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"bad location"));
+        EndorsementSkill skill = endorsementSkillService.requireUsableSkill(request.skillTag());
 
-        EndorsementSkill skill =
-        endorsementSkillService.requireUsableSkill(request.skillTag());
+        Address address = endorser.getAddressid();
+        if (address == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Endorser has no address on file");
+        }
+
+        Integer zoneId = address.getNeighbourhoodid().getLocationid(); 
+        Location zone = locationRepository.findById(zoneId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found"));
 
         TaskInvoice task = null;
-        if(request.taskId() != null) {
-            task= taskInvoiceRepository.findById(request.taskId())
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Task not found"));
+        if (request.taskId() != null) {
+            task = taskInvoiceRepository.findById(request.taskId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+
+            boolean bothOnTask = task.getHelperid() != null
+                && task.getDependentid() != null
+                && task.getHelperid().getUserid() != null
+                && task.getDependentid().getUserId() != null
+                && task.getHelperid().getUserid().getUserid() == endorsee.getUserid()
+                && task.getDependentid().getUserId().getUserid() == endorserId;
+
+            if (!bothOnTask) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This task does not involve both users");
+            }
         }
 
-        String tag=  skill.getSkillTag();
+        String tag = skill.getSkillTag();
 
-        boolean duplicate = task ==null
+        boolean duplicate = task == null
             ? endorsementRepository.existsByEndorserid_UseridAndEndorseeid_UseridAndSkillTag_SkillTagAndTaskidIsNull(endorserId, endorsee.getUserid(), tag)
-                : endorsementRepository.existsByEndorserid_UseridAndEndorseeid_UseridAndSkillTag_SkillTagAndTaskid_Taskid(endorserId, endorsee.getUserid(), tag, task.getTaskid());
-        
-        if(duplicate) {
-            throw new ResponseStatusException(
-                HttpStatus.CONFLICT,"Skill tag not found");
+            : endorsementRepository.existsByEndorserid_UseridAndEndorseeid_UseridAndSkillTag_SkillTagAndTaskid_Taskid(endorserId, endorsee.getUserid(), tag, task.getTaskid());
+
+        if (duplicate) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already endorsed this user for this skill");
         }
 
-        Endorsement endorsement = new Endorsement(endorser,endorsee,zone,skill,task,request.weightOrDefault());
+        int weight = weightFromTrustScore(endorserId);
 
-        return toResponse(endorsementRepository.save(endorsement),skill);
+        Endorsement endorsement = new Endorsement(endorser, endorsee, zone, skill, task, weight);
+
+        return toResponse(endorsementRepository.save(endorsement), skill);
+    }
+
+    /**
+     * Derives an endorsement weight (1-5) from the endorser's helper_analytics_table row.
+     * Floors the average_rating; endorsers with no analytics row or a 0.0 average
+     * (e.g. no completed tasks yet) get the minimum weight of 1 rather than 0.
+     */
+    private int weightFromTrustScore(Integer endorserId) {
+        return helperAnalyticsRepository.findByUserid_Userid(endorserId)
+            .map(HelperAnalytics::getAverageRating)
+            .map(rating -> {
+                int floored = (int) Math.floor(rating);
+                return Math.max(1, Math.min(5, floored));
+            })
+            .orElse(1);
     }
 
      /* <p>Assumes the Firebase token filter populates the Spring Security context
@@ -205,76 +245,68 @@ public class EndorsementService {
      */
 
     @Transactional(readOnly = true)
-    public  MyEndorsementResponseDTO listReceived(User user){
+    public MyEndorsementResponseDTO listReceived(User user, String skillTag) {
 
-    List<Endorsement> received = endorsementRepository.findReceiveWithDetails(user.getUserid());
-    Map<String,List<Endorsement>> byTag =new LinkedHashMap<>();
-/*group endorsment I keep getting confused */
-    for(Endorsement e : received) {
-            if(e.getSkillTag() == null) {
+        List<Endorsement> received = (skillTag == null || skillTag.isBlank())
+            ? endorsementRepository.findReceiveWithDetails(user.getUserid())
+            : endorsementRepository.findReceiveWithDetailsBySkillTag(user.getUserid(), skillTag);
+
+        // Group endorsements by skill tag, preserving insertion order
+        Map<String, List<Endorsement>> byTag = new LinkedHashMap<>();
+        for (Endorsement e : received) {
+            if (e.getSkillTag() == null) {
                 continue;
             }
-
             String tag = e.getSkillTag().getSkillTag();
-
-            byTag.computeIfAbsent(tag, k-> new ArrayList<>()).add(e);
+            byTag.computeIfAbsent(tag, k -> new ArrayList<>()).add(e);
         }
-    /*
-     * Get the skill information for all the skills
-     * represented in the received endorsements.
-     */       
 
-        Map<String,EndorsementSkill> catalogue = catalogueFor(byTag.keySet());
+        // Fetch skill metadata (display name, category) for all tags present
+        Map<String, EndorsementSkill> catalogue = catalogueFor(byTag.keySet());
+
         List<MyEndorsementResponseDTO.SkillGroup> groups = new ArrayList<>(byTag.size());
-    /**
-     * ceates list for each skill 
-     */
-        for(Map.Entry<String, List<Endorsement>> entry : byTag.entrySet()) {
-            String tag= entry.getKey();
+
+        for (Map.Entry<String, List<Endorsement>> entry : byTag.entrySet()) {
+            String tag = entry.getKey();
             List<Endorsement> rows = entry.getValue();
             EndorsementSkill skill = catalogue.get(tag);
-        /*calculate total weight skill */
-            long totalWeight = rows.stream().mapToLong(e-> e.getWeight() == null ? 0L: e.getWeight().longValue()).sum();
-       
-        /**convert each endorsement into an endorsementResponseDTO */
-        List<EndorsementResponseDTO> endorsementResponses =
-                new ArrayList<>();
 
-        for (Endorsement e : rows) {
+            long totalWeight = rows.stream()
+                .mapToLong(e -> e.getWeight() == null ? 0L : e.getWeight().longValue())
+                .sum();
 
-            EndorsementResponseDTO response =
-            toResponse(e, skill);
+            List<EndorsementResponseDTO> endorsementResponses = new ArrayList<>();
+            for (Endorsement e : rows) {
+                endorsementResponses.add(toResponse(e, skill));
+            }
 
-            endorsementResponses.add(response);
-        }
-
-        /*
-         * Create the skill group.
-         */
-        MyEndorsementResponseDTO.SkillGroup group =
-            new MyEndorsementResponseDTO.SkillGroup(
+            MyEndorsementResponseDTO.SkillGroup group = new MyEndorsementResponseDTO.SkillGroup(
                 tag,
                 displayNameOf(skill, tag),
                 skill == null ? null : skill.getCategory(),
                 rows.size(),
                 totalWeight,
                 endorsementResponses
-                );
+            );
 
-        groups.add(group);
+            groups.add(group);
         }
+
         groups.sort(
-            Comparator.comparingLong(MyEndorsementResponseDTO.SkillGroup::totalWeight
-            )
-            .reversed()
-            .thenComparing(
-                MyEndorsementResponseDTO.SkillGroup::skillTag));
+            Comparator.comparingLong(MyEndorsementResponseDTO.SkillGroup::totalWeight)
+                .reversed()
+                .thenComparing(MyEndorsementResponseDTO.SkillGroup::skillTag)
+        );
 
         return new MyEndorsementResponseDTO(
             user.getUserid(),
             received.size(),
             groups
         );
+    }
+
+    public MyEndorsementResponseDTO listReceived(User user) {
+        return listReceived(user, null);
     }
 
     // /api/endorsements/me/summary
@@ -311,15 +343,24 @@ public class EndorsementService {
                 );
             })
             .toList();
+        
+        List<EndorserAggregate> topEndorsers = endorsementRepository.aggregateTopEndorsers(
+            user.getUserid(), PageRequest.of(0, SUMMARY_MAX_GRAPH_NODES));
 
-            return new EndorsementSummaryResponseDTO(
+        List<EndorsementSummaryResponseDTO.EndorserNode> miniGraphNodes = topEndorsers.stream()
+            .map(a -> new EndorsementSummaryResponseDTO.EndorserNode(
+                a.getUserId(), a.getName()))
+            .toList();
+
+        return new EndorsementSummaryResponseDTO(
                 user.getUserid(),
                 totalEndorsements,
                 totalWeight,
                 aggregates.size(),
                 endorsementRepository.countDistinctEndorsers(user.getUserid()),
                 topSkills,
-                loastEndorsedAt);
+                loastEndorsedAt,
+                miniGraphNodes);
     }
 
     /**
