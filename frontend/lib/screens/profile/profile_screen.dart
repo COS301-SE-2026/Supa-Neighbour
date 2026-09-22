@@ -15,6 +15,7 @@ import '../../providers/service_providers.dart';
 import 'edit_profile_screen.dart' show EditUsernameScreen;
 import 'admin_application_screen.dart';
 import '../../widgets/endorsement/trust_network_card.dart';
+import '../endorsement/endorsement_graph_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -553,11 +554,10 @@ Widget _buildTrustNetworkSection() {
     return TrustNetworkCard(
       summary: summary,
       onViewNetwork: () {
-        // Placeholder...this will navigate to EndorsementGraphScreen when i am done with it
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Full network view coming soon'),
-            duration: Duration(seconds: 2),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const EndorsementGraphScreen(),
           ),
         );
       },
