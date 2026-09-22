@@ -23,10 +23,13 @@ import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.repositories.UserRepository;
  
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
- 
+
+import java.net.Authenticator;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -145,6 +148,26 @@ public class EndorsementService {
         Endorsement endorsement = new Endorsement(endorser,endorsee,zone,skill,task,request.weightOrDefault());
 
         return toResponse(endorsementRepository.save(endorsement),skill);
+    }
+
+     /* <p>Assumes the Firebase token filter populates the Spring Security context
+     * with the Firebase UID as the principal name. If the project already has an
+     * equivalent helper elsewhere, delete this method and the two call sites in
+     * {@code EndorsementController} that use it.</p>
+     *
+     * @return the authenticated user
+     * @throws ResponseStatusException 401 if there is no authenticated principal,
+     *                                 or no local user matching the Firebase UID
+     */
+    public User requireCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if(auth == null || !auth.isAuthenticated() || auth.getPrincipal()==null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid Firebase Token");
+        }
+
+        String firebaseUid = auth.getName();
+        return userRepository.findByFirebaseUid(firebaseUid)
+        .orElseThrow(()-> new ResponseStatusException(HttpStatus.UNAUTHORIZED,"unauthorized"));
     }
 
     /**
@@ -290,7 +313,7 @@ public class EndorsementService {
                 topSkills,
                 loastEndorsedAt);
     }
-
+    
     /**
      * Expands the caller's N-hop trust-graph neighbourhood breadth-first, one
      * query per hop rather than one per node.
