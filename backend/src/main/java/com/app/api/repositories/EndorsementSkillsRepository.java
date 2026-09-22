@@ -16,7 +16,7 @@ public interface EndorsementSkillsRepository extends JpaRepository <EndorsementS
 
     @Query("""
             select s
-            from endorsement_skill_table s
+            from EndorsementSkill s
             where s.approved = true
             order by coalesce(s.category,'Uncategorised') asc, s.displayName asc
             """

@@ -34,15 +34,14 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
     @Query
     ("""
         select e 
-        from Endorsment e
+        from Endorsement e
         join fetch e.endorserid
         join fetch e.endorseeid
         join fetch e.skillTag
         join fetch e.zoneid
-        join fetch e.taskid
         left join fetch e.taskid
-        where e.endoreseeid.user_id = :userid
-        order by e.skill_tag.skill_tag asc, e.createdAt desc""")
+        where e.endorseeid.userid = :userId
+        order by e.skillTag.skillTag asc, e.createdAt desc""")
         List<Endorsement> findReceiveWithDetails(@Param("userId") Integer userId);
     
     /**
@@ -55,12 +54,12 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
                count(e)                             as endorsementCount,
                coalesce(sum(e.weight), 0)           as totalWeight,
                count(distinct e.endorserid.userid)  as distinctEndorsers,
-               max(e.created_At)                    as lastEndorsedAt
-               from Endoursement e
-               where e.endorseeid.user_id = :user_id
+               max(e.createdAt)                    as lastEndorsedAt
+               from Endorsement e
+               where e.endorseeid.userid = :userId
                group by e.skillTag.skillTag,
-               e.skill_tag.displayName,
-               e.skill_tag.category
+               e.skillTag.displayName,
+               e.skillTag.category
                order by coalesce(sum(e.weight),0) desc, 
                count(e) desc
                 """)
@@ -71,7 +70,7 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
     // counts distinct users */
     @Query("""
         select count(distinct e.endorserid.userid) 
-        from Endoursement e 
+        from Endorsement e 
         where e.endorseeid.userid = :userId
         """)
     long countDistinctEndorsers(@Param ("userId")Integer user_Id);
@@ -82,11 +81,11 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
 
     @Query("""
             select e.endorserid.userid   as fromUserId,
-                   e.endorsee_id.userid  as toUserId,
+                   e.endorseeid.userid  as toUserId,
                    e.skillTag.skillTag   as skillTag,
                    e.weight              as weight
             from Endorsement e 
-            where e.endorserid.userid in :userid
+            where e.endorserid.userid in :userIds
             """)
     List<EdgeRow> findoutgoEdges(@Param("userId") Collection<Integer> userIds);
 
@@ -97,10 +96,10 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
     @Query("""
             select e.endorserid.userid  as fromUserId,
                    e.endorseeid.userid  as toUserId,
-                   e.skilltag.skillTag  as skillTag,
+                   e.skillTag.skillTag  as skillTag,
                    e.weight             as weight
             from Endorsement e 
-            where e.endoreeid.userid in :userIds
+            where e.endorseeid.userid in :userIds
             """)
     List<EdgeRow> findIncomingEdges(@Param("userIds") Collection<Integer> userids);
                     
@@ -115,7 +114,7 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
             from Endorsement e
             where e.zoneid.locationid = :zoneId
             """)
-    List<EdgeRow> findEgEdgesByZone(@Param("zoneId") Integer zoneId);
+    List<EdgeRow> findEdgesByZone(@Param("zoneId") Integer zoneId);
 
     /**
      * projections

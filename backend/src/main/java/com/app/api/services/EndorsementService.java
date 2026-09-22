@@ -396,7 +396,7 @@ public class EndorsementService {
         }
 
         int cap = clamp(maxEdges,1,MAX_GRAPH_NODES);
-        List<EdgeRow> rows= endorsementRepository.findEgEdgesByZone(zoneId);
+        List<EdgeRow> rows= endorsementRepository.findEdgesByZone(zoneId);
         boolean truncated = rows.size()>cap;
         if(truncated) {
             rows = rows.subList(0, cap);
