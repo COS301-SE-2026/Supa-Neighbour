@@ -74,7 +74,7 @@ public class EndorsementController {
     @ApiResponse(responseCode = "201", description =" created successfully")
     public ResponseEntity<EndorsementResponseDTO> create(@RequestHeader("Authorization") String authHeader,@Valid @RequestBody CreateEndorsementRequestDTO request) {
         try {
-            String token = authHeader.replace("Bearer", " ");
+            String token = authHeader.replace("Bearer ", " ");
             int userId = firebaseAuthService.getUserIdFromToken(token);
             User endorser = userRepository.findById(userId)
                 .orElse(null);
