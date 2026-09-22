@@ -13,3 +13,4 @@ export 'helper_profile_response.dart';
 export 'review_model.dart';
 export 'address_model.dart';
 export 'auth_session.dart';
+export 'admin_application_model.dart';

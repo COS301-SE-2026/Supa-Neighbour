@@ -2,8 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supa_neighbour/models/auth_session.dart';
+import 'package:supa_neighbour/models/notification_model.dart';
 import 'package:supa_neighbour/models/user_model.dart';
 import 'package:supa_neighbour/screens/home/home_screen.dart';
+import 'package:supa_neighbour/screens/notifications/notifications_screen.dart';
+import 'package:supa_neighbour/services/notification_api_service.dart';
+
+/// Fake that implements the *interface* so it doesn't touch FirebaseAuth.
+class FakeNotificationsApiService implements INotificationsApiService {
+  @override
+  Future<List<AppNotification>> fetchNotifications() async => [];
+
+  @override
+  Future<void> markAsRead(String notificationId) async {}
+}
 
 void main() {
   group('HomeScreen Widget Tests', () {
@@ -34,6 +46,12 @@ void main() {
 
     Widget buildTestWidget() {
       return ProviderScope(
+        overrides: [
+          // Override the notification API service so it doesn't use Firebase
+          notificationsApiServiceProvider.overrideWithValue(
+            FakeNotificationsApiService(),
+          ),
+        ],
         child: const MaterialApp(
           home: HomeScreen(),
         ),

@@ -46,6 +46,7 @@ dependencies:
   path_provider: ^2.1.2  # To get storage paths
   open_file: ^3.4.1  # To open the downloaded file
   google_sign_in: ^6.2.1
+  flutter_local_notifications: ^17.2.3
 
   shared:
     path: ../shared

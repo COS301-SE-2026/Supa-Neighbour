@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +16,7 @@ import com.app.api.models.Chat;
 import com.app.api.models.Dependent;
 import com.app.api.models.Helper;
 import com.app.api.models.Task;
+import com.app.api.models.TaskImage;
 import com.app.api.models.TaskInvitation;
 import com.app.api.models.TaskInvoice;
 import com.app.api.models.User;
@@ -25,6 +25,7 @@ import com.app.api.repositories.ChatRepository;
 import com.app.api.repositories.DependentRepository;
 import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.MessageRepository;
+import com.app.api.repositories.TaskImageRepository;
 import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskRepository;
 
@@ -52,8 +53,12 @@ public class TaskService {
     /** The helper repository. */
     private final HelperRepository helperRepo;
 
+    private final TaskImageRepository taskImageRepo;
+
     private final TaskInvitationRepository taskInvitationRepo;
-    @Autowired
+
+    private final BlobStorageService blobStorageService;
+
     private final ApplicationEventPublisher eventPublisher;
 
     /**
@@ -68,7 +73,9 @@ public class TaskService {
     public TaskService(TaskRepository taskRepo, AnalyticsRepository analyticsRepo,
             DependentRepository dependentRepo, ChatRepository chatRepo,
             MessageRepository messageRepo, HelperRepository helperRepo, TaskInvitationRepository taskInvitationRepo,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            TaskImageRepository taskImageRepo,
+            BlobStorageService blobStorageService) {
         this.taskRepo = taskRepo;
         this.analyticsRepo = analyticsRepo;
         this.dependentRepo = dependentRepo;
@@ -77,6 +84,8 @@ public class TaskService {
         this.helperRepo = helperRepo;
         this.taskInvitationRepo = taskInvitationRepo;
         this.eventPublisher = eventPublisher;
+        this.taskImageRepo = taskImageRepo;
+        this.blobStorageService = blobStorageService;
     }
 
     /**
@@ -254,6 +263,7 @@ public class TaskService {
         dto.setStatus(task.getStatus());
         dto.setTitle(task.getTitle());
         dto.setInstructions(task.getInstructions());
+        
 
 
         if (task.getDependentId() != null) {
@@ -270,6 +280,16 @@ public class TaskService {
                 dto.setHelperName(fullName(helper.getUserid()));
             }
         }
+
+        
+
+        List<TaskImage> images = taskImageRepo.findByTaskid_TaskidOrderByUploadedAtAsc(task.getTaskId());
+        List<String> photoUrls = new ArrayList<>();
+        for(TaskImage image: images){
+            photoUrls.add(blobStorageService.generateTaskSasUrl(image.getImageUrl()));
+        }
+
+        dto.setCompletionPhotos(photoUrls);
 
         return dto;
     }

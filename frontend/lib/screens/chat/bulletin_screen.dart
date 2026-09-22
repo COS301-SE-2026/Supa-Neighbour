@@ -5,6 +5,7 @@ import '../../constants/app_colors.dart';
 import '../../models/bulletin_post_model.dart';
 import 'bulletin_post_detail_screen.dart';
 import 'create_bulletin_post_screen.dart';
+import '../reports/report_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 
@@ -205,6 +206,24 @@ class _BulletinScreenState extends ConsumerState<BulletinScreen> {
     }
   }
 
+  /// Opens the unified ReportScreen for this post.
+  void _navigateToReportPost(BulletinPost post) {
+    final preview = post.postContent.length > 40
+        ? '${post.postContent.substring(0, 40)}…'
+        : post.postContent;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReportScreen(
+          targetType: ReportTargetType.post,
+          targetId: post.id,
+          targetPreview: preview,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -225,34 +244,40 @@ class _BulletinScreenState extends ConsumerState<BulletinScreen> {
                         color: AppColors.textGrey(context),
                         fontSize: 14,
                       ),
-                      prefixIcon:  Icon(Icons.search, color: AppColors.textGrey(context)),
+                      prefixIcon: Icon(Icons.search,
+                          color: AppColors.textGrey(context)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide:  BorderSide(color: AppColors.surfaceGrey(context)),
+                        borderSide:
+                            BorderSide(color: AppColors.surfaceGrey(context)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
+                        borderSide:
+                            BorderSide(color: AppColors.surfaceGrey(context)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
+                        borderSide: BorderSide(
+                            color: AppColors.primaryTeal(context), width: 2),
                       ),
                       filled: true,
-                      fillColor: isDarkMode ? AppColors.surfaceGrey(context) : Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                      fillColor: isDarkMode
+                          ? AppColors.surfaceGrey(context)
+                          : Colors.white,
+                      contentPadding:
+                          const EdgeInsets.symmetric(vertical: 4),
                     ),
                     style: GoogleFonts.openSans(
                       color: AppColors.charcoal(context),
                       fontSize: 14,
                     ),
                     onSubmitted: (value) {
-                      //Need to Implement search
+                      // TODO: implement search
                     },
                   ),
                 ),
                 const SizedBox(width: 8),
-               
                 GestureDetector(
                   onTap: () => _showFilterDialog(),
                   child: Container(
@@ -315,16 +340,18 @@ class _BulletinScreenState extends ConsumerState<BulletinScreen> {
                           return false;
                         },
                         child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           itemCount: _posts.length + (_hasMore ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index == _posts.length) {
                               return _isLoadingMore
                                   ? Padding(
-                                      padding: EdgeInsets.all(16),
+                                      padding: const EdgeInsets.all(16),
                                       child: Center(
                                         child: CircularProgressIndicator(
-                                          color: AppColors.primaryTeal(context),
+                                          color:
+                                              AppColors.primaryTeal(context),
                                           strokeWidth: 2,
                                         ),
                                       ),
@@ -444,7 +471,8 @@ class _BulletinScreenState extends ConsumerState<BulletinScreen> {
               children: [
                 CircleAvatar(
                   radius: 16,
-                  backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
+                  backgroundColor:
+                      AppColors.primaryTeal(context).withValues(alpha: 0.1),
                   child: Text(
                     post.authorAvatar,
                     style: TextStyle(
@@ -465,15 +493,19 @@ class _BulletinScreenState extends ConsumerState<BulletinScreen> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Color(int.parse(categoryColor.replaceFirst('#', '0xFF'))).withValues(alpha: 0.1),
+                    color: Color(int.parse(
+                            categoryColor.replaceFirst('#', '0xFF')))
+                        .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     _getCategoryLabel(post.category),
                     style: GoogleFonts.openSans(
-                      color: Color(int.parse(categoryColor.replaceFirst('#', '0xFF'))),
+                      color: Color(
+                          int.parse(categoryColor.replaceFirst('#', '0xFF'))),
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                     ),
@@ -490,7 +522,7 @@ class _BulletinScreenState extends ConsumerState<BulletinScreen> {
               ],
             ),
             const SizedBox(height: 8),
-           Text(
+            Text(
               post.postContent,
               style: GoogleFonts.poppins(
                 color: AppColors.charcoal(context),
@@ -501,18 +533,18 @@ class _BulletinScreenState extends ConsumerState<BulletinScreen> {
             const SizedBox(height: 8),
             if (post.mediaUrl != null)
               Container(
-                  width: double.infinity,
-                  height: 160,
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceGrey(context),
-                    borderRadius: BorderRadius.circular(8),
-                    image: DecorationImage(
-                      image: NetworkImage(post.mediaUrl!),
-                      fit: BoxFit.cover,
-                    ),
+                width: double.infinity,
+                height: 160,
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceGrey(context),
+                  borderRadius: BorderRadius.circular(8),
+                  image: DecorationImage(
+                    image: NetworkImage(post.mediaUrl!),
+                    fit: BoxFit.cover,
                   ),
                 ),
+              ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -523,17 +555,25 @@ class _BulletinScreenState extends ConsumerState<BulletinScreen> {
                   child: Row(
                     children: [
                       Icon(
-                        post.isHelpfulByUser ? Icons.thumb_up : Icons.thumb_up_outlined,
+                        post.isHelpfulByUser
+                            ? Icons.thumb_up
+                            : Icons.thumb_up_outlined,
                         size: 16,
-                        color: post.isHelpfulByUser ? AppColors.primaryTeal(context): AppColors.textGrey(context),
+                        color: post.isHelpfulByUser
+                            ? AppColors.primaryTeal(context)
+                            : AppColors.textGrey(context),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         post.likeCount.toString(),
                         style: GoogleFonts.openSans(
-                          color: post.isHelpfulByUser ? AppColors.primaryTeal(context): AppColors.textGrey(context),
+                          color: post.isHelpfulByUser
+                              ? AppColors.primaryTeal(context)
+                              : AppColors.textGrey(context),
                           fontSize: 12,
-                          fontWeight: post.isHelpfulByUser ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight: post.isHelpfulByUser
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                       ),
                     ],
@@ -558,10 +598,9 @@ class _BulletinScreenState extends ConsumerState<BulletinScreen> {
                   ],
                 ),
                 const Spacer(),
+                // Flag icon — opens the unified ReportScreen for this post.
                 GestureDetector(
-                  onTap: () {
-                    _showReportDialog(post);
-                  },
+                  onTap: () => _navigateToReportPost(post),
                   child: Icon(
                     Icons.flag_outlined,
                     size: 16,
@@ -611,109 +650,6 @@ class _BulletinScreenState extends ConsumerState<BulletinScreen> {
         ),
       );
     }
-  }
-
-  void _showReportDialog(BulletinPost post) {
-    final TextEditingController reasonController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'Report Post',
-          style: GoogleFonts.poppins(
-            color: AppColors.charcoal(context),
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Why are you reporting this post?',
-              style: GoogleFonts.openSans(
-                color: AppColors.textGrey(context),
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonController,
-              maxLines: 3,
-              style: GoogleFonts.openSans(
-                color: AppColors.charcoal(context),
-                fontSize: 14,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Enter reason...',
-                hintStyle: GoogleFonts.openSans(
-                  color: AppColors.textGrey(context),
-                  fontSize: 14,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
-                ),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.openSans(
-                color: AppColors.textGrey(context),
-                fontSize: 14,
-              ),
-            ),
-          ),
-          ElevatedButton(
-          onPressed: () {
-              if (reasonController.text.isNotEmpty) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Post reported successfully'),
-                    backgroundColor: AppColors.success(context),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              }
-            },
-
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Report',
-              style: GoogleFonts.openSans(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   String _getTimeAgo(DateTime date) {

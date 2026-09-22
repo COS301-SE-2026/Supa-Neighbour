@@ -110,7 +110,7 @@ public class BlobStorageService {
         return uploadImage(file, profilesContainerClient);
     }
 
-    /** * Uploads a profile image to the profiles container.
+    /** * Uploads a profile image to the reports container.
      *  @param file the profile image to upload 
      * @return the URL of the uploaded profile image 
      * @throws IOException if an error occurs while reading or uploading the file 

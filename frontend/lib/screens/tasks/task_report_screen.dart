@@ -6,8 +6,12 @@ import 'package:image_picker/image_picker.dart';
 import '../../constants/app_colors.dart';
 import '../../models/report_request.dart';
 import '../../providers/service_providers.dart';
+import '../reports/report_screen.dart';
 
-class TaskReportScreen extends ConsumerStatefulWidget {
+/// Thin wrapper kept for backward compatibility.
+/// All existing call sites can keep using `TaskReportScreen` unchanged —
+/// it now just delegates to the unified `ReportScreen`.
+class TaskReportScreen extends StatelessWidget {
   final int taskId;
   final String taskTitle;
 
@@ -531,6 +535,13 @@ class DottedBorderBox extends StatelessWidget {
         ),
       ),
       child: child,
+    );
+  }
+  Widget build(BuildContext context) {
+    return ReportScreen(
+      targetType: ReportTargetType.task,
+      targetId: taskId,
+      targetPreview: taskTitle,
     );
   }
 }

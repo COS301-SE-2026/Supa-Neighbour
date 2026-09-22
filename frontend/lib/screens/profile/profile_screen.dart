@@ -12,6 +12,7 @@ import '../help/help_menu_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 import 'edit_profile_screen.dart' show EditUsernameScreen;
+import 'admin_application_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -798,6 +799,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             'Privacy Settings',
             style: GoogleFonts.openSans(
               color: AppColors.textGrey(context),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AdminApplicationScreen(),
+              ),
+            );
+          },
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: AppColors.primaryTeal(context)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          child: Text(
+            'Apply to be Admin',
+            style: GoogleFonts.openSans(
+              color: AppColors.primaryTeal(context),
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
