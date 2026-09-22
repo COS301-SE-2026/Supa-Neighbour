@@ -2,8 +2,6 @@ package com.app.api.dtos;
 
 import java.util.List;
 
-import com.app.api.dtos.endorsement.GraphDirection;
-
 /**
  * Response for the N-hop neighbourhood and zone-graph endpoints.
  *
@@ -16,7 +14,7 @@ import com.app.api.dtos.endorsement.GraphDirection;
  * @param truncated  {@code true} when a node or edge cap cut the result short
  */
 
-public record TrustGraphResponse(
+public record TrustGraphResponseDTO(
         Integer rootUserId,
         Integer zoneId,
         int depth,

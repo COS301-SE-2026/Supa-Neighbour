@@ -15,13 +15,13 @@ import java.util.List;
  * @param topSkills         the highest-weighted skills, capped by the service
  * @param lastEndorsedAt    most recent endorsement timestamp, {@code null} if none
  */
-public record EndorsementSummaryResponse(
+public record EndorsementSummaryResponseDTO(
     Integer userId,
     long totalEndorsements,
     long totalWeight,
     int distinctSkills,
     long distinctEndorsers,
-    List<SkillSummary> topSkill,
+    List<SkillSummary> topSkills,
     LocalDateTime lastEndorsedAt
 ) {
 /**
@@ -35,8 +35,9 @@ public record EndorsementSummaryResponse(
  */ 
     public record SkillSummary(
         String skillTag,
-        String displayName,
-        long count,
+        String skillDisplayName,
+        String category,
+        long endorsementCount, 
         long totalWeight
     ) {
     }

@@ -27,8 +27,8 @@ public record EndorsementResponseDTO(
     Integer taskId,
     Integer weight,
     LocalDateTime createdAt
-    )
-    {
+) {
 }
+
 
 

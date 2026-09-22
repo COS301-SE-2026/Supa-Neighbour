@@ -19,12 +19,12 @@ import com.app.api.models.Endorsement;
 public interface EndorsementRepository extends JpaRepository<Endorsement, Integer> {
 
     /** Checks for an existing task-less endorsement for the same triple. */
-    boolean existsByEndorserid_UserIdAndEndorseeid_UserIdAndSkillTag_SkillTagAndTaskidIsNull(
-            Integer endorserId, Integer endorseeId, String skillTag);
+    boolean existsByEndorserid_UseridAndEndorseeid_UseridAndSkillTag_SkillTagAndTaskidIsNull(
+        Integer endorserId, Integer endorseeId, String skillTag);
  
     /** Checks for an existing endorsement for the same triple on the same task. */
-    boolean existsByEndorserid_UserIdAndEndorseeid_UserIdAndSkillTag_SkillTagAndTaskid_TaskId(
-            Integer endorserId, Integer endorseeId, String skillTag, Integer taskId);
+    boolean existsByEndorserid_UseridAndEndorseeid_UseridAndSkillTag_SkillTagAndTaskid_Taskid(
+        Integer endorserId, Integer endorseeId, String skillTag, Integer taskId);
  
 
     /**
@@ -34,82 +34,88 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
     @Query
     ("""
         select e 
-        from endorsement_table e
-        join fetch e.endorsement_id
-        join fetch e.skill_tag
-        join fetch e.zone_id
-        join fetch e.task_id
-        left join fetch e.task_id
-        where e.endoresee.user_id = :user_id
+        from Endorsment e
+        join fetch e.endorserid
+        join fetch e.endorseeid
+        join fetch e.skillTag
+        join fetch e.zoneid
+        join fetch e.taskid
+        left join fetch e.taskid
+        where e.endoreseeid.user_id = :userid
         order by e.skill_tag.skill_tag asc, e.createdAt desc""")
-        List<Endorsement> findReceiveWithDetails(@Param("user_id") Integer user_id);
+        List<Endorsement> findReceiveWithDetails(@Param("userId") Integer userId);
     
     /**
     * GET /api/endorsements/me/summary
     */
    @Query("""
-        select e.skill_tag.skill_tag  as skill_tag,
-               e.skill_tag.display_name as displayName,
-               e.skill_tag.category as category,
-               count(e)     as endorsementCount,
-               coalesce(sum(e.weight), 0) as totalWeight,
-               count(distinct e.endorser_id.user_id) as distinctEndorsers,
-               max(e.created_At) as lastEndorsedAt
+        select e.skillTag.skillTag                  as skillTag,
+               e.skillTag.displayName               as displayName,
+               e.skillTag.category                  as category,
+               count(e)                             as endorsementCount,
+               coalesce(sum(e.weight), 0)           as totalWeight,
+               count(distinct e.endorserid.userid)  as distinctEndorsers,
+               max(e.created_At)                    as lastEndorsedAt
                from Endoursement e
-               where e.endorsee_id.user_id = user_id
-               group by e.skill_tag.skill_tag,e.skill_tag.displayName,e.skill_tag.category
-               order by coalesce(sum(e.weight),0) desc, count(e) desc
+               where e.endorseeid.user_id = :user_id
+               group by e.skillTag.skillTag,
+               e.skill_tag.displayName,
+               e.skill_tag.category
+               order by coalesce(sum(e.weight),0) desc, 
+               count(e) desc
                 """)
-            List<SkillAggregate> aggregateReceivedBySkill(@Param("userId") Integer userId);
+    List<SkillAggregate> aggregateReceivedBySkill(@Param("userId") Integer userId);
 
 
     //*
     // counts distinct users */
     @Query("""
-    select count(distinct e.endorser_id.user_id) from Endoursement e where e.endorsee_id.user_id =:userId
+        select count(distinct e.endorserid.userid) 
+        from Endoursement e 
+        where e.endorseeid.userid = :userId
         """)
-    long countDistinctEndorsers(@Param ("user_id")Integer user_id);
+    long countDistinctEndorsers(@Param ("userId")Integer user_Id);
 
     /**
      * graph transversal projections
      */
 
     @Query("""
-            select e.endorser_id.user_id as fromUserId,
-                   e.endorsee_id.user_id as toUserId,
-                   e.skill_tag.skill_tag as skillTag,
+            select e.endorserid.userid   as fromUserId,
+                   e.endorsee_id.userid  as toUserId,
+                   e.skillTag.skillTag   as skillTag,
                    e.weight              as weight
             from Endorsement e 
-            where e.endorser_id.user_id in:user_id
+            where e.endorserid.userid in :userid
             """)
-    List<EdgeRow> findoutgoEdges(@Param("user_id") Collection<Integer> userIds);
+    List<EdgeRow> findoutgoEdges(@Param("userId") Collection<Integer> userIds);
 
 
     /**
      * any edge touching one of the supplied users,in either direction
      */
     @Query("""
-            select e.endorser_id.user_id as fromUserId,
-                   e.endorsee_id.user_id as toUserId,
-                   e.skill_tag.skill_tag as skillTag,
-                   e.weight              as weight
+            select e.endorserid.userid  as fromUserId,
+                   e.endorseeid.userid  as toUserId,
+                   e.skilltag.skillTag  as skillTag,
+                   e.weight             as weight
             from Endorsement e 
-            where e.endoree_id.user_id in :user_id
+            where e.endoreeid.userid in :userIds
             """)
-    List<EdgeRow> findIncomingEdges(@Param("user_id") Collection<Integer> user_ids);
+    List<EdgeRow> findIncomingEdges(@Param("userIds") Collection<Integer> userids);
                     
     /**
      * every edge recorded inside a zone,for the admin zone-graph endpoint
      */
     @Query("""
-            select e.endorser_it.user_id as fromUserId,
-                   e.endorsee_id.user_id as toUserId,
-                   e.skill_tag.skill_tag as skill_tag,
-                   e.weight              as weight
+            select e.endorserid.userid  as fromUserId,
+                   e.endorseeid.userid  as toUserId,
+                   e.skillTag.skillTag  as skillTag,
+                   e.weight             as weight
             from Endorsement e
-            where e.zone_id.zone_id = :zone_id
-    """)
-    List<EdgeRow> findEgEdgesByZone(@Param("zone_id") Integer zoneId);
+            where e.zoneid.locationid = :zoneId
+            """)
+    List<EdgeRow> findEgEdgesByZone(@Param("zoneId") Integer zoneId);
 
     /**
      * projections
@@ -136,7 +142,7 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
         Integer getFromUserId();
         Integer getToUserId();
         String getSkillTag();
-        Integer getWeigh();
+        Integer getWeight();
     }
 } 
 

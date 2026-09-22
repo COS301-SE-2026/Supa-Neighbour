@@ -38,7 +38,7 @@ public record CreateEndorsementRequestDTO(
 )
 {
     /**Default weight when one isn't provided */
-    public static final int DEFAULT_WEIGHT = 1;
+    public static final Integer DEFAULT_WEIGHT = 1;
     
     /**
      * @return the supplied weight, or {@link #DEFAULT_WEIGHT}
