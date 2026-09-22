@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -175,65 +176,153 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
 
   // ===== LOCATION HANDLING =====
 
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error(context),
+      ),
+    );
+  }
+
   Future<void> _requestLocation() async {
     if (_isFetchingLocation) return;
     setState(() => _isFetchingLocation = true);
 
     try {
-      // 1) Is location service enabled on the device?
-      final serviceEnabled =
-          await Geolocator.isLocationServiceEnabled();
+      // 1) Service enabled?
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled()
+          .timeout(const Duration(seconds: 3));
       if (!serviceEnabled) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                  'Location services are disabled. Please enable them.'),
-              backgroundColor: AppColors.error(context),
-            ),
-          );
-        }
+        _showSnack('Location services are disabled. Please enable them.');
         return;
       }
 
-      // 2) Permission status
+      // 2) Permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                  'Location permission denied. Location is required to create a task.'),
-              backgroundColor: AppColors.error(context),
-            ),
-          );
-        }
+        _showSnack(
+            'Location permission denied. Location is required to create a task.');
         return;
       }
 
-      // 3) Get current position
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      // 3) PRIORITY: fresh current location, attempt #1 (fused provider)
+      Position? position;
+      try {
+        position = await Geolocator.getCurrentPosition(
+          locationSettings: AndroidSettings(
+            accuracy: LocationAccuracy.high,
+            timeLimit: const Duration(seconds: 15),
+          ),
+        );
+      } on TimeoutException {
+        position = null;
+      }
+
+      // 4) If fused provider timed out, retry via raw Android LocationManager
+      if (position == null) {
+        try {
+          position = await Geolocator.getCurrentPosition(
+            locationSettings: AndroidSettings(
+              accuracy: LocationAccuracy.high,
+              timeLimit: const Duration(seconds: 10),
+              forceLocationManager: true,
+            ),
+          );
+        } on TimeoutException {
+          position = null;
+        }
+      }
+
+      // 5) Last resort: cached location, with an explicit warning
+      bool usedCache = false;
+      if (position == null) {
+        position = await Geolocator.getLastKnownPosition();
+        usedCache = position != null;
+      }
+
+      // 6) Nothing worked — offer retry
+      if (position == null) {
+        if (mounted) _showRetryDialog();
+        return;
+      }
 
       if (!mounted) return;
       setState(() => _location = position);
 
+      if (usedCache) {
+        _showSnack(
+            'Could not get a fresh GPS fix — using last known location.');
+      }
       _showLocationModal(position);
+    } on LocationServiceDisabledException {
+      _showSnack('Location services are disabled. Please enable them.');
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to get location: $e'),
-          backgroundColor: AppColors.error(context),
-        ),
-      );
+      _showSnack('Failed to get location: $e');
     } finally {
       if (mounted) setState(() => _isFetchingLocation = false);
+    }
+  }
+
+  Future<void> _showRetryDialog() async {
+    final retry = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          'Location Unavailable',
+          style: GoogleFonts.poppins(
+            color: AppColors.charcoal(context),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'We couldn\'t get your current location.\n\n'
+          '• Make sure GPS / Location is turned on\n'
+          '• Move near a window or outdoors\n'
+          '• Wait a few seconds, then tap Retry',
+          style: GoogleFonts.openSans(
+            color: AppColors.charcoal(context),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.openSans(color: AppColors.textGrey(context)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryTeal(context),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: Text(
+              'Retry',
+              style: GoogleFonts.openSans(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (retry == true && mounted) {
+      await _requestLocation();
     }
   }
 
