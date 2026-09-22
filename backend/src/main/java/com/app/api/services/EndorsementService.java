@@ -109,6 +109,14 @@ public class EndorsementService {
      */
 
 
+    public User requireAdmin(int minimumLevel) {
+        User user = requireCurrentUser();
+        Integer level = 2;//user.getIsAdmin();
+        if(level == null || level<minimumLevel) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"higher admin access required");
+        }
+        return user;
+    }
     //POST api/endorsements
 
     @Transactional 
@@ -313,7 +321,7 @@ public class EndorsementService {
                 topSkills,
                 loastEndorsedAt);
     }
-    
+
     /**
      * Expands the caller's N-hop trust-graph neighbourhood breadth-first, one
      * query per hop rather than one per node.

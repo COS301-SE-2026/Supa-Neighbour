@@ -25,6 +25,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -83,114 +84,93 @@ public class EndorsementController {
             }
 
             EndorsementResponseDTO created = endorsementService.create(endorser, request);
+
+            return ResponseEntity.ok(created);
         }
-    }
-
-@PostMapping(
-            path = "/api/endorsements",
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<EndorsementResponse> create(
-            @RequestHeader("Authorization") String authHeader,
-            @Valid @RequestBody CreateEndorsementRequest request) {
-
-        try {
-            String token = authHeader.replace("Bearer ", "");
-
-            int userId =
-                    firebaseAuthService.getUserIdFromToken(token);
-
-            User endorser = userRepository.findById(userId)
-                    .orElse(null);
-
-            if (endorser == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            EndorsementResponse created =
-                    endorsementService.create(endorser, request);
-
-            URI location = UriComponentsBuilder
-                    .fromPath("/api/endorsements/{id}")
-                    .buildAndExpand(created.endorsementId())
-                    .toUri();
-
-            return ResponseEntity
-                    .created(location)
-                    .body(created);
-
-        } catch (FirebaseAuthException e) {
+        catch(FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
     }
 
-    @GetMapping(
-            path = "/api/endorsements/me",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<MyEndorsementsResponse> myEndorsements(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestParam(required = false) String skillTag) {
-
+    /**
+     * Lists the endorsements the caller has received, grouped by skill tag.
+     *
+     * @return 200 with the grouped listing
+     */
+    @GetMapping(path = "/me",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<MyEndorsementResponseDTO> myEndorsements(@RequestHeader("Authorization") String authHeader,@RequestBody (required = false)String skillTag) {
         try {
-            String token = authHeader.replace("Bearer ", "");
-
-            int userId =
-                    firebaseAuthService.getUserIdFromToken(token);
+            String token = authHeader.replace("Bearer", " ");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
 
             User user = userRepository.findById(userId)
-                    .orElse(null);
+            .orElse(null);
 
-            if (user == null) {
+            if(user == null) {
                 return ResponseEntity.notFound().build();
             }
-
-            return ResponseEntity.ok(
-                    endorsementService.listReceived(user));
-
-        } catch (FirebaseAuthException e) {
+            return ResponseEntity.ok(endorsementService.listReceived(user));
+        }
+        catch(FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
     }
 
-    @GetMapping(
-            path = "/api/endorsements/me/summary",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<EndorsementSummaryResponse> mySummary(
-            @RequestHeader("Authorization") String authHeader) {
-
+    /**
+     * Returns a compact endorsement summary sized for profile cards.
+     *
+     * @return 200 with the summary
+     */
+    @GetMapping(path = "/me/summary", produces= MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EndorsementSummaryResponseDTO>mySummary(@RequestHeader ("Authorization") String authHeader) {
         try {
-            String token = authHeader.replace("Bearer ", "");
+            String token = authHeader.replace("Bearer", " ");
+            int userId= firebaseAuthService.getUserIdFromToken(token);
+            User user= userRepository.findById(userId)
+                .orElse(null);
 
-            int userId =
-                    firebaseAuthService.getUserIdFromToken(token);
-
-            User user = userRepository.findById(userId)
-                    .orElse(null);
-
-            if (user == null) {
+            if(user == null) {
                 return ResponseEntity.notFound().build();
             }
 
-            return ResponseEntity.ok(
-                    endorsementService.summarise(user));
-
-        } catch (FirebaseAuthException e) {
+            return ResponseEntity.ok(endorsementService.summarise(user));
+        }
+        catch(FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
     }
-}
 
+    /**
+     * Returns the caller's N-hop trust-graph neighbourhood.
+     *
+     * @param depth     hops to expand, clamped server-side
+     * @param direction which endorsement edges to follow
+     * @param limit     node cap, clamped server-side
+     * @return 200 with nodes and edges
+     */
+    @GetMapping(path = "/me/graph",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TrustGraphResponseDTO> myGraph(@RequestHeader("Authorization") String authHeader,
+            @RequestParam (defaultValue = "2") int depth,
+            @RequestParam(defaultValue =  "BOTH") GraphDirection direction,
+            @RequestParam(defaultValue = "200")int limit) 
+            {
+        try {
+            String token = authHeader.replace("Bearer", " ");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            User user= userRepository.findById(userId)
+                .orElse(null);
 
-    @GetMapping(path = "/api/endorsements/me/graph", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TrustGraphResponse> myGraph(
-            @RequestParam(defaultValue = "2") int depth,
-            @RequestParam(defaultValue = "BOTH") GraphDirection direction,
-            @RequestParam(defaultValue = "200") int limit) {
- 
-        User user = endorsementService.requireCurrentUser();
-        return ResponseEntity.ok(endorsementService.neighbourhood(user, depth, direction, limit));
+            if(user == null) {
+                return ResponseEntity.notFound().build();
+            }
+            User user2 = endorsementService.requireCurrentUser();
+            return ResponseEntity.ok(endorsementService.neighbourhood(user2, depth, direction, limit));
+        }
+        catch(FirebaseAuthException e) {
+            return ResponseEntity.status(401).build();
+        }
     }
- 
+
     /**
      * Returns the shortest trust path(s) from the caller to another user.
      *
@@ -199,16 +179,12 @@ public class EndorsementController {
      * @param maxPaths result cap, clamped server-side
      * @return 200 with the paths, or a disconnected result
      */
-    @GetMapping(path = "/api/endorsements/trust-paths", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TrustPathResponse> trustPaths(
-            @RequestParam @NotNull Integer toUserId,
-            @RequestParam(defaultValue = "4") int maxDepth,
-            @RequestParam(defaultValue = "5") int maxPaths) {
- 
+    @GetMapping(path = "trust-paths",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TrustPathResponseDTO> trustPaths(@RequestParam @NotNull Integer toUserId,@RequestParam(defaultValue = "4") int maxDepth,@RequestParam(defaultValue = "5") int maxPaths) {
         User user = endorsementService.requireCurrentUser();
         return ResponseEntity.ok(endorsementService.trustPaths(user, toUserId, maxDepth, maxPaths));
     }
- 
+
     /**
      * Public catalogue of approved skill tags, grouped by category.
      *
@@ -218,27 +194,27 @@ public class EndorsementController {
      *
      * @return 200 with the catalogue
      */
-    @GetMapping(path = "/api/endorsements/skills", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SkillCatalogueResponse> skills() {
+    @GetMapping(path = "/skills",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<SkillCatalogueResponseDTO> skills() {
         return ResponseEntity.ok(endorsementService.catalogue());
     }
- 
-    /**
+
+        /**
      * Returns the endorsement graph for a whole zone. Admin only.
      *
      * @param zoneId the zone to inspect
      * @param limit  edge cap, clamped server-side
      * @return 200 with the zone graph
      */
-    @GetMapping(path = "/api/admin/endorsements/zone/{zoneId}/graph", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TrustGraphResponse> zoneGraph(
-            @PathVariable Integer zoneId,
-            @RequestParam(defaultValue = "500") int limit) {
- 
+
+    @GetMapping (path = "/admin/zone/{zoneId}/graph", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TrustGraphResponseDTO> zoneGraph(@PathVariable Integer zoneId,@RequestParam(defaultValue = "500")int limit) {
         endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL);
         return ResponseEntity.ok(endorsementService.zoneGraph(zoneId, limit));
     }
+
 }
+
 
 
 
