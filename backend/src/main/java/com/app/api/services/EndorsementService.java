@@ -16,17 +16,13 @@ import com.app.api.repositories.EndorsementRepository;
 import com.app.api.repositories.EndorsementSkillsRepository;
 import com.app.api.repositories.EndorsementRepository.EdgeRow;
 import com.app.api.repositories.EndorsementRepository.SkillAggregate;
-import com.app.api.services.EndorsementSkillService;
 
-import jakarta.persistence.criteria.CriteriaBuilder.In;
-import kotlin.ranges.IntRange;
 
 import com.app.api.repositories.LocationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.repositories.UserRepository;
  
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -45,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
  
 /**
@@ -250,28 +245,6 @@ public class EndorsementService {
             groups
         );
     }
-
-        
-         /*
-         * Convert each Endorsement into an
-         * EndorsementResponseDTO.
-         *
-         * This is deliberately stored in a separate variable
-         * so that Java can determine the generic type correctly.
-         */
-
-
-
-
-
-
-
-    /**
-     * Builds the compact summary used on profile cards.
-     *
-     * @param user the caller
-     * @return totals plus the highest-weighted skills
-     */
 
     // /api/endorsements/me/summary
     @Transactional(readOnly = true)
