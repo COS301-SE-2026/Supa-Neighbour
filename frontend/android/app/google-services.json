@@ -22,6 +22,22 @@
           }
         },
         {
+          "client_id": "791892980644-ocejr0hl85t89o5f6t4dte29t023cvjt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.supa_neighbour",
+            "certificate_hash": "34ef5d07425133a7484350846a2b12f28aed0444"
+          }
+        },
+        {
+          "client_id": "791892980644-r08hn8ggjv4uu7ibv73lr4gfedno0muh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.supa_neighbour",
+            "certificate_hash": "abc94778d3b267839f7cc800b496f4e809bdff2d"
+          }
+        },
+        {
           "client_id": "791892980644-ntsn6lh4mfuvs2jsnu6eouk8lhl0m7fd.apps.googleusercontent.com",
           "client_type": 3
         }
