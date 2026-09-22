@@ -5,7 +5,7 @@ import com.app.api.models.EndorsementSkill;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import com.app.api.models.EndorsementSkill;
+import java.util.Optional;
 import java.util.List;
 /**
  * 
@@ -22,5 +22,9 @@ public interface EndorsementSkillsRepository extends JpaRepository <EndorsementS
             """
         )
     List<EndorsementSkill> findApprovedOrdered();
+
+    Optional<EndorsementSkill> findBySkillTag(String skillTag);
     
 }
+
+
