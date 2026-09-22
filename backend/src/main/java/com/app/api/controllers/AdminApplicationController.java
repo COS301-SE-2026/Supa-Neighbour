@@ -197,7 +197,8 @@ public class AdminApplicationController {
             }
 
             AdminApplication application = applicationRepository
-                    .findById(applicationId).orElse(null);
+                    .findByIdWithUser(applicationId).orElse(null);
+
             if (application == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "Application not found"));
