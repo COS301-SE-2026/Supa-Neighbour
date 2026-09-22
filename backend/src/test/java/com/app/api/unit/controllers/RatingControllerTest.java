@@ -102,7 +102,7 @@ class RatingControllerTest {
         mockMvc.perform(post("/api/tasks/3/rate")
                 .header("Authorization", BEARER_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(ratingRequestJson("Excellent", null)))
+                .content(ratingRequestJson("5", null)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("Invalid or expired Firebase token"));
 
@@ -131,7 +131,7 @@ class RatingControllerTest {
         mockMvc.perform(post("/api/tasks/3/rate")
                 .header("Authorization", BEARER_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(ratingRequestJson("Excellent", null)))
+                .content(ratingRequestJson("5", null)))
                 .andExpect(status().isNotFound());
     }
 
@@ -145,7 +145,7 @@ class RatingControllerTest {
         mockMvc.perform(post("/api/tasks/3/rate")
                 .header("Authorization", BEARER_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(ratingRequestJson("Excellent", null)))
+                .content(ratingRequestJson("5", null)))
                 .andExpect(status().isNotFound());
     }
 
@@ -159,7 +159,7 @@ class RatingControllerTest {
         mockMvc.perform(post("/api/tasks/3/rate")
                 .header("Authorization", BEARER_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(ratingRequestJson("Excellent", null)))
+                .content(ratingRequestJson("5", null)))
                 .andExpect(status().isForbidden());
     }
 
@@ -173,7 +173,7 @@ class RatingControllerTest {
         mockMvc.perform(post("/api/tasks/3/rate")
                 .header("Authorization", BEARER_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(ratingRequestJson("Excellent", null)))
+                .content(ratingRequestJson("5", null)))
                 .andExpect(status().isForbidden());
     }
 
@@ -188,7 +188,7 @@ class RatingControllerTest {
         mockMvc.perform(post("/api/tasks/3/rate")
                 .header("Authorization", BEARER_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(ratingRequestJson("Excellent", null)))
+                .content(ratingRequestJson("5", null)))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -203,24 +203,21 @@ class RatingControllerTest {
         mockMvc.perform(post("/api/tasks/3/rate")
                 .header("Authorization", BEARER_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(ratingRequestJson("Excellent", null)))
+                .content(ratingRequestJson("5", null)))
                 .andExpect(status().isConflict());
-    }
+        }
 
-    @Test
-    void rateTask_WhenRatingValueInvalid_ReturnsBadRequest() throws Exception {
-
-        when(firebaseAuthService.getUserIdFromToken(RAW_TOKEN)).thenReturn(CALLER_ID);
-        when(ratingService.submitRating(eq(3), eq(CALLER_ID), any(RatingRequest.class)))
-                .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "rating must be one of: Outstanding, Excellent, Very Good, Average"));
-
+        @Test
+        void rateTask_WhenRatingValueInvalid_ReturnsBadRequest() throws Exception {
         mockMvc.perform(post("/api/tasks/3/rate")
                 .header("Authorization", BEARER_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(ratingRequestJson("NotAValidRating", null)))
+                .content(ratingRequestJson("6", null)))
                 .andExpect(status().isBadRequest());
-    }
+
+        verifyNoInteractions(firebaseAuthService);
+        verifyNoInteractions(ratingService);
+        }
 
     
 }

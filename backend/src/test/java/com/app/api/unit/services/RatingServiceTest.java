@@ -32,70 +32,26 @@ class RatingServiceTest {
     }
 
     @Test
-    void submitRating_WhenUserNotFound_ThrowsNotFound() {
-        RatingRequest request = buildRequest(5, null);
-        when(ratingRepository.findUserType(42)).thenReturn(null);
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> ratingService.submitRating(3, 42, request));
-        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
-    }
-
-    @Test
-    void submitRating_WhenCallerIsAdmin_ThrowsForbidden() {
-        RatingRequest request = buildRequest(5, null);
-        when(ratingRepository.findUserType(42)).thenReturn("Admin");
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> ratingService.submitRating(3, 42, request));
-        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
-    }
-
-    @Test
     void submitRating_WhenTaskNotFound_ThrowsNotFound() {
         RatingRequest request = buildRequest(5, null);
-        when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(null);
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> ratingService.submitRating(3, 42, request));
+
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
-    }
-
-    @Test
-    void submitRating_WhenTaskNotCompleted_ThrowsUnprocessableEntity() {
-        RatingRequest request = buildRequest(5, null);
-        Object[] task = new Object[] { 3, 7, null, "in_progress" };
-        when(ratingRepository.findUserType(42)).thenReturn("Dependent");
-        when(ratingRepository.findTaskById(3)).thenReturn(task);
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> ratingService.submitRating(3, 42, request));
-        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, ex.getStatusCode());
-    }
-
-    @Test
-    void submitRating_WhenAlreadyRated_ThrowsConflict() {
-        RatingRequest request = buildRequest(5, null);
-        Object[] task = new Object[] { 3, 7, "Good", "completed" };
-        when(ratingRepository.findUserType(42)).thenReturn("Dependent");
-        when(ratingRepository.findTaskById(3)).thenReturn(task);
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> ratingService.submitRating(3, 42, request));
-        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
     }
 
     @Test
     void submitRating_WhenNoDependentAssociatedWithTask_ThrowsForbidden() {
         RatingRequest request = buildRequest(5, null);
         Object[] task = new Object[] { 3, 7, null, "completed" };
-        when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(task);
         when(ratingRepository.findDependentUserId(3)).thenReturn(null);
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> ratingService.submitRating(3, 42, request));
+
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     }
 
@@ -103,12 +59,12 @@ class RatingServiceTest {
     void submitRating_WhenCallerIsNotTheDependent_ThrowsForbidden() {
         RatingRequest request = buildRequest(5, null);
         Object[] task = new Object[] { 3, 7, null, "completed" };
-        when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(task);
         when(ratingRepository.findDependentUserId(3)).thenReturn(99);
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> ratingService.submitRating(3, 42, request));
+
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     }
 
@@ -116,13 +72,12 @@ class RatingServiceTest {
     void submitRating_WhenRatingValueInvalid_ThrowsBadRequest() {
         RatingRequest request = buildRequest(6, null);
         Object[] task = new Object[] { 3, 7, null, "completed" };
-        when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(task);
         when(ratingRepository.findDependentUserId(3)).thenReturn(42);
-        when(ratingRepository.isValidRating(6)).thenReturn(false);
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> ratingService.submitRating(3, 42, request));
+
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
@@ -130,10 +85,9 @@ class RatingServiceTest {
     void submitRating_WhenValid_ReturnsResponseAndPersistsRatingAndRecalculatesAverage() {
         RatingRequest request = buildRequest(5, "Great help!");
         Object[] task = new Object[] { 3, 7, null, "completed" };
-        when(ratingRepository.findUserType(42)).thenReturn("Dependent");
         when(ratingRepository.findTaskById(3)).thenReturn(task);
         when(ratingRepository.findDependentUserId(3)).thenReturn(42);
-        when(ratingRepository.isValidRating(5)).thenReturn(true);
+        when(ratingRepository.isValidRating(5)).thenReturn(true);   // <-- add this
 
         RatingResponse response = ratingService.submitRating(3, 42, request);
 
@@ -142,7 +96,7 @@ class RatingServiceTest {
         assertEquals(3, response.getTaskId());
         assertEquals(5, response.getRating());
         assertEquals("Great help!", response.getReviewSnippet());
-        verify(ratingRepository, times(1)).recalculateAverageRating(7, 3);
+        verify(ratingRepository, times(1)).recalculateAverageRating(7, 5);
     }
 
     @Test

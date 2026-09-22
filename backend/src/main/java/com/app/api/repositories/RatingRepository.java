@@ -149,6 +149,15 @@ public class RatingRepository {
         }
     }
 
+    /**
+     * Counts how many completed tasks for the specified helper have a
+     * dependent rating recorded.
+     *
+     * @param helperId the identifier of the helper whose completed ratings
+     *                 are being counted
+     * @return the number of completed task invoices for the helper that have a
+     *         non-null dependent rating review
+     */
     public int countCompletedRatingsForHelper(int helperId) {
         String sql = """
             SELECT COUNT(*)
