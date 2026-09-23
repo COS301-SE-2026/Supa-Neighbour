@@ -78,8 +78,7 @@ class _ApplicationDetailScreenState
     setState(() => _isSubmitting = true);
 
     try {
-      final updated = await _service
-          .approveApplication(widget.applicationId);
+      await _service.approveApplication(widget.applicationId);
 
       if (!mounted) return;
 
@@ -105,7 +104,7 @@ class _ApplicationDetailScreenState
     setState(() => _isSubmitting = true);
 
     try {
-      final updated = await _service.rejectApplication(
+       await _service.rejectApplication(
         widget.applicationId,
         rejectionReason: reason.isEmpty ? null : reason,
       );
