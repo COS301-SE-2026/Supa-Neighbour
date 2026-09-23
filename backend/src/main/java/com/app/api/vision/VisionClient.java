@@ -1,6 +1,8 @@
 package com.app.api.vision;
+import org.springframework.stereotype.Component;
 
 
+@Component
 public interface VisionClient {
 
     /**
