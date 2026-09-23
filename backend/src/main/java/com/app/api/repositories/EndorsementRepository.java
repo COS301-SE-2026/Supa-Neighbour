@@ -124,13 +124,14 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
      * every edge recorded inside a zone,for the admin zone-graph endpoint
      */
     @Query("""
-            select e.endorserid.userid  as fromUserId,
-                   e.endorseeid.userid  as toUserId,
-                   e.skillTag.skillTag  as skillTag,
-                   e.weight             as weight
-            from Endorsement e
-            where e.zoneid.locationid = :zoneId
-            """)
+        select e.endorserid.userid  as fromUserId,
+               e.endorseeid.userid  as toUserId,
+               e.skillTag.skillTag  as skillTag,
+               e.weight             as weight
+        from Endorsement e
+        where e.zoneid.locationid = :zoneId
+        order by e.weight desc, e.createdAt desc
+        """)
     List<EdgeRow> findEdgesByZone(@Param("zoneId") Integer zoneId);
 
     /**

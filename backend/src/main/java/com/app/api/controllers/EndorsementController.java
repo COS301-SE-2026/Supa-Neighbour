@@ -224,9 +224,19 @@ public class EndorsementController {
      */
 
     @GetMapping (path = "/admin/zone/{zoneId}/graph", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TrustGraphResponseDTO> zoneGraph(@PathVariable Integer zoneId,@RequestParam(defaultValue = "500")int limit) {
-        endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL);
-        return ResponseEntity.ok(endorsementService.zoneGraph(zoneId, limit));
+    public ResponseEntity<TrustGraphResponseDTO> zoneGraph(@PathVariable Integer zoneId,@RequestParam(defaultValue = "500")int limit,@RequestHeader("Authorization") String authHeader) {
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                return ResponseEntity.notFound().build();
+            }
+            endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL, user);
+            return ResponseEntity.ok(endorsementService.zoneGraph(zoneId, limit));
+        }catch (FirebaseAuthException e) {
+            return ResponseEntity.status(401).build();
+        }
     }
 
 }

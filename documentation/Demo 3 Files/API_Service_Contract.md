@@ -3879,18 +3879,33 @@ Authorization: Bearer <Firebase ID Token>
 
 ```json
 {
-  "fromUserId": 8,
-  "toUserId": 40,
-  "paths": [
-    {
-      "users": [
-        { "userId": 8, "name": "Ble K." },
-        { "userId": 22, "name": "Naledi P." },
-        { "userId": 40, "name": "Sipho D." }
-      ],
-      "totalWeight": 2
-    }
-  ]
+    "fromUserId": 20,
+    "toUserId": 23,
+    "connected": true,
+    "length": 1,
+    "paths": [
+        {
+            "users": [
+                {
+                    "userId": 20,
+                    "name": "Marcus Diaz"
+                },
+                {
+                    "userId": 20,
+                    "name": "Marcus Diaz"
+                }
+            ],
+            "hops": [
+                {
+                    "fromUserId": 23,
+                    "toUserId": 20,
+                    "skillTag": "pet_care",
+                    "weight": 4
+                }
+            ],
+            "totalWeight": 4
+        }
+    ]
 }
 ```
 
@@ -3957,7 +3972,7 @@ _(none — public endpoint with no user-supplied input)_
 | --------- | ---- | ------------------------------------------------------------------------------ |
 | `zoneId`  | int  | **Ambiguous — needs a decision.** Since `endorsement_table.zone_id` now FKs to `location_table.location_id` (per your last message), does `zoneId` here mean a single `location_id`, or a `neighbourhood_id` spanning multiple `location_table` rows? Admins almost certainly think in terms of neighbourhoods, not individual location rows — if it's the latter, this endpoint needs to join `location_table` and aggregate across all `location_id`s sharing that `neighbourhood_id`, not just filter `endorsement_table.zone_id = zoneId` directly. |
 
-#### Logic
+#### Logic  
 
 1. Verify caller is an admin (see auth note above).
 2. **Pending the `zoneId` decision above** — either filter `endorsement_table` directly by `zone_id`, or resolve all `location_id`s under the given `neighbourhood_id` first and filter by that set.
@@ -3967,7 +3982,7 @@ _(none — public endpoint with no user-supplied input)_
 
 ```json
 {
-  "nodes": [ { "userId": 8, "name": "Ble K.", "avatarUrl": "https://..." } ],
+  "nodes": [ { "userId": 8, "name": "Ble K."} ],
   "edges": [ { "source": 8, "target": 22, "skillTag": "pet_care", "weight": 1 } ]
 }
 ```

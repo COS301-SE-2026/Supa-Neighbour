@@ -13,13 +13,14 @@ import com.app.api.models.HelperAnalytics;
 import com.app.api.models.Location;
 import com.app.api.models.TaskInvoice;
 import com.app.api.models.Address;
+import com.app.api.models.Admin;
 import com.app.api.models.User;
 import com.app.api.repositories.EndorsementRepository;
 import com.app.api.repositories.EndorsementSkillsRepository;
 import com.app.api.repositories.EndorsementRepository.EdgeRow;
 import com.app.api.repositories.EndorsementRepository.EndorserAggregate;
 import com.app.api.repositories.EndorsementRepository.SkillAggregate;
-
+import com.app.api.repositories.AdminRepository;
 
 import com.app.api.repositories.LocationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
@@ -81,6 +82,7 @@ public class EndorsementService {
     private final TaskInvoiceRepository taskInvoiceRepository;
     private final EndorsementSkillService endorsementSkillService;
     private final HelperAnalyticsRepository helperAnalyticsRepository;
+    private final AdminRepository adminRepository;
 
     /**
      * @param endorsementRepository endorsement persistence and graph projections
@@ -91,7 +93,7 @@ public class EndorsementService {
      */
     
     public EndorsementService(EndorsementRepository endorsementRepository, EndorsementSkillsRepository endorsementSkillsRepository,
-        UserRepository userRepository, LocationRepository locationRepository, TaskInvoiceRepository  taskInvoiceRepository,EndorsementSkillService endorsementSkillService,HelperAnalyticsRepository helperAnalyticsRepository) {
+        UserRepository userRepository, LocationRepository locationRepository, TaskInvoiceRepository  taskInvoiceRepository,EndorsementSkillService endorsementSkillService,HelperAnalyticsRepository helperAnalyticsRepository, AdminRepository adminRepository) {
             this.endorsementRepository=endorsementRepository;
             this.endorsementSkillsRepository=endorsementSkillsRepository;
             this.locationRepository=locationRepository;
@@ -99,6 +101,7 @@ public class EndorsementService {
             this.taskInvoiceRepository=taskInvoiceRepository;
             this.endorsementSkillService=endorsementSkillService;
             this.helperAnalyticsRepository = helperAnalyticsRepository;
+            this.adminRepository = adminRepository;
         }
 
     /**
@@ -117,15 +120,16 @@ public class EndorsementService {
      */
 
 
-    public User requireAdmin(int minimumLevel) {
-        User user = requireCurrentUser();
-        Integer level = 2;//user.getIsAdmin();
-        if(level == null || level<minimumLevel) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"higher admin access required");
+    public User requireAdmin(int minimumLevel, User user) {
+        Admin admin = adminRepository.findByUserId(user.getUserid())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin access required"));
+
+        Integer level = admin.getAdminaccesslevel();
+        if (level == null || level < minimumLevel) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin access required");
         }
         return user;
     }
-    //POST api/endorsements
 
     @Transactional
     public EndorsementResponseDTO create(User endorser, CreateEndorsementRequestDTO request) {
@@ -196,44 +200,6 @@ public class EndorsementService {
                 return Math.max(1, Math.min(5, floored));
             })
             .orElse(1);
-    }
-
-     /* <p>Assumes the Firebase token filter populates the Spring Security context
-     * with the Firebase UID as the principal name. If the project already has an
-     * equivalent helper elsewhere, delete this method and the two call sites in
-     * {@code EndorsementController} that use it.</p>
-     *
-     * @return the authenticated user
-     * @throws ResponseStatusException 401 if there is no authenticated principal,
-     *                                 or no local user matching the Firebase UID
-     */
-    public User requireCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if(auth == null || !auth.isAuthenticated() || auth.getPrincipal()==null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid Firebase Token");
-        }
-
-        String firebaseUid = auth.getName();
-        return userRepository.findByFirebaseUid(firebaseUid)
-        .orElseThrow(()-> new ResponseStatusException(HttpStatus.UNAUTHORIZED,"unauthorized"));
-    }
-
-    /**
-     * Resolves a submitted tag to its catalogue entry, rejecting unknown or
-     * unapproved values.
-     *
-     * @param skillTag the tag as supplied by the client
-     * @return the catalogue entry
-     * @throws ResponseStatusException 404 when unknown, 422 when not approved
-     */
-    private EndorsementSkill requireEsableSkill(String skillTag){
-        EndorsementSkill skill = endorsementSkillsRepository.findById(skillTag)
-            .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Skill tag not found"));
-
-            if(!skill.equals(skill)) {
-                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "skillTag");
-        }
-        return skill;
     }
 
     //GET /api/endorsements/me
@@ -437,7 +403,7 @@ public class EndorsementService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Zone not found");
         }
 
-        int cap = clamp(maxEdges,1,MAX_GRAPH_NODES);
+        int cap = clamp(maxEdges,1,10);
         List<EdgeRow> rows= endorsementRepository.findEdgesByZone(zoneId);
         boolean truncated = rows.size()>cap;
         if(truncated) {
@@ -457,7 +423,7 @@ public class EndorsementService {
             }
         }
         return new TrustGraphResponseDTO(
-            null,zoneId,1,GraphDirection.OUT,toNodes(hopByUser), edges,truncated);
+            null,zoneId,0, null,toNodes(hopByUser), edges,truncated);
     }
     
 
