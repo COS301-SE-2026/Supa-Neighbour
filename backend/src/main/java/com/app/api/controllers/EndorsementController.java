@@ -21,7 +21,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
  
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +31,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
- 
-import java.net.URI;
 
 
 /**
@@ -87,8 +83,7 @@ public class EndorsementController {
             EndorsementResponseDTO created = endorsementService.create(endorser, request);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        }
-        catch(FirebaseAuthException e) {
+        } catch(FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
     }
@@ -113,8 +108,7 @@ public class EndorsementController {
                 return ResponseEntity.notFound().build();
             }
             return ResponseEntity.ok(endorsementService.listReceived(user, skillTag));
-        }
-        catch(FirebaseAuthException e) {
+        } catch(FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
     }
@@ -137,8 +131,7 @@ public class EndorsementController {
             }
 
             return ResponseEntity.ok(endorsementService.summarise(user));
-        }
-        catch(FirebaseAuthException e) {
+        } catch(FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
     }
@@ -155,8 +148,7 @@ public class EndorsementController {
     public ResponseEntity<TrustGraphResponseDTO> myGraph(@RequestHeader("Authorization") String authHeader,
             @RequestParam (defaultValue = "2") int depth,
             @RequestParam(defaultValue =  "BOTH") GraphDirection direction,
-            @RequestParam(defaultValue = "200")int limit) 
-            {
+            @RequestParam(defaultValue = "200")int limit) {
         try {
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
@@ -167,8 +159,7 @@ public class EndorsementController {
                 return ResponseEntity.notFound().build();
             }
             return ResponseEntity.ok(endorsementService.neighbourhood(user, depth, direction, limit));
-        }
-        catch(FirebaseAuthException e) {
+        } catch(FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
     }
@@ -195,8 +186,7 @@ public class EndorsementController {
                 return ResponseEntity.notFound().build();
             }
             return ResponseEntity.ok(endorsementService.trustPaths(user, toUserId, maxDepth, maxPaths));
-        }
-        catch (FirebaseAuthException e) {
+        } catch (FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
     }
@@ -234,7 +224,7 @@ public class EndorsementController {
             }
             endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL, user);
             return ResponseEntity.ok(endorsementService.zoneGraph(zoneId, limit));
-        }catch (FirebaseAuthException e) {
+        } catch (FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
     }

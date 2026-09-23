@@ -29,13 +29,10 @@ import com.app.api.repositories.UserRepository;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.net.Authenticator;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -120,6 +117,15 @@ public class EndorsementService {
      */
 
 
+/**
+ * Verifies the given user holds admin access at or above the required level.
+ *
+ * @param minimumLevel the minimum admin access level required
+ * @param user         the user to check
+ * @return the same user, if authorized
+ * @throws ResponseStatusException 403 if the user is not an admin, or is
+ *                                 below the required access level
+ */
     public User requireAdmin(int minimumLevel, User user) {
         Admin admin = adminRepository.findByUserId(user.getUserid())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin access required"));
@@ -131,6 +137,21 @@ public class EndorsementService {
         return user;
     }
 
+
+/**
+ * Records an endorsement given by the authenticated caller.
+ *
+ * <p>This is the only place a skill tag is checked against the catalogue,
+ * which is what makes it safe to treat the stored value as a constant
+ * everywhere else.</p>
+ *
+ * @param endorser the caller, resolved from the Firebase ID token
+ * @param request  the validated request body
+ * @return the persisted endorsement
+ * @throws ResponseStatusException 400 for self-endorsement, 404 for an unknown
+ *                                 endorsee, zone, tag or task, 409 for a
+ *                                 duplicate, 422 for an unapproved tag
+ */
     @Transactional
     public EndorsementResponseDTO create(User endorser, CreateEndorsementRequestDTO request) {
         Integer endorserId = endorser.getUserid();
@@ -202,14 +223,12 @@ public class EndorsementService {
             .orElse(1);
     }
 
-    //GET /api/endorsements/me
-    /**
-     * Lists everything the caller has been endorsed for, grouped by skill tag.
-     *
-     * @param user the caller
-     * @return grouped endorsements, heaviest group first
-     */
-
+/**
+ * Lists everything the caller has been endorsed for, across all skills.
+ *
+ * @param user the caller
+ * @return grouped endorsements, heaviest group first
+ */
     @Transactional(readOnly = true)
     public MyEndorsementResponseDTO listReceived(User user, String skillTag) {
 
@@ -270,12 +289,22 @@ public class EndorsementService {
             groups
         );
     }
-
+/**
+ * Lists everything the caller has been endorsed for, across all skills.
+ *
+ * @param user the caller
+ * @return grouped endorsements, heaviest group first
+ */
     public MyEndorsementResponseDTO listReceived(User user) {
         return listReceived(user, null);
     }
-
-    // /api/endorsements/me/summary
+/**
+ * Returns a compact summary of endorsements the caller has received,
+ * grouped by skill, along with a small graph of their top endorsers.
+ *
+ * @param user the caller
+ * @return the endorsement summary
+ */
     @Transactional(readOnly = true)
     public EndorsementSummaryResponseDTO summarise(User user) {
         List<SkillAggregate> aggregates = endorsementRepository.aggregateReceivedBySkill(user.getUserid());
@@ -604,7 +633,7 @@ public class EndorsementService {
      */
     private List<EdgeRow> fetchEdges(Set<Integer> frontier,GraphDirection direction) {
         return switch (direction) {
-            case OUT -> endorsementRepository.findoutgoEdges(frontier);
+            case OUT -> endorsementRepository.findOutgoingEdges(frontier);
             case IN -> endorsementRepository.findIncomingEdges(frontier);
             case BOTH -> endorsementRepository.findAllEdges(frontier);
         };

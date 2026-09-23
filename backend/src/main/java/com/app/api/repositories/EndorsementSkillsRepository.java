@@ -14,6 +14,11 @@ import java.util.List;
 @Repository 
 public interface EndorsementSkillsRepository extends JpaRepository <EndorsementSkill,String>{
 
+    /**
+     * Finds approved skills ordered by category then display name.
+     *
+     * @return the approved skills, ordered
+     */
     @Query("""
             select s
             from EndorsementSkill s
@@ -23,6 +28,12 @@ public interface EndorsementSkillsRepository extends JpaRepository <EndorsementS
         )
     List<EndorsementSkill> findApprovedOrdered();
 
+    /**
+     * Finds a skill by its tag.
+     *
+     * @param skillTag the skill tag
+     * @return the matching skill, if present
+     */
     Optional<EndorsementSkill> findBySkillTag(String skillTag);
     
 }

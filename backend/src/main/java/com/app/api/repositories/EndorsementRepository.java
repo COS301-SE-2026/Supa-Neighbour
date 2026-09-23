@@ -19,19 +19,36 @@ import com.app.api.models.Endorsement;
 @Repository
 public interface EndorsementRepository extends JpaRepository<Endorsement, Integer> {
 
-    /** Checks for an existing task-less endorsement for the same triple. */
+    /**
+     * Checks for an existing task-less endorsement for the same triple.
+     *
+     * @param endorserId the endorsing user's id
+     * @param endorseeId the endorsed user's id
+     * @param skillTag the skill tag
+     * @return true if a matching task-less endorsement exists
+     */
     boolean existsByEndorserid_UseridAndEndorseeid_UseridAndSkillTag_SkillTagAndTaskidIsNull(
         Integer endorserId, Integer endorseeId, String skillTag);
  
-    /** Checks for an existing endorsement for the same triple on the same task. */
+     /**
+     * Checks for an existing endorsement for the same triple on the same task.
+     *
+     * @param endorserId the endorsing user's id
+     * @param endorseeId the endorsed user's id
+     * @param skillTag the skill tag
+     * @param taskId the task id
+     * @return true if a matching endorsement exists
+     */
     boolean existsByEndorserid_UseridAndEndorseeid_UseridAndSkillTag_SkillTagAndTaskid_Taskid(
         Integer endorserId, Integer endorseeId, String skillTag, Integer taskId);
  
 
     /**
-     * GET /api/endorsements/me
+     * Finds endorsements received by a user, with related entities fetched.
+     *
+     * @param userId the receiving user's id
+     * @return the list of endorsements
      */
-
     @Query
     ("""
         select e 
@@ -45,6 +62,13 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
         order by e.skillTag.skillTag asc, e.createdAt desc""")
         List<Endorsement> findReceiveWithDetails(@Param("userId") Integer userId);
 
+    /**
+     * Finds endorsements received by a user, with related entities fetched.
+     *
+     * @param userId the receiving user's id
+     * @param skillTag
+     * @return the list of endorsements
+     */
     @Query
     ("""
         select e 
@@ -62,8 +86,11 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
             @Param("skillTag") String skillTag);
     
     /**
-    * GET /api/endorsements/me/summary
-    */
+     * Aggregates endorsements received by a user, grouped by skill.
+     *
+     * @param userId the receiving user's id
+     * @return the per-skill aggregate rows
+     */
    @Query("""
         select e.skillTag.skillTag                  as skillTag,
                e.skillTag.displayName               as displayName,
@@ -82,9 +109,12 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
                 """)
     List<SkillAggregate> aggregateReceivedBySkill(@Param("userId") Integer userId);
 
-
-    //*
-    // counts distinct users */
+    /**
+     * Counts distinct users who have endorsed the given user.
+     *
+     * @param userId the receiving user's id
+     * @return the count of distinct endorsers
+     */
     @Query("""
         select count(distinct e.endorserid.userid) 
         from Endorsement e 
@@ -92,10 +122,13 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
         """)
     long countDistinctEndorsers(@Param ("userId")Integer user_Id);
 
-    /**
-     * graph transversal projections
-     */
 
+    /**
+     * Finds outgoing edges (endorsements given) for the given users.
+     *
+     * @param userIds the ids of the endorsing users
+     * @return the outgoing edge rows
+     */
     @Query("""
             select e.endorserid.userid   as fromUserId,
                    e.endorseeid.userid  as toUserId,
@@ -104,11 +137,13 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
             from Endorsement e 
             where e.endorserid.userid in :userIds
             """)
-    List<EdgeRow> findoutgoEdges(@Param("userIds") Collection<Integer> userIds);
-
+    List<EdgeRow> findOutgoingEdges(@Param("userIds") Collection<Integer> userIds);
 
     /**
-     * any edge touching one of the supplied users,in either direction
+     * Finds any edge touching one of the supplied users, in either direction.
+     *
+     * @param userIds the ids of the users
+     * @return the incoming edge rows
      */
     @Query("""
             select e.endorserid.userid  as fromUserId,
@@ -121,7 +156,10 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
     List<EdgeRow> findIncomingEdges(@Param("userIds") Collection<Integer> userids);
                     
     /**
-     * every edge recorded inside a zone,for the admin zone-graph endpoint
+     * Finds every edge recorded inside a zone, for the admin zone-graph endpoint.
+     *
+     * @param zoneId the zone id
+     * @return the edge rows within the zone
      */
     @Query("""
         select e.endorserid.userid  as fromUserId,
@@ -148,6 +186,11 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
             """)
     List<EdgeRow> findAllEdges(@Param("userIds") Collection<Integer> userIds);
 
+
+    /**
+     * @param userId
+     * @return top endorsements
+     */
     @Query("""
         select e.endorserid.userid                                   as userId,
             concat(e.endorserid.firstName, ' ', e.endorserid.lastName) as name,
@@ -168,12 +211,33 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
      * skillAggregate
      */
     public interface SkillAggregate {
+        /**
+         * @return the skill tag
+         */    
         String getSkillTag();
+        /**
+         * @return the get display name
+         */ 
         String getDisplayName();
+        /**
+         * @return the skill's category
+         */ 
         String getCategory();
+        /**
+         * @return the endorsement cout
+         */ 
         long getEndorsementCount();
+        /**
+         * @return the total weight
+         */ 
         long getTotalWeight();
+        /**
+         * @return the find specific endorser
+         */ 
         long getDistinctEndorsers();
+        /**
+         * @return the last Endordsement was
+         */ 
         LocalDateTime getLastEndorsedAt();
     }
 
@@ -181,15 +245,40 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
      * EndgeRow
      */
     public interface EdgeRow {
+
+        /**
+         * @return the id of the endorseing user
+         */         
         Integer getFromUserId();
+        /**
+         * @return the id of the endorsed user
+         */ 
         Integer getToUserId();
+        /**
+         * @return the skill tag for this edgw
+         */ 
         String getSkillTag();
+        /**
+         * @return the total weight
+         */ 
         Integer getWeight();
     }
 
+     /**
+     * Endorsement Aggregate 
+     */
     public interface EndorserAggregate {
+        /**
+         * @return the user
+         */ 
         Integer getUserId();
+        /**
+         * @return the users name
+         */ 
         String getName();
+        /**
+         * @return the total weight for the user
+         */ 
         long getTotalWeight();
     }
 } 
