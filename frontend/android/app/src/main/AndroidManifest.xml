@@ -1,9 +1,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    
+    <!-- ===== NOTIFICATION PERMISSIONS ===== -->
+    <!-- Android 13+ runtime permission for showing notifications -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Required for vibration on notification -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- Required so notifications can wake the device / show immediately under Doze -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- Required for FCM to keep the device reachable while idle -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     
     <application
         android:label="supa_neighbour"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -41,6 +54,22 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- ===== FCM NOTIFICATION CHANNEL & ICON ===== -->
+        <!-- Default notification channel used when no channel is set in the FCM payload.
+             Must match the channelId used in the backend / local notifications: 'supa_neighbour_channel'. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="supa_neighbour_channel" />
+        <!-- Default icon shown in the notification tray if the FCM payload doesn't specify one.
+             Must be a monochrome icon; @mipmap/ic_launcher works as a fallback. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher" />
+        <!-- Default tint/colour of the notification small icon. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorPrimary" />
     </application>
     
     <!-- Required to query activities that can process text, see:

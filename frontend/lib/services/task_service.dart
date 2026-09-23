@@ -55,6 +55,11 @@ enum TaskImageType { reference, completion }
 class TaskService implements ITaskService {
   final Dio _dio;
 
+  static const String _localBackendUrl = String.fromEnvironment(
+    'LOCAL_BACKEND_URL',
+    defaultValue: '',
+  );
+
   TaskService({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
@@ -328,8 +333,11 @@ class TaskService implements ITaskService {
   Future<void> acceptTaskInvitation(int taskId) async {
     try {
       final token = await _getToken();
+      final path = '/api/task-invitations/$taskId/accept';
+      final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
+
       await _dio.post(
-        '/api/task-invitations/$taskId/accept',
+        url,
         options: token != null
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,

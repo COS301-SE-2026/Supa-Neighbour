@@ -16,7 +16,7 @@ import '../services/admin_application_service_mock.dart';
 /// That's the ONLY change needed because all screens read from this provider.
 final adminApplicationServiceProvider = Provider<IAdminApplicationService>(
   (ref) {
-    // return AdminApplicationService();      // real data (enable later)
-    return AdminApplicationServiceMock();     // mock data (current)
+     return AdminApplicationService();     
+    //return AdminApplicationServiceMock();    
   },
 );

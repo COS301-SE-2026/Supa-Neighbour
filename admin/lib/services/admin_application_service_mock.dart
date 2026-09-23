@@ -67,6 +67,22 @@ class AdminApplicationServiceMock implements IAdminApplicationService {
   }
 
   @override
+  Future<AdminApplication> getApplicationById(int applicationId) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    final match = _applications.firstWhere(
+      (a) => a.applicationId == applicationId,
+      orElse: () => throw AdminApplicationServiceException(
+        'Application not found.',
+        statusCode: 404,
+      ),
+    );
+
+    return match;
+  }
+
+
+  @override
   Future<AdminApplication> approveApplication(int applicationId) async {
     await Future.delayed(const Duration(milliseconds: 400));
 
