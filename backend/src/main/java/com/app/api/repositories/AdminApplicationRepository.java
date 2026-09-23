@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
+import java.util.Optional;
 /**
  * Repository for AdminApplication entities.
  */
@@ -47,10 +47,19 @@ public interface AdminApplicationRepository extends JpaRepository<AdminApplicati
     /**
      * Check if a user has an existing application with a given status.
      *
-     * @param user   the user to check
+     * @param user the user to check
      * @param status the status to check for
      * @return true if a matching application exists
      */
      boolean existsByUserAndApplicationStatus(User user, String status);
+
+     /**
+      * Find an application by its id with the associated user eagerly loaded.
+      *
+      * @param applicationId the id of the application
+      * @return an Optional containing the application if found
+      */
+    @Query("SELECT a FROM AdminApplication a JOIN FETCH a.user WHERE a.applicationId = :applicationId")
+     Optional<AdminApplication> findByIdWithUser(@Param("applicationId") Integer applicationId);
 
 }

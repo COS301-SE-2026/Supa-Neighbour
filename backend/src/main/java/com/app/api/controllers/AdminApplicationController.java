@@ -163,6 +163,55 @@ public class AdminApplicationController {
         }
     }
 
+    /**
+     * Returns a single admin application by its id.
+     * 
+     * @param authHeader Firebase Bearer token
+     * @param applicationId the id of the application to retrieve
+     * @return 200 with the application, 401 on bad token,
+     *         403 if caller is not a super admin, 
+     *         404 if not found
+     */
+    @GetMapping("/{applicationId}")
+    @Operation(
+        summary = "Get a single admin application by ID (super admin only)",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Application found"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token"),
+        @ApiResponse(responseCode = "403", description = "Super admin access required"),
+        @ApiResponse(responseCode = "404", description = "Application not found")
+    })
+    public ResponseEntity<?> getApplicationById(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer applicationId) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+
+            Admin admin = adminRepository.findByUserId(userId).orElse(null);
+            if (admin == null || admin.getAdminaccesslevel() != 2) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Super admin access required"));
+            }
+
+            AdminApplication application = applicationRepository
+                    .findByIdWithUser(applicationId).orElse(null);
+
+            if (application == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Application not found"));
+            }
+
+            return ResponseEntity.ok(toSummaryDTO(application));
+
+        } catch (FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid or expired Firebase token"));
+        }
+    }
+
 
     /**
      * Submits a new admin application on behalf of the authenticated user.
@@ -178,7 +227,7 @@ public class AdminApplicationController {
      */
     @PostMapping
     @Operation(
-        summary = "Submit an admin application (10.1)",
+        summary = "Submit an admin application ",
         description = "Allows any authenticated user to apply to become an admin.",
         security = @SecurityRequirement(name = "BearerAuth")
     )
