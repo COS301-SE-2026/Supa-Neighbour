@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
     
     <!-- ===== NOTIFICATION PERMISSIONS ===== -->
     <!-- Android 13+ runtime permission for showing notifications -->
@@ -13,7 +15,8 @@
     <application
         android:label="supa_neighbour"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
