@@ -2,20 +2,5 @@
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "interactive",
     "java.checkstyle.configuration": "${workspaceFolder}/backend/checkstyle-suppressions.xml",
-    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx8G -Xms100m -Xlog:disable",
-
-    "files.watcherExclude": {
-        "**/target/**": true,
-        "**/build/**": true,
-        "**/.dart_tool/**": true,
-        "**/.gradle/**": true,
-        "**/node_modules/**": true
-    },
-    "search.exclude": {
-        "**/target": true,
-        "**/build": true,
-        "**/.dart_tool": true,
-        "**/.gradle": true
-    },
-    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx4G -Xms100m -Xlog:disable"
+    "cmake.sourceDirectory": "/home/blegibz/COS 301/Supa-Neighbour/frontend/linux"
 }

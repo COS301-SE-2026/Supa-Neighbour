@@ -8,6 +8,7 @@ import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import '../../services/task_service.dart';
 
 class TaskCompletionPage extends ConsumerStatefulWidget {
   final String taskId;
@@ -34,6 +35,7 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   final List<XFile> _selectedImages = [];
   bool _isSubmitting = false;
   final ImagePicker _picker = ImagePicker();
+  
 
   // ===== REQUIRED EVIDENCE PHOTOS (CAMERA ONLY) =====
   static const int _minImages = 1;
@@ -468,7 +470,7 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
       }
 
       if (uploadedUrls.isNotEmpty) {
-        await taskService.saveTaskImages(int.parse(widget.taskId), uploadedUrls);
+        await taskService.saveTaskImages(int.parse(widget.taskId), uploadedUrls, type: TaskImageType.reference);
       }
 
       await taskService.updateTask(

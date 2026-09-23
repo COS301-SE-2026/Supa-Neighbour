@@ -13,10 +13,11 @@ spring:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+
 azure:
   storage:
     connection-string: ${BLOB_CONNECTION_STRING}
@@ -25,6 +26,33 @@ azure:
     task-images-container: task-images
     chat-images-container: chat-images
     report-container: reports
+
+supaneighbour:
+  vision:
+    mode: gemini
+    stub:
+      outcome: complete       # unused while mode is gemini, but harmless to leave
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: gemini-2.0-flash
+      max-image-edge-px: 1600                  # downscale before sending (see §5.1)
+      timeout-seconds: 30
+  verification:
+    geofence-radius-m: 75
+    arrival-geofence-radius-m: 150
+    task-window-grace-minutes: 30
+    zone: Africa/Johannesburg
+    weights:
+      ai: 0.45
+      geo: 0.25
+      meta: 0.15
+      time: 0.15
+    thresholds:
+      verified: 0.75
+      needs-review: 0.45
+    max-upload-bytes: 12582912
+    allowed-mime: ["image/jpeg", "image/png"]
+    
 management:
   endpoint:
     health:
