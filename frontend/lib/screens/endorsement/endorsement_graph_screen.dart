@@ -35,7 +35,12 @@ class _EndorsementGraphScreenState
   String? _selectedSkillTag;
   bool _isLoading = true;
   String? _errorMessage;
-  int _graphVersion = 0;
+  bool _isReloading = false;
+
+
+  Graph? _gvGraph;
+  FruchtermanReingoldAlgorithm? _gvAlgorithm;
+  Map<String, EndorsementGraphNode> _modelNodeMap = {};
 
   @override
   void initState() {
@@ -44,6 +49,7 @@ class _EndorsementGraphScreenState
   }
 
   Future<void> _loadInitialData() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -52,7 +58,6 @@ class _EndorsementGraphScreenState
     try {
       final service = ref.read(endorsementServiceProvider);
 
-      // Load skill tags and graph in parallel
       final results = await Future.wait([
         service.getSkillTags(),
         service.getGraph(
@@ -64,10 +69,15 @@ class _EndorsementGraphScreenState
 
       if (!mounted) return;
 
+      final graph = results[1] as EndorsementGraph;
+      final built = _buildGraphViewGraph(graph);
+
       setState(() {
         _skillTags = results[0] as List<SkillTag>;
-        _graph = results[1] as EndorsementGraph;
-        _graphVersion++;
+        _graph = graph;
+        _gvGraph = built.graph;
+        _gvAlgorithm = built.algorithm;
+        _modelNodeMap = built.modelNodeMap;
         _isLoading = false;
       });
     } catch (e) {
@@ -80,6 +90,9 @@ class _EndorsementGraphScreenState
   }
 
   Future<void> _reloadGraph() async {
+    if (!mounted) return;
+    setState(() => _isReloading = true);
+
     try {
       final service = ref.read(endorsementServiceProvider);
       final graph = await service.getGraph(
@@ -89,12 +102,19 @@ class _EndorsementGraphScreenState
       );
 
       if (!mounted) return;
+
+      final built = _buildGraphViewGraph(graph);
+
       setState(() {
         _graph = graph;
-        _graphVersion++;
+        _gvGraph = built.graph;
+        _gvAlgorithm = built.algorithm;
+        _modelNodeMap = built.modelNodeMap;
+        _isReloading = false;
       });
     } catch (e) {
       if (!mounted) return;
+      setState(() => _isReloading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -106,18 +126,43 @@ class _EndorsementGraphScreenState
     }
   }
 
+  /// Builds a graphview Graph once per data change.
+  /// Storing it in state avoids rebuilding on every widget rebuild,
+  /// which prevents lifecycle races during disposal.
+  _BuiltGraph _buildGraphViewGraph(EndorsementGraph graph) {
+    final gvGraph = Graph();
+    final nodeMap = <String, Node>{};
+    final modelNodeMap = <String, EndorsementGraphNode>{};
+
+    for (final node in graph.nodes) {
+      final gvNode = Node.Id(node.userId);
+      nodeMap[node.userId] = gvNode;
+      modelNodeMap[node.userId] = node;
+      gvGraph.addNode(gvNode);
+    }
+
+    for (final edge in graph.edges) {
+      final from = nodeMap[edge.endorserId];
+      final to = nodeMap[edge.endorseeId];
+      if (from == null || to == null) continue;
+      gvGraph.addEdge(from, to);
+    }
+
+    return _BuiltGraph(
+      graph: gvGraph,
+      algorithm: FruchtermanReingoldAlgorithm(
+        FruchtermanReingoldConfiguration(),
+      ),
+      modelNodeMap: modelNodeMap,
+    );
+  }
+
   void _onSkillSelected(String? skillTag) {
+    if (!mounted) return;
     setState(() => _selectedSkillTag = skillTag);
     _reloadGraph();
   }
 
-  void _safePop() {
-    // Yield a frame so graphview can complete any in-flight layout
-    // work before the widget tree is torn down.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) Navigator.pop(context);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,13 +170,7 @@ class _EndorsementGraphScreenState
         ? 'My Trust Network'
         : '${widget.userDisplayName ?? 'User'}\'s Network';
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        _safePop();
-      },
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: AppColors.background(context),
         appBar: AppBar(
         backgroundColor: AppColors.background(context),
@@ -141,7 +180,7 @@ class _EndorsementGraphScreenState
             Icons.arrow_back,
             color: AppColors.primaryTeal(context),
           ),
-          onPressed: _safePop,
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           title,
@@ -159,7 +198,6 @@ class _EndorsementGraphScreenState
           Expanded(child: _buildBody()),
           ],
         ),
-      ),
     );
   }
 
@@ -229,7 +267,7 @@ class _EndorsementGraphScreenState
   }
 
   Widget _buildBody() {
-    if (_isLoading) {
+    if (_isLoading || _isReloading) {
       return Center(
         child: CircularProgressIndicator(
           color: AppColors.primaryTeal(context),
@@ -337,57 +375,33 @@ class _EndorsementGraphScreenState
     );
   }
 
-  /// Temporary placeholder for now until i finish with the graphview implementation.
-  /// Renders the endorsement network using the graphview package.
   Widget _buildGraphPlaceholder() {
-    final graph = _graph!;
-
-    // Transform our EndorsementGraph into a graphview Graph
-    final gvGraph = Graph();
-    final nodeMap = <String, Node>{};
-
-    for (final node in graph.nodes) {
-      final gvNode = Node.Id(node.userId);
-      nodeMap[node.userId] = gvNode;
-      gvGraph.addNode(gvNode);
-    }
-
-    for (final edge in graph.edges) {
-      final from = nodeMap[edge.endorserId];
-      final to = nodeMap[edge.endorseeId];
-      if (from == null || to == null) continue;
-
-      gvGraph.addEdge(from, to);
+    final gvGraph = _gvGraph;
+    final algorithm = _gvAlgorithm;
+    if (gvGraph == null || algorithm == null || gvGraph.nodes.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
     }
 
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: KeyedSubtree(
-        // Unique key per graph version that forces complete widget rebuild
-        // on filter changes, avoiding stale state in InteractiveViewer
-        // and GraphView.
-        key: ValueKey('endorsement-graph-v$_graphVersion'),
-        child: InteractiveViewer(
-          constrained: false,
-          minScale: 0.5,
-          maxScale: 3.0,
-          boundaryMargin: const EdgeInsets.all(80),
-          child: GraphView(
-            graph: gvGraph,
-            algorithm: FruchtermanReingoldAlgorithm(
-              FruchtermanReingoldConfiguration(),
-            ),
-            paint: Paint()
-              ..color = AppColors.primaryTeal(context).withValues(alpha: 0.3)
-              ..strokeWidth = 1.5
-              ..style = PaintingStyle.stroke,
-            builder: (Node node) {
-              final nodeId = node.key?.value as String?;
-              final modelNode =
-                  graph.nodes.firstWhere((n) => n.userId == nodeId);
-              return _buildNodeWidget(modelNode);
-            },
-          ),
+      child: InteractiveViewer(
+        constrained: false,
+        minScale: 0.5,
+        maxScale: 3.0,
+        boundaryMargin: const EdgeInsets.all(80),
+        child: GraphView(
+          graph: gvGraph,
+          algorithm: algorithm,
+          paint: Paint()
+            ..color = AppColors.primaryTeal(context).withValues(alpha: 0.3)
+            ..strokeWidth = 1.5
+            ..style = PaintingStyle.stroke,
+          builder: (Node node) {
+            final nodeId = node.key?.value as String?;
+            final modelNode = _modelNodeMap[nodeId];
+            if (modelNode == null) return const SizedBox.shrink();
+            return _buildNodeWidget(modelNode);
+          },
         ),
       ),
     );
@@ -466,6 +480,7 @@ class _EndorsementGraphScreenState
   }
 
   void _onNodeTapped(EndorsementGraphNode node) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Tapped: ${node.displayName}'),
@@ -473,4 +488,16 @@ class _EndorsementGraphScreenState
       ),
     );
   }
+}
+
+class _BuiltGraph {
+  final Graph graph;
+  final FruchtermanReingoldAlgorithm algorithm;
+  final Map<String, EndorsementGraphNode> modelNodeMap;
+
+  _BuiltGraph({
+    required this.graph,
+    required this.algorithm,
+    required this.modelNodeMap,
+  });
 }
