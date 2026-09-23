@@ -1,5 +1,10 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../models/task_model.dart';
 import '../../models/auth_session.dart';
 import '../../constants/app_colors.dart';
@@ -23,6 +28,16 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
   String? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
+
+  // ===== REQUIRED EVIDENCE PHOTOS (CAMERA ONLY) =====
+  final List<File> _selectedImages = [];
+  final ImagePicker _picker = ImagePicker();
+  static const int _minImages = 5;
+  static const int _maxImages = 10;
+
+  // ===== REQUIRED LOCATION =====
+  Position? _location;
+  bool _isFetchingLocation = false;
 
   // Categories
   final List<String> _categories = [
@@ -88,6 +103,355 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
     }
   }
 
+  Future<void> _captureImage() async {
+    if (_selectedImages.length >= _maxImages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('You can attach up to $_maxImages photos.'),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
+      return;
+    }
+
+    try {
+      final XFile? picked = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 75,
+        maxWidth: 1600,
+      );
+      if (picked == null) return;
+
+      setState(() => _selectedImages.add(File(picked.path)));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to capture image: $e'),
+          backgroundColor: AppColors.error(context),
+        ),
+      );
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() => _selectedImages.removeAt(index));
+  }
+
+  Widget _buildImageThumbnail(int index) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Image.file(
+            _selectedImages[index],
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
+          ),
+        ),
+        Positioned(
+          top: -6,
+          right: -6,
+          child: GestureDetector(
+            onTap: () => _removeImage(index),
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: AppColors.error(context),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.background(context),
+                  width: 1.5,
+                ),
+              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ===== LOCATION HANDLING =====
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error(context),
+      ),
+    );
+  }
+
+  Future<void> _requestLocation() async {
+    if (_isFetchingLocation) return;
+    setState(() => _isFetchingLocation = true);
+
+    try {
+      // 1) Service enabled?
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled()
+          .timeout(const Duration(seconds: 3));
+      if (!serviceEnabled) {
+        _showSnack('Location services are disabled. Please enable them.');
+        return;
+      }
+
+      // 2) Permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        _showSnack(
+            'Location permission denied. Location is required to create a task.');
+        return;
+      }
+
+      // 3) PRIORITY: fresh current location, attempt #1 (fused provider)
+      Position? position;
+      try {
+        position = await Geolocator.getCurrentPosition(
+          locationSettings: AndroidSettings(
+            accuracy: LocationAccuracy.high,
+            timeLimit: const Duration(seconds: 15),
+          ),
+        );
+      } on TimeoutException {
+        position = null;
+      }
+
+      // 4) If fused provider timed out, retry via raw Android LocationManager
+      if (position == null) {
+        try {
+          position = await Geolocator.getCurrentPosition(
+            locationSettings: AndroidSettings(
+              accuracy: LocationAccuracy.high,
+              timeLimit: const Duration(seconds: 10),
+              forceLocationManager: true,
+            ),
+          );
+        } on TimeoutException {
+          position = null;
+        }
+      }
+
+      // 5) Last resort: cached location, with an explicit warning
+      bool usedCache = false;
+      if (position == null) {
+        position = await Geolocator.getLastKnownPosition();
+        usedCache = position != null;
+      }
+
+      // 6) Nothing worked — offer retry
+      if (position == null) {
+        if (mounted) _showRetryDialog();
+        return;
+      }
+
+      if (!mounted) return;
+      setState(() => _location = position);
+
+      if (usedCache) {
+        _showSnack(
+            'Could not get a fresh GPS fix — using last known location.');
+      }
+      _showLocationModal(position);
+    } on LocationServiceDisabledException {
+      _showSnack('Location services are disabled. Please enable them.');
+    } catch (e) {
+      _showSnack('Failed to get location: $e');
+    } finally {
+      if (mounted) setState(() => _isFetchingLocation = false);
+    }
+  }
+
+  Future<void> _showRetryDialog() async {
+    final retry = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          'Location Unavailable',
+          style: GoogleFonts.poppins(
+            color: AppColors.charcoal(context),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'We couldn\'t get your current location.\n\n'
+          '• Make sure GPS / Location is turned on\n'
+          '• Move near a window or outdoors\n'
+          '• Wait a few seconds, then tap Retry',
+          style: GoogleFonts.openSans(
+            color: AppColors.charcoal(context),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.openSans(color: AppColors.textGrey(context)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryTeal(context),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: Text(
+              'Retry',
+              style: GoogleFonts.openSans(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (retry == true && mounted) {
+      await _requestLocation();
+    }
+  }
+
+  void _showLocationModal(Position position) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color:
+                          AppColors.textGrey(context).withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: AppColors.primaryTeal(context),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Location Captured',
+                      style: GoogleFonts.poppins(
+                        color: AppColors.charcoal(context),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceGrey(context),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.primaryTeal(context)
+                          .withValues(alpha: 0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Latitude',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.textGrey(context),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        position.latitude.toStringAsFixed(6),
+                        style: GoogleFonts.openSans(
+                          color: AppColors.charcoal(context),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Longitude',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.textGrey(context),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        position.longitude.toStringAsFixed(6),
+                        style: GoogleFonts.openSans(
+                          color: AppColors.charcoal(context),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryTeal(context),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Got it',
+                      style: GoogleFonts.openSans(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   // Service
   bool _isSubmit = false;
 
@@ -101,6 +465,26 @@ Future<void> _submitTask() async {
   if (_selectedCategory == null) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Please select a category')),
+    );
+    return;
+  }
+
+  if (_location == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Please provide your location before posting.')),
+    );
+    return;
+  }
+
+  if (_selectedImages.length < _minImages) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Please capture at least $_minImages photos '
+          '(${_selectedImages.length}/$_minImages added).',
+        ),
+      ),
     );
     return;
   }
@@ -327,6 +711,104 @@ Future<void> _submitTask() async {
             ),
             const SizedBox(height: 16),
 
+            // ===== LOCATION (REQUIRED) =====
+            Row(
+              children: [
+                Text(
+                  'Location',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.charcoal(context),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '*',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.error(context),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                if (_location != null)
+                  Icon(
+                    Icons.check_circle,
+                    size: 16,
+                    color: AppColors.primaryTeal(context),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'We need your location so helpers can find the task.',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: _isFetchingLocation ? null : _requestLocation,
+              child: Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: _location != null
+                        ? AppColors.primaryTeal(context)
+                        : AppColors.surfaceGrey(context),
+                    width: _location != null ? 1.5 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  color: isDarkMode
+                      ? AppColors.surfaceGrey(context)
+                      : Colors.white,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      size: 20,
+                      color: AppColors.primaryTeal(context),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _location == null
+                            ? 'Tap to capture your location'
+                            : 'Lat ${_location!.latitude.toStringAsFixed(5)}, '
+                                'Lng ${_location!.longitude.toStringAsFixed(5)}',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.charcoal(context),
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (_isFetchingLocation)
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    else
+                      Text(
+                        _location == null ? 'Get' : 'Update',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.primaryTeal(context),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
             // Date and Time Row
             Row(
               children: [
@@ -435,6 +917,99 @@ Future<void> _submitTask() async {
             ),
             const SizedBox(height: 16),
 
+            // ===== TASK PHOTOS (REQUIRED, CAMERA ONLY) =====
+            Row(
+              children: [
+                Text(
+                  'Task Photos',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.charcoal(context),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '*',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.error(context),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${_selectedImages.length}/$_minImages',
+                  style: GoogleFonts.openSans(
+                    color: _selectedImages.length >= _minImages
+                        ? AppColors.primaryTeal(context)
+                        : AppColors.textGrey(context),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Take at least $_minImages photos of the task using your camera.',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            if (_selectedImages.isNotEmpty) ...[
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (int i = 0; i < _selectedImages.length; i++)
+                    _buildImageThumbnail(i),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
+
+            if (_selectedImages.length < _maxImages)
+              GestureDetector(
+                onTap: _captureImage,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceGrey(context),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color:
+                          AppColors.primaryTeal(context).withValues(alpha: 0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.camera_alt_outlined,
+                        color: AppColors.primaryTeal(context),
+                        size: 22,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Take photo',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.primaryTeal(context),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 16),
+
             // Instructions
             Text(
               'Instructions',
@@ -490,6 +1065,8 @@ Future<void> _submitTask() async {
               child: ElevatedButton(
                 onPressed: (_titleController.text.isNotEmpty &&
                         _selectedCategory != null &&
+                        _location != null &&
+                        _selectedImages.length >= _minImages &&
                         !_isSubmit)
                     ? _submitTask
                     : null,
