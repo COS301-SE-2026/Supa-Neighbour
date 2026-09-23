@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.FetchType;
 
@@ -35,7 +36,7 @@ public class Endorsement{
     private User endorseeid;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "zone_id", nullable = false)
+    @JoinColumn(name = "location_id", nullable = false)
     private Location zoneid;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -84,5 +85,13 @@ public class Endorsement{
         this.skillTag = skillTag;
         this.taskid = taskid;
         this.weight = weight;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
     }
 }
