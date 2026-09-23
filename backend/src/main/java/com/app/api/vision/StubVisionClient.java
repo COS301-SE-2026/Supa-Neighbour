@@ -89,7 +89,6 @@ public class StubVisionClient implements VisionClient {
         if (failure != null) {
             return failure;
         }
-
         boolean complete = properties.getStub().getOutcome() == VisionProperties.Stub.Outcome.COMPLETE;
         return VisionResult.ok(List.of("stub-scene"), STUB_CONFIDENCE,
                 "Stub comparison - no real AI call was made.", complete);

@@ -28,6 +28,8 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -100,6 +102,14 @@ class TaskEvidenceServiceTest {
     void setUp() {
         service = new TaskEvidenceService(taskImageRepository, taskVerificationRepository, taskTypeRepository, blobStorageService,
                 verificationService, hashService, properties, objectMapper, transactionTemplate,taskInvoiceRepository);
+    }
+
+    @Test
+    void jsonbColumnsAreMappedAsJdbcJson() throws NoSuchFieldException {
+        assertEquals(SqlTypes.JSON,
+            TaskImage.class.getDeclaredField("aiLabels").getAnnotation(JdbcTypeCode.class).value());
+        assertEquals(SqlTypes.JSON,
+            TaskVerification.class.getDeclaredField("reasons").getAnnotation(JdbcTypeCode.class).value());
     }
 
     // ---------------------------------------------------------------- happy path

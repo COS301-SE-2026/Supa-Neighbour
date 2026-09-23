@@ -12,6 +12,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -69,6 +71,7 @@ public class TaskVerification{
     @Column(name = "geofence_radius_m")
     private Double geofenceRadiusM;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "reasons", columnDefinition = "jsonb")
     private String reasons;
 

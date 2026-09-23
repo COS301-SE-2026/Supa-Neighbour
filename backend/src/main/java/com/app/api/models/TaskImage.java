@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -54,6 +56,7 @@ public class TaskImage {
      * AI-generated labels associated with the image.
      * Stored as JSON in the database.
      */
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "ai_labels", columnDefinition = "jsonb")
     private String aiLabels;
 

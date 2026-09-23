@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "supaneighbour.vision")
 public class VisionProperties {
 
-    public enum Mode {STUB, AZURE_OPENAI}
+    public enum Mode {STUB, GEMINI}
 
     private Mode mode;
-    private final AzureOpenai azureOpenai = new AzureOpenai();
+    private final Gemini gemini = new Gemini();
     private final Stub stub = new Stub();
 
     /**
@@ -36,8 +36,8 @@ public class VisionProperties {
      *
      * @return the Azure OpenAI settings; never {@code null}
      */
-    public AzureOpenai getAzureOpenai(){
-        return azureOpenai;
+    public Gemini getGemini(){
+        return gemini;
     }
 
     /**
@@ -76,80 +76,46 @@ public class VisionProperties {
         }
     }
 
-    public static class AzureOpenai {
-        /** https://&lt;resource-name&gt;.openai.azure.com */
-        private String endpoint;
+    public static class Gemini {
         /** Secret - keep in Azure Application Settings / env vars, never commit, never log. */
-        private String key;
+        private String apiKey;
         /** The DEPLOYMENT name Gendac chose, not the model name. */
-        private String deployment;
-        private String apiVersion = "2024-10-21";
+        private String model = "gemini-2.0-flash";
         private int maxImageEdgePx = 1600;
         private int timeoutSeconds = 30;
  
-        /**
-         * Gets the endpoint URL.
-         *
-         * @return the endpoint URL
-         */
-        public String getEndpoint() { 
-            return endpoint; 
-        }
-        /**
-         * Sets the endpoint URL.
-         *
-         * @param endpoint the endpoint URL
-         */
-        public void setEndpoint(String endpoint) { 
-            this.endpoint = endpoint; 
-        }
+        
         /**
          * Gets the API key.
          *
          * @return the API key
          */
-        public String getKey() { 
-            return key; 
+        public String getApiKey() { 
+            return apiKey; 
         }
         /**
          * Sets the API key.
          *
          * @param key the API key
          */
-        public void setKey(String key) { 
-            this.key = key; 
+        public void setApiKey(String key) { 
+            this.apiKey = key; 
         }
         /**
-         * Gets the deployment name.
+         * Gets the model name.
          *
-         * @return the deployment name
+         * @return the model name
          */
-        public String getDeployment() { 
-            return deployment; 
+        public String getModel() { 
+            return model; 
         }
         /**
-         * Sets the deployment name.
+         * Sets the model name.
          *
-         * @param deployment the deployment name
+         * @param model the model name
          */
-        public void setDeployment(String deployment) { 
-            this.deployment = deployment;
-        }
-        /**
-         * Gets the API version.
-         *
-         * @return the API version
-         */
-        public String getApiVersion() { 
-            return apiVersion; 
-        }
-        /**
-         * Sets the API version.
-         *
-         * @param apiVersion the API version
-         */
-        public void setApiVersion(String apiVersion) { 
-            this.apiVersion = apiVersion; 
+        public void setModel(String model) { 
+            this.model = model;
         }
         /**
          * Gets the maximum image edge length.

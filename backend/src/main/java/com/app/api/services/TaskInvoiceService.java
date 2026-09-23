@@ -163,6 +163,7 @@ public class TaskInvoiceService {
             TaskImage image = new TaskImage();
             image.setTaskid(invoice);
             image.setImageUrl(url);
+            image.setImageType(imageType);
             taskImageRepository.save(image);
         }
         return imageUrls.size();

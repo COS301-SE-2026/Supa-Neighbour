@@ -29,14 +29,12 @@ azure:
 
 supaneighbour:
   vision:
-    mode: stub
+    mode: gemini
     stub:
-      outcome: error          # fail-safe: nothing auto-verifies until the real client exists
-    azure-openai:
-      endpoint: ${AZURE_OPENAI_ENDPOINT:}
-      key: ${AZURE_OPENAI_KEY:}
-      deployment: ${AZURE_OPENAI_DEPLOYMENT:}  # the DEPLOYMENT name Gendac chose, not the model name
-      api-version: "2024-10-21"                # confirm against what the resource supports
+      outcome: complete       # unused while mode is gemini, but harmless to leave
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: gemini-2.0-flash
       max-image-edge-px: 1600                  # downscale before sending (see §5.1)
       timeout-seconds: 30
   verification:

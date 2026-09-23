@@ -20,5 +20,5 @@ public interface TaskVerificationRepository extends JpaRepository<TaskVerificati
      * @param taskId the task ID
      * @return the newest verification, or empty if none exists
      */
-    Optional<TaskVerification> findFirstByTask_TaskIdOrderByCreatedAtDesc(int taskId);
+    Optional<TaskVerification> findFirstByTask_TaskidOrderByCreatedAtDesc(int taskId);
 }
