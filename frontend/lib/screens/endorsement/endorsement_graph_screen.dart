@@ -7,6 +7,7 @@ import 'package:graphview/GraphView.dart';
 import 'package:shared/shared.dart' hide AppColors;
 import '../../constants/app_colors.dart';
 import '../../providers/service_providers.dart';
+import '../leaderboard/helper_profile_preview_screen.dart';
 
 class EndorsementGraphScreen extends ConsumerStatefulWidget {
   /// Optional user id. If null, shows the current user's own network.
@@ -481,10 +482,33 @@ class _EndorsementGraphScreenState
 
   void _onNodeTapped(EndorsementGraphNode node) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Tapped: ${node.displayName}'),
-        duration: const Duration(seconds: 1),
+
+    if (node.isCentreNode) {
+      return;
+    }
+
+    // The helper profile screen expects a numeric user ID. Try to parse;
+    // fall back to a friendly message if the ID isn't numeric.
+    final parsedId = int.tryParse(node.userId);
+
+    if (parsedId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No profile available for ${node.displayName}'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HelperProfilePreviewScreen(
+          helperId: parsedId,
+          isUserId: true,
+          showRequestButton: false,
+        ),
       ),
     );
   }
