@@ -44,17 +44,11 @@ class _ApplicationDetailScreenState
     });
 
     try {
-      // Fetch all and filter since backend doesn't have a per-ID endpoint yet
-      final applications = await _service.getAllApplications();
-      final match = applications.firstWhere(
-        (a) => a.applicationId == widget.applicationId,
-        orElse: () => throw AdminApplicationServiceException(
-            'Application not found.',
-            statusCode: 404),
-      );
+      final application =
+          await _service.getApplicationById(widget.applicationId);
 
       setState(() {
-        _application = match;
+        _application = application;
         _isLoading = false;
       });
     } on AdminApplicationServiceException catch (e) {
@@ -69,6 +63,7 @@ class _ApplicationDetailScreenState
       });
     }
   }
+
 
   Future<void> _approve() async {
     final confirmed = await _showConfirmDialog(
@@ -88,12 +83,10 @@ class _ApplicationDetailScreenState
 
       if (!mounted) return;
 
-      setState(() {
-        _application = updated;
-        _isSubmitting = false;
-      });
-
       _showSnack('Application approved successfully.', AppColors.success);
+      await _loadApplication();
+      if (mounted) setState(() => _isSubmitting = false);
+
     } on AdminApplicationServiceException catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
@@ -119,12 +112,10 @@ class _ApplicationDetailScreenState
 
       if (!mounted) return;
 
-      setState(() {
-        _application = updated;
-        _isSubmitting = false;
-      });
-
       _showSnack('Application rejected.', AppColors.error);
+      await _loadApplication();
+      if (mounted) setState(() => _isSubmitting = false);
+
     } on AdminApplicationServiceException catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
