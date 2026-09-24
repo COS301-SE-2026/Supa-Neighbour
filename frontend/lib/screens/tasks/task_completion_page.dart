@@ -9,7 +9,7 @@ import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
-import '../../services/task_service.dart';
+//import '../../services/task_service.dart';
 
 class TaskCompletionPage extends ConsumerStatefulWidget {
   final String taskId;
@@ -250,7 +250,7 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
     }
   }
 
-  Future<void> _showRetryDialog() async {
+  /*Future<void> _showRetryDialog() async {
     final retry = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -305,7 +305,7 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
     if (retry == true && mounted) {
       await _requestLocation();
     }
-  }
+  }*/
 
   void _showLocationModal(Position position) {
     showModalBottomSheet(
@@ -586,7 +586,7 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
           _noteController.text.isNotEmpty ? _noteController.text : null,
       );
 
-      Task.updateTaskStatus(widget.taskId, "pending_approval");
+      Task.updateTaskStatus(widget.taskId, 'pending_approval');
 
       if(mounted){
         ScaffoldMessenger.of(context).showSnackBar(

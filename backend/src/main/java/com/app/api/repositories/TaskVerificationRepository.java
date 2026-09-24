@@ -23,6 +23,13 @@ public interface TaskVerificationRepository extends JpaRepository<TaskVerificati
      */
     Optional<TaskVerification> findFirstByTask_TaskidOrderByCreatedAtDesc(int taskId);
 
+    /**
+     * Returns all TaskVerifications for the given task ID, ordered by
+     * createdAt ascending, then verificationId ascending.
+     *
+     * @param taskId the task ID to filter by
+     * @return matching TaskVerifications; never null, possibly empty
+     */
     List<TaskVerification> findByTask_TaskidOrderByCreatedAtAscVerificationIdAsc(int taskId);
 
 

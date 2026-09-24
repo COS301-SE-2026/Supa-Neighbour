@@ -10,6 +10,7 @@ import '../services/achievement_service.dart';
 import '../services/leaderboard_service.dart';
 import '../services/report_service.dart';
 import '../services/admin_application_service.dart';
+import '../models/verification_model.dart';
 
 // AUTH SERVICE PROVIDER
 final authServiceProvider = Provider<IAuthService>((ref) {
@@ -64,4 +65,9 @@ final reportServiceProvider = Provider<ReportService>((ref) {
 // ADMIN APPLICATION SERVICE PROVIDER
 final adminApplicationServiceProvider = Provider<IAdminApplicationService>((ref) {
   return AdminApplicationService();
+});
+
+final completionVerificationsProvider =
+    FutureProvider.autoDispose.family<List<VerificationResult>, int>((ref, taskId) {
+  return ref.read(taskServiceProvider).getCompletionVerifications(taskId);
 });

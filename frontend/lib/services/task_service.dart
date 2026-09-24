@@ -62,6 +62,11 @@ abstract class ITaskService {
 
   Future<String?> uploadTaskImage(XFile imageFile);
   Future<void> saveTaskImages(int taskId, List<String> imageUrls, {required TaskImageType type});
+  Future<void> submitCompletionDecision({
+    required int taskId,
+    required String decision, // 'CONFIRM' or 'DISPUTE'
+    String? note,
+  });
 }
 
 enum TaskImageType { reference, completion }
@@ -78,8 +83,8 @@ class TaskService implements ITaskService {
   TaskService({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
-              //baseUrl: 'http://localhost:8080',
-              baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
+              baseUrl: 'http://localhost:8080',
+              //baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               connectTimeout: const Duration(seconds: 10),// will update timeut if needed
               receiveTimeout: const Duration(seconds: 10),
             ));
@@ -537,5 +542,34 @@ Future<void> declineTaskInvitation(int taskId) async {
       throw Exception("Couldn't load verification: ${e.message}");
     }
   }
+
+  @override
+  Future<void> submitCompletionDecision({
+    required int taskId,
+    required String decision,
+    String? note,
+  }) async {
+    try {
+      final token = await _getToken();
+      await _dio.post(
+        '/api/taskinvoices/$taskId/completion-decision',
+        data: {
+          'decision': decision,
+          if (note != null) 'note': note,
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+    } on DioException catch (e) {
+      // Backend errors come back as {"error": "..."} (400/401/403/404/409)
+      final data = e.response?.data;
+      final message = data is Map && data['error'] != null
+          ? data['error'].toString()
+          : e.message;
+      throw Exception(message ?? "Couldn't submit decision");
+    }
+  }
+
 
 }

@@ -64,6 +64,13 @@ public class GeminiVisionClient implements  VisionClient {
         }
     }
 
+    /**
+     * Validates and normalizes the Gemini API key.
+     *
+     * @param apiKey the API key to validate; may be null or blank
+     * @return the trimmed API key
+     * @throws IllegalStateException if {@code apiKey} is null or blank
+     */
     public static String requireApiKey(String apiKey) {
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException("GEMINI_API_KEY is missing or empty. Set it before starting the backend so AI verification can call Gemini.");

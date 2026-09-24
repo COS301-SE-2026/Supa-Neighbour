@@ -51,6 +51,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.app.api.repositories.TaskInvoiceRepository;
 
 
 /**
@@ -69,6 +70,7 @@ public class TaskInvoiceController {
     private final TaskVerificationRepository taskVerificationRepository;
     private final DependentRepository dependentRepository;
     private final ObjectMapper objectMapper;
+    private final TaskInvoiceRepository taskInvoiceRepository;
 
 
     /**
@@ -76,7 +78,7 @@ public class TaskInvoiceController {
      *
      * @param taskInvoiceService service providing analytics data for taskInvoice
      */
-    public TaskInvoiceController(TaskInvoiceService taskInvoiceService, FirebaseAuthService firebaseAuthService, TaskEvidenceService taskEvidenceService, TaskRepository taskRepository, HelperRepository helperRepository, TaskVerificationRepository taskVerificationRepository, DependentRepository dependentRepository, ObjectMapper objectMapper) {
+    public TaskInvoiceController(TaskInvoiceService taskInvoiceService, FirebaseAuthService firebaseAuthService, TaskEvidenceService taskEvidenceService, TaskRepository taskRepository, HelperRepository helperRepository, TaskVerificationRepository taskVerificationRepository, DependentRepository dependentRepository, ObjectMapper objectMapper, TaskInvoiceRepository taskInvoiceRepository) {
         this.taskInvoiceService = taskInvoiceService;
         this.firebaseAuthService = firebaseAuthService;
         this.taskEvidenceService = taskEvidenceService;
@@ -85,6 +87,7 @@ public class TaskInvoiceController {
         this.taskVerificationRepository = taskVerificationRepository;
         this.dependentRepository = dependentRepository;
         this.objectMapper = objectMapper;
+        this.taskInvoiceRepository = taskInvoiceRepository;
     }
 
     // GET /api/taskinvoices    
@@ -397,6 +400,18 @@ public class TaskInvoiceController {
 
     }
 
+    /**
+     * Returns the completion-photo verification results for a task, ordered by
+     * creation time (then verification ID) ascending.
+     *
+     * <p>Accessible to the assigned helper and the task requester.</p>
+     *
+     * @param id         the task ID
+     * @param authHeader the {@code Authorization} header containing a Firebase bearer token
+     * @return 200 with the list of {@link VerificationResultDTO};
+     *         401 if the token is invalid; 403 if the caller is neither the assigned
+     *         helper nor the requester; 404 if the task does not exist
+     */
     @GetMapping("/{id}/completion-evidence")
     @Operation(
         summary = "Get completion photo verification results",
@@ -440,6 +455,12 @@ public class TaskInvoiceController {
         return ResponseEntity.ok(results);
     }
 
+    /**
+     * Maps a {@link TaskVerification} entity to its DTO representation.
+     *
+     * @param v the verification entity
+     * @return the corresponding {@link VerificationResultDTO}
+     */
     private VerificationResultDTO toDto(TaskVerification v) {
         TaskImage img = v.getCompletionImage();
         return new VerificationResultDTO(
@@ -457,11 +478,93 @@ public class TaskInvoiceController {
     }
 
     private List<String> parseReasons(String json) {
-        if (json == null || json.isBlank()) return List.of();
+        if (json == null || json.isBlank()){
+             return List.of();
+        }
         try {
             return objectMapper.readValue(json, new TypeReference<List<String>>() {});
         } catch (JsonProcessingException e) {
             return List.of();
         }
+    }
+
+    /**
+     * Request body for a resident's completion decision on a task.
+     *
+     * @param decision "CONFIRM" or "DISPUTE" (case-insensitive)
+     * @param note     optional note; required when decision is DISPUTE
+     */
+    public record CompletionDecisionRequest(String decision, String note) {}
+
+    /**
+    * Records the requester's decision (confirm or dispute) on a task that is
+    * awaiting approval.
+    *
+    * <p>Only the task's requester (dependent) may call this. The task must be in
+    * {@code pending_approval} status. A DISPUTE requires a non-empty note.</p>
+    *
+    * @param id         the task invoice ID
+    * @param body       the decision request
+    * @param authHeader the {@code Authorization} header containing a Firebase bearer token
+    * @return 200 with the decision name; 400 on invalid decision or missing dispute note;
+    *         401 if the token is invalid; 403 if the caller is not the requester;
+    *         404 if the task does not exist; 409 if the task is not awaiting approval
+    */
+    @PostMapping("/{id}/completion-decision")
+    @Operation(
+        summary = "Decide task completion",
+        description = "Records the requester's decision (CONFIRM or DISPUTE) on a task awaiting approval. Only the requester may call this; a DISPUTE requires a note",
+        security = @SecurityRequirement(name = "BearerAuth")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Decision recorded"),
+        @ApiResponse(responseCode = "400", description = "Invalid decision value or DISPUTE without a note", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired Firebase token", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Caller is not the task requester", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Task not found", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Task is not awaiting approval", content = @Content)
+    })
+    public ResponseEntity<?> decideCompletion(
+        @PathVariable int id,
+        @RequestBody CompletionDecisionRequest body,
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        int callerId;
+        try {
+            callerId = firebaseAuthService.getUserIdFromToken(authHeader.replace("Bearer ", ""));
+        } catch (FirebaseAuthException e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        TaskInvoice task = taskInvoiceRepository.findById(id).orElse(null);
+        if (task == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "Task not found"));
+        }
+
+        // Requester only: the helper must not approve their own work
+        Dependent dependent = dependentRepository.findByUserId_Userid(callerId);
+        if (dependent == null || !Objects.equals(task.getDependentid().getDependentId(), dependent.getDependentId())) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only the requester can decide"));
+        }
+
+        if (!"pending_approval".equalsIgnoreCase(task.getStatus())) {
+            return ResponseEntity.status(409).body(Map.of("error", "Task is not awaiting approval"));
+        }
+
+        TaskVerification.ResidentDecision decision;
+        try {
+            decision = TaskVerification.ResidentDecision.valueOf(
+                body.decision() == null ? "" : body.decision().trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "decision must be CONFIRM or DISPUTE"));
+        }
+
+        String note = body.note() == null ? null : body.note().trim();
+        if (decision == TaskVerification.ResidentDecision.DISPUTE && (note == null || note.isEmpty())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Please say why you are disputing"));
+        }
+
+        taskEvidenceService.recordDecision(task, decision, note);
+        return ResponseEntity.ok(Map.of("decision", decision.name()));
     }
 }
