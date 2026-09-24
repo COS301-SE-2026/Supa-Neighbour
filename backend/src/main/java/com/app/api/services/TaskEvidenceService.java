@@ -127,6 +127,9 @@ public class TaskEvidenceService {
 
         Outcome outcome = verificationService.evaluateCompletion(toFacts(task), new Evidence(photo, reference, clientHints, sha256Stored, otherHashes));
 
+        LOG.info("Vision for task {}: available={}, detail={}",
+            taskId, outcome.vision().available(), outcome.vision()); // or the detail accessor
+
         String imageUrl = sha256Stored ? null : blobStorageService.uploadTaskImage(file);
         TaskVerification saved = save(task, outcome, clientHints, imageUrl);
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:supa_neighbour/models/verification_model.dart';
 import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,6 +36,10 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   final List<XFile> _selectedImages = [];
   bool _isSubmitting = false;
   final ImagePicker _picker = ImagePicker();
+
+  final Map<String, DateTime> _capturedAt = {}; // photo path -> capture time
+  final Set<String> _submittedPaths = {};        // photos the server already accepted
+  String _submitStatus = '';
   
 
   // ===== REQUIRED EVIDENCE PHOTOS (CAMERA ONLY) =====
@@ -72,6 +77,7 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
       if (picked != null) {
         setState(() {
           _selectedImages.add(picked);
+          _capturedAt[picked.path] = DateTime.now();
         });
       }
     } catch (e) {
@@ -87,7 +93,9 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
 
   void _removePhoto(int index) {
     setState(() {
-      _selectedImages.removeAt(index);
+      final removed = _selectedImages.removeAt(index);
+      _capturedAt.remove(removed.path);
+      _submittedPaths.remove(removed.path);
     });
   }
 
@@ -103,12 +111,53 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
     );
   }
 
+  String _gpsStatus = '';
+  static const double _maxAccuracyM = 100.0; 
+
+  Future<Position?> _acquireAccurateFix({
+    Duration timeout = const Duration(seconds: 30),
+  }) {
+    final completer = Completer<Position?>();
+    Position? best;
+    StreamSubscription<Position>? sub;
+    Timer? timer;
+
+    void finish() {
+      timer?.cancel();
+      sub?.cancel();
+      if (!completer.isCompleted) completer.complete(best);
+    }
+
+    sub = Geolocator.getPositionStream(
+      locationSettings: AndroidSettings(
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 0,
+        intervalDuration: const Duration(seconds: 1),
+      ),
+    ).listen(
+      (p) {
+        if (best == null || p.accuracy < best!.accuracy) best = p;
+        if (mounted) {
+          setState(() => _gpsStatus =
+              'Improving GPS accuracy (${best!.accuracy.round()} m)...');
+        }
+        if (p.accuracy <= _maxAccuracyM) finish();
+      },
+      onError: (_) => finish(),
+    );
+
+    timer = Timer(timeout, finish);
+    return completer.future;
+  }
+
   Future<void> _requestLocation() async {
     if (_isFetchingLocation) return;
-    setState(() => _isFetchingLocation = true);
+    setState(() {
+      _isFetchingLocation = true;
+      _gpsStatus = 'Getting GPS fix...';
+    });
 
     try {
-      // 1) Service enabled?
       final serviceEnabled = await Geolocator.isLocationServiceEnabled()
           .timeout(const Duration(seconds: 3));
       if (!serviceEnabled) {
@@ -116,7 +165,6 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
         return;
       }
 
-      // 2) Permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -128,54 +176,17 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
         return;
       }
 
-      // 3) PRIORITY: fresh current location, attempt #1 (fused provider)
-      Position? position;
-      try {
-        position = await Geolocator.getCurrentPosition(
-          locationSettings: AndroidSettings(
-            accuracy: LocationAccuracy.high,
-            timeLimit: const Duration(seconds: 15),
-          ),
-        );
-      } on TimeoutException {
-        position = null;
-      }
+      final position = await _acquireAccurateFix();
 
-      // 4) If fused provider timed out, retry via raw Android LocationManager
-      if (position == null) {
-        try {
-          position = await Geolocator.getCurrentPosition(
-            locationSettings: AndroidSettings(
-              accuracy: LocationAccuracy.high,
-              timeLimit: const Duration(seconds: 10),
-              forceLocationManager: true,
-            ),
-          );
-        } on TimeoutException {
-          position = null;
-        }
-      }
-
-      // 5) Last resort: cached location, with an explicit warning
-      bool usedCache = false;
-      if (position == null) {
-        position = await Geolocator.getLastKnownPosition();
-        usedCache = position != null;
-      }
-
-      // 6) Nothing worked — offer retry
-      if (position == null) {
-        if (mounted) _showRetryDialog();
+      if (position == null || position.accuracy > _maxAccuracyM) {
+        // Not stored in _location. Dialog is not awaited, like before,
+        // so `finally` resets the loading state first.
+        if (mounted) _showLowAccuracyDialog(position?.accuracy);
         return;
       }
 
       if (!mounted) return;
       setState(() => _location = position);
-
-      if (usedCache) {
-        _showSnack(
-            'Could not get a fresh GPS fix — using last known location.');
-      }
       _showLocationModal(position);
     } on LocationServiceDisabledException {
       _showSnack('Location services are disabled. Please enable them.');
@@ -183,6 +194,59 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
       _showSnack('Failed to get location: $e');
     } finally {
       if (mounted) setState(() => _isFetchingLocation = false);
+    }
+  }
+
+  Future<void> _showLowAccuracyDialog(double? accuracyM) async {
+    final action = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'GPS Accuracy Too Low',
+          style: GoogleFonts.poppins(
+            color: AppColors.charcoal(context),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          accuracyM == null
+              ? "We couldn't get a GPS fix.\n\n"
+              : 'Your current accuracy is ${accuracyM.round()} m '
+                  '(needs ${_maxAccuracyM.round()} m or better).\n\n',
+          style: GoogleFonts.openSans(color: AppColors.charcoal(context)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'cancel'),
+            child: Text('Cancel',
+                style: GoogleFonts.openSans(color: AppColors.textGrey(context))),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'settings'),
+            child: Text('Location settings',
+                style: GoogleFonts.openSans(color: AppColors.primaryTeal(context))),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, 'retry'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryTeal(context),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            ),
+            child: Text('Retry',
+                style: GoogleFonts.openSans(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted) return;
+    if (action == 'retry') {
+      await _requestLocation();
+    } else if (action == 'settings') {
+      await Geolocator.openAppSettings();
     }
   }
 
@@ -459,32 +523,77 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
   }
 
   Future<void> _submitCompletion() async {
-    setState(() => _isSubmitting = true);
+    setState(() {
+      _isSubmitting = true;
+      _submitStatus = 'Verifying photos...';
+    });
     try {
       final taskService = ref.read(taskServiceProvider);
+      final taskId = int.parse(widget.taskId);
+      final loc = _location!;
 
-      final List<String> uploadedUrls = [];
-      for (final image in _selectedImages) {
-        final url = await taskService.uploadTaskImage(image);
-        if (url != null) uploadedUrls.add(url);
+      final pending = _selectedImages
+      .where((i) => !_submittedPaths.contains(i.path))
+      .toList();
+
+      final failed = <XFile, VerificationResult>{};
+      final needsReview = <VerificationResult>[];
+
+      for(var i = 0; i < pending.length; i++){
+        final image = pending[i];
+        if(mounted){
+          setState(() =>
+            _submitStatus = 'Verifying photo ${i + 1} of ${pending.length}...');
+        }
+
+        final result = await taskService.submitCompletionEvidence(
+          taskId: taskId, 
+          image: image, 
+          capturedAt: _capturedAt[image.path] ?? DateTime.now(),
+          lat: loc.latitude,
+          lng: loc.longitude,
+          accuracyM: loc.accuracy,
+        );
+
+        _submittedPaths.add(image.path);
+        if (result.status == 'FAILED') {
+          failed[image] = result;
+        } else if (result.status == 'NEEDS_REVIEW') {
+          needsReview.add(result);
+        }
       }
 
-      if (uploadedUrls.isNotEmpty) {
-        await taskService.saveTaskImages(int.parse(widget.taskId), uploadedUrls, type: TaskImageType.reference);
+      if(failed.isNotEmpty){
+        if(mounted){
+          setState(() {
+            for (final img in failed.keys) {
+              _selectedImages.remove(img);
+              _capturedAt.remove(img.path);
+              _submittedPaths.remove(img.path);
+            }
+          });
+          await _showVerificationFailedDialog(failed.values.toList());
+        }
+
+        return;
       }
 
+      if (mounted) setState(() => _submitStatus = 'Submitting task...');
       await taskService.updateTask(
-        taskId: int.parse(widget.taskId),
+        taskId: taskId,
         status: 'pending_approval',
-        helperRatingId: _noteController.text.isNotEmpty ? _noteController.text : null,
+        helperRatingId:
+          _noteController.text.isNotEmpty ? _noteController.text : null,
       );
 
-      Task.updateTaskStatus(widget.taskId, 'pending_approval');
+      Task.updateTaskStatus(widget.taskId, "pending_approval");
 
-      if (mounted) {
+      if(mounted){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Task submitted! Waiting for resident confirmation.'),
+            content: Text(needsReview.isEmpty
+                ? 'Task submitted! Waiting for resident confirmation.'
+                : 'Task submitted. Some photos were flagged for manual review.'),
             backgroundColor: AppColors.primaryTeal(context),
           ),
         );
@@ -502,6 +611,74 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  Future<void> _showVerificationFailedDialog(
+      List<VerificationResult> failed) async {
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Photo Not Accepted',
+          style: GoogleFonts.poppins(
+            color: AppColors.charcoal(context),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${failed.length} photo(s) could not be verified and were removed. '
+                'Please retake them at the task location.',
+                style: GoogleFonts.openSans(color: AppColors.charcoal(context)),
+              ),
+              for (final r in failed) ...[
+                const SizedBox(height: 12),
+                if (r.aiInsight != null)
+                  Text(
+                    r.aiInsight!,
+                    style: GoogleFonts.openSans(
+                      color: AppColors.textGrey(context),
+                      fontSize: 13,
+                    ),
+                  ),
+                if (r.locationVerified == false && r.distanceM != null)
+                  Text(
+                    'You were ${r.distanceM!.round()} m from the task '
+                    '(allowed: ${r.geofenceRadiusM?.round() ?? '?'} m).',
+                    style: GoogleFonts.openSans(
+                      color: AppColors.textGrey(context),
+                      fontSize: 13,
+                    ),
+                  ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryTeal(context),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: Text(
+              'OK',
+              style: GoogleFonts.openSans(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -794,7 +971,7 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
                     Expanded(
                       child: Text(
                         _location == null
-                            ? 'Tap to capture your location'
+                            ? (_isFetchingLocation ? _gpsStatus : 'Tap to capture your location')
                             : 'Lat ${_location!.latitude.toStringAsFixed(5)}, '
                                 'Lng ${_location!.longitude.toStringAsFixed(5)}',
                         style: GoogleFonts.openSans(
@@ -886,14 +1063,27 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
                   disabledBackgroundColor: AppColors.surfaceGrey(context),
                 ),
                 child: _isSubmitting
-                    ? const SizedBox(
+                    ? Row( mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    const SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
-                      )
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                          _submitStatus,
+                            style: GoogleFonts.openSans(
+                            fontSize: 13,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    )
                     : Text(
                         'MARK AS COMPLETE',
                         style: GoogleFonts.poppins(

@@ -23,6 +23,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
  
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import reactor.util.retry.Retry;
+import java.util.concurrent.TimeoutException;
  
 
 
@@ -32,7 +34,7 @@ public class GeminiVisionClient implements  VisionClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(GeminiVisionClient.class);
 
-    private static final String API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
+    private static final String API_BASE = "https://generativelanguage.googleapis.com";
 
     private static final String JPEG_MIME = "image/jpeg";
     private static final String SYSTEM_PROMPT = "You verify whether a community-help task was completed by comparing a before photo and "
@@ -55,10 +57,19 @@ public class GeminiVisionClient implements  VisionClient {
         this.properties = properties;
         this.objectMapper = objectMapper;
         this.webClient = WebClient.builder().baseUrl(API_BASE).build();
-        LOG.info("GeminiVisionClient active (model: {})", properties.getGemini().getModel());
+        if (properties.getGemini().getApiKey() == null || properties.getGemini().getApiKey().isBlank()) {
+            LOG.warn("GeminiVisionClient is active but GEMINI_API_KEY is blank; AI verification will be unavailable until a key is configured.");
+        } else {
+            LOG.info("GeminiVisionClient active (model: {})", properties.getGemini().getModel());
+        }
     }
 
-    
+    public static String requireApiKey(String apiKey) {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("GEMINI_API_KEY is missing or empty. Set it before starting the backend so AI verification can call Gemini.");
+        }
+        return apiKey.trim();
+    }
 
     /**
      * Describe the resident's reference ("before") photo: labels, a one-sentence insight, and how
@@ -75,6 +86,14 @@ public class GeminiVisionClient implements  VisionClient {
     }
 
     private VisionResult call(String prompt, List<byte[]> images, boolean expectVerdict){
+        try {
+            String apiKey = requireApiKey(properties.getGemini().getApiKey());
+            properties.getGemini().setApiKey(apiKey);
+        } catch (IllegalStateException e) {
+            LOG.warn(e.getMessage());
+            return VisionResult.unavailable(VisionResult.Outcome.ERROR, e.getMessage());
+        }
+
         List<byte[]> resized;
         try{
             resized = images.stream().map(this::downscale).toList();
@@ -89,16 +108,21 @@ public class GeminiVisionClient implements  VisionClient {
         String responseBody;
         try{
             responseBody = webClient.post()
-                    .uri(model + ":generateContent")
-                    .header("x-goog-api-key", properties.getGemini().getApiKey())
-                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                    .bodyValue(body)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .timeout(timeout)
-                    .onErrorMap(java.util.concurrent.TimeoutException.class,
-                            e -> new GeminiCallException(VisionResult.Outcome.ERROR, "timeout after " + timeout))
-                    .block();
+                .uri("/v1beta/models/{model}:generateContent", model)
+                .header("x-goog-api-key", properties.getGemini().getApiKey())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(String.class)
+                .retryWhen(Retry.backoff(2, Duration.ofSeconds(2))
+                        .filter(t -> t instanceof WebClientResponseException w
+                                && (w.getStatusCode().value() == 503
+                                    || w.getStatusCode().value() == 429))
+                        .onRetryExhaustedThrow((spec, signal) -> signal.failure()))
+                .timeout(timeout)
+                .onErrorMap(TimeoutException.class,
+                        e -> new GeminiCallException(VisionResult.Outcome.ERROR, "timeout after " + timeout))
+                .block();
         }catch(WebClientResponseException e){
             return VisionResult.unavailable(outcomeFor(e), "HTTP " + e.getStatusCode().value() + " " + safeBody(e));
         }catch(GeminiCallException e){
@@ -110,10 +134,10 @@ public class GeminiVisionClient implements  VisionClient {
         return parse(responseBody, expectVerdict);
     }
 
-    private Map<String, Object> requestBody(String prompt, List<byte[]> images){
+    private Map<String, Object> requestBody(String prompt, List<byte[]> images) {
         List<Map<String, Object>> parts = new ArrayList<>();
-        parts.add(Map.of("text", SYSTEM_PROMPT, " ", prompt));
-        for(byte[] image: images){
+        parts.add(Map.of("text", SYSTEM_PROMPT + "\n\n" + prompt));
+        for (byte[] image : images) {
             parts.add(Map.of("inlineData", Map.of(
                     "mimeType", JPEG_MIME,
                     "data", Base64.getEncoder().encodeToString(image))));
