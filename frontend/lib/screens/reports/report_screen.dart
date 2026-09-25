@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../constants/app_colors.dart';
 import '../../models/report_request.dart';
 import '../../providers/service_providers.dart';
+import 'dart:typed_data';
 
 /// The kind of entity being reported.
 /// Maps 1:1 onto the backend's reportType enum on submit.
@@ -14,6 +15,12 @@ enum ReportTargetType {
   post,    // → POST
   comment, // → COMMENT
   chat,    // → USER (report the other user in the chat)
+}
+
+class _PickedImage {
+  final Uint8List bytes;
+  final String name;
+  _PickedImage({required this.bytes, required this.name});
 }
 
 class ReportScreen extends ConsumerStatefulWidget {
@@ -42,7 +49,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
   /// Locally selected photos — UI only for now.
   /// Backend submission is stubbed out until ReportRequestDTO
   /// gains a `photoUrls` field.
-  final List<File> _selectedImages = [];
+  final List<_PickedImage> _selectedImages = [];   // was List<File>
   final ImagePicker _picker = ImagePicker();
 
   final List<String> _disputeReasons = ['NO_SHOW', 'INCOMPLETE', 'DAMAGE'];
@@ -89,7 +96,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       case ReportTargetType.comment:
         return 'Why are you reporting this comment? *';
       case ReportTargetType.chat:
-        return 'Why are you reporting this user? *';
+        return 'Why are you reporting this user/chat? *';
     }
   }
 
@@ -104,6 +111,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
 
   // ============ IMAGE HANDLING ============
 
+  
   Future<void> _pickImage(ImageSource source) async {
     if (_selectedImages.length >= _maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -123,7 +131,10 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       );
       if (picked == null) return;
 
-      setState(() => _selectedImages.add(File(picked.path)));
+      final bytes = await picked.readAsBytes();
+      setState(() => _selectedImages.add(
+        _PickedImage(bytes: bytes, name: picked.name),
+      ));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -260,37 +271,50 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
+    final reportService = ref.read(reportServiceProvider);
+    int? reportId;
 
     try {
-      // NOTE: `_selectedImages` are intentionally excluded until the backend
-      //       adds photo support to ReportRequestDTO. When ready:
-      //       1) upload each file via ImageUploadController,
-      //       2) collect the returned URLs,
-      //       3) pass them into ReportRequest(..., photoUrls: urls).
       final request = _buildRequest();
-
       final reportService = ref.read(reportServiceProvider);
-      await reportService.submitTaskReport(request);
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Report submitted successfully.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context, true);
+      reportId = await reportService.submitTaskReport(request);
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to submit report: $e'),
-          backgroundColor: AppColors.error(context),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to submit report: $e'),
+            backgroundColor: AppColors.error(context),
+          ),
+        );
+        setState(() => _isSubmitting = false);
+      }
+      return;
+    } 
+
+    int failedImages = 0;
+    for (final image in _selectedImages) {
+      try {
+        final imageUrl = await reportService.uploadReportImage(image.bytes, image.name);
+        await reportService.linkReportImage(reportId, imageUrl);
+      } catch (_) {
+        failedImages++;
+      }
     }
+
+    if(!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          failedImages == 0
+              ? 'Report submitted successfully.'
+              : 'Report submitted, but $failedImages photo(s) failed to attach.',
+        ),
+        backgroundColor: failedImages == 0 ? Colors.green : Colors.orange,
+      ),
+    );
+    Navigator.pop(context, true);
+    setState(() => _isSubmitting = false);
   }
 
   // ============ BUILD ============
@@ -563,8 +587,8 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: Image.file(
-            _selectedImages[index],
+          child: Image.memory(
+            _selectedImages[index].bytes,
             width: 80,
             height: 80,
             fit: BoxFit.cover,

@@ -7,6 +7,7 @@ import '../../models/review_model.dart';
 import '../../models/helper_profile_response.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import '../reports/report_screen.dart'; 
 
 class HelperProfilePreviewScreen extends ConsumerStatefulWidget {
   final User? helper;
@@ -166,6 +167,32 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
 
     return stars;
   }
+  int? _reportableUserId() {
+    final id = _profileData?.userId ?? widget.helper?.id;
+    if (id is int) return id;
+    if (id is String) return int.tryParse(id);
+    return null;
+  }
+
+  void _reportHelper() {
+    final userId = _reportableUserId();
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to report this user right now.')),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReportScreen(
+          targetType: ReportTargetType.chat,
+          targetId: userId,
+          targetPreview: _profileData?.displayName ?? widget.helper?.fullName,
+        ),
+      ),
+    );
+  }
 
   void _inviteHelper() async {
     if (_isInvited) return;
@@ -322,13 +349,31 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: AppColors.charcoal(context)),
-            onPressed: () {
-              // TODO: Add more options
-            },
-          ),
-        ],
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, color: AppColors.charcoal(context)),
+              onSelected: (value) {
+                if (value == 'report') {
+                  _reportHelper();
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(Icons.flag_outlined,
+                          size: 20, color: AppColors.error(context)),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Report User',
+                        style: GoogleFonts.openSans(color: AppColors.charcoal(context)),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
