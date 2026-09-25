@@ -4,6 +4,8 @@ import com.app.api.models.Endorsement;
 import com.app.api.models.EndorsementClusterCache;
 import com.app.api.models.EndorsementSkill;
 
+import jakarta.persistence.QueryHint;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -286,5 +288,37 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
          * @return the total weight for the user
          */
         long getTotalWeight();
+    }
+
+    @Query("""
+        select e.endorserid.userid as fromUserId,
+               e.endorseeid.userid as toUserId,
+               e.taskid.taskid     as taskId
+        from Endorsement e
+        where e.taskid is not null
+        """
+    )
+    List<TaskEdgeRow> findAllTaskLinkedEdges();
+
+    @Query("""
+        select e.endorserid.userid as fromUserId,
+               e.endorseeid.userid as toUserId,
+               e.createdAt         as createdAt
+        from Endorsement e
+        order by e.createdAt asc
+        """
+    )
+    List<TimestampEdgeRow> findAllEdgesWithTimestamps();
+
+    public interface TaskEdgeRow {
+        Integer getFromUserId();
+        Integer getToUserId();
+        Integer getTaskId();
+    }
+
+    public interface TimestampEdgeRow {
+        Integer getFromUserId();
+        Integer getToUserId();
+        LocalDateTime getCreatedAt();
     }
 }

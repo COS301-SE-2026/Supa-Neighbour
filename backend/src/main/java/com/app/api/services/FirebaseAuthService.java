@@ -4,10 +4,19 @@ import org.springframework.stereotype.Service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.google.firebase.auth.GetUsersResult;
+import com.google.firebase.auth.UserIdentifier;
+import com.google.firebase.auth.UserRecord;
 import com.app.api.repositories.UserRepository;
 import com.app.api.repositories.SettingsRepository;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * Service responsible for interacting with Firebase Authentication.
  * <p>
@@ -80,5 +89,37 @@ public class FirebaseAuthService {
      */
     public void revokeUserSessions(String uid) throws FirebaseAuthException {
         FirebaseAuth.getInstance().revokeRefreshTokens(uid);
+    }
+
+    /**
+     * Resolves account-creation timestamps for a batch of Firebase UIDs, for
+     * the 2.8 sudden_spike check. Firebase's getUsers call caps at 100
+     * identifiers per request, so this chunks transparently. A UID Firebase
+     * can't resolve (deleted account, bad data) is simply omitted from the
+     * result rather than failing the whole batch — callers should treat a
+     * missing entry as "can't determine account age, skip this candidate."
+     *
+     * @param firebaseUids the UIDs to look up
+     * @return uid to account-creation instant, for whichever UIDs resolved
+     */
+    public Map<String, Instant> getAccountCreationTimes(Collection<String> firebaseUids) throws FirebaseAuthException {
+        Map<String, Instant> result = new HashMap<>();
+        List<String> uidList = new ArrayList<>(firebaseUids);
+
+        for (int start = 0; start < uidList.size(); start += 100) {
+            List<String> chunk = uidList.subList(start, Math.min(start + 100, uidList.size()));
+            // build identifiers explicitly rather than via the cast above:
+            List<UserIdentifier> ids = new ArrayList<>(chunk.size());
+            for (String uid : chunk) {
+                ids.add(new com.google.firebase.auth.UidIdentifier(uid));
+            }
+
+            GetUsersResult batch = FirebaseAuth.getInstance().getUsers(ids);
+            for (UserRecord record : batch.getUsers()) {
+                long creationMillis = record.getUserMetadata().getCreationTimestamp();
+                result.put(record.getUid(), Instant.ofEpochMilli(creationMillis));
+            }
+        }
+        return result;
     }
 }   
