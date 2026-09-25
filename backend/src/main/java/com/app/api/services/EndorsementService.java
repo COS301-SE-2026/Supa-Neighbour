@@ -25,10 +25,12 @@ import com.app.api.repositories.AdminRepository;
 import com.app.api.repositories.LocationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.repositories.UserRepository;
- import com.app.api.repositories.HelperAnalyticsRepository;
+import com.app.api.repositories.HelperAnalyticsRepository;
 
+import com.app.api;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -101,22 +103,24 @@ public class EndorsementService {
             this.adminRepository = adminRepository;
         }
 
-    /**
-     * Records an endorsement given by the authenticated caller.
-     *
-     * <p>This is the only place a skill tag is checked against the catalogue,
-     * which is what makes it safe to treat the stored value as a constant
-     * everywhere else.</p>
-     *
-     * @param endorser the caller, resolved from the Firebase ID token
-     * @param request  the validated request body
-     * @return the persisted endorsement
-     * @throws ResponseStatusException 400 for self-endorsement, 404 for an unknown
-     *                                 endorsee, zone, tag or task, 409 for a
-     *                                 duplicate, 422 for an unapproved tag
-     */
-
-
+    // public User requireCurrentUser() {
+    //     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    //     if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
+    //         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Firebase ID token");
+    //     }
+ 
+    public User requireCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Firebase ID token");
+        }
+ 
+        String firebaseUid = auth.getName();
+        return userRepository.findByFirebaseUid(firebaseUid)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, "No local user is registered for this token"));
+    }
+    
 /**
  * Verifies the given user holds admin access at or above the required level.
  *
@@ -137,6 +141,9 @@ public class EndorsementService {
         return user;
     }
 
+    public User requireAdmin() {
+        User user= req
+    }
 
 /**
  * Records an endorsement given by the authenticated caller.

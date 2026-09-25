@@ -1,5 +1,7 @@
 package com.app.api.controllers;
 
+import com.app.api.dtos.ClusterAnalysisRunResponseDTO;
+import com.app.api.dtos.ClusterMembershipResponseDTO;
 import com.app.api.dtos.CreateEndorsementRequestDTO;
 import com.app.api.dtos.EndorsementResponseDTO;
 import com.app.api.dtos.EndorsementSummaryResponseDTO;
@@ -11,7 +13,7 @@ import com.app.api.dtos.TrustPathResponseDTO;
 import com.app.api.models.User;
 import com.app.api.services.EndorsementService;
 import org.springframework.http.HttpStatus;
-
+import com.app.api.services.EndorsementClusterService;
 import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseAuthException;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -47,6 +49,7 @@ public class EndorsementController {
     private final EndorsementService endorsementService;
     private final FirebaseAuthService firebaseAuthService;
     private final UserRepository userRepository;
+    private final EndorsementClusterService endorsementClusterService;
     private final int ZONE_GRAPH_MIN_ADMIN_LEVEL = 1;
 
     /**
@@ -54,10 +57,11 @@ public class EndorsementController {
      *
      * @param endorsementService the service used to handle endorsement operations
      */
-    public EndorsementController(EndorsementService endorsementService,FirebaseAuthService firebaseAuthService,UserRepository userRepository) {
+    public EndorsementController(EndorsementService endorsementService,FirebaseAuthService firebaseAuthService,UserRepository userRepository, EndorsementClusterService endorsementClusterService) {
         this.endorsementService = endorsementService;
         this.userRepository= userRepository;
         this.firebaseAuthService = firebaseAuthService;
+        this.endorsementClusterService=endorsementClusterService; 
     }
 
     /**
@@ -227,6 +231,18 @@ public class EndorsementController {
         } catch (FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
+    }
+
+    @PostMapping(path = "zone/{zoneId}/cluster-analysis",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClusterAnalysisRunResponseDTO> triggerClusterAnalysis(@PathVariable Integer zoneId) {
+        endorsementService.requireAdmin();
+       return ResponseEntity.ok(endorsementClusterService.runForZone(zoneId));
+    }
+
+    @GetMapping(path = "zone.{zoneId}/clusters", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClusterMembershipResponseDTO> clusteras(@PathVariable Integer zoneId) {
+        endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL, null);
+        return ResponseEntity.ok(endorsementClusterService.readCached(zoneId));
     }
 
 }
