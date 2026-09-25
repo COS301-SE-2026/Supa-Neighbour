@@ -234,15 +234,41 @@ public class EndorsementController {
     }
 
     @PostMapping(path = "zone/{zoneId}/cluster-analysis",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ClusterAnalysisRunResponseDTO> triggerClusterAnalysis(@PathVariable Integer zoneId) {
-        endorsementService.requireAdmin();
-       return ResponseEntity.ok(endorsementClusterService.runForZone(zoneId));
+    public ResponseEntity<ClusterAnalysisRunResponseDTO> triggerClusterAnalysis(
+        @PathVariable Integer zoneId,
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                return ResponseEntity.notFound().build();
+            }  
+            endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL, user);
+            return ResponseEntity.ok(endorsementClusterService.runForZone(zoneId));
+        }catch (FirebaseAuthException e) {
+            return ResponseEntity.status(401).build();
+        }
     }
 
-    @GetMapping(path = "zone.{zoneId}/clusters", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ClusterMembershipResponseDTO> clusteras(@PathVariable Integer zoneId) {
-        endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL, null);
-        return ResponseEntity.ok(endorsementClusterService.readCached(zoneId));
+    @GetMapping(path = "zone/{zoneId}/clusters", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ClusterMembershipResponseDTO> clusters(
+        @PathVariable Integer zoneId,
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                return ResponseEntity.notFound().build();
+            }  
+            endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL, user);
+            return ResponseEntity.ok(endorsementClusterService.readCached(zoneId));
+        }catch (FirebaseAuthException e) {
+            return ResponseEntity.status(401).build();
+        }
     }
 
 }

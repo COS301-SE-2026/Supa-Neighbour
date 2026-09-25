@@ -35,7 +35,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor 
 @EqualsAndHashCode(onlyExplicitlyIncluded  = true)
-@Table(name = "enndorsement_cluster_cache")
+@Table(name = "endorsement_cluster_cache")
 public class EndorsementClusterCache {
 
     @Id 

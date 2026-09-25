@@ -4,7 +4,6 @@ import com.app.api.models.Endorsement;
 import com.app.api.models.EndorsementClusterCache;
 import com.app.api.models.EndorsementSkill;
 
-import org.springdoc.core.converters.models.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 /**
  * 
@@ -120,7 +120,7 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
             from Endorsement e
             where e.endorseeid.userid = :userId
             """)
-    long countDistinctEndorsers(@Param("userId") Integer user_Id);
+    long countDistinctEndorsers(@Param("userId") Integer userId);
 
     /**
      * Finds outgoing edges (endorsements given) for the given users.
@@ -160,7 +160,7 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
      * @param zoneId the zone id
      * @return the edge rows within the zone
      */
-    @Query("""
+        @Query("""
             select e.endorserid.userid  as fromUserId,
                    e.endorseeid.userid  as toUserId,
                    e.skillTag.skillTag  as skillTag,
@@ -169,17 +169,17 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
             where e.zoneid.locationid = :zoneId
             order by e.weight desc, e.createdAt desc
             """)
-    List<EdgeRow> findEdgesByZone(@Param("zoneId") Integer zoneId);
+        List<EdgeRow> findEdgesByZone(@Param("zoneId") Integer zoneId);
 
        @Query("""
-                select distinct e.zoneid.locationid from endorsement e
+                select distinct e.zoneid.locationid from Endorsement e
                        """)
        List<Integer> findDistinctZoneIds();     
     
-    /**
-     * any edge touching one of the supplied users, in either direction
-     */
-    @Query("""
+        /**
+        * any edge touching one of the supplied users, in either direction
+        */
+        @Query("""
             select e.endorserid.userid  as fromUserId,
                 e.endorseeid.userid  as toUserId,
                 e.skillTag.skillTag  as skillTag,
@@ -202,17 +202,9 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
             where e.endorseeid.userid = :userId
             group by e.endorserid.userid, e.endorserid.firstName, e.endorserid.lastName
             order by coalesce(sum(e.weight),0) desc
-            """)
-    List<EndorserAggregate> aggregateTopEndorsers(@Param("userIds") Integer userId, Pageable pageable);
+        """)
+    List<EndorserAggregate> aggregateTopEndorsers(@Param("userId") Integer userId, Pageable pageable);
 
-    /**
-     * projections
-     */
-
-    /** per-skill aggregate row used by the summary endpoint */
-    /**
-     * skillAggregate
-     */
     public interface SkillAggregate {
         /**
          * @return the skill tag
@@ -294,47 +286,5 @@ public interface EndorsementRepository extends JpaRepository<Endorsement, Intege
          * @return the total weight for the user
          */
         long getTotalWeight();
-    }
-
-    public interface SkillRepository extends JpaRepository<EndorsementSkill,String> {
-    
-        /**
-         * Returns every approved skill, ordered by category then display name so
-         * the catalogue endpoint can group without a secondary sort.
-         *
-         * @return approved skills in catalogue order
-         */
-
-        @Query("""
-            select s
-            from EndorsementSkill s
-            where s.approved = true
-            order by coalesce(s.category, 'Uncategorised') asc, s.displayName asc            
-                        """)
-        List<EndorsementSkill> findApprovedOrdered();
-        
-    }
-
-    public interface ClusterCacheRepository extends JpaRepository<EndorsementClusterCache, Long> {
-
-        /**
-         * Reads back a zone's current cluster membership for the admin
-         * dashboard. Never runs detection — that only happens in the job.
-         *
-         * @param zoneId the zone
-         * @return cached memberships, lowest cluster label first
-         */
-        List<EndorsementClusterCache> findByZoneIdOrderByClusterLabelAscUserIdAsc(int zoneId);
-
-        /**
-         * Clears a zone's cached membership immediately before the job writes
-         * its fresh replacement, inside the same transaction.
-         *
-         * @param zoneId the zone to clear
-         * @return rows deleted
-         */
-        @Modifying
-        @Query("delete from EndorsementClusterCache c where c.zoneId =: zoneId")
-        int deleteByZoneId(@Param("zoneId") int zoneId);
     }
 }

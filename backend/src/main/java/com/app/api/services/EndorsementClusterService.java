@@ -5,17 +5,18 @@ import com.app.api.dtos.ClusterAnalysisRunResponseDTO;
 import com.app.api.dtos.ClusterMembershipResponseDTO;
 import com.app.api.models.EndorsementClusterCache;
 import com.app.api.repositories.EndorsementRepository;
-import com.app.api.repositories.EndorsementRepository.ClusterCacheRepository;
+import com.app.api.repositories.ClusterCacheRepository;
 import com.app.api.repositories.EndorsementRepository.EdgeRow;
 import com.app.api.repositories.LocationRepository;
 
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.eclipse.collections.api.map.primitive.IntObjectMap;
 import org.eclipse.collections.api.map.primitive.MutableIntIntMap;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.tuple.primitive.IntIntPair;
 import org.eclipse.collections.impl.map.mutable.primitive.IntIntHashMap;
 import org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap;
+
+
  
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +82,7 @@ public class EndorsementClusterService {
         this.locationRepository=locationRepository;
     }
 
-    @Scheduled(cron="0 0 3 * *")
+    @Scheduled(cron = "0 0 3 * * *")
     public void runNightlyForAllZones() {
         List<Integer> zoneIds = endorsementRepository.findDistinctZoneIds();
         log.info("Nightly cluster analysis starting for {} zone(s)",zoneIds.size());
@@ -153,8 +154,8 @@ public class EndorsementClusterService {
         EndorsementClusterCache first = rows.get(0);
         int clusterCount = (int) rows.stream().mapToInt(EndorsementClusterCache::getClusterLabel).distinct().count();
 
-        List<ClusterMembershipResponseDTO.Memeber> memebers = rows.stream()
-            .map(r -> new ClusterMembershipResponseDTO.Memeber(
+        List<ClusterMembershipResponseDTO.Member> memebers = rows.stream()
+            .map(r -> new ClusterMembershipResponseDTO.Member(
                         r.getUserId(),r.getClusterLabel(),r.getInternalDegree(),r.getTotalDegree()))
                         .toList();
 
@@ -285,7 +286,7 @@ public class EndorsementClusterService {
                     neighbourCommunityWeight.addToValue(neighborComm, neighbourWeight[i][k]);
                 }
 
-                int bestComm = i;
+                int bestComm = n + i;
                 double bestGain = 0.0;
 
                 for(IntIntPair candidate: neighbourCommunityWeight.keyValuesView()) {

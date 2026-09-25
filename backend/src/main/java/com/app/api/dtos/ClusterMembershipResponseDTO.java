@@ -15,7 +15,7 @@ public record ClusterMembershipResponseDTO(
     LocalDateTime computedAt,
     UUID runId,
     int clusterCount,
-    List<Memeber> memebers 
+    List<Member> members 
 ) {
 
     /**
@@ -26,7 +26,7 @@ public record ClusterMembershipResponseDTO(
      * @param internalDegree summed endorsement weight to same-cluster neighbours
      * @param totalDegree    summed endorsement weight to all neighbours
      */
-    public record Memeber(Integer userId,int cluaterLabel,int internalDegree,int totalDegree) {
+    public record Member(Integer userId,int clusterLabel,int internalDegree,int totalDegree) {
 
     }
 }

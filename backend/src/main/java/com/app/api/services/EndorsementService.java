@@ -102,24 +102,6 @@ public class EndorsementService {
             this.helperAnalyticsRepository = helperAnalyticsRepository;
             this.adminRepository = adminRepository;
         }
-
-    // public User requireCurrentUser() {
-    //     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    //     if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
-    //         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Firebase ID token");
-    //     }
- 
-    public User requireCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Firebase ID token");
-        }
- 
-        String firebaseUid = auth.getName();
-        return userRepository.findByFirebaseUid(firebaseUid)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED, "No local user is registered for this token"));
-    }
     
 /**
  * Verifies the given user holds admin access at or above the required level.
@@ -139,10 +121,6 @@ public class EndorsementService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin access required");
         }
         return user;
-    }
-
-    public User requireAdmin() {
-        User user= req
     }
 
 /**
