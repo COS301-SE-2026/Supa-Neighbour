@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graphview/GraphView.dart';
 import 'package:shared/shared.dart';
+import 'endorsement_moderation_screen.dart';
 import '../../providers/service_providers.dart';
 
 class ZoneGraphScreen extends ConsumerStatefulWidget {
@@ -292,14 +293,16 @@ class _ZoneGraphScreenState extends ConsumerState<ZoneGraphScreen> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {
-                  // Navigator will be wired in Step 3
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Moderation screen coming next'),
-                      duration: Duration(seconds: 1),
+              onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const EndorsementModerationScreen(),
                     ),
                   );
+                  // Refresh the flagged count in case any were dismissed
+                  if (mounted) _loadData();
                 },
                 icon: Icon(
                   Icons.flag_outlined,
