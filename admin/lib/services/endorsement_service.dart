@@ -17,23 +17,18 @@ class EndorsementServiceException implements Exception {
 /// Interface for the admin endorsement service.
 /// Allows swapping between real and mock implementations.
 abstract class IEndorsementService {
-  /// Fetches the zone-wide endorsement graph for the current admin's zone.
-  Future<EndorsementGraph> getZoneGraph({
-    required String zoneId,
-    int depth = 3,
-  });
+  /// Fetches the endorsement graph for the admin's own zone.
+  /// Zone is resolved server-side from the admin's JWT.
+  Future<EndorsementGraph> getZoneGraph({int depth = 3});
 
-  /// Fetches all endorsements in a zone (used for admin insights).
-  Future<List<Endorsement>> getZoneEndorsements({
-    required String zoneId,
-    String? skillTag,
-  });
+  /// Fetches all endorsements in the admin's zone.
+  Future<List<Endorsement>> getZoneEndorsements({String? skillTag});
 
   /// Fetches flagged endorsement patterns (abuse detection).
   Future<List<SuspiciousEndorsement>> getSuspiciousPatterns();
 
-  /// Fetches cluster insights for a zone.
-  Future<ZoneInsights> getZoneInsights({required String zoneId});
+  /// Fetches cluster insights for the admin's zone.
+  Future<ZoneInsights> getZoneInsights();
 }
 
 class EndorsementService implements IEndorsementService {
@@ -80,14 +75,11 @@ class EndorsementService implements IEndorsementService {
   }
 
   @override
-  Future<EndorsementGraph> getZoneGraph({
-    required String zoneId,
-    int depth = 3,
-  }) async {
+  Future<EndorsementGraph> getZoneGraph({int depth = 3}) async {
     final token = await _requireToken();
     try {
       final response = await _dio.get(
-        '/api/admin/endorsements/zone/$zoneId/graph',
+        '/api/admin/endorsements/zone/graph',
         queryParameters: {'depth': depth},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
@@ -103,14 +95,11 @@ class EndorsementService implements IEndorsementService {
   }
 
   @override
-  Future<List<Endorsement>> getZoneEndorsements({
-    required String zoneId,
-    String? skillTag,
-  }) async {
+  Future<List<Endorsement>> getZoneEndorsements({String? skillTag}) async {
     final token = await _requireToken();
     try {
       final response = await _dio.get(
-        '/api/admin/endorsements/zone/$zoneId',
+        '/api/admin/endorsements/zone',
         queryParameters: {
           if (skillTag != null && skillTag.isNotEmpty) 'skillTag': skillTag,
         },
@@ -153,14 +142,13 @@ class EndorsementService implements IEndorsementService {
   }
 
   @override
-  Future<ZoneInsights> getZoneInsights({required String zoneId}) async {
+  Future<ZoneInsights> getZoneInsights() async {
     final token = await _requireToken();
     try {
       final response = await _dio.get(
-        '/api/admin/endorsements/zone/$zoneId/insights',
+        '/api/admin/endorsements/zone/insights',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-
       if (response.data is Map<String, dynamic>) {
         return ZoneInsights.fromJson(response.data as Map<String, dynamic>);
       }

@@ -2,6 +2,8 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/admin_application_service.dart';
+import '../services/endorsement_service.dart';
+
 
 /// Provider for the Admin Application service.
 ///
@@ -19,3 +21,9 @@ final adminApplicationServiceProvider = Provider<IAdminApplicationService>(
     //return AdminApplicationServiceMock();    
   },
 );
+
+// ENDORSEMENT SERVICE PROVIDER
+final adminEndorsementServiceProvider = Provider<IEndorsementService>((ref) {
+  return EndorsementService();
+  // Swap to EndorsementServiceMock() when built
+});
