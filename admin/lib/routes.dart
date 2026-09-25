@@ -12,6 +12,7 @@ import 'screens/settings/settings_screen.dart';
 import 'widgets/admin_scaffold.dart';
 import 'screens/applications/applications_screen.dart';
 import 'screens/applications/application_detail_screen.dart';
+import 'screens/endorsement/zone_graph_screen.dart';
 
 CustomTransitionPage _buildPageWithNoTransition(Widget child) {
   return CustomTransitionPage(
@@ -38,12 +39,14 @@ final router = GoRouter(
           selectedIndex = 1;
         } else if (location.startsWith('/users')) {
           selectedIndex = 2;
-        } else if (location.startsWith('/applications')) {
+        } else if (location.startsWith('/trust-graph')) {
           selectedIndex = 3;
-        } else if (location.startsWith('/zones')) {
+        } else if (location.startsWith('/applications')) {
           selectedIndex = 4;
-        } else if (location.startsWith('/settings')) {
+        } else if (location.startsWith('/zones')) {
           selectedIndex = 5;
+        } else if (location.startsWith('/settings')) {
+          selectedIndex = 6;
         }
         
         return AdminScaffold(
@@ -79,6 +82,13 @@ final router = GoRouter(
           name: 'users',
           pageBuilder: (context, state) => _buildPageWithNoTransition(
             const UsersScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/trust-graph',
+          name: 'trustGraph',
+          pageBuilder: (context, state) => _buildPageWithNoTransition(
+            const ZoneGraphScreen(),
           ),
         ),
         GoRoute(
@@ -119,6 +129,7 @@ final router = GoRouter(
 String _getTitle(String location) {
   if (location.startsWith('/reports')) return 'Reports Management';
   if (location.startsWith('/users')) return 'User Management';
+  if (location.startsWith('/trust-graph')) return 'Trust Graph';
   if (location.startsWith('/applications')) return 'Admin Applications';
   if (location.startsWith('/zones')) return 'Neighbourhood Zones';
   if (location.startsWith('/settings')) return 'Settings';
