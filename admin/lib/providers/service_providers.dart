@@ -2,7 +2,6 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/admin_application_service.dart';
-import '../services/admin_application_service_mock.dart';
 
 /// Provider for the Admin Application service.
 ///

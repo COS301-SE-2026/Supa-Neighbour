@@ -143,16 +143,21 @@ class _EndorsementGraphScreenState
     }
 
     for (final edge in graph.edges) {
-      final from = nodeMap[edge.endorserId];
-      final to = nodeMap[edge.endorseeId];
+      final from = nodeMap[edge.fromUserId];
+      final to = nodeMap[edge.toUserId];
       if (from == null || to == null) continue;
       gvGraph.addEdge(from, to);
     }
 
+    final configuration = FruchtermanReingoldConfiguration()
+    ..repulsionRate = 80   // higher = nodes pushed apart harder → longer edges
+    ..attractionRate = 0.1  // lower = less pull along edges → longer edges
+    ..iterations = 1000;
+
     return _BuiltGraph(
       graph: gvGraph,
       algorithm: FruchtermanReingoldAlgorithm(
-        FruchtermanReingoldConfiguration(),
+        configuration,
       ),
       modelNodeMap: modelNodeMap,
     );

@@ -67,7 +67,7 @@ public class EndorsementController {
      * @return 201 with the created endorsement and a {@code Location} header
      */
     @PostMapping
-    @Operation(summary = "Get all endorsements", description = "retrieves everything")
+    @Operation(summary = "Create an endorsements", description = "retrieves everything")
     @ApiResponse(responseCode = "201", description =" created successfully")
     public ResponseEntity<EndorsementResponseDTO> create(@RequestHeader("Authorization") String authHeader,@Valid @RequestBody CreateEndorsementRequestDTO request) {
         try {

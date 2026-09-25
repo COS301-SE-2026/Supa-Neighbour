@@ -10,7 +10,6 @@ import '../services/achievement_service.dart';
 import '../services/leaderboard_service.dart';
 import '../services/report_service.dart';
 import '../services/endorsement_service.dart';
-import '../services/endorsement_service_mock.dart';
 import '../services/admin_application_service.dart';
 import '../models/verification_model.dart';
 
@@ -79,6 +78,6 @@ final completionVerificationsProvider =
 //   need to comment out the mock line below
 //   then uncomment the real line
 final endorsementServiceProvider = Provider<IEndorsementService>((ref) {
-  // return EndorsementService();            // real
-  return EndorsementServiceMock();           // mock
+  return EndorsementService();            // real
+  //return EndorsementServiceMock();           // mock
 });

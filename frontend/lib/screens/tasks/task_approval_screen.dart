@@ -516,12 +516,20 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
         ),
       );
 
-      // Prompt for endorsement (non-blocking, user can skip)
+      final endorseeIdInt = int.tryParse(widget.task.helperId ?? '');
+      final taskIdInt = int.tryParse(widget.task.id);
+
+      if (endorseeIdInt == null || taskIdInt == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid task or helper ID')),
+        );
+        return;
+      }
       await EndorsementPromptSheet.show(
         context,
-        endorseeId: widget.task.helperId ?? '',
+        endorseeId:  endorseeIdInt,
         endorseeName: widget.task.helperName ?? 'this helper',
-        taskId: widget.task.id,
+        taskId: taskIdInt,
       );
 
       if (!context.mounted) return;

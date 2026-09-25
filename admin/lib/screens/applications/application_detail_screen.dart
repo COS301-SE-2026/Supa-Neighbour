@@ -78,9 +78,6 @@ class _ApplicationDetailScreenState
     setState(() => _isSubmitting = true);
 
     try {
-      final updated = await _service
-          .approveApplication(widget.applicationId);
-
       if (!mounted) return;
 
       _showSnack('Application approved successfully.', AppColors.success);
