@@ -8,6 +8,7 @@ import com.app.api.repositories.ReportRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -77,13 +78,13 @@ public class TrustScoreFeatureService {
      * Computes all six features for the helper identified by helperId and returns them as a TrustScoreFeatures
      * value object.
      *
-     * <p>If the helper does not exist or has no associated user record,
-     * a zero-feature object is returned (with reportPenalty = 1.0 to avoid unfairly penalising a helper with no data).
-     * </p>
+     * <p>Annotated with {@link Transactional} so the Hibernate session stays open
+     * when accessing lazy associations like {@code helper.getUserid()}.</p>
      *
      * @param helperId the unique id of the helper to evaluate
      * @return a fully populated TrustScoreFeatures instance
      */
+    @Transactional(readOnly = true)
     public TrustScoreFeatures computeFeatures(int helperId) {
         Helper helper = helperRepository.findById(helperId).orElse(null);
 
@@ -93,12 +94,24 @@ public class TrustScoreFeatureService {
 
         int userId = helper.getUserid().getUserid();
 
-        double completionRate = computeCompletionRate(helperId);
+        LocalDate recencyCutoff = LocalDate.now().minusDays(RECENCY_WINDOW_DAYS);
+
+        long totalCompletedAcrossAllHelpers = helperRepository.findAll().stream()
+                .mapToLong(h -> taskInvoiceRepository.countCompletedByHelperId(h.getHelperid()))
+                .sum();
+
+        long maxRecentAcrossAllHelpers = helperRepository.findAll().stream()
+                .mapToLong(h -> taskInvoiceRepository
+                        .countCompletedByHelperIdSince(h.getHelperid(), recencyCutoff))
+                .max()
+                .orElse(1L);
+
+        double completionRate    = computeCompletionRate(helperId);
         double ratingVolumeScore = computeRatingVolumeScore(userId);
-        double reportPenalty = computeReportPenalty(userId);
-        double recencyScore = computeRecencyScore(helperId);
-        double zoneActivity = computeZoneActivity(helperId);
-        double daysActive = computeDaysActive(helperId);
+        double reportPenalty     = computeReportPenalty(userId);
+        double recencyScore      = computeRecencyScore(helperId, maxRecentAcrossAllHelpers, recencyCutoff);
+        double zoneActivity      = computeZoneActivity(helperId, totalCompletedAcrossAllHelpers);
+        double daysActive        = computeDaysActive(helperId);
 
         return new TrustScoreFeatures(
                 helperId,
@@ -113,27 +126,76 @@ public class TrustScoreFeatureService {
     /**
      * Computes features for every helper currently registered and returns them as a list.
      *
-     * <p>This method is intended for the training pipeline, it builds the full feature matrix 
-     * over all helpers so the model can be trained or retrained on the latest data.
-     * </p>
+     * <p>Pre-computes shared totals (zone total completions, max recent tasks)
+     * once upfront so individual feature methods do not each call
+     * {@code helperRepository.findAll()} - doing so inside a loop caused
+     * N+1 query explosions that dropped the Azure DB connection.</p>
      *
      * @return list of TrustScoreFeatures, one per helper
      */
+    @Transactional(readOnly = true)
     public List<TrustScoreFeatures> computeAllFeatures() {
-        return helperRepository.findAll()
-                .stream()
-                .map(h -> computeFeatures(h.getHelperid()))
+        List<Helper> allHelpers = helperRepository.findAll();
+        if (allHelpers.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        LocalDate recencyCutoff = LocalDate.now().minusDays(RECENCY_WINDOW_DAYS);
+
+        long totalCompletedAcrossAllHelpers = allHelpers.stream()
+                .mapToLong(h -> taskInvoiceRepository.countCompletedByHelperId(h.getHelperid()))
+                .sum();
+
+        long maxRecentAcrossAllHelpers = allHelpers.stream()
+                .mapToLong(h -> taskInvoiceRepository
+                        .countCompletedByHelperIdSince(h.getHelperid(), recencyCutoff))
+                .max()
+                .orElse(1L);
+
+        return allHelpers.stream()
+                .map(h -> computeFeaturesWithTotals(
+                        h.getHelperid(),
+                        h,
+                        totalCompletedAcrossAllHelpers,
+                        maxRecentAcrossAllHelpers,
+                        recencyCutoff))
                 .toList();
     }
 
    
 
     /**
-     * Computes the task completion rate for a helper.
+     * Computes all six features for a single helper using pre-computed platform-wide totals.
+     * This avoids repeated {@code findAll()} calls inside the bulk computation loop.
      *
-     * <p>formula: completedTasks / totalTasks}. Returns 0.0 if the helper has no tasks at all 
-     * to simply avoid division by zero.
-     * </p>
+     * @param helperId the helper id
+     * @param helper the helper entity (already loaded)
+     * @param totalCompletedAcrossAllHelpers sum of completed tasks across all helpers
+     * @param maxRecentAcrossAllHelpers max recent completions by any single helper
+     * @param recencyCutoff the date cutoff for recency window
+     * @return a fully populated TrustScoreFeatures instance
+     */
+    private TrustScoreFeatures computeFeaturesWithTotals(int helperId, Helper helper,long totalCompletedAcrossAllHelpers, long maxRecentAcrossAllHelpers,LocalDate recencyCutoff) {
+
+        if (helper.getUserid() == null) {
+            return zeroFeatures(helperId);
+        }
+
+        int userId = helper.getUserid().getUserid();
+
+        double completionRate = computeCompletionRate(helperId);
+        double ratingVolumeScore = computeRatingVolumeScore(userId);
+        double reportPenalty = computeReportPenalty(userId);
+        double recencyScore = computeRecencyScore(helperId, maxRecentAcrossAllHelpers, recencyCutoff);
+        double zoneActivity = computeZoneActivity(helperId, totalCompletedAcrossAllHelpers);
+        double daysActive = computeDaysActive(helperId);
+
+        return new TrustScoreFeatures(helperId, completionRate, ratingVolumeScore,
+                reportPenalty, recencyScore, zoneActivity, daysActive);
+    }
+
+    /**
+     * Computes the task completion rate for a helper.
      *
      * @param helperId the helper id
      * @return completion rate in [0, 1]
@@ -214,57 +276,36 @@ public class TrustScoreFeatureService {
     }
 
     /**
-     * Computes the recency score for a helper.
-     *
-     * <p>Measures how active this helper has been in the last 30 days relative to the single most active helper 
-     * This prevents helpers who were once active but have gone dormant rrom retaining a high score indefinitely.
-     * </p>
+     * Computes the recency score for a helper using a pre-computed max.
      *
      * @param helperId the helper id
+     * @param maxRecentAcrossAllHelpers max completions in window by any helper
+     * @param since the recency window start date
      * @return recency score in [0, 1]
      */
-    private double computeRecencyScore(int helperId) {
-        LocalDate since = LocalDate.now().minusDays(RECENCY_WINDOW_DAYS);
-
+    private double computeRecencyScore(int helperId, long maxRecentAcrossAllHelpers, LocalDate since) {
         long recentTasks = taskInvoiceRepository
                 .countCompletedByHelperIdSince(helperId, since);
 
-        long maxRecent = helperRepository.findAll().stream()
-                .mapToLong(h -> taskInvoiceRepository
-                        .countCompletedByHelperIdSince(h.getHelperid(), since))
-                .max()
-                .orElse(1L);
-
-        if (maxRecent == 0) {
+        if (maxRecentAcrossAllHelpers == 0) {
             return 0.0;
         }
-
-        return clamp((double) recentTasks / maxRecent);
+        return clamp((double) recentTasks / maxRecentAcrossAllHelpers);
     }
 
     /**
-     * Computes the zone activity score for a helper.
+     * Computes the zone activity score using a pre-computed platform total.
      *
-     * <p>Measures the helper's share of all completed tasks. A helper who completes 30 out of 100 total tasks scores
-     * about 0.30. This rewards helpers who consistently contribute to their neighbourhood.
-     * </p>
-     *
-     * @param helperId the helper id
+     * @param helperId                       the helper id
+     * @param totalCompletedAcrossAllHelpers total completed tasks across all helpers
      * @return zone activity score in [0, 1]
      */
-    private double computeZoneActivity(int helperId) {
-        long helperCompleted = taskInvoiceRepository.countCompletedByHelperId(helperId);
-
-        long totalCompleted  = helperRepository.findAll().stream()
-                .mapToLong(h -> taskInvoiceRepository
-                        .countCompletedByHelperId(h.getHelperid()))
-                .sum();
-
-        if (totalCompleted == 0) {
+    private double computeZoneActivity(int helperId, long totalCompletedAcrossAllHelpers) {
+        if (totalCompletedAcrossAllHelpers == 0) {
             return 0.0;
         }
-
-        return clamp((double) helperCompleted / totalCompleted);
+        long helperCompleted = taskInvoiceRepository.countCompletedByHelperId(helperId);
+        return clamp((double) helperCompleted / totalCompletedAcrossAllHelpers);
     }
 
     /**

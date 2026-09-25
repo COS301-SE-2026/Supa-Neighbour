@@ -8,9 +8,11 @@ import com.app.api.repositories.HelperRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +43,7 @@ public class TrustScoreTrainer {
     private static final double LEARNING_RATE = 0.01;
     private static final int EPOCHS = 100;
     private static final double TRAIN_SPLIT = 0.80;
-    private static final double TRUSTED_COMPLETION_THRESHOLD = 0.75;
+    private static final double TRUSTED_COMPLETION_THRESHOLD = 0.60;
     private static final double TRUSTED_REPORT_THRESHOLD = 0.80;
     private static final double UNTRUSTED_COMPLETION_THRESHOLD = 0.40;
     private static final double UNTRUSTED_REPORT_THRESHOLD = 0.60;
@@ -51,6 +53,7 @@ public class TrustScoreTrainer {
     private final TrustScoreModel model;
     private final HelperRepository helperRepository;
     private final HelperAnalyticsRepository helperAnalyticsRepository;
+    private final ApplicationContext applicationContext;
 
     /**
      * Constructs the trainer with all required dependencies.
@@ -61,11 +64,13 @@ public class TrustScoreTrainer {
      * @param helperAnalyticsRepository used to persist updated trust scores
      */
     public TrustScoreTrainer(TrustScoreFeatureService featureService, TrustScoreModel model,
-            HelperRepository helperRepository, HelperAnalyticsRepository helperAnalyticsRepository) {
+            HelperRepository helperRepository, HelperAnalyticsRepository helperAnalyticsRepository,
+            ApplicationContext applicationContext) {
         this.featureService = featureService;
         this.model = model;
         this.helperRepository = helperRepository;
         this.helperAnalyticsRepository = helperAnalyticsRepository;
+        this.applicationContext = applicationContext;
     }
 
     /**
@@ -77,7 +82,11 @@ public class TrustScoreTrainer {
     @EventListener(ApplicationReadyEvent.class)
     public void runOnStartup() {
         log.info("TrustScoreTrainer: running initial training pass on startup.");
-        runFullPipeline();
+        try {
+            applicationContext.getBean(TrustScoreTrainer.class).runFullPipeline();
+        } catch (Exception e) {
+            log.error("TrustScoreTrainer: pipeline failed — {}", e.getMessage(), e);
+        }
     }
 
     /**
@@ -89,15 +98,21 @@ public class TrustScoreTrainer {
     @Scheduled(cron = "0 0 2 * * *")
     public void runScheduled() {
         log.info("TrustScoreTrainer: running scheduled daily retraining.");
-        runFullPipeline();
+        try {
+            applicationContext.getBean(TrustScoreTrainer.class).runFullPipeline();
+        } catch (Exception e) {
+            log.error("TrustScoreTrainer: scheduled pipeline failed — {}", e.getMessage(), e);
+        }
     }
 
 
     ////////////////////// { Pipeline } \\\\\\\\\\\\\\\\\\\\\\\
     /**
      * Executes all six steps of the trust score pipeline in order.
+     *
      */
-    private void runFullPipeline() {
+    @Transactional
+    public void runFullPipeline() {
         List<TrustScoreFeatures> allFeatures = featureService.computeAllFeatures();
 
         if (allFeatures.isEmpty()) {
@@ -164,8 +179,7 @@ public class TrustScoreTrainer {
 
         for (TrustScoreFeatures f : allFeatures) {
             boolean trusted = f.getCompletionRate() >= TRUSTED_COMPLETION_THRESHOLD
-                           && f.getReportPenalty() >= TRUSTED_REPORT_THRESHOLD
-                           && f.getDaysActive() >  0.0;
+                           && f.getReportPenalty() >= TRUSTED_REPORT_THRESHOLD;
 
             boolean notTrusted = f.getCompletionRate() < UNTRUSTED_COMPLETION_THRESHOLD
                               || f.getReportPenalty() < UNTRUSTED_REPORT_THRESHOLD;
@@ -218,9 +232,11 @@ public class TrustScoreTrainer {
                 ? 2 * precision * recall / (precision + recall)
                 : 0.0;
 
-        log.info("TrustScoreTrainer: evaluation on {} test samples, "
-                + "Precision={:.3f}, Recall={:.3f}, F1={:.3f}",
-                testSet.size(), precision, recall, f1);
+        log.info("TrustScoreTrainer: evaluation on {} test samples, Precision={}, Recall={}, F1={}",
+                testSet.size(),
+                String.format("%.3f", precision),
+                String.format("%.3f", recall),
+                String.format("%.3f", f1));
     }
 
     ///////////////// { Score persistence } \\\\\\\\\\\\\\\\\\\\\
@@ -271,8 +287,10 @@ public class TrustScoreTrainer {
                 helperAnalyticsRepository.save(newRecord);
             }
 
-            log.debug("TrustScoreTrainer: helper {} → rawScore={:.4f}, scaledScore={:.2f}",
-                    helperId, rawScore, scaledScore);
+            log.debug("TrustScoreTrainer: helper {} — rawScore={}, scaledScore={}",
+                    helperId,
+                    String.format("%.4f", rawScore),
+                    String.format("%.2f", scaledScore));
         }
 
         log.info("TrustScoreTrainer: trust scores persisted successfully.");

@@ -156,7 +156,7 @@ public class TrustScoreModel {
 
             if (epoch % 10 == 0) {
                 double cost = computeCost(samples, localWeights, localBias);
-                log.info("TrustScoreModel: epoch {} — cost={:.6f}", epoch, cost);
+                log.info("TrustScoreModel: epoch {} — cost={}", epoch, String.format("%.6f", cost));
             }
         }
 
