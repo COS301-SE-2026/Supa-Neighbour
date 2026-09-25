@@ -21,6 +21,7 @@ class _ZoneGraphScreenState extends ConsumerState<ZoneGraphScreen> {
   ZoneInsights? _insights;
   bool _isLoading = true;
   String? _errorMessage;
+  int _flaggedPatternCount = 0;
 
   // graphview objects, built once per data change, not per build.
   Graph? _gvGraph;
@@ -46,17 +47,20 @@ class _ZoneGraphScreenState extends ConsumerState<ZoneGraphScreen> {
       final results = await Future.wait([
         service.getZoneGraph(depth: _graphDepth),
         service.getZoneInsights(),
+        service.getSuspiciousPatterns(),
       ]);
 
       if (!mounted) return;
 
       final graph = results[0] as EndorsementGraph;
       final insights = results[1] as ZoneInsights;
+      final flagged = results[2] as List<SuspiciousEndorsement>;
       final built = _buildGraphViewGraph(graph);
 
       setState(() {
         _graph = graph;
         _insights = insights;
+        _flaggedPatternCount = flagged.length;
         _gvGraph = built.graph;
         _gvAlgorithm = built.algorithm;
         _modelNodeMap = built.modelNodeMap;
@@ -279,6 +283,83 @@ class _ZoneGraphScreenState extends ConsumerState<ZoneGraphScreen> {
                   fontSize: 13,
                 ),
               ),
+
+            const SizedBox(height: 24),
+            const Divider(height: 1),
+            const SizedBox(height: 16),
+
+            // Flagged patterns button with badge
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  // Navigator will be wired in Step 3
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Moderation screen coming next'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                },
+                icon: Icon(
+                  Icons.flag_outlined,
+                  size: 16,
+                  color: _flaggedPatternCount > 0
+                      ? AppColors.error
+                      : AppColors.textGrey,
+                ),
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'View Flagged',
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.openSans(
+                          color: _flaggedPatternCount > 0
+                              ? AppColors.error
+                              : AppColors.textGrey,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    if (_flaggedPatternCount > 0) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '$_flaggedPatternCount',
+                          style: GoogleFonts.openSans(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(
+                    color: _flaggedPatternCount > 0
+                        ? AppColors.error
+                        : AppColors.textGrey,
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -311,7 +392,7 @@ class _ZoneGraphScreenState extends ConsumerState<ZoneGraphScreen> {
         ],
       ),
     );
-  }//
+  }
 
   Widget _buildErrorState() {
     return Center(
