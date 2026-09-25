@@ -22,6 +22,17 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
 
+  flyway:
+    enabled: true
+    # The schema already exists (built by hand, not by Flyway). baseline-on-migrate
+    # tells Flyway to record the CURRENT schema as a starting point the first time
+    # it runs, instead of trying to run migrations that assume an empty database.
+    baseline-on-migrate: true
+    # Flyway only runs migrations with a version number strictly greater than the
+    # baseline. baseline-version: 0 means "everything up to now is the baseline",
+    # so a first migration named V1__... is the first thing Flyway actually runs.
+    baseline-version: 0
+    
 supaneighbour:
   vision:
     mode: gemini
@@ -47,6 +58,9 @@ supaneighbour:
       needs-review: 0.45
     max-upload-bytes: 12582912
     allowed-mime: ["image/jpeg", "image/png"]
+
+
+
 
 google:
   oauth:

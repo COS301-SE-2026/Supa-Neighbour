@@ -126,6 +126,26 @@
 			<artifactId>google-api-services-calendar</artifactId>
 			<version>v3-rev20260708-2.0.0</version>
 		</dependency>
+				<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+ 
+		<!-- Flyway — schema migrations -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+		</dependency>
+		<!-- Eclipse Collections — primitive -->
+		<dependency>
+			<groupId>org.eclipse.collections</groupId>
+			<artifactId>eclipse-collections</artifactId>
+			<version>13.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
