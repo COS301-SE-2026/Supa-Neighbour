@@ -34,7 +34,7 @@ supaneighbour:
       outcome: complete       # unused while mode is gemini, but harmless to leave
     gemini:
       api-key: ${GEMINI_API_KEY:}
-      model: gemini-2.0-flash
+      model: gemini-flash-latest
       max-image-edge-px: 1600                  # downscale before sending (see §5.1)
       timeout-seconds: 30
   verification:

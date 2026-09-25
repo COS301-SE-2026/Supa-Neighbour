@@ -110,6 +110,30 @@ public class Task {
     private Double taskLng;
 
 
+    @Column(name = "google_calendar_event_id_helper")
+    private String googleCalendarEventIdHelper;
+
+    @Column(name = "google_calendar_event_id_dependent")
+    private String googleCalendarEventIdDependent;
+
+    /**
+     * Gets the Google Calendar event ID for the helper.
+     *
+     * @return the helper Google Calendar event ID
+     */
+    public String getGoogleCalendarEventIdHelper() {
+        return googleCalendarEventIdHelper;
+    }
+
+    /**
+     * Sets the Google Calendar event ID for the helper.
+     *
+     * @param googleCalendarEventIdHelper the helper Google Calendar event ID
+     */
+    public void setGoogleCalendarEventIdHelper(String googleCalendarEventIdHelper) {
+        this.googleCalendarEventIdHelper = googleCalendarEventIdHelper;
+    }
+
     /**
      * Default constructor required by JPA.
      */

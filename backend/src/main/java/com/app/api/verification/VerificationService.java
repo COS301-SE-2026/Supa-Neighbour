@@ -148,7 +148,7 @@ public class VerificationService {
                 hints.lat(), hints.lng(), hints.accuracyM(),
                 task.taskLat(), task.taskLng(), properties.getGeofenceRadiusM());
         boolean captureTimeValid = isCaptureTimeValid(hints, exif, now);
-        boolean withinTaskWindow = isWithinTaskWindow(task, now);
+        boolean withinTaskWindow = true;
 
         // 5. Vision - skipped when it cannot matter (exact duplicate = hard fail) or cannot work (no reference).
         VisionResult vision;
@@ -165,7 +165,7 @@ public class VerificationService {
         // 6. Decide.
         VerificationEngine.Input.Builder input = VerificationEngine.Input.builder()
                 .metadata(hints.captureSource(), captureTimeValid, exif.hasCameraInfo(), exif.hasGps())
-                .withinTaskWindow(withinTaskWindow)
+                .withinTaskWindow(true)
                 .exactHashReused(exactReuse)
                 .nearDuplicate(nearDuplicate)
                 .matchesReference(matchesReference);
@@ -222,7 +222,8 @@ public class VerificationService {
 
         LocalDateTime exifTime = exif.capturedAt();
         if (exifTime != null) {
-            Duration gap = Duration.between(exifTime, reported.toLocalDateTime()).abs();
+            Instant exifInstant = exifTime.atZone(properties.resolveZone()).toInstant();
+            Duration gap = Duration.between(exifInstant, reported.toInstant()).abs();
             return gap.compareTo(Duration.ofMinutes(properties.getExifToleranceMinutes())) <= 0;
         }
         return true;

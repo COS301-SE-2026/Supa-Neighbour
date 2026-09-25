@@ -1,6 +1,7 @@
 package com.app.api.repositories;
 
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -21,4 +22,15 @@ public interface TaskVerificationRepository extends JpaRepository<TaskVerificati
      * @return the newest verification, or empty if none exists
      */
     Optional<TaskVerification> findFirstByTask_TaskidOrderByCreatedAtDesc(int taskId);
+
+    /**
+     * Returns all TaskVerifications for the given task ID, ordered by
+     * createdAt ascending, then verificationId ascending.
+     *
+     * @param taskId the task ID to filter by
+     * @return matching TaskVerifications; never null, possibly empty
+     */
+    List<TaskVerification> findByTask_TaskidOrderByCreatedAtAscVerificationIdAsc(int taskId);
+
+
 }

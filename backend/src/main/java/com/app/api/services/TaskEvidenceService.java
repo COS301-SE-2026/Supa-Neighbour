@@ -34,6 +34,7 @@ import com.app.api.verification.VerificationService.TaskFacts;
 import com.app.api.vision.VisionResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service 
 public class TaskEvidenceService {
@@ -126,6 +127,9 @@ public class TaskEvidenceService {
 
 
         Outcome outcome = verificationService.evaluateCompletion(toFacts(task), new Evidence(photo, reference, clientHints, sha256Stored, otherHashes));
+
+        LOG.info("Vision for task {}: available={}, detail={}",
+            taskId, outcome.vision().available(), outcome.vision()); // or the detail accessor
 
         String imageUrl = sha256Stored ? null : blobStorageService.uploadTaskImage(file);
         TaskVerification saved = save(task, outcome, clientHints, imageUrl);
@@ -279,5 +283,25 @@ public class TaskEvidenceService {
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Could not serialise to JSON", e);
         }
+    }
+
+    /**
+     * Applies the requester's decision to all verification rows for the given task,
+     * and marks the task as {@code disputed} if the decision is DISPUTE.
+     *
+     * @param task     the task being decided
+     * @param decision the resident's decision (CONFIRM or DISPUTE)
+     * @param note     optional note explaining the decision
+     */
+    @Transactional
+    public void recordDecision(TaskInvoice task, TaskVerification.ResidentDecision decision, String note) {
+        List<TaskVerification> rows = taskVerificationRepository
+            .findByTask_TaskidOrderByCreatedAtAscVerificationIdAsc(task.getTaskid());
+
+        for (TaskVerification v : rows) {
+            v.setResidentDecision(decision);
+            v.setDecisonNote(note); 
+        }
+        taskVerificationRepository.saveAll(rows);
     }
 }

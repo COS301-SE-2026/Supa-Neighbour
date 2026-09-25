@@ -12,6 +12,7 @@ import '../services/report_service.dart';
 import '../services/endorsement_service.dart';
 import '../services/endorsement_service_mock.dart';
 import '../services/admin_application_service.dart';
+import '../models/verification_model.dart';
 
 // AUTH SERVICE PROVIDER
 final authServiceProvider = Provider<IAuthService>((ref) {
@@ -68,6 +69,10 @@ final adminApplicationServiceProvider = Provider<IAdminApplicationService>((ref)
   return AdminApplicationService();
 });
 
+final completionVerificationsProvider =
+    FutureProvider.autoDispose.family<List<VerificationResult>, int>((ref, taskId) {
+  return ref.read(taskServiceProvider).getCompletionVerifications(taskId);
+});
 // ENDORSEMENT SERVICE PROVIDER
 // Currently returns the mock so the UI works before the backend is deployed.
 // To switch to the real service:

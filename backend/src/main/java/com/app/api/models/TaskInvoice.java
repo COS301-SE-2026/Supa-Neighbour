@@ -111,7 +111,8 @@ public class TaskInvoice {
 
     /** The task longitude in decimal degrees, or {@code null} if not set. */
     @Column(name = "task_lng")
-    private Double taskLng;
+    private Double taskLng; 
+
     @Column(name = "google_calendar_event_id_helper")
     private String googleCalendarEventIdHelper;
 

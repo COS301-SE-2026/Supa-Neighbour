@@ -47,12 +47,20 @@ public class HelperTasksService {
         this.blobStorageService = blobStorageService;
     }
 
-    private Map<Integer, List<String>> fetchPhotosByTaskIds(List<Integer> taskIds){
+    /**
+     * Fetches completion photos for the given task IDs, grouped by task ID and
+     * returned as freshly generated SAS URLs.
+     *
+     * @param taskIds the task IDs to fetch photos for; an empty list returns an empty map
+     * @return a map of task ID to list of SAS URLs; empty if no photos are found
+     */
+    public Map<Integer, List<String>> fetchPhotosByTaskIds(List<Integer> taskIds){
         if(taskIds.isEmpty()){
             return Map.of();
         }
 
-        List<TaskImage> images = taskImageRepo.findByTaskid_TaskidIn(taskIds);
+        List<TaskImage> images =
+        taskImageRepo.findByTaskid_TaskidInAndImageType(taskIds, "COMPLETION");
         Map<Integer, List<String>> photosByTask = new HashMap<>();
 
         for(TaskImage image : images){

@@ -10,6 +10,7 @@ import '../../models/auth_session.dart';
 import '../../constants/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import '../../services/task_service.dart';
 
 
 class CreateTaskScreen extends ConsumerStatefulWidget {
@@ -23,6 +24,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
   // Form controllers
   final _titleController = TextEditingController();
   final _instructionsController = TextEditingController();
+  String _submitStatus = '';
 
   // Selected values
   String? _selectedCategory;
@@ -53,6 +55,19 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
     _titleController.dispose();
     _instructionsController.dispose();
     super.dispose();
+  }
+
+  Future<List<String>> _uploadImages() async {
+    final taskService = ref.read(taskServiceProvider);
+
+    final urls = await Future.wait(
+      _selectedImages.map((file) => taskService.uploadTaskImage(XFile(file.path))),
+    );
+
+    if (urls.any((u) => u == null || u.isEmpty)) {
+      throw Exception('One or more photos failed to upload. Please try again.');
+    }
+    return urls.cast<String>();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -497,7 +512,10 @@ Future<void> _submitTask() async {
       return;
     }
 
-    setState(() => _isSubmit = true);
+    setState(() {
+      _isSubmit = true;
+      _submitStatus = 'Uploading photos...';
+    });
 
     try {
        final taskService = ref.read(taskServiceProvider);
@@ -511,6 +529,8 @@ Future<void> _submitTask() async {
           }
           return;
         }
+
+        final imageUrls = await _uploadImages();
 
         final createdTask = await taskService.createTask(
           dependentId: dependentId,
@@ -529,11 +549,18 @@ Future<void> _submitTask() async {
           instructions: _instructionsController.text.trim().isEmpty
               ? null
               : _instructionsController.text.trim(),
+          taskLat: _location!.latitude,
+          taskLng: _location!.longitude,
         );
 
 
       final taskId = int.tryParse(createdTask.id);
       if (taskId != null) {
+        await taskService.saveTaskImages(
+          taskId,
+          imageUrls,
+          type: TaskImageType.reference,
+        );
         taskService.matchHelpersForTask(taskId);
       }
       if (mounted) {
@@ -1080,14 +1107,26 @@ Future<void> _submitTask() async {
                   disabledBackgroundColor: AppColors.surfaceGrey(context),
                 ),
                 child: _isSubmit
-                    ? const SizedBox(
+                    ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [ const SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
                           color: Colors.white,
                           strokeWidth: 2,
                         ),
-                      )
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        _submitStatus,
+                        style: GoogleFonts.openSans(
+                          fontSize:14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      ],
+                    )
                     : Text(
                         'Post Task',
                         style: GoogleFonts.openSans(

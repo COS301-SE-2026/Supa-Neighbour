@@ -54,4 +54,14 @@ public interface TaskImageRepository extends JpaRepository<TaskImage, Integer> {
             + "where i.imageType = 'COMPLETION' and i.perceptualHash is not null and i.taskid.taskid <> :taskId"
     )
     List<Long> findCompletionPerceptualHashesExcludingTask(@Param("taskId") int taskId); 
+
+    /**
+     * Returns all TaskImages whose task's ID is in {@code taskIds} and whose
+     * image type equals {@code imageType}.
+     *
+     * @param taskIds   task IDs to filter by; empty list yields no results
+     * @param imageType image type to filter by
+     * @return matching TaskImages; never null, possibly empty
+     */
+    List<TaskImage> findByTaskid_TaskidInAndImageType(List<Integer> taskIds, String imageType);
 }

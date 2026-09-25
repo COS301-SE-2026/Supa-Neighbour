@@ -148,6 +148,14 @@ class GeminiVisionClientTest {
                 GeminiVisionClient.outcomeFor(responseException(500, "internal error")));
     }
 
+    @Test
+    void blankApiKeyFailsFast() {
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> GeminiVisionClient.requireApiKey("   "));
+
+        assertTrue(ex.getMessage().contains("GEMINI_API_KEY"));
+    }
+
     // ---------------------------------------------------------------- downscaling
 
     @Test
