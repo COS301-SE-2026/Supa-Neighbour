@@ -17,7 +17,7 @@ import lombok.Data;
 @Builder
 @Entity
 @Table(name = "location_table")
-public class Location {
+public class Location { 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
