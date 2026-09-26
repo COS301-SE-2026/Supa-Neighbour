@@ -8,7 +8,7 @@ import '../../constants/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 import '../leaderboard/helper_profile_preview_screen.dart';
-import '../reports/report_screen.dart';
+import '../reports/report_screen.dart'; 
 
 class ChatDetailScreen extends ConsumerStatefulWidget {
   final ChatThread chat;
@@ -252,7 +252,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   }
 
   /// Opens the unified ReportScreen for the other user in this chat.
-  void _reportUser() {
+  void _reportChat() {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -337,7 +337,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             icon: const Icon(Icons.more_vert, color: Colors.white),
             onSelected: (value) {
               if (value == 'report') {
-                _reportUser();
+                _reportChat();
               }
             },
             itemBuilder: (context) => [
@@ -349,7 +349,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                         size: 20, color: AppColors.error(context)),
                     const SizedBox(width: 10),
                     Text(
-                      'Report user',
+                      'Report Chat',
                       style: GoogleFonts.openSans(
                         color: AppColors.charcoal(context),
                       ),

@@ -78,6 +78,8 @@ class _ApplicationDetailScreenState
     setState(() => _isSubmitting = true);
 
     try {
+      await _service.approveApplication(widget.applicationId);
+
       if (!mounted) return;
 
       _showSnack('Application approved successfully.', AppColors.success);
@@ -102,7 +104,7 @@ class _ApplicationDetailScreenState
     setState(() => _isSubmitting = true);
 
     try {
-      final updated = await _service.rejectApplication(
+       await _service.rejectApplication(
         widget.applicationId,
         rejectionReason: reason.isEmpty ? null : reason,
       );
