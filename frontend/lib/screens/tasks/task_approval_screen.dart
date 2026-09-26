@@ -7,6 +7,9 @@ import '../../constants/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import 'package:supa_neighbour/models/verification_model.dart';
+import '../../screens/tasks/task_report_screen.dart';
+import '../endorsement/endorsement_prompt_sheet.dart';
 
 class TaskApprovalScreen extends ConsumerStatefulWidget {
   final Task task;
@@ -327,6 +330,58 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
                 ],
               ),
             const SizedBox(height: 24),
+            Consumer(
+              builder: (context, ref, _) {
+                final v = ref.watch(completionVerificationsProvider(
+                    int.tryParse(widget.task.id) ?? -1));
+                return v.maybeWhen(
+                  data: (list) => list.isEmpty
+                      ? const SizedBox.shrink()
+                      : Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: _buildChecksSummary(context, list),
+                        ),
+                  orElse: () => const SizedBox.shrink(),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TaskReportScreen(
+                            taskId: int.parse(widget.task.id),
+                            taskTitle: widget.task.title,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.flag_outlined, color: AppColors.error(context)),
+                    label: Text(
+                      'Report Task',
+                      style: GoogleFonts.openSans(
+                        color: AppColors.error(context),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppColors.error(context)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
             Divider(color: AppColors.surfaceGrey(context)),
             const SizedBox(height: 16),
             Text(
@@ -433,8 +488,16 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
 
     final taskService = ref.read(taskServiceProvider);
     try {
+      final taskService = ref.read(taskServiceProvider);
+      final taskId = int.parse(widget.task.id);
+
+      await taskService.submitCompletionDecision(
+        taskId: taskId,
+        decision: 'CONFIRM',
+      );
+
       await taskService.updateTask(
-        taskId: int.parse(widget.task.id),
+        taskId: taskId,
         status: 'completed',
         dependentRatingId: _reviewController.text.isNotEmpty
             ? _reviewController.text
@@ -462,17 +525,31 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
             : null,
       );
 
+      ref.invalidate(completionVerificationsProvider(taskId));
       Task.updateTaskStatus(widget.task.id, 'completed');
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Task approved! XP awarded to helper.'),
-            backgroundColor: Color(0xFF4CAF50),
-          ),
-        );
-        Navigator.pop(context);
-      }
+      if (!context.mounted) return;
+
+      // Show success snackbar first
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Task approved! XP awarded to helper.'),
+          backgroundColor: Color(0xFF4CAF50),
+        ),
+      );
+
+      // Prompt for endorsement (non-blocking, user can skip)
+      await EndorsementPromptSheet.show(
+        context,
+        endorseeId: widget.task.helperId ?? '',
+        endorseeName: widget.task.helperName ?? 'this helper',
+        taskId: widget.task.id,
+      );
+
+      if (!context.mounted) return;
+      Navigator.pop(context);
+
+
     } on Exception catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -488,6 +565,63 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  Widget _buildChecksSummary(BuildContext context, List<VerificationResult> list) {
+    final verified = list.where((r) => r.status == 'VERIFIED').length;
+    final allGood = verified == list.length;
+    final color =
+        allGood ? AppColors.primaryTeal(context) : const Color(0xFFFF9800);
+    final loc = list.firstWhere(
+      (r) => r.locationVerified != null,
+      orElse: () => list.first,
+    );
+    final insight = list
+        .map((r) => r.aiInsight)
+        .firstWhere((i) => i != null, orElse: () => null);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            allGood
+                ? 'Automatic checks passed'
+                : 'Please review these photos carefully',
+            style: GoogleFonts.poppins(
+              color: AppColors.charcoal(context),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          if (loc.locationVerified != null)
+            Text(
+              loc.locationVerified!
+                  ? 'Photos were taken at your task location.'
+                  : 'Photos were taken ${loc.distanceM?.round() ?? '?'} m from your task location.',
+              style: GoogleFonts.openSans(
+                  color: AppColors.charcoal(context), fontSize: 13),
+            ),
+          if (insight != null)
+            Text(
+              insight,
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   IconData _getCategoryIcon(String category) {

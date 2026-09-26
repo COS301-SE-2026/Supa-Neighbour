@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared/shared.dart' hide AppColors, UserProfileResponse;
 import '../../constants/app_colors.dart';
 import '../../constants/skill_options.dart';
 import '../../constants/badge_visuals.dart';
@@ -7,12 +8,15 @@ import 'package:supa_neighbour/screens/profile/achievements_screen.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
 import '../auth/splash_screen.dart';
 import '../../models/user_profile_response.dart';
+import '../../models/trust_score_breakdown.dart';
 import '../profile/privacy_settings_screen.dart';
 import '../help/help_menu_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 import 'edit_profile_screen.dart' show EditUsernameScreen;
 import 'admin_application_screen.dart';
+import '../../widgets/endorsement/trust_network_card.dart';
+import '../endorsement/endorsement_graph_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -27,6 +31,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   String? _errorMessage;
 
   List<String> _localSkillEdits = [];
+  EndorsementSummary? _endorsementSummary;
+  bool _isLoadingEndorsements = false;
+  TrustScoreBreakdown? _trustScore;
+  bool _isLoadingTrustScore = false;
+  bool _isTrustExpanded = false;
 
   @override
   void initState() {
@@ -35,24 +44,70 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
-    
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try{
-       final profileService = ref.read(profileServiceProvider);
+      final profileService = ref.read(profileServiceProvider);
       final profile = await profileService.getMyProfile();
       setState(() {
         _profile = profile;
         _localSkillEdits = List.from(profile.skills);
         _isLoading = false;
       });
+      // Load endorsement summary in parallel (non-blocking)
+      _loadEndorsementSummary();
+      _loadTrustScore(profile.userId);
     }catch(e){
       setState((){
         _errorMessage = 'Failed to load profile. Please try again.';
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadEndorsementSummary() async {
+    if (!mounted) return;
+    setState(() => _isLoadingEndorsements = true);
+
+    try {
+      final service = ref.read(endorsementServiceProvider);
+      final summary = await service.getMySummary();
+      if (!mounted) return;
+      setState(() {
+        _endorsementSummary = summary;
+        _isLoadingEndorsements = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _endorsementSummary = EndorsementSummary.empty();
+        _isLoadingEndorsements = false;
+      });
+    }
+  }
+
+  // Production: calls the real /api/helpers/{userId}/trust-score endpoint.
+  Future<void> _loadTrustScore(int userId) async {
+    if (!mounted) return;
+    setState(() => _isLoadingTrustScore = true);
+
+    try {
+      final service = ref.read(helperProfileServiceProvider);
+      final data = await service.getTrustScore(userId);
+      if (!mounted) return;
+      setState(() {
+        _trustScore = data;
+        _isLoadingTrustScore = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _trustScore = null;
+        _isLoadingTrustScore = false;
       });
     }
   }
@@ -84,7 +139,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     if (hasHalfStar) {
-      stars.add( Icon(
+      stars.add(Icon(
         Icons.star_half,
         size: 14,
         color: AppColors.citrusYellow(context),
@@ -101,6 +156,154 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     return stars;
+  }
+
+  Widget _buildTrustBreakdown(BuildContext context) {
+    final score = _trustScore;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.background(context),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.primaryTeal(context).withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              setState(() => _isTrustExpanded = !_isTrustExpanded);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.insights_outlined,
+                    size: 16,
+                    color: AppColors.primaryTeal(context),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Trust Breakdown',
+                    style: GoogleFonts.openSans(
+                      color: AppColors.charcoal(context),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (_isLoadingTrustScore)
+                    SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.primaryTeal(context),
+                      ),
+                    )
+                  else
+                    Icon(
+                      _isTrustExpanded
+                          ? Icons.expand_less
+                          : Icons.expand_more,
+                      color: AppColors.textGrey(context),
+                      size: 20,
+                    ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedCrossFade(
+            duration: const Duration(milliseconds: 200),
+            crossFadeState: _isTrustExpanded
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            firstChild: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: score == null
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text(
+                        'Trust breakdown is not available yet.',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.textGrey(context),
+                          fontSize: 12,
+                        ),
+                      ),
+                    )
+                  : Column(
+                      children: score.features
+                          .map((e) =>
+                              _buildFeatureBar(context, e.key, e.value))
+                          .toList(),
+                    ),
+            ),
+            secondChild: const SizedBox(width: double.infinity),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureBar(BuildContext context, String label, double value) {
+    final clamped = value.clamp(0.0, 1.0);
+
+    Color barColor;
+    if (clamped >= 0.7) {
+      barColor = AppColors.success(context);
+    } else if (clamped >= 0.4) {
+      barColor = AppColors.citrusYellow(context);
+    } else {
+      barColor = AppColors.error(context);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 108,
+            child: Text(
+              label,
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal(context),
+                fontSize: 11,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: clamped,
+                minHeight: 8,
+                backgroundColor: AppColors.surfaceGrey(context),
+                valueColor: AlwaysStoppedAnimation<Color>(barColor),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 34,
+            child: Text(
+              '${(clamped * 100).toStringAsFixed(0)}%',
+              textAlign: TextAlign.right,
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showEditSkillsDialog() {
@@ -155,39 +358,51 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               TextButton(onPressed: isSaving ? null : () async{
                 setDialogState (() => isSaving = true);
 
-                try{
-                  final profileService = ref.read(profileServiceProvider);
-                  final response = await profileService.updateSkills(selectedSkills.toList());
-
-                  setState (() {
-                    _localSkillEdits = response.skills ?? selectedSkills.toList();
-                    _profile = UserProfileResponse(
-                      userId: _profile!.userId, 
-                      displayName: response.displayName, 
-                      neighbourhood:_profile!.neighbourhood, 
-                      level: _profile!.level,
-                      currentXp: _profile!.currentXp, 
-                      trustScore: _profile!.trustScore,
-                      skills: _profile!.skills,
-                      achievements: _profile!.achievements,
-                      recentTasks: _profile!.recentTasks,
-                      completedTasks: _profile!.completedTasks,
-                      activeTasks: _profile!.activeTasks,
-                      createdTasks: _profile!.createdTasks,
-                    );
-                  });
-                  if(dialogContext.mounted) Navigator.pop(dialogContext);
-                }catch(e){
-                  setDialogState(() => isSaving = false);
-                  if(dialogContext.mounted){
-                    ScaffoldMessenger.of(dialogContext).showSnackBar(
-                      const SnackBar(content: Text('Failed to update skills. Please try again.')),
-                    );
-                  }
-                }
-              },
-              child: isSaving ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth:2))
-              : Text('Save', style: GoogleFonts.openSans(color: AppColors.primaryTeal(context), fontWeight: FontWeight.w600)),
+                        try {
+                          final profileService =
+                              ref.read(profileServiceProvider);
+                          final response = await profileService
+                              .updateSkills(selectedSkills.toList());
+                          setState(() {
+                            _localSkillEdits =
+                                response.skills ?? selectedSkills.toList();
+                            _profile = UserProfileResponse(
+                              userId: _profile!.userId,
+                              displayName: response.displayName,
+                              neighbourhood: _profile!.neighbourhood,
+                              level: _profile!.level,
+                              currentXp: _profile!.currentXp,
+                              trustScore: _profile!.trustScore,
+                              skills: _profile!.skills,
+                              achievements: _profile!.achievements,
+                              recentTasks: _profile!.recentTasks,
+                              completedTasks: _profile!.completedTasks,
+                              activeTasks: _profile!.activeTasks,
+                              createdTasks: _profile!.createdTasks,
+                            );
+                          });
+                          if (dialogContext.mounted){
+                            Navigator.pop(dialogContext);}
+                        } catch (e) {
+                          setDialogState(() => isSaving = false);
+                          if (dialogContext.mounted) {
+                            ScaffoldMessenger.of(dialogContext).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Failed to update skills. Please try again.')),
+                            );
+                          }
+                        }
+                      },
+                child: isSaving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : Text('Save',
+                        style: GoogleFonts.openSans(
+                            color: AppColors.primaryTeal(context),
+                            fontWeight: FontWeight.w600)),
               ),
             ],
           );
@@ -209,16 +424,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       );
     }
 
-    if(_errorMessage != null || _profile == null){
+    if (_errorMessage != null || _profile == null) {
       return Scaffold(
         backgroundColor: AppColors.background(context),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children:[
-              Text(_errorMessage ?? 'Something went wrong', style: TextStyle(color: AppColors.charcoal(context))),
+            children: [
+              Text(_errorMessage ?? 'Something went wrong',
+                  style: TextStyle(color: AppColors.charcoal(context))),
               const SizedBox(height: 12),
-              ElevatedButton(onPressed: _loadProfile, child: const Text('Retry')),
+              ElevatedButton(
+                  onPressed: _loadProfile, child: const Text('Retry')),
             ],
           ),
         ),
@@ -251,32 +468,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.settings_outlined, color: AppColors.charcoal(context)),
-            onPressed: () =>
-              Navigator.push(
+            icon: Icon(Icons.settings_outlined,
+                color: AppColors.charcoal(context)),
+            onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const SettingsScreen()
-                )
-              ),
+                    builder: (context) => const SettingsScreen())),
           ),
         ],
       ),
-      body: RefreshIndicator (
-        onRefresh: _loadProfile, 
+      body: RefreshIndicator(
+        onRefresh: _loadProfile,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            _buildProfileHeader(profile, levelColor),
-            const SizedBox(height: 20),
-              if(profile.currentXp != null) ...[
+              _buildProfileHeader(profile, levelColor),
+              const SizedBox(height: 20),
+              if (profile.currentXp != null) ...[
                 _buildXpCard(profile),
                 const SizedBox(height: 20),
               ],
               _buildStatsRow(profile),
+              const SizedBox(height: 20),
+              _buildTrustNetworkSection(),
               const SizedBox(height: 20),
               _buildSkillsSection(),
               const SizedBox(height: 20),
@@ -286,131 +503,140 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 20),
               _buildActionButtons(),
               const SizedBox(height: 32),
-          ],
-        ),
-      ),
-    )
-  );
-}
-
-  Widget _buildProfileHeader(UserProfileResponse profile, Color levelColor) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Theme.of(context).brightness == Brightness.dark 
-    ? AppColors.surfaceGrey(context) 
-    : Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.04),
-          blurRadius: 8,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    ),
-    child: Column(
-      children: [
-        CircleAvatar(
-          radius: 40,
-          backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.1),
-          child: Text(
-            profile.displayName.isNotEmpty ? profile.displayName[0] : '?',
-            style: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryTeal(context),
-            ),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Flexible(
-              child: Text(
-                profile.displayName,
-                style: GoogleFonts.poppins(
-                  color: AppColors.charcoal(context),
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                ),
-                overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader(UserProfileResponse profile, Color levelColor) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.surfaceGrey(context)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 40,
+            backgroundColor:
+                AppColors.primaryTeal(context).withValues(alpha: 0.1),
+            child: Text(
+              profile.displayName.isNotEmpty ? profile.displayName[0] : '?',
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryTeal(context),
               ),
             ),
-
-            if(profile.level != null) ... [
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  profile.displayName,
+                  style: GoogleFonts.poppins(
+                    color: AppColors.charcoal(context),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (profile.level != null) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical:2),
-                  decoration: BoxDecoration(color: levelColor.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                  child: Text(profile.level!, style: GoogleFonts.openSans(color:levelColor, fontSize: 12, fontWeight: FontWeight.w600)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                  decoration: BoxDecoration(
+                      color: levelColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12)),
+                  child: Text(profile.level!,
+                      style: GoogleFonts.openSans(
+                          color: levelColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600)),
                 )
               ],
             ],
           ),
-        const SizedBox(height: 6),
-        if(profile.trustScore != null)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ..._buildTrustStars(4.8, context),
-            const SizedBox(width: 8),
-            Text(
-                '${profile.trustScore!.toStringAsFixed(1)} ★',
+          const SizedBox(height: 6),
+          if (profile.trustScore != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ..._buildTrustStars(4.8, context),
+                const SizedBox(width: 8),
+                Text(
+                  '${profile.trustScore!.toStringAsFixed(1)} ★',
+                  style: GoogleFonts.openSans(
+                    color: AppColors.charcoal(context),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          const SizedBox(height: 10),
+          _buildTrustBreakdown(context),
+          const SizedBox(height: 8),
+          Text(
+            profile.neighbourhood,
+            style: GoogleFonts.openSans(
+              color: AppColors.textGrey(context),
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditUsernameScreen(profile: profile),
+                ),
+              );
+              if (result == true) {
+                _loadProfile();
+              }
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: AppColors.primaryTeal(context)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+            ),
+            child: Text(
+              'Edit Username',
               style: GoogleFonts.openSans(
-                color: AppColors.charcoal(context),
-                fontSize: 14,
+                color: AppColors.primaryTeal(context),
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          profile.neighbourhood,
-          style: GoogleFonts.openSans(
-            color: AppColors.textGrey(context),
-            fontSize: 12,
           ),
-        ),
-        const SizedBox(height: 12),
-        OutlinedButton(
-          onPressed: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => EditUsernameScreen(profile: profile),
-              ),
-            );
-            if (result == true) {
-              _loadProfile(); // Refresh profile data
-            }
-          },
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: AppColors.primaryTeal(context)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-          ),
-          child: Text(
-            'Edit Username',
-            style: GoogleFonts.openSans(
-              color: AppColors.primaryTeal(context),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-  Widget _buildXpCard(UserProfileResponse profile) {
+        ],
+      ),
+    );
+  }
 
+  Widget _buildXpCard(UserProfileResponse profile) {
     final currentXp = profile.currentXp!;
-    final nextMilestone = ((currentXp ~/ 1000) + 1)  * 1000;
+    final nextMilestone = ((currentXp ~/ 1000) + 1) * 1000;
     final xpIntoCurrentBracket = currentXp % 1000;
     final progress = xpIntoCurrentBracket / 1000.0;
     final xpRemaining = nextMilestone - currentXp;
@@ -418,9 +644,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark 
-    ? AppColors.surfaceGrey(context) 
-    : Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.surfaceGrey(context)
+            : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -454,44 +680,86 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ],
           ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: LinearProgressIndicator(
-            value: progress, 
-            backgroundColor: AppColors.primaryTeal(context).withValues(alpha: 0.2),
-            color: AppColors.primaryTeal(context),
-            minHeight: 8,
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor:
+                  AppColors.primaryTeal(context).withValues(alpha: 0.2),
+              color: AppColors.primaryTeal(context),
+              minHeight: 8,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '$xpRemaining XP to next milestone',
-          style: GoogleFonts.openSans(
-            color: AppColors.textGrey(context),
-            fontSize: 12,
+          const SizedBox(height: 4),
+          Text(
+            '$xpRemaining XP to next milestone',
+            style: GoogleFonts.openSans(
+              color: AppColors.textGrey(context),
+              fontSize: 12,
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   Widget _buildStatsRow(UserProfileResponse profile) {
-  return Row(
-    children: [
-      Expanded(
-        child: _buildStatItem('${profile.createdTasks}', 'Tasks Created'),
-      ),
-      Expanded(
-        child: _buildStatItem('${profile.completedTasks}', 'Tasks Completed'),
-      ),
-      Expanded(
-        child: _buildStatItem('${profile.activeTasks}', 'Active Tasks'),
-      ),
-    ],
-  );
-}
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatItem('${profile.createdTasks}', 'Tasks Created'),
+        ),
+        Expanded(
+          child: _buildStatItem('${profile.completedTasks}', 'Tasks Completed'),
+        ),
+        Expanded(
+          child: _buildStatItem('${profile.activeTasks}', 'Active Tasks'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTrustNetworkSection() {
+    if (_isLoadingEndorsements) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.surfaceGrey(context)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+
+    final summary = _endorsementSummary ?? EndorsementSummary.empty();
+
+    return TrustNetworkCard(
+      summary: summary,
+      onViewNetwork: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const EndorsementGraphScreen(),
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildStatItem(String value, String label) {
     return Container(
@@ -528,9 +796,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark 
-    ? AppColors.surfaceGrey(context) 
-    : Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.surfaceGrey(context)
+            : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -568,15 +836,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          if(_localSkillEdits.isEmpty)
-            Text('No added skills yet.', style: GoogleFonts.openSans(color: AppColors.textGrey(context), fontSize: 13))
+          if (_localSkillEdits.isEmpty)
+            Text('No added skills yet.',
+                style: GoogleFonts.openSans(
+                    color: AppColors.textGrey(context), fontSize: 13))
           else
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: _localSkillEdits.map((skill) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppColors.primaryTeal(context).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -601,9 +872,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark 
-        ? AppColors.surfaceGrey(context) 
-        : Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.surfaceGrey(context)
+            : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -630,11 +901,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               GestureDetector(
                 onTap: () {
                   Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AchievementsScreen(),
-                  ),
-                );
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AchievementsScreen(),
+                    ),
+                  );
                 },
                 child: Text(
                   'View All',
@@ -648,8 +919,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          if(profile.achievements.isEmpty)
-              Text('No achievements earned yet.', style: GoogleFonts.openSans(color: AppColors.textGrey(context), fontSize: 13))
+          if (profile.achievements.isEmpty)
+            Text('No achievements earned yet.',
+                style: GoogleFonts.openSans(
+                    color: AppColors.textGrey(context), fontSize: 13))
           else
             SizedBox(
               height: 70,
@@ -702,9 +975,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark 
-    ? AppColors.surfaceGrey(context) 
-    : Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.surfaceGrey(context)
+            : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -726,8 +999,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          if(profile.recentTasks.isEmpty)
-            Text('No completed tasks yet.', style: GoogleFonts.openSans(color: AppColors.textGrey(context), fontSize: 13))
+          if (profile.recentTasks.isEmpty)
+            Text('No completed tasks yet.',
+                style: GoogleFonts.openSans(
+                    color: AppColors.textGrey(context), fontSize: 13))
           else
             ListView.builder(
               shrinkWrap: true,
@@ -754,7 +1029,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   ),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.citrusYellow(context),
                       borderRadius: BorderRadius.circular(20),
@@ -777,157 +1053,159 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildActionButtons() {
-  return Column(
-    children: [
-      SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const PrivacySettingsScreen()),
-            );
-          },
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: AppColors.textGrey(context)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-          child: Text(
-            'Privacy Settings',
-            style: GoogleFonts.openSans(
-              color: AppColors.textGrey(context),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
-      const SizedBox(height: 12),
-      SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AdminApplicationScreen(),
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const PrivacySettingsScreen()),
+              );
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: AppColors.textGrey(context)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            );
-          },
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: AppColors.primaryTeal(context)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              padding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-          child: Text(
-            'Apply to be Admin',
-            style: GoogleFonts.openSans(
-              color: AppColors.primaryTeal(context),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+            child: Text(
+              'Privacy Settings',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
-      ),
-      const SizedBox(height: 12),
-      SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(
-          onPressed: () {
-            _showLogoutDialog();
-          },
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: AppColors.error(context)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AdminApplicationScreen(),
+                ),
+              );
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: AppColors.primaryTeal(context)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-          child: Text(
-            'Log Out',
-            style: GoogleFonts.openSans(
-              color: AppColors.error(context),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
-    ],
-  );
-}
-
-  void _showLogoutDialog() {
-  showDialog(
-    context: context,
-    builder: (BuildContext dialogContext) => AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      title: Text(
-        'Log Out?',
-        style: GoogleFonts.poppins(
-          color: AppColors.charcoal(context),
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      content: Text(
-        'Are you sure you want to log out?',
-        style: GoogleFonts.openSans(
-          color: AppColors.charcoal(context),
-          fontSize: 14,
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogContext),
-          child: Text(
-            'Cancel',
-            style: GoogleFonts.openSans(
-              color: AppColors.textGrey(context),
-              fontSize: 14,
+            child: Text(
+              'Apply to be Admin',
+              style: GoogleFonts.openSans(
+                color: AppColors.primaryTeal(context),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
-        TextButton(
-          onPressed: () async {
-            Navigator.pop(dialogContext);
-            await _performLogout();
-          },
-          child: Text(
-            'Log Out',
-            style: GoogleFonts.openSans(
-              color: AppColors.error(context),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () {
+              _showLogoutDialog();
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: AppColors.error(context)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            child: Text(
+              'Log Out',
+              style: GoogleFonts.openSans(
+                color: AppColors.error(context),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
       ],
-    ),
-  );
-}
+    );
+  }
 
-  Future<void> _performLogout() async{
-    try{
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Log Out?',
+          style: GoogleFonts.poppins(
+            color: AppColors.charcoal(context),
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to log out?',
+          style: GoogleFonts.openSans(
+            color: AppColors.charcoal(context),
+            fontSize: 14,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 14,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await _performLogout();
+            },
+            child: Text(
+              'Log Out',
+              style: GoogleFonts.openSans(
+                color: AppColors.error(context),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _performLogout() async {
+    try {
       final auth = ref.read(authServiceProvider);
       await auth.logout();
-      if(mounted){
+      if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SplashScreen()),
           (route) => false,
         );
       }
-    }catch(e){
-      if(mounted){
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to sign you out. Please try again')),
+          const SnackBar(
+              content: Text('Failed to sign you out. Please try again')),
         );
       }
     }

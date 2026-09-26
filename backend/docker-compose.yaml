@@ -32,6 +32,8 @@ services:
       dockerfile: Dockerfile.postgres
 
     container_name: supa-api
+    env_file:
+      - .env
 
     ports:
       - "8080:8080"

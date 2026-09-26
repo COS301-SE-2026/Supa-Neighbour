@@ -22,11 +22,47 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
 
-server:
-  port: 8080
+supaneighbour:
+  vision:
+    mode: gemini
+    stub:
+      outcome: complete       # unused while mode is gemini, but harmless to leave
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: gemini-2.0-flash
+      max-image-edge-px: 1600                  # downscale before sending (see §5.1)
+      timeout-seconds: 30
+  verification:
+    geofence-radius-m: 75
+    arrival-geofence-radius-m: 150
+    task-window-grace-minutes: 30
+    zone: Africa/Johannesburg
+    weights:
+      ai: 0.45
+      geo: 0.25
+      meta: 0.15
+      time: 0.15
+    thresholds:
+      verified: 0.75
+      needs-review: 0.45
+    max-upload-bytes: 12582912
+    allowed-mime: ["image/jpeg", "image/png"]
 
 google:
   oauth:
     client-id: ${GOOGLE_CLIENT_ID:YOUR_CLIENT_ID.apps.googleusercontent.com}
     client-secret: ${GOOGLE_CLIENT_SECRET:}
     redirect-uri: ${GOOGLE_REDIRECT_URI:}
+
+server:
+  port: 8080
+management:
+  endpoint:
+    health:
+      show-details: always
+
+  endpoints:
+    web:
+      exposure:
+        include: health
+

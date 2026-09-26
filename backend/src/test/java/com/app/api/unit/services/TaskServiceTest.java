@@ -41,6 +41,7 @@ import com.app.api.repositories.TaskImageRepository;
 import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskRepository;
 import com.app.api.services.BlobStorageService;
+import com.app.api.services.HelperTasksService;
 import com.app.api.services.TaskService;
 
 public class TaskServiceTest
@@ -78,6 +79,9 @@ public class TaskServiceTest
     @Mock
     private BlobStorageService blobStorageService;
 
+    @Mock
+    private HelperTasksService helperTasksService;
+    
     @BeforeEach
     @SuppressWarnings("unused")
     void setUp()
