@@ -125,8 +125,8 @@ class _MiniGraphPainter extends CustomPainter {
 
     // Draw edges first (so nodes render on top)
     for (final edge in edges) {
-      final from = positions[edge.endorserId];
-      final to = positions[edge.endorseeId];
+      final from = positions[edge.fromUserId];
+      final to = positions[edge.toUserId];
       if (from == null || to == null) continue;
 
       final paint = Paint()

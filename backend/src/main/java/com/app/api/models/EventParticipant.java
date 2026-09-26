@@ -49,8 +49,7 @@ public class EventParticipant {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "participant_status", nullable = false)
-    private ParticipantStatus participantStatus =
-            ParticipantStatus.ATTENDING;
+    private ParticipantStatus participantStatus = ParticipantStatus.ATTENDING;
 
     /**
      * Default no-argument constructor required by JPA.

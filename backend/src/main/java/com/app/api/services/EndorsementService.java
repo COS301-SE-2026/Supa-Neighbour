@@ -26,6 +26,8 @@ import com.app.api.repositories.LocationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.repositories.UserRepository;
  import com.app.api.repositories.HelperAnalyticsRepository;
+ import com.app.api.repositories.HelperRepository;
+import com.app.api.models.Helper;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -80,7 +82,7 @@ public class EndorsementService {
     private final EndorsementSkillService endorsementSkillService;
     private final HelperAnalyticsRepository helperAnalyticsRepository;
     private final AdminRepository adminRepository;
-
+    private final HelperRepository helperRepository;
     /**
      * @param endorsementRepository endorsement persistence and graph projections
      * @param skillRepository       the skill catalogue
@@ -90,7 +92,7 @@ public class EndorsementService {
      */
     
     public EndorsementService(EndorsementRepository endorsementRepository, EndorsementSkillsRepository endorsementSkillsRepository,
-        UserRepository userRepository, LocationRepository locationRepository, TaskInvoiceRepository  taskInvoiceRepository,EndorsementSkillService endorsementSkillService,HelperAnalyticsRepository helperAnalyticsRepository, AdminRepository adminRepository) {
+        UserRepository userRepository, LocationRepository locationRepository, TaskInvoiceRepository  taskInvoiceRepository,EndorsementSkillService endorsementSkillService,HelperAnalyticsRepository helperAnalyticsRepository, AdminRepository adminRepository, HelperRepository helperRepository) {
             this.endorsementRepository=endorsementRepository;
             this.endorsementSkillsRepository=endorsementSkillsRepository;
             this.locationRepository=locationRepository;
@@ -99,6 +101,7 @@ public class EndorsementService {
             this.endorsementSkillService=endorsementSkillService;
             this.helperAnalyticsRepository = helperAnalyticsRepository;
             this.adminRepository = adminRepository;
+            this.helperRepository = helperRepository;
         }
 
     /**
@@ -156,11 +159,7 @@ public class EndorsementService {
     public EndorsementResponseDTO create(User endorser, CreateEndorsementRequestDTO request) {
         Integer endorserId = endorser.getUserid();
 
-        if (endorserId.equals(request.endorseeId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot endorse yourself");
-        }
-
-        User endorsee = userRepository.findById(request.endorseeId())
+        Helper endorsee = helperRepository.findById(request.endorseeId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         EndorsementSkill skill = endorsementSkillService.requireUsableSkill(request.skillTag());
@@ -168,6 +167,10 @@ public class EndorsementService {
         Address address = endorser.getAddressid();
         if (address == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Endorser has no address on file");
+        }
+
+        if (endorserId.equals(endorsee.getUserid().getUserid())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot endorse yourself");
         }
 
         Integer zoneId = address.getNeighbourhoodid().getLocationid(); 
@@ -183,7 +186,7 @@ public class EndorsementService {
                 && task.getDependentid() != null
                 && task.getHelperid().getUserid() != null
                 && task.getDependentid().getUserId() != null
-                && task.getHelperid().getUserid().getUserid() == endorsee.getUserid()
+                && task.getHelperid().getUserid().getUserid() == endorsee.getUserid().getUserid()
                 && task.getDependentid().getUserId().getUserid() == endorserId;
 
             if (!bothOnTask) {
@@ -194,8 +197,8 @@ public class EndorsementService {
         String tag = skill.getSkillTag();
 
         boolean duplicate = task == null
-            ? endorsementRepository.existsByEndorserid_UseridAndEndorseeid_UseridAndSkillTag_SkillTagAndTaskidIsNull(endorserId, endorsee.getUserid(), tag)
-            : endorsementRepository.existsByEndorserid_UseridAndEndorseeid_UseridAndSkillTag_SkillTagAndTaskid_Taskid(endorserId, endorsee.getUserid(), tag, task.getTaskid());
+            ? endorsementRepository.existsByEndorserid_UseridAndEndorseeid_UseridAndSkillTag_SkillTagAndTaskidIsNull(endorserId, endorsee.getUserid().getUserid(), tag)
+            : endorsementRepository.existsByEndorserid_UseridAndEndorseeid_UseridAndSkillTag_SkillTagAndTaskid_Taskid(endorserId, endorsee.getUserid().getUserid(), tag, task.getTaskid());
 
         if (duplicate) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already endorsed this user for this skill");
@@ -203,7 +206,7 @@ public class EndorsementService {
 
         int weight = weightFromTrustScore(endorserId);
 
-        Endorsement endorsement = new Endorsement(endorser, endorsee, zone, skill, task, weight);
+        Endorsement endorsement = new Endorsement(endorser, endorsee.getUserid(), zone, skill, task, weight);
 
         return toResponse(endorsementRepository.save(endorsement), skill);
     }

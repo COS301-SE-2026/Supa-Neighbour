@@ -78,6 +78,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+      debugPrint('Failed to load endorsement summary: $e');
       setState(() {
         _endorsementSummary = EndorsementSummary.empty();
         _isLoadingEndorsements = false;
