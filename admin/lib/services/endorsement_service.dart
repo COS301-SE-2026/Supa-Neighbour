@@ -10,6 +10,7 @@ class EndorsementServiceException implements Exception {
 
   EndorsementServiceException(this.message, {this.statusCode});
 
+
   @override
   String toString() => message;
 }
@@ -19,16 +20,15 @@ class EndorsementServiceException implements Exception {
 abstract class IEndorsementService {
   /// Fetches the endorsement graph for the admin's own zone.
   /// Zone is resolved server-side from the admin's JWT.
-  Future<EndorsementGraph> getZoneGraph({int depth = 3});
-
-  /// Fetches all endorsements in the admin's zone.
-  Future<List<Endorsement>> getZoneEndorsements({String? skillTag});
+  Future<EndorsementGraph> getZoneGraph({int limit = 500});
 
   /// Fetches flagged endorsement patterns (abuse detection).
-  Future<List<SuspiciousEndorsement>> getSuspiciousPatterns();
+  Future<List<SuspiciousEndorsement>> getSuspiciousPatterns({String? status = 'open'});
 
   /// Fetches cluster insights for the admin's zone.
   Future<ZoneInsights> getZoneInsights();
+  
+  Future<SuspiciousEndorsement> updateFlagStatus(String flagId, String status);
 }
 
 class EndorsementService implements IEndorsementService {
@@ -38,8 +38,8 @@ class EndorsementService implements IEndorsementService {
   EndorsementService({Dio? dio, fb.FirebaseAuth? firebaseAuth})
       : _dio = dio ??
             Dio(BaseOptions(
-              baseUrl:
-                  'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
+              baseUrl:'http://localhost:8080',
+                  //'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
             )),
@@ -75,12 +75,12 @@ class EndorsementService implements IEndorsementService {
   }
 
   @override
-  Future<EndorsementGraph> getZoneGraph({int depth = 3}) async {
+  Future<EndorsementGraph> getZoneGraph({int limit = 500}) async {
     final token = await _requireToken();
     try {
       final response = await _dio.get(
-        '/api/admin/endorsements/zone/graph',
-        queryParameters: {'depth': depth},
+        '/api/endorsements/admin/zone/graph',
+        queryParameters: {'limit': limit},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -95,36 +95,14 @@ class EndorsementService implements IEndorsementService {
   }
 
   @override
-  Future<List<Endorsement>> getZoneEndorsements({String? skillTag}) async {
+  Future<List<SuspiciousEndorsement>> getSuspiciousPatterns({String? status = 'open'}) async {
     final token = await _requireToken();
     try {
       final response = await _dio.get(
-        '/api/admin/endorsements/zone',
+        '/api/endorsements/admin/flags',
         queryParameters: {
-          if (skillTag != null && skillTag.isNotEmpty) 'skillTag': skillTag,
+          if(status != null && status.isEmpty) 'status':status,
         },
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-
-      final data = response.data;
-      if (data is List) {
-        return data
-            .whereType<Map<String, dynamic>>()
-            .map(Endorsement.fromJson)
-            .toList();
-      }
-      throw EndorsementServiceException('Unexpected response shape.');
-    } on DioException catch (e) {
-      throw _handleDioError(e, 'Failed to load endorsements');
-    }
-  }
-
-  @override
-  Future<List<SuspiciousEndorsement>> getSuspiciousPatterns() async {
-    final token = await _requireToken();
-    try {
-      final response = await _dio.get(
-        '/api/admin/endorsements/suspicious',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -146,7 +124,7 @@ class EndorsementService implements IEndorsementService {
     final token = await _requireToken();
     try {
       final response = await _dio.get(
-        '/api/admin/endorsements/zone/insights',
+        '/api/endorsements/zone/clusters',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       if (response.data is Map<String, dynamic>) {
@@ -156,5 +134,25 @@ class EndorsementService implements IEndorsementService {
     } on DioException catch (e) {
       throw _handleDioError(e, 'Failed to load zone insights');
     }
+  }
+
+  @override
+  Future<SuspiciousEndorsement> updateFlagStatus(String flagId, String status) async{
+    final token = await _requireToken();
+    try{
+      final response = await _dio.patch(
+        '/api/endorsements/admin/flags/$flagId/status',
+        data: {'status': status},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if(response.data is Map<String, dynamic>){
+        return SuspiciousEndorsement.fromJson(response.data as Map<String, dynamic>);
+      }
+      throw EndorsementServiceException('Unexpected response shape.');
+    } on DioException catch (e) {
+      throw _handleDioError(e, 'Failed to update flag status');
+    }
+
   }
 }

@@ -35,11 +35,11 @@ class _EndorsementModerationScreenState
 
     try {
       final service = ref.read(adminEndorsementServiceProvider);
-      final patterns = await service.getSuspiciousPatterns();
+      final patterns = await service.getSuspiciousPatterns(status: null);
 
       if (!mounted) return;
       setState(() {
-        _patterns = patterns;
+        _patterns = patterns.where((p) => p.status != 'dismiss').toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -150,6 +150,20 @@ class _EndorsementModerationScreenState
                   ),
                 ),
               ),
+              if (pattern.status == 'investigate') ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryTeal.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    'INVESTIGATING',
+                    style: GoogleFonts.openSans(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.primaryTeal),
+                  ),
+                ),
+              ],
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -221,24 +235,35 @@ class _EndorsementModerationScreenState
           const SizedBox(height: 16),
 
           // Action buttons
+          
+                    // Action buttons
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => _dismissPattern(pattern),
+                  onPressed: pattern.status == 'investigate'
+                      ? null
+                      : () => _dismissPattern(pattern),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.textGrey),
+                    side: BorderSide(
+                      color: pattern.status == 'investigate'
+                          ? AppColors.textGrey.withValues(alpha: 0.3)
+                          : AppColors.textGrey,
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    disabledForegroundColor: AppColors.textGrey.withValues(alpha: 0.4),
                   ),
                   child: Text(
                     'Dismiss',
                     style: GoogleFonts.openSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textGrey,
+                      color: pattern.status == 'investigate'
+                          ? AppColors.textGrey.withValues(alpha: 0.4)
+                          : AppColors.textGrey,
                     ),
                   ),
                 ),
@@ -246,20 +271,25 @@ class _EndorsementModerationScreenState
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => _investigatePattern(pattern),
+                  onPressed: pattern.status == 'investigate'
+                      ? null
+                      : () => _investigatePattern(pattern),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: severityColor,
+                    disabledBackgroundColor: AppColors.textGrey.withValues(alpha: 0.25),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   child: Text(
-                    'Investigate',
+                    pattern.status == 'investigate' ? 'Investigating' : 'Investigate',
                     style: GoogleFonts.openSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: pattern.status == 'investigate'
+                          ? AppColors.textGrey.withValues(alpha: 0.6)
+                          : Colors.white,
                     ),
                   ),
                 ),
@@ -298,62 +328,77 @@ class _EndorsementModerationScreenState
     }
   }
 
-  void _dismissPattern(SuspiciousEndorsement pattern) {
-    setState(() {
-      _patterns = _patterns
-          .where((p) => p.patternId != pattern.patternId)
-          .toList();
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Pattern dismissed'),
-        duration: Duration(seconds: 1),
-      ),
-    );
+  void _dismissPattern(SuspiciousEndorsement pattern) async {
+    try{
+      final service = ref.read(adminEndorsementServiceProvider);
+      await service.updateFlagStatus(pattern.patternId, 'dismiss');
+      if(!mounted) return;
+      setState(() {
+        _patterns = _patterns
+            .where((p) => p.patternId != pattern.patternId)
+            .toList();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pattern dismissed'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }catch(e){
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(
+          'Failed to dismiss: ${e.toString().replaceFirst('Exception: ', '')}',
+        )),
+      );
+    }
   }
 
-  void _investigatePattern(SuspiciousEndorsement pattern) {
+  Future<void> _investigatePattern(SuspiciousEndorsement pattern) async {
+    SuspiciousEndorsement updated;
+    try {
+      final service = ref.read(adminEndorsementServiceProvider);
+      updated = await service.updateFlagStatus(pattern.patternId, 'investigate');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(
+          'Failed to update status: ${e.toString().replaceFirst('Exception: ', '')}',
+        )),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _patterns = _patterns
+          .map((p) => p.patternId == pattern.patternId ? updated : p)
+          .toList();
+    });
+
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'Investigate Pattern',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Investigate Pattern', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Pattern: ${_patternTypeDisplay(pattern.patternType)}',
-              style: GoogleFonts.openSans(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text('Pattern: ${_patternTypeDisplay(pattern.patternType)}',
+                style: GoogleFonts.openSans(fontSize: 13, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            Text(
-              pattern.description,
-              style: GoogleFonts.openSans(fontSize: 13),
-            ),
+            Text(pattern.description, style: GoogleFonts.openSans(fontSize: 13)),
             const SizedBox(height: 16),
             Text(
               'Next steps: view the involved users\' profiles and their endorsement history to decide on action.',
-              style: GoogleFonts.openSans(
-                fontSize: 12,
-                color: AppColors.textGrey,
-              ),
+              style: GoogleFonts.openSans(fontSize: 12, color: AppColors.textGrey),
             ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Close'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Close')),
         ],
       ),
     );

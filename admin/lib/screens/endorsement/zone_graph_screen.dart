@@ -16,7 +16,6 @@ class ZoneGraphScreen extends ConsumerStatefulWidget {
 }
 
 class _ZoneGraphScreenState extends ConsumerState<ZoneGraphScreen> {
-  static const int _graphDepth = 3;
 
   EndorsementGraph? _graph;
   ZoneInsights? _insights;
@@ -46,7 +45,7 @@ class _ZoneGraphScreenState extends ConsumerState<ZoneGraphScreen> {
       final service = ref.read(adminEndorsementServiceProvider);
 
       final results = await Future.wait([
-        service.getZoneGraph(depth: _graphDepth),
+        service.getZoneGraph(),
         service.getZoneInsights(),
         service.getSuspiciousPatterns(),
       ]);
@@ -267,15 +266,9 @@ class _ZoneGraphScreenState extends ConsumerState<ZoneGraphScreen> {
             if (_isLoading)
               const Center(child: CircularProgressIndicator())
             else if (_insights != null) ...[
-              _buildInsightRow('Total Endorsements',
-                  _insights!.totalEndorsements.toString()),
-              _buildInsightRow('Total Users', _insights!.totalUsers.toString()),
-              _buildInsightRow(
-                  'Clusters', _insights!.clusterCount.toString()),
-              _buildInsightRow('Largest Cluster',
-                  _insights!.largestClusterSize.toString()),
-              _buildInsightRow('Isolated Users',
-                  _insights!.isolatedUserCount.toString()),
+                _buildInsightRow('Clusters', _insights!.clusterCount.toString()),
+                _buildInsightRow('Largest Cluster', _insights!.largestClusterSize.toString()),
+                _buildInsightRow('Isolated Users', _insights!.isolatedUserCount.toString()),
             ] else
               Text(
                 'No insights available',

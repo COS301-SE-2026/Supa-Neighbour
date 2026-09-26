@@ -400,6 +400,9 @@ public class EndorsementService {
         return new TrustGraphResponseDTO(root.getUserid(),null,effectiveDepth,dir,toNodes(hopByUser),edges,truncated);
     }
 
+    
+    
+    private static final int MAX_ZONE_GRAPH_EDGES = 500; // matches controller's documented default
     /**
      * Builds the whole endorsement graph inside a zone for admin insights.
      *
@@ -408,35 +411,38 @@ public class EndorsementService {
      * @return the zone graph, flagged if the cap truncated it
      * @throws ResponseStatusException 404 when the zone does not exist
      */
-    ///api/admin/endorsements.zone/{zoneId}/graph
-    
-    @Transactional(readOnly = true) 
-    public TrustGraphResponseDTO zoneGraph(Integer zoneId,int maxEdges) {
-        if(!locationRepository.existsById(zoneId)){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Zone not found");
+    @Transactional(readOnly = true)
+    public TrustGraphResponseDTO zoneGraph(User admin, int maxEdges) {
+        Address address = admin.getAddressid();
+        if (address == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin has no address on file");
         }
 
-        int cap = clamp(maxEdges,1,10);
-        List<EdgeRow> rows= endorsementRepository.findEdgesByZone(zoneId);
-        boolean truncated = rows.size()>cap;
-        if(truncated) {
+        Integer zoneId = address.getNeighbourhoodid().getLocationid();
+        locationRepository.findById(zoneId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found"));
+
+        int cap = clamp(maxEdges, 1, MAX_ZONE_GRAPH_EDGES); // was clamp(maxEdges,1,10) — real ceiling, not 10
+        List<EdgeRow> rows = endorsementRepository.findEdgesByZone(zoneId);
+        boolean truncated = rows.size() > cap;
+        if (truncated) {
             rows = rows.subList(0, cap);
         }
 
-        Map<Integer,Integer>hopByUser = new LinkedHashMap<>();
+        Map<Integer, Integer> hopByUser = new LinkedHashMap<>();
         List<TrustGraphResponseDTO.Edge> edges = new ArrayList<>(rows.size());
         Set<String> seenEdges = new HashSet<>();
 
-        for(EdgeRow row : rows) {
+        for (EdgeRow row : rows) {
             hopByUser.putIfAbsent(row.getFromUserId(), 0);
             hopByUser.putIfAbsent(row.getToUserId(), 0);
-            if(seenEdges.add(edgeKey(row))) {
+            if (seenEdges.add(edgeKey(row))) {
                 edges.add(new TrustGraphResponseDTO.Edge(
-                    row.getFromUserId(),row.getToUserId(),row.getSkillTag(),row.getWeight()));
+                    row.getFromUserId(), row.getToUserId(), row.getSkillTag(), row.getWeight()));
             }
         }
         return new TrustGraphResponseDTO(
-            null,zoneId,0, null,toNodes(hopByUser), edges,truncated);
+            null, zoneId, 0, null, toNodes(hopByUser), edges, truncated);
     }
     
 
@@ -671,17 +677,28 @@ public class EndorsementService {
      * once its name field is confirmed, ideally with a single
      * {@code findAllById(hopByUser.keySet())} lookup rather than per node.</p>
      */
-     private List<TrustGraphResponseDTO.Node> toNodes(Map<Integer, Integer> hopByUser) {
+    private List<TrustGraphResponseDTO.Node> toNodes(Map<Integer, Integer> hopByUser) {
         Map<Integer, User> users = userRepository.findAllById(hopByUser.keySet()).stream()
             .collect(Collectors.toMap(User::getUserid, u -> u));
 
         List<TrustGraphResponseDTO.Node> nodes = new ArrayList<>(hopByUser.size());
         for (Map.Entry<Integer, Integer> entry : hopByUser.entrySet()) {
             User user = users.get(entry.getKey());
-            String displayName = user == null ? null : (user.getFirstName() + " " + user.getLastName()); // confirm actual field names/style
-            nodes.add(new TrustGraphResponseDTO.Node(entry.getKey(), displayName, entry.getValue()));
+            nodes.add(new TrustGraphResponseDTO.Node(entry.getKey(), displayName(user), entry.getValue()));
         }
         return nodes;
+    }
+
+    private String displayName(User user) {
+        if (user == null) {
+            return null;
+        }
+        String first = user.getFirstName();
+        String last = user.getLastName();
+        if (first == null && last == null) {
+            return null;
+        }
+        return ((first == null ? "" : first) + " " + (last == null ? "" : last)).trim();
     }
 
     /** Stable identity for a parallel edge, so the same pair can differ by tag. */
