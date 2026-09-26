@@ -25,7 +25,8 @@ import com.app.api.repositories.AdminRepository;
 import com.app.api.repositories.LocationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.repositories.UserRepository;
- import com.app.api.repositories.HelperAnalyticsRepository;
+import com.app.api.repositories.HelperAnalyticsRepository;
+
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -100,23 +101,7 @@ public class EndorsementService {
             this.helperAnalyticsRepository = helperAnalyticsRepository;
             this.adminRepository = adminRepository;
         }
-
-    /**
-     * Records an endorsement given by the authenticated caller.
-     *
-     * <p>This is the only place a skill tag is checked against the catalogue,
-     * which is what makes it safe to treat the stored value as a constant
-     * everywhere else.</p>
-     *
-     * @param endorser the caller, resolved from the Firebase ID token
-     * @param request  the validated request body
-     * @return the persisted endorsement
-     * @throws ResponseStatusException 400 for self-endorsement, 404 for an unknown
-     *                                 endorsee, zone, tag or task, 409 for a
-     *                                 duplicate, 422 for an unapproved tag
-     */
-
-
+    
 /**
  * Verifies the given user holds admin access at or above the required level.
  *
@@ -136,7 +121,6 @@ public class EndorsementService {
         }
         return user;
     }
-
 
 /**
  * Records an endorsement given by the authenticated caller.

@@ -13,13 +13,17 @@ import jakarta.persistence.FetchType;
 
 import java.time.LocalDateTime;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Getter
 @Setter
 @Data
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "endorsement_table")
 public class Endorsement{
     @Id
@@ -88,6 +92,11 @@ public class Endorsement{
         this.createdAt = LocalDateTime.now();
     }
 
+
+    /**
+     * JPA lifecycle callback that stamps {@link #createdAt} immediately before the
+     * entity is first persisted.
+     */
     @PrePersist
     protected void onCreate() {
         if (this.createdAt == null) {
