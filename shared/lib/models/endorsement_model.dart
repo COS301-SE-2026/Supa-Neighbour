@@ -245,3 +245,87 @@ class SkillTag {
     );
   }
 }
+
+
+/// A flagged endorsement pattern for admin review.
+/// Detected by the backend's anti-abuse scan.
+class SuspiciousEndorsement {
+  final String patternId;
+  final String patternType; // 'mutual_ring', 'sudden_spike', 'island_group'
+  final List<String> involvedUserIds;
+  final String description;
+  final DateTime detectedAt;
+  final String severity; // 'low', 'medium', 'high'
+
+  SuspiciousEndorsement({
+    required this.patternId,
+    required this.patternType,
+    required this.involvedUserIds,
+    required this.description,
+    required this.detectedAt,
+    required this.severity,
+  });
+
+  factory SuspiciousEndorsement.fromJson(Map<String, dynamic> json) {
+    return SuspiciousEndorsement(
+      patternId: json['patternId'] as String? ?? '',
+      patternType: json['patternType'] as String? ?? '',
+      involvedUserIds: (json['involvedUserIds'] as List<dynamic>? ?? [])
+          .whereType<String>()
+          .toList(),
+      description: json['description'] as String? ?? '',
+      detectedAt: json['detectedAt'] != null
+          ? DateTime.tryParse(json['detectedAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      severity: json['severity'] as String? ?? 'low',
+    );
+  }
+}
+
+/// Zone-wide metrics for the admin dashboard.
+class ZoneInsights {
+  final int totalEndorsements;
+  final int totalUsers;
+  final int clusterCount;
+  final int largestClusterSize;
+  final int isolatedUserCount;
+  final List<String> bridgeUserIds;
+  final List<SkillCount> topSkills;
+
+  ZoneInsights({
+    required this.totalEndorsements,
+    required this.totalUsers,
+    required this.clusterCount,
+    required this.largestClusterSize,
+    required this.isolatedUserCount,
+    required this.bridgeUserIds,
+    required this.topSkills,
+  });
+
+  factory ZoneInsights.empty() => ZoneInsights(
+        totalEndorsements: 0,
+        totalUsers: 0,
+        clusterCount: 0,
+        largestClusterSize: 0,
+        isolatedUserCount: 0,
+        bridgeUserIds: const [],
+        topSkills: const [],
+      );
+
+  factory ZoneInsights.fromJson(Map<String, dynamic> json) {
+    return ZoneInsights(
+      totalEndorsements: json['totalEndorsements'] as int? ?? 0,
+      totalUsers: json['totalUsers'] as int? ?? 0,
+      clusterCount: json['clusterCount'] as int? ?? 0,
+      largestClusterSize: json['largestClusterSize'] as int? ?? 0,
+      isolatedUserCount: json['isolatedUserCount'] as int? ?? 0,
+      bridgeUserIds: (json['bridgeUserIds'] as List<dynamic>? ?? [])
+          .whereType<String>()
+          .toList(),
+      topSkills: (json['topSkills'] as List<dynamic>? ?? [])
+          .whereType<Map<String, dynamic>>()
+          .map(SkillCount.fromJson)
+          .toList(),
+    );
+  }
+}
