@@ -9,8 +9,12 @@ servers:
 tags:
 - name: Admins
   description: Operations for managing administrators
+- name: Events
+  description: Operations for managing community events and participants
 - name: Authentication
   description: Endpoints for user authentication and account management
+- name: Endorsements
+  description: graphing the individuals external view of their work
 - name: Compatibility
   description: Operations for managing compatibility records
 - name: Reactions
@@ -27,12 +31,14 @@ tags:
   description: Operations for managing user achievement records
 - name: Helper Skills
   description: Operations for managing helper skills
-- name: Suggestions
-  description: Endpoints for retrieving suggested actions based on violation rules
 - name: Swagger UI
   description: Redirect to Swagger UI documentation
+- name: Suggestions
+  description: Endpoints for retrieving suggested actions based on violation rules
 - name: Task Invitations
   description: "Operations for managing task invitations, acceptances, and declines"
+- name: Admin Applications
+  description: Operations for admin applications
 - name: Addresses
   description: Operations for managing addresses
 - name: Analytics
@@ -605,6 +611,143 @@ paths:
           description: Invalid settings data
       security:
       - BearerAuth: []
+  /api/report:
+    get:
+      tags:
+      - report-controller
+      summary: Get reports assigned to the calling admin (9.4)
+      operationId: getAssignedReports
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: reportType
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Reports retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: Invalid filter value
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Unauthorized — invalid or missing token
+          content:
+            '*/*':
+              schema:
+                type: object
+        "403":
+          description: User is not an admin
+          content:
+            '*/*':
+              schema:
+                type: object
+    put:
+      tags:
+      - report-controller
+      summary: Submit a new report (9.6)
+      operationId: submitReport
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportRequestDTO"
+        required: true
+      responses:
+        "201":
+          description: Report submitted successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: Invalid report payload for reportType
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Unauthorized — invalid or missing token
+          content:
+            '*/*':
+              schema:
+                type: object
+        "404":
+          description: Target entity not found
+          content:
+            '*/*':
+              schema:
+                type: object
+    patch:
+      tags:
+      - report-controller
+      summary: Admin updates a report status/verdict (9.7)
+      operationId: patchReport
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchReportDTO"
+        required: true
+      responses:
+        "200":
+          description: Report updated successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: Invalid field value
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Unauthorized — invalid or missing token
+          content:
+            '*/*':
+              schema:
+                type: object
+        "403":
+          description: Not authorized to update this report
+          content:
+            '*/*':
+              schema:
+                type: object
+        "404":
+          description: Report not found
+          content:
+            '*/*':
+              schema:
+                type: object
   /api/reaction/{id}:
     get:
       tags:
@@ -1781,6 +1924,30 @@ paths:
           description: "Server error, task not created"
       security:
       - BearerAuth: []
+  /api/users/me/google-calender/connect:
+    post:
+      tags:
+      - google-calender-controller
+      operationId: connect
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
   /api/users/me/device-token:
     post:
       tags:
@@ -1891,6 +2058,51 @@ paths:
             application/json:
               example:
                 error: An unexpected error occurred. Please try again.
+  /api/upload/report/image:
+    post:
+      tags:
+      - Image Upload
+      summary: Upload a report image
+      description: "Uploads a report image (JPEG, PNG, or GIF) and returns its stored\
+        \ URL."
+      operationId: uploadReportImage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "The image file to upload (JPEG, PNG, or GIF)"
+              required:
+              - file
+      responses:
+        "201":
+          description: Image uploaded successfully
+          content:
+            '*/*':
+              schema:
+                type: string
+                example:
+                  imageUrl: https://...
+        "400":
+          description: Invalid file
+          content:
+            '*/*':
+              schema:
+                type: string
+                example:
+                  error: '...'
+        "500":
+          description: Unexpected upload error
+          content:
+            '*/*':
+              schema:
+                type: string
+                example:
+                  error: An unexpected error occured. Please try again
   /api/upload/post/image:
     post:
       tags:
@@ -2117,6 +2329,230 @@ paths:
           description: Invalid or expired Firebase token
       security:
       - BearerAuth: []
+  /api/taskinvoices/{id}/images:
+    post:
+      tags:
+      - Task Invoices
+      summary: Add images to a task invoice
+      description: Saves a list of Azure Blob Storage image URLs as completion proof
+        for a task
+      operationId: addImagesToTask
+      parameters:
+      - name: id
+        in: path
+        description: ID of the task invoice
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          default: COMPLETION
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+        required: true
+      responses:
+        "201":
+          description: Images saved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: No image URLs provided
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Task invoice not found
+      security:
+      - BearerAuth: []
+  /api/taskinvoices/{id}/completion-evidence:
+    get:
+      tags:
+      - Task Invoices
+      summary: Get completion photo verification results
+      operationId: getCompletionEvidence
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Task Invoices
+      summary: Submit a completion photo for verification
+      description: "Verifies the assigned helper's completion photo (location, capture\
+        \ time, duplicates and an AI comparison with the reference photo) and stores\
+        \ it"
+      operationId: submitCompletionEvidence
+      parameters:
+      - name: id
+        in: path
+        description: ID of the task
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: captureSource
+        in: query
+        description: CAMERA for a photo taken in-app
+        required: false
+        schema:
+          type: string
+        example: CAMERA
+      - name: capturedAt
+        in: query
+        description: "When the photo was taken, ISO-8601 with UTC offset"
+        required: false
+        schema:
+          type: string
+          format: date-time
+        example: 2026-09-20T12:00:00+02:00
+      - name: lat
+        in: query
+        description: Helper latitude when the photo was taken
+        required: false
+        schema:
+          type: number
+          format: double
+      - name: lng
+        in: query
+        description: Helper longitude when the photo was taken
+        required: false
+        schema:
+          type: number
+          format: double
+      - name: accuracyM
+        in: query
+        description: GPS accuracy in metres
+        required: false
+        schema:
+          type: number
+          format: double
+      - name: deviceId
+        in: query
+        description: Identifier for the capturing device
+        required: false
+        schema:
+          type: string
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The completion photo (JPEG or PNG)
+              required:
+              - file
+      responses:
+        "201":
+          description: Photo verified and stored
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: "Missing, oversized or unsupported image"
+        "401":
+          description: Invalid or expired Firebase token
+        "403":
+          description: Caller is not the helper assigned to this task
+        "404":
+          description: Task not found
+        "409":
+          description: Task is closed or the photo was already submitted
+      security:
+      - BearerAuth: []
+  /api/taskinvoices/{id}/completion-decision:
+    post:
+      tags:
+      - Task Invoices
+      summary: Decide task completion
+      description: Records the requester's decision (CONFIRM or DISPUTE) on a task
+        awaiting approval. Only the requester may call this; a DISPUTE requires a
+        note
+      operationId: decideCompletion
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompletionDecisionRequest"
+        required: true
+      responses:
+        "200":
+          description: Decision recorded
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: Invalid decision value or DISPUTE without a note
+        "401":
+          description: Invalid or expired Firebase token
+        "403":
+          description: Caller is not the task requester
+        "404":
+          description: Task not found
+        "409":
+          description: Task is not awaiting approval
+      security:
+      - BearerAuth: []
   /api/task-invitations:
     get:
       tags:
@@ -2329,6 +2765,68 @@ paths:
           description: Task is not available for acceptance
       security:
       - BearerAuth: []
+  /api/suggestion:
+    post:
+      tags:
+      - Suggestions
+      summary: Get suggested action for violation
+      description: Returns the suggested action for a given violation type and severity.
+        Requires admin authentication.
+      operationId: getSuggestion
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      requestBody:
+        description: Violation type and severity to look up the suggested action
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuggestionRequestDTO"
+            examples:
+              Request Body:
+                description: Request Body
+                value:
+                  violationType: PRIVACY_VIOLATION
+                  severity: SEVERE
+        required: true
+      responses:
+        "200":
+          description: Suggested action retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuggestionResponseDTO"
+              examples:
+                Success Response:
+                  description: Success Response
+                  value:
+                    violationType: PRIVACY_VIOLATION
+                    severity: SEVERE
+                    suggestedAction: BAN
+        "400":
+          description: "Invalid violation type, severity, or no rule defined for the\
+            \ pair"
+          content:
+            text/plain:
+              examples:
+                Invalid Request:
+                  description: Invalid Request
+                  value: Invalid violationType or severity
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            text/plain:
+              examples:
+                Unauthorized:
+                  description: Unauthorized
+                  value: Invalid or expired Firebase token
+      security:
+      - BearerAuth: []
   /api/settings/users/show-status:
     get:
       tags:
@@ -2448,6 +2946,117 @@ paths:
           description: Invalid mode value
       security:
       - BearerAuth: []
+  /api/report/{reportId}/images:
+    post:
+      tags:
+      - report-controller
+      summary: Attach an already-uploaded image URL to a report
+      operationId: linkReportImage
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: reportId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportImageLinkRequestDTO"
+        required: true
+      responses:
+        "201":
+          description: Image linked successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: Invalid request body
+          content:
+            '*/*':
+              schema:
+                type: object
+        "403":
+          description: Not permitted to add images to this report
+          content:
+            '*/*':
+              schema:
+                type: object
+        "404":
+          description: Report not found
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/report/match:
+    post:
+      tags:
+      - report-controller
+      summary: Assign a submitted report to the admin with the least workload
+      operationId: matchReport
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+        required: true
+      responses:
+        "200":
+          description: Report successfully assigned
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: reportId is missing
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Unauthorized — invalid or missing token
+          content:
+            '*/*':
+              schema:
+                type: object
+        "403":
+          description: User is not an admin
+          content:
+            '*/*':
+              schema:
+                type: object
+        "404":
+          description: Report not found
+          content:
+            '*/*':
+              schema:
+                type: object
+        "409":
+          description: Report already assigned or reviewed
+          content:
+            '*/*':
+              schema:
+                type: object
+        "503":
+          description: No admins available in the system
+          content:
+            '*/*':
+              schema:
+                type: object
   /api/reaction/posts/{postId}/dislike:
     post:
       tags:
@@ -2734,6 +3343,32 @@ paths:
                 $ref: "#/components/schemas/HelperAnalytics"
         "400":
           description: Invalid helper analytics data
+  /api/endorsements:
+    post:
+      tags:
+      - Endorsements
+      summary: Get all endorsements
+      description: retrieves everything
+      operationId: create
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEndorsementRequestDTO"
+        required: true
+      responses:
+        "201":
+          description: ' created successfully'
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EndorsementResponseDTO"
   /api/dependents:
     get:
       tags:
@@ -3423,6 +4058,92 @@ paths:
                 $ref: "#/components/schemas/Admin"
         "400":
           description: Invalid admin data
+  /api/admin/applications:
+    get:
+      tags:
+      - Admin Applications
+      summary: Get all admin applications (super admin only)
+      description: Returns all admin applications with optional status filter.
+      operationId: getAllApplications
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Applications retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            '*/*':
+              schema:
+                type: object
+        "403":
+          description: Super admin access required
+          content:
+            '*/*':
+              schema:
+                type: object
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Admin Applications
+      summary: 'Submit an admin application '
+      description: Allows any authenticated user to apply to become an admin.
+      operationId: submitApplication
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+        required: true
+      responses:
+        "201":
+          description: Application submitted successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            '*/*':
+              schema:
+                type: object
+        "403":
+          description: User is already an admin
+          content:
+            '*/*':
+              schema:
+                type: object
+        "409":
+          description: An application is already pending for this user
+          content:
+            '*/*':
+              schema:
+                type: object
+      security:
+      - BearerAuth: []
   /api/addresses:
     get:
       tags:
@@ -3530,6 +4251,146 @@ paths:
             application/json:
               example:
                 error: Invalid profile data provided
+      security:
+      - BearerAuth: []
+  /api/notifications/{notificationId}/read:
+    patch:
+      tags:
+      - notification-controller
+      operationId: markNotificationRead
+      parameters:
+      - name: notificationId
+        in: path
+        description: ID of the notification
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 1
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/admin/applications/{applicationId}/reject:
+    patch:
+      tags:
+      - Admin Applications
+      summary: 'Reject an admin application '
+      description: Super admin only. Rejects the application with an optional reason.
+      operationId: rejectApplication
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: applicationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+      responses:
+        "200":
+          description: Application rejected successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            '*/*':
+              schema:
+                type: object
+        "403":
+          description: Super admin access required
+          content:
+            '*/*':
+              schema:
+                type: object
+        "404":
+          description: Application not found
+          content:
+            '*/*':
+              schema:
+                type: object
+        "409":
+          description: Application has already been reviewed
+          content:
+            '*/*':
+              schema:
+                type: object
+      security:
+      - BearerAuth: []
+  /api/admin/applications/{applicationId}/approve:
+    patch:
+      tags:
+      - Admin Applications
+      summary: Approve an admin application.
+      description: Super admin only. Approves the application and creates an admin_table
+        row.
+      operationId: approveApplication
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: applicationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Application approved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            '*/*':
+              schema:
+                type: object
+        "403":
+          description: Super admin access required
+          content:
+            '*/*':
+              schema:
+                type: object
+        "404":
+          description: Application not found
+          content:
+            '*/*':
+              schema:
+                type: object
+        "409":
+          description: Application has already been reviewed
+          content:
+            '*/*':
+              schema:
+                type: object
       security:
       - BearerAuth: []
   /users/{userId}/tasks:
@@ -3715,68 +4576,6 @@ paths:
               example: Invalid or expired Firebase token
       security:
       - BearerAuth: []
-  /api/suggestion:
-    post:
-      tags:
-      - Suggestions
-      summary: Get suggested action for violation
-      description: Returns the suggested action for a given violation type and severity.
-        Requires admin authentication.
-      operationId: getSuggestion
-      parameters:
-      - name: Authorization
-        in: header
-        description: "Firebase authentication token in format: 'Bearer <token>'"
-        required: true
-        schema:
-          type: string
-        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
-      requestBody:
-        description: Violation type and severity to look up the suggested action
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SuggestionRequestDTO"
-            examples:
-              Request Body:
-                description: Request Body
-                value:
-                  violationType: PRIVACY_VIOLATION
-                  severity: SEVERE
-        required: true
-      responses:
-        "200":
-          description: Suggested action retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SuggestionResponseDTO"
-              examples:
-                Success Response:
-                  description: Success Response
-                  value:
-                    violationType: PRIVACY_VIOLATION
-                    severity: SEVERE
-                    suggestedAction: BAN
-        "400":
-          description: "Invalid violation type, severity, or no rule defined for the\
-            \ pair"
-          content:
-            text/plain:
-              examples:
-                Invalid Request:
-                  description: Invalid Request
-                  value: Invalid violationType or severity
-        "401":
-          description: Invalid or expired Firebase token
-          content:
-            text/plain:
-              examples:
-                Unauthorized:
-                  description: Unauthorized
-                  value: Invalid or expired Firebase token
-      security:
-      - BearerAuth: []
   /api/settings/users/{userId}/status:
     get:
       tags:
@@ -3911,6 +4710,26 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Reaction"
+  /api/notifications:
+    get:
+      tags:
+      - notification-controller
+      operationId: getMyNotifications
+      parameters:
+      - name: Authorization
+        in: header
+        description: "Firebase authentication token in format: 'Bearer <token>'"
+        required: true
+        schema:
+          type: string
+        example: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6...
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
   /api/leaderboard:
     get:
       tags:
@@ -4106,6 +4925,219 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Helper"
+  /api/events/{eventId}/participants:
+    get:
+      tags:
+      - Events
+      summary: Get event participants
+      description: Lists all users RSVPed to a specific event.
+      operationId: getEventParticipants
+      parameters:
+      - name: eventId
+        in: path
+        description: ID of the event to list participants for
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 7
+      - name: Authorization
+        in: header
+        description: Firebase Bearer token
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Participants retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+        "404":
+          description: Event not found
+      security:
+      - BearerAuth: []
+  /api/endorsements/trust-paths:
+    get:
+      tags:
+      - Endorsements
+      operationId: trustPaths
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: toUserId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: maxDepth
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 4
+      - name: maxPaths
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 5
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustPathResponseDTO"
+  /api/endorsements/skills:
+    get:
+      tags:
+      - Endorsements
+      operationId: skills
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillCatalogueResponseDTO"
+  /api/endorsements/me:
+    get:
+      tags:
+      - Endorsements
+      operationId: myEndorsements
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: skillTag
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyEndorsementResponseDTO"
+  /api/endorsements/me/summary:
+    get:
+      tags:
+      - Endorsements
+      operationId: mySummary
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EndorsementSummaryResponseDTO"
+  /api/endorsements/me/graph:
+    get:
+      tags:
+      - Endorsements
+      operationId: myGraph
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: depth
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 2
+      - name: direction
+        in: query
+        required: false
+        schema:
+          type: string
+          default: BOTH
+          enum:
+          - OUT
+          - IN
+          - BOTH
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 200
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustGraphResponseDTO"
+  /api/endorsements/admin/zone/{zoneId}/graph:
+    get:
+      tags:
+      - Endorsements
+      operationId: zoneGraph
+      parameters:
+      - name: zoneId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 500
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustGraphResponseDTO"
+  /api/endorsement-skills:
+    get:
+      tags:
+      - endorsement-skill-controller
+      operationId: getSkills
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EndorsementSkill"
   /api/comments:
     get:
       tags:
@@ -4274,6 +5306,86 @@ paths:
                 $ref: "#/components/schemas/User"
         "401":
           description: Unauthorized
+  /api/admin/applications/{applicationId}:
+    get:
+      tags:
+      - Admin Applications
+      summary: Get a single admin application by ID (super admin only)
+      operationId: getApplicationById
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: applicationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Application found
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            '*/*':
+              schema:
+                type: object
+        "403":
+          description: Super admin access required
+          content:
+            '*/*':
+              schema:
+                type: object
+        "404":
+          description: Application not found
+          content:
+            '*/*':
+              schema:
+                type: object
+      security:
+      - BearerAuth: []
+  /api/admin/applications/me:
+    get:
+      tags:
+      - Admin Applications
+      summary: Get my admin applications
+      description: "Returns all admin applications submitted by the authenticated\
+        \ user, most recent first"
+      operationId: getMyApplications
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Applications retrieved successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "401":
+          description: Invalid or expired Firebase token
+          content:
+            '*/*':
+              schema:
+                type: object
+        "404":
+          description: User not found
+          content:
+            '*/*':
+              schema:
+                type: object
+      security:
+      - BearerAuth: []
   /api/settings/me/user:
     delete:
       tags:
@@ -4339,6 +5451,65 @@ paths:
           description: Comment or post not found
 components:
   schemas:
+    Task:
+      type: object
+      properties:
+        taskId:
+          type: integer
+          format: int32
+        helperId:
+          type: integer
+          format: int32
+        dependentId:
+          type: integer
+          format: int32
+        locationId:
+          type: integer
+          format: int32
+        taskTypeId:
+          type: integer
+          format: int32
+        needsSpecialist:
+          type: boolean
+        signedAdminId:
+          type: integer
+          format: int32
+        startDate:
+          type: string
+          format: date-time
+        startTime:
+          type: string
+        endDate:
+          type: string
+          format: date-time
+        helperBadgeId:
+          type: integer
+          format: int32
+        dependentRatingId:
+          type: string
+        helperRatingId:
+          type: string
+        adminReview:
+          type: string
+        compatibilityId:
+          type: integer
+          format: int32
+        status:
+          type: string
+        title:
+          type: string
+        instructions:
+          type: string
+        taskLat:
+          type: number
+          format: double
+        taskLng:
+          type: number
+          format: double
+        googleCalendarEventIdHelper:
+          type: string
+        immediate:
+          type: boolean
     Address:
       type: object
       properties:
@@ -4355,20 +5526,6 @@ components:
           format: int32
         neighbourhoodid:
           $ref: "#/components/schemas/Location"
-    Admin:
-      type: object
-      properties:
-        adminid:
-          type: integer
-          format: int32
-        admincreatedate:
-          type: string
-          format: date-time
-        adminaccesslevel:
-          type: integer
-          format: int32
-        userid:
-          $ref: "#/components/schemas/User"
     Badges:
       type: object
       properties:
@@ -4388,52 +5545,6 @@ components:
           $ref: "#/components/schemas/Ratings"
         badgeDescription:
           type: string
-    Compatibility:
-      type: object
-      properties:
-        compatibilityid:
-          type: integer
-          format: int32
-        helperid:
-          $ref: "#/components/schemas/Helper"
-        dependentid:
-          $ref: "#/components/schemas/Dependent"
-        compatibilityScore:
-          type: integer
-          format: int32
-        compatibilityColour:
-          type: string
-        compadibilityid:
-          type: integer
-          format: int32
-          writeOnly: true
-    Dependent:
-      type: object
-      properties:
-        dependentId:
-          type: integer
-          format: int32
-        userId:
-          $ref: "#/components/schemas/User"
-        taskTypeId:
-          $ref: "#/components/schemas/TaskType"
-    Helper:
-      type: object
-      properties:
-        helperid:
-          type: integer
-          format: int32
-        userid:
-          $ref: "#/components/schemas/User"
-        taskTypeid:
-          $ref: "#/components/schemas/TaskType"
-        badgeid:
-          $ref: "#/components/schemas/Badges"
-        helperXp:
-          type: integer
-          format: int32
-        available:
-          type: boolean
     Location:
       type: object
       properties:
@@ -4464,134 +5575,6 @@ components:
           format: int32
         currentGroup:
           type: string
-    Task:
-      type: object
-      properties:
-        taskId:
-          type: integer
-          format: int32
-        helperId:
-          type: integer
-          format: int32
-        dependentId:
-          type: integer
-          format: int32
-        locationId:
-          type: integer
-          format: int32
-        taskTypeId:
-          type: integer
-          format: int32
-        needsSpecialist:
-          type: boolean
-        signedAdminId:
-          type: integer
-          format: int32
-        startDate:
-          type: string
-          format: date-time
-        endDate:
-          type: string
-          format: date-time
-        helperBadgeId:
-          type: integer
-          format: int32
-        dependentRatingId:
-          type: string
-        helperRatingId:
-          type: string
-        adminReview:
-          type: string
-        compatibilityId:
-          type: integer
-          format: int32
-        status:
-          type: string
-        title:
-          type: string
-        instructions:
-          type: string
-        images:
-          type: array
-          items:
-            $ref: "#/components/schemas/TaskImage"
-        immediate:
-          type: boolean
-    TaskImage:
-      type: object
-      properties:
-        taskImageId:
-          type: integer
-          format: int32
-        taskid:
-          $ref: "#/components/schemas/TaskInvoice"
-        imageUrl:
-          type: string
-        uploadedAt:
-          type: string
-          format: date-time
-    TaskInvoice:
-      type: object
-      properties:
-        taskid:
-          type: integer
-          format: int32
-        helperid:
-          $ref: "#/components/schemas/Helper"
-        dependentid:
-          $ref: "#/components/schemas/Dependent"
-        locationid:
-          $ref: "#/components/schemas/Location"
-        tasktypeid:
-          $ref: "#/components/schemas/TaskType"
-        needsspecialist:
-          type: boolean
-        signedadminid:
-          $ref: "#/components/schemas/Admin"
-        startdate:
-          type: string
-          format: date
-        enddate:
-          type: string
-          format: date
-        helperbadgeid:
-          $ref: "#/components/schemas/Badges"
-        dependentRatingreview:
-          type: string
-        helperRatingreview:
-          type: string
-        adminReview:
-          type: string
-        status:
-          type: string
-        compatibilityid:
-          $ref: "#/components/schemas/Compatibility"
-        title:
-          type: string
-        instructions:
-          type: string
-        adminreview:
-          type: string
-          writeOnly: true
-        immediate:
-          type: boolean
-        isImmediate:
-          type: boolean
-    TaskType:
-      type: object
-      properties:
-        tasktypeid:
-          type: integer
-          format: int32
-        badgeid:
-          $ref: "#/components/schemas/Badges"
-        description:
-          type: string
-        needsSpecialist:
-          type: boolean
-        xpWorth:
-          type: integer
-          format: int32
     User:
       type: object
       properties:
@@ -4648,6 +5631,193 @@ components:
         progressTarget:
           type: integer
           format: int32
+    TaskType:
+      type: object
+      properties:
+        tasktypeid:
+          type: integer
+          format: int32
+        badgeid:
+          $ref: "#/components/schemas/Badges"
+        description:
+          type: string
+        needsSpecialist:
+          type: boolean
+        xpWorth:
+          type: integer
+          format: int32
+    Admin:
+      type: object
+      properties:
+        adminid:
+          type: integer
+          format: int32
+        admincreatedate:
+          type: string
+          format: date-time
+        adminaccesslevel:
+          type: integer
+          format: int32
+        userid:
+          $ref: "#/components/schemas/User"
+    Compatibility:
+      type: object
+      properties:
+        compatibilityid:
+          type: integer
+          format: int32
+        helperid:
+          $ref: "#/components/schemas/Helper"
+        dependentid:
+          $ref: "#/components/schemas/Dependent"
+        compatibilityScore:
+          type: integer
+          format: int32
+        compatibilityColour:
+          type: string
+        compadibilityid:
+          type: integer
+          format: int32
+          writeOnly: true
+    Dependent:
+      type: object
+      properties:
+        dependentId:
+          type: integer
+          format: int32
+        userId:
+          $ref: "#/components/schemas/User"
+        taskTypeId:
+          $ref: "#/components/schemas/TaskType"
+    Helper:
+      type: object
+      properties:
+        helperid:
+          type: integer
+          format: int32
+        userid:
+          $ref: "#/components/schemas/User"
+        taskTypeid:
+          $ref: "#/components/schemas/TaskType"
+        badgeid:
+          $ref: "#/components/schemas/Badges"
+        helperXp:
+          type: integer
+          format: int32
+        available:
+          type: boolean
+    TaskImage:
+      type: object
+      properties:
+        taskImageId:
+          type: integer
+          format: int32
+        taskid:
+          $ref: "#/components/schemas/TaskInvoice"
+        imageUrl:
+          type: string
+        imageType:
+          type: string
+        aiLabels:
+          type: string
+        aiConfidence:
+          type: number
+          format: double
+        aiInsight:
+          type: string
+        captureSource:
+          type: string
+        clientCapturedAt:
+          type: string
+          format: date-time
+        clientLat:
+          type: number
+          format: double
+        clientLng:
+          type: number
+          format: double
+        clientAccuracyM:
+          type: number
+          format: double
+        deviceId:
+          type: string
+        cameraMake:
+          type: string
+        cameraModel:
+          type: string
+        hasGps:
+          type: boolean
+        captureTimeValid:
+          type: boolean
+        imageHash:
+          type: string
+        uploadedAt:
+          type: string
+          format: date-time
+        perceptualHash:
+          type: integer
+          format: int64
+    TaskInvoice:
+      type: object
+      properties:
+        taskid:
+          type: integer
+          format: int32
+        helperid:
+          $ref: "#/components/schemas/Helper"
+        dependentid:
+          $ref: "#/components/schemas/Dependent"
+        locationid:
+          $ref: "#/components/schemas/Location"
+        tasktypeid:
+          $ref: "#/components/schemas/TaskType"
+        needsspecialist:
+          type: boolean
+        signedadminid:
+          $ref: "#/components/schemas/Admin"
+        startdate:
+          type: string
+          format: date
+        enddate:
+          type: string
+          format: date
+        helperbadgeid:
+          $ref: "#/components/schemas/Badges"
+        dependentRatingreview:
+          type: string
+        helperRatingreview:
+          type: string
+        adminReview:
+          type: string
+        status:
+          type: string
+        compatibilityid:
+          $ref: "#/components/schemas/Compatibility"
+        title:
+          type: string
+        instructions:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskImage"
+        taskLat:
+          type: number
+          format: double
+        taskLng:
+          type: number
+          format: double
+        googleCalendarEventIdHelper:
+          type: string
+        googleCalendarEventIdDependent:
+          type: string
+        adminreview:
+          type: string
+          writeOnly: true
+        immediate:
+          type: boolean
+        isImmediate:
+          type: boolean
     TaskInvitation:
       type: object
       properties:
@@ -4671,6 +5841,29 @@ components:
         showPhoneNo:
           type: boolean
         mode:
+          type: string
+    ReportRequestDTO:
+      type: object
+      properties:
+        reportType:
+          type: string
+        reportedUserId:
+          type: integer
+          format: int32
+        reportedPostId:
+          type: integer
+          format: int32
+        reportedCommentId:
+          type: integer
+          format: int32
+        taskId:
+          type: integer
+          format: int32
+        disputeReason:
+          type: string
+        reason:
+          type: string
+        description:
           type: string
     Comments:
       type: object
@@ -4807,6 +6000,11 @@ components:
           $ref: "#/components/schemas/HelperAnalytics"
         dependenttypeid:
           $ref: "#/components/schemas/DependentAnalytics"
+    ConnectRequest:
+      type: object
+      properties:
+        authCode:
+          type: string
     DeviceTokenRequestDTO:
       type: object
       properties:
@@ -4816,12 +6014,59 @@ components:
       type: object
       properties:
         rating:
-          type: string
-          minLength: 1
+          type: integer
+          format: int32
+          maximum: 5
+          minimum: 1
         reviewSnippet:
           type: string
       required:
       - rating
+    CompletionDecisionRequest:
+      type: object
+      properties:
+        decision:
+          type: string
+        note:
+          type: string
+    SuggestionRequestDTO:
+      type: object
+      properties:
+        violationType:
+          type: string
+        severity:
+          type: string
+    SuggestionResponseDTO:
+      type: object
+      properties:
+        violationType:
+          type: string
+          enum:
+          - HARASSMENT
+          - HATE_SPEECH
+          - INAPPROPRIATE_CONTENT
+          - SPAM_SCAM
+          - PRIVACY_VIOLATION
+          - IMPERSONATION
+          - TASK_NO_SHOW
+          - TASK_POOR_QUALITY
+          - TASK_PROPERTY_DAMAGE
+          - TASK_UNSAFE_CONDITIONS
+          - THREATS_VIOLENCE
+        severity:
+          type: string
+          enum:
+          - MINOR
+          - MODERATE
+          - SEVERE
+        suggestedAction:
+          type: string
+          enum:
+          - WARNING
+          - SUSPEND_7D
+          - SUSPEND_14D
+          - SUSPEND_30D
+          - BAN
     ShowStatusRequest:
       type: object
       properties:
@@ -4832,6 +6077,14 @@ components:
       properties:
         mode:
           type: string
+    ReportImageLinkRequestDTO:
+      type: object
+      properties:
+        imageUrl:
+          type: string
+          minLength: 1
+      required:
+      - imageUrl
     ReactionResponseDTO:
       type: object
       properties:
@@ -4858,6 +6111,51 @@ components:
         disLikeCount:
           type: integer
           format: int64
+    CreateEndorsementRequestDTO:
+      type: object
+      properties:
+        endorseeId:
+          type: integer
+          format: int32
+        skillTag:
+          type: string
+          minLength: 1
+        taskId:
+          type: integer
+          format: int32
+      required:
+      - endorseeId
+      - skillTag
+    EndorsementResponseDTO:
+      type: object
+      properties:
+        endorsementId:
+          type: integer
+          format: int32
+        endorserId:
+          type: integer
+          format: int32
+        endorseeId:
+          type: integer
+          format: int32
+        skillTag:
+          type: string
+        skillDisplayName:
+          type: string
+        category:
+          type: string
+        zoneId:
+          type: integer
+          format: int32
+        taskId:
+          type: integer
+          format: int32
+        weight:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
     CommentRequestDTO:
       type: object
       properties:
@@ -4947,6 +6245,22 @@ components:
             type: string
         empty:
           type: boolean
+    PatchReportDTO:
+      type: object
+      properties:
+        reportId:
+          type: integer
+          format: int32
+        status:
+          type: string
+        violationType:
+          type: string
+        severity:
+          type: string
+        actualAction:
+          type: string
+        adminNotes:
+          type: string
     TaskDetailDTO:
       type: object
       properties:
@@ -4973,6 +6287,8 @@ components:
         startDate:
           type: string
           format: date-time
+        startTime:
+          type: string
         endDate:
           type: string
           format: date-time
@@ -5001,6 +6317,10 @@ components:
           type: string
         instructions:
           type: string
+        completionPhotos:
+          type: array
+          items:
+            type: string
         immediate:
           type: boolean
     AchievementDTO:
@@ -5028,44 +6348,237 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AchievementDTO"
-    SuggestionRequestDTO:
+    Hop:
       type: object
       properties:
-        violationType:
+        fromUserId:
+          type: integer
+          format: int32
+        toUserId:
+          type: integer
+          format: int32
+        skillTag:
           type: string
-        severity:
-          type: string
-    SuggestionResponseDTO:
+        weight:
+          type: integer
+          format: int32
+    Path:
       type: object
       properties:
-        violationType:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/PathUser"
+        hops:
+          type: array
+          items:
+            $ref: "#/components/schemas/Hop"
+        totalWeight:
+          type: integer
+          format: int32
+    PathUser:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int32
+        name:
+          type: string
+    TrustPathResponseDTO:
+      type: object
+      properties:
+        fromUserId:
+          type: integer
+          format: int32
+        toUserId:
+          type: integer
+          format: int32
+        connected:
+          type: boolean
+        length:
+          type: integer
+          format: int32
+        paths:
+          type: array
+          items:
+            $ref: "#/components/schemas/Path"
+    CategoryGroup:
+      type: object
+      properties:
+        category:
+          type: string
+        skills:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillItem"
+    SkillCatalogueResponseDTO:
+      type: object
+      properties:
+        totalSkills:
+          type: integer
+          format: int32
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryGroup"
+    SkillItem:
+      type: object
+      properties:
+        skillTag:
+          type: string
+        displayName:
+          type: string
+    MyEndorsementResponseDTO:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int32
+        totalEndorsements:
+          type: integer
+          format: int32
+        skills:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillGroup"
+    SkillGroup:
+      type: object
+      properties:
+        skillTag:
+          type: string
+        displayName:
+          type: string
+        category:
+          type: string
+        count:
+          type: integer
+          format: int32
+        totalWeight:
+          type: integer
+          format: int64
+        endorsements:
+          type: array
+          items:
+            $ref: "#/components/schemas/EndorsementResponseDTO"
+    EndorsementSummaryResponseDTO:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int32
+        totalEndorsements:
+          type: integer
+          format: int64
+        totalWeight:
+          type: integer
+          format: int64
+        distinctSkills:
+          type: integer
+          format: int32
+        distinctEndorsers:
+          type: integer
+          format: int64
+        topSkills:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillSummary"
+        lastEndorsedAt:
+          type: string
+          format: date-time
+        miniGraphNodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/EndorserNode"
+    EndorserNode:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int32
+        name:
+          type: string
+    SkillSummary:
+      type: object
+      properties:
+        skillTag:
+          type: string
+        skillDisplayName:
+          type: string
+        category:
+          type: string
+        endorsementCount:
+          type: integer
+          format: int64
+        totalWeight:
+          type: integer
+          format: int64
+    Edge:
+      type: object
+      properties:
+        fromUserId:
+          type: integer
+          format: int32
+        toUserId:
+          type: integer
+          format: int32
+        skillTag:
+          type: string
+        weight:
+          type: integer
+          format: int32
+    Node:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int32
+        displayName:
+          type: string
+        hop:
+          type: integer
+          format: int32
+    TrustGraphResponseDTO:
+      type: object
+      properties:
+        rootUserId:
+          type: integer
+          format: int32
+        zoneId:
+          type: integer
+          format: int32
+        depth:
+          type: integer
+          format: int32
+        direction:
           type: string
           enum:
-          - HARASSMENT
-          - HATE_SPEECH
-          - INAPPROPRIATE_CONTENT
-          - SPAM_SCAM
-          - PRIVACY_VIOLATION
-          - IMPERSONATION
-          - TASK_NO_SHOW
-          - TASK_POOR_QUALITY
-          - TASK_PROPERTY_DAMAGE
-          - TASK_UNSAFE_CONDITIONS
-          - THREATS_VIOLENCE
-        severity:
+          - OUT
+          - IN
+          - BOTH
+        nodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Node"
+        edges:
+          type: array
+          items:
+            $ref: "#/components/schemas/Edge"
+        truncated:
+          type: boolean
+    EndorsementSkill:
+      type: object
+      properties:
+        skillTag:
           type: string
-          enum:
-          - MINOR
-          - MODERATE
-          - SEVERE
-        suggestedAction:
+        displayName:
           type: string
-          enum:
-          - WARNING
-          - SUSPEND_7D
-          - SUSPEND_14D
-          - SUSPEND_30D
-          - BAN
+        category:
+          type: string
+        approved:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
     ReactionRemovedResponseDTO:
       type: object
       properties:
