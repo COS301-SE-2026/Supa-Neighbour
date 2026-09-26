@@ -53,7 +53,7 @@ import java.util.UUID;
 @Service 
 public class EndorsementClusterService {
 
-    private static final Logger log = LoggerFactory.getLogger(EndorsementClusterService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EndorsementClusterService.class);
 
 
     /**
@@ -82,28 +82,46 @@ public class EndorsementClusterService {
         this.locationRepository=locationRepository;
     }
 
+    /**
+     * Nightly entry point: runs cluster analysis for every zone that has
+     * endorsements. Each zone is processed independently — a failure in one
+     * is logged and skipped, so the rest still run. Scheduled at 03:00,
+     * ahead of the abuse scan at 04:00.
+     */
     @Scheduled(cron = "0 0 3 * * *")
     public void runNightlyForAllZones() {
         List<Integer> zoneIds = endorsementRepository.findDistinctZoneIds();
-        log.info("Nightly cluster analysis starting for {} zone(s)",zoneIds.size());
+        LOG.info("Nightly cluster analysis starting for {} zone(s)",zoneIds.size());
 
         int succeeded = 0;
         for(Integer zoneId: zoneIds) {
             try {
                 ClusterAnalysisRunResponseDTO result = runForZone(zoneId);
-                log.info("Zone {}:{} nodes,{} edges,{} clusters,modularity {}",
+                LOG.info("Zone {}:{} nodes,{} edges,{} clusters,modularity {}",
                     zoneId,result.nodeCount(),result.edgeCount(),
                     result.clusterCount(),result.modularity());
 
                 succeeded++;
-            }
-            catch(Exception e) {
-                log.error("Cluster analysis failws for zone {}",zoneId,e);
+            }catch(Exception e) {
+                LOG.error("Cluster analysis failws for zone {}",zoneId,e);
             }
         }
-        log.info("Nightly cluster analysis complete: {}/{} zone(s) succeded",succeeded,zoneIds.size());
+        LOG.info("Nightly cluster analysis complete: {}/{} zone(s) succeded",succeeded,zoneIds.size());
     }
 
+     /**
+     * Runs community detection for a single zone: clears the zone's cached
+     * clusters, recomputes them from the zone's endorsement edges, and writes
+     * the new cache rows.
+     *
+     * <p>Zones with no edges produce an empty cache and a zero-valued result
+     * rather than an error.</p>
+     *
+     * @param zoneId the zone to analyse
+     * @return a summary of the run (node/edge/cluster counts and modularity)
+     * @throws ResponseStatusException with {@link HttpStatus#NOT_FOUND} if no
+     *         location exists with {@code zoneId}
+     */
     @Transactional 
     public ClusterAnalysisRunResponseDTO runForZone(int zoneId) {
         if(!locationRepository.existsById(zoneId)) {

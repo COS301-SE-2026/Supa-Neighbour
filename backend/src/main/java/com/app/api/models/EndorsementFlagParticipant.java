@@ -1,6 +1,12 @@
 package com.app.api.models;
 
-import jakarta.persistence.*;
+
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Entity;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,6 +36,14 @@ public class EndorsementFlagParticipant {
     @Column(name = "role", length = 10)
     private String role; 
 
+        /**
+     * Creates a participant row linking a user to a flag.
+     *
+     * @param flagId the flag this participant belongs to
+     * @param userId the participating user's id
+     * @param role   the user's role in the pattern (e.g. "endorser"), or
+     *               {@code null} for role-less patterns
+     */
     public EndorsementFlagParticipant(Long flagId, int userId, String role) {
         this.flagId = flagId;
         this.userId = userId;

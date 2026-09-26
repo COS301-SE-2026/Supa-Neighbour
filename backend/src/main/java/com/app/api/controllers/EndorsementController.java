@@ -1,5 +1,8 @@
 package com.app.api.controllers;
 
+import java.util.List;
+
+import com.app.api.dtos.AbuseFlagResponseDTO;
 import com.app.api.dtos.ClusterAnalysisRunResponseDTO;
 import com.app.api.dtos.ClusterMembershipResponseDTO;
 import com.app.api.dtos.CreateEndorsementRequestDTO;
@@ -11,8 +14,11 @@ import com.app.api.dtos.SkillCatalogueResponseDTO;
 import com.app.api.dtos.TrustGraphResponseDTO;
 import com.app.api.dtos.TrustPathResponseDTO;
 import com.app.api.models.User;
+import com.app.api.dtos.UpdateFlagStatusRequestDTO;
 import com.app.api.services.EndorsementService;
 import org.springframework.http.HttpStatus;
+
+import com.app.api.services.EndorsementAbuseService;
 import com.app.api.services.EndorsementClusterService;
 import com.app.api.services.FirebaseAuthService;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -21,12 +27,14 @@ import com.app.api.repositories.UserRepository;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
- 
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,28 +59,41 @@ public class EndorsementController {
     private final UserRepository userRepository;
     private final EndorsementClusterService endorsementClusterService;
     private final int ZONE_GRAPH_MIN_ADMIN_LEVEL = 1;
+    private final EndorsementAbuseService endorsementAbuseService;
 
-    /**
-     * Constructs a new {@code EndorsementController} with the given service.
+     /**
+     * Constructs a new {@code EndorsementController} with the given collaborators.
      *
-     * @param endorsementService the service used to handle endorsement operations
+     * @param endorsementService        core endorsement operations
+     * @param firebaseAuthService       resolves the caller from a Firebase ID token
+     * @param userRepository            loads the acting {@link User}
+     * @param endorsementClusterService cluster-analysis operations
+     * @param endorsementAbuseService   abuse-flag operations
      */
-    public EndorsementController(EndorsementService endorsementService,FirebaseAuthService firebaseAuthService,UserRepository userRepository, EndorsementClusterService endorsementClusterService) {
+    public EndorsementController(EndorsementService endorsementService,FirebaseAuthService firebaseAuthService,UserRepository userRepository, EndorsementClusterService endorsementClusterService,  EndorsementAbuseService endorsementAbuseService) {
         this.endorsementService = endorsementService;
         this.userRepository= userRepository;
         this.firebaseAuthService = firebaseAuthService;
         this.endorsementClusterService=endorsementClusterService; 
+        this.endorsementAbuseService = endorsementAbuseService;
     }
 
     /**
      * Endorses another user for a skill, optionally tied to a completed task.
      *
-     * @param request the endorsement to record
-     * @return 201 with the created endorsement and a {@code Location} header
+     * @param authHeader the {@code Authorization: Bearer <token>} header
+     * @param request    the endorsement to record
+     * @return 201 with the created endorsement; 401 if the token is invalid;
+     *         404 if the caller has no user record
      */
     @PostMapping
-    @Operation(summary = "Get all endorsements", description = "retrieves everything")
-    @ApiResponse(responseCode = "201", description =" created successfully")
+    @Operation(summary = "Create an endorsement",
+               description = "Records an endorsement from the caller to another user for a skill.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Endorsement created successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid or missing Firebase token"),
+        @ApiResponse(responseCode = "404", description = "Caller has no user record")
+    })
     public ResponseEntity<EndorsementResponseDTO> create(@RequestHeader("Authorization") String authHeader,@Valid @RequestBody CreateEndorsementRequestDTO request) {
         try {
             String token = authHeader.replace("Bearer ", "");
@@ -95,9 +116,12 @@ public class EndorsementController {
     /**
      * Lists the endorsements the caller has received, grouped by skill tag.
      *
-     * @return 200 with the grouped listing
+     * @param authHeader the {@code Authorization: Bearer <token>} header
+     * @param skillTag   optional skill filter
+     * @return 200 with the grouped listing; 401 if the token is invalid;
+     *         404 if the caller has no user record
      */
-    @GetMapping(path = "/me",produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MyEndorsementResponseDTO> myEndorsements(
         @RequestHeader("Authorization") String authHeader,
         @RequestParam(required = false)String skillTag) {
@@ -120,9 +144,11 @@ public class EndorsementController {
     /**
      * Returns a compact endorsement summary sized for profile cards.
      *
-     * @return 200 with the summary
+     * @param authHeader the {@code Authorization: Bearer <token>} header
+     * @return 200 with the summary; 401 if the token is invalid; 404 if the
+     *         caller has no user record
      */
-    @GetMapping(path = "/me/summary", produces= MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/me/summary", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EndorsementSummaryResponseDTO>mySummary(@RequestHeader ("Authorization") String authHeader) {
         try {
             String token = authHeader.replace("Bearer ", "");
@@ -143,16 +169,19 @@ public class EndorsementController {
     /**
      * Returns the caller's N-hop trust-graph neighbourhood.
      *
-     * @param depth     hops to expand, clamped server-side
-     * @param direction which endorsement edges to follow
-     * @param limit     node cap, clamped server-side
-     * @return 200 with nodes and edges
+     * @param authHeader the {@code Authorization: Bearer <token>} header
+     * @param depth      hops to expand, clamped server-side
+     * @param direction  which endorsement edges to follow
+     * @param limit      node cap, clamped server-side
+     * @return 200 with nodes and edges; 401 if the token is invalid; 404 if
+     *         the caller has no user record
      */
-    @GetMapping(path = "/me/graph",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TrustGraphResponseDTO> myGraph(@RequestHeader("Authorization") String authHeader,
-            @RequestParam (defaultValue = "2") int depth,
-            @RequestParam(defaultValue =  "BOTH") GraphDirection direction,
-            @RequestParam(defaultValue = "200")int limit) {
+    @GetMapping(path = "/me/graph", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TrustGraphResponseDTO> myGraph(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(defaultValue = "2") int depth,
+            @RequestParam(defaultValue = "BOTH") GraphDirection direction,
+            @RequestParam(defaultValue = "200") int limit) {
         try {
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
@@ -171,10 +200,12 @@ public class EndorsementController {
     /**
      * Returns the shortest trust path(s) from the caller to another user.
      *
-     * @param toUserId the target user
-     * @param maxDepth search limit, clamped server-side
-     * @param maxPaths result cap, clamped server-side
-     * @return 200 with the paths, or a disconnected result
+     * @param authHeader the {@code Authorization: Bearer <token>} header
+     * @param toUserId   the target user
+     * @param maxDepth   search limit, clamped server-side
+     * @param maxPaths   result cap, clamped server-side
+     * @return 200 with the paths (or a disconnected result); 401 if the
+     *         token is invalid; 404 if the caller has no user record
      */
     @GetMapping(path = "/trust-paths", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TrustPathResponseDTO> trustPaths(
@@ -233,6 +264,14 @@ public class EndorsementController {
         }
     }
 
+    /**
+     * Triggers a fresh cluster-analysis run for a zone. Admin only.
+     *
+     * @param zoneId     the zone to analyse
+     * @param authHeader the {@code Authorization: Bearer <token>} header
+     * @return 200 with the run result; 401 if the token is invalid; 403 if the
+     *         caller is not an admin; 404 if the caller has no user record
+     */
     @PostMapping(path = "zone/{zoneId}/cluster-analysis",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ClusterAnalysisRunResponseDTO> triggerClusterAnalysis(
         @PathVariable Integer zoneId,
@@ -252,6 +291,14 @@ public class EndorsementController {
         }
     }
 
+    /**
+     * Returns the cached cluster membership for a zone. Admin only.
+     *
+     * @param zoneId     the zone to read
+     * @param authHeader the {@code Authorization: Bearer <token>} header
+     * @return 200 with the cached memberships; 401 if the token is invalid;
+     *         403 if the caller is not an admin; 404 if the caller has no user record
+     */
     @GetMapping(path = "zone/{zoneId}/clusters", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ClusterMembershipResponseDTO> clusters(
         @PathVariable Integer zoneId,
@@ -271,8 +318,63 @@ public class EndorsementController {
         }
     }
 
+
+    /**
+     * Lists abuse flags, optionally filtered by status. Admin only.
+     *
+     * @param status     optional status filter ({@code open}, {@code investigate}, {@code dismiss})
+     * @param authHeader the {@code Authorization: Bearer <token>} header
+     * @return 200 with the flags; 401 if the token is invalid; 403 if the
+     *         caller is not an admin; 404 if the caller has no user record
+     */
+    @GetMapping(path = "/admin/flags", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<AbuseFlagResponseDTO>> listFlags(
+        @RequestParam(required = false) String status,
+        @RequestHeader("Authorization") String authHeader
+    ){
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            User user = userRepository.findById(userId).orElse(null);
+            if(user == null){
+                return ResponseEntity.notFound().build();
+            }
+
+            endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL, user);
+            return ResponseEntity.ok(endorsementAbuseService.listFlags(status));
+        }catch (FirebaseAuthException e) {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    /**
+     * Updates the review status of an abuse flag. Admin only.
+     *
+     * @param flagId     the flag to update
+     * @param request    the new status
+     * @param authHeader the {@code Authorization: Bearer <token>} header
+     * @return 200 with the updated flag; 400 if the status is invalid; 401 if
+     *         the token is invalid; 403 if the caller is not an admin; 404 if
+     *         the caller or flag is not found
+     */
+    @PatchMapping(path = "/admin/flags/{flagId}/status", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AbuseFlagResponseDTO> updateFlagStatus(
+    @PathVariable Long flagId,
+    @RequestBody UpdateFlagStatusRequestDTO request,
+    @RequestHeader("Authorization") String authHeader
+    ) {
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            User user = userRepository.findById(userId).orElse(null);
+            if(user == null){
+                return ResponseEntity.notFound().build();
+            }
+            endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL, user);
+            return ResponseEntity.ok(endorsementAbuseService.updateStatus(flagId, request.status()));
+        }catch (FirebaseAuthException e) {
+            return ResponseEntity.status(401).build();
+        }
+    }
 }
-
-
-
 

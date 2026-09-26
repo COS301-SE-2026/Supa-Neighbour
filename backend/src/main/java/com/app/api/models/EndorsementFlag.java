@@ -1,6 +1,11 @@
 package com.app.api.models;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.EqualsAndHashCode;
@@ -72,6 +77,17 @@ public class EndorsementFlag {
     @Column(name = "run_id", nullable = false)
     private UUID runId;
 
+    /**
+     * Creates a new flag in its initial state: status {@code "open"},
+     * occurrence count {@code 1}, and both detection timestamps set to
+     * {@code detectedAt}. Later detections merge into this instance.
+     *
+     * @param patternType abuse pattern (e.g. {@code "mutual_ring"})
+     * @param zoneId      zone the pattern was detected in, or {@code null} if zone-agnostic
+     * @param metricValue detector-specific score for this detection
+     * @param detectedAt  timestamp the pattern was detected
+     * @param runId       scan run that produced this flag
+     */
     public EndorsementFlag(String patternType, Integer zoneId, Double metricValue,
                             LocalDateTime detectedAt, UUID runId) {
         this.patternType = patternType;
