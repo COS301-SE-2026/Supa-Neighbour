@@ -487,9 +487,9 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
     setState(() => _isSubmitting = true);
 
     final taskService = ref.read(taskServiceProvider);
+    final taskId = int.parse(widget.task.id);
     try {
       final taskService = ref.read(taskServiceProvider);
-      final taskId = int.parse(widget.task.id);
 
       await taskService.submitCompletionDecision(
         taskId: taskId,

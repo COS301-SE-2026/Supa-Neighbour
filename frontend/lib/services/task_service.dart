@@ -61,11 +61,11 @@ abstract class ITaskService {
   Future<List<VerificationResult>> getCompletionVerifications(int taskId);
 
   Future<String?> uploadTaskImage(XFile imageFile);
-  Future<void> saveTaskImages(int taskId, List<String> imageUrls);
   Future<Map<String, dynamic>> rateTask({
     required int taskId,
     required int rating,
     String? reviewSnippet,
+  });
   Future<void> saveTaskImages(int taskId, List<String> imageUrls, {required TaskImageType type});
   Future<void> submitCompletionDecision({
     required int taskId,
@@ -505,6 +505,7 @@ Future<void> declineTaskInvitation(int taskId) async {
     }
   }
 
+  @override
   Future<VerificationResult> submitCompletionEvidence({
     required int taskId,
     required XFile image,
