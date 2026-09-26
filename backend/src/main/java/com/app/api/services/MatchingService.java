@@ -15,6 +15,7 @@ import com.app.api.models.Helper;
 import com.app.api.models.HelperSkill;
 import com.app.api.models.TaskInvitation;
 import com.app.api.models.TaskInvoice;
+import com.app.api.repositories.HelperAnalyticsRepository;
 import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.HelperSkillRepository;
 import com.app.api.repositories.TaskInvitationRepository;
@@ -32,6 +33,7 @@ public class MatchingService {
     private final TaskInvoiceRepository taskInvoiceRepo;
     private final NotificationsService notificationsService;
     private final LocationService locationService;
+    private final HelperAnalyticsRepository helperAnalyticsRepo;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
@@ -42,20 +44,23 @@ public class MatchingService {
      * @param helperSkillRepo the repository for managing helper skills
      * @param taskInvitationRepo the repository for managing task invitations
      * @param taskInvoiceRepo the repository for managing task invoices
+     * @param notificationsService service for sending notifications
+     * @param locationService service for location resolution
+     * @param helperAnalyticsRepo repository for helper analytics to read trust score
      */
-        public MatchingService(HelperRepository helperRepo,
-            HelperSkillRepository helperSkillRepo,
-            TaskInvitationRepository taskInvitationRepo,
-            TaskInvoiceRepository taskInvoiceRepo,
-            NotificationsService notificationsService,
-            LocationService locationService) {
+        public MatchingService(HelperRepository helperRepo, HelperSkillRepository helperSkillRepo,
+            TaskInvitationRepository taskInvitationRepo,TaskInvoiceRepository taskInvoiceRepo,
+            NotificationsService notificationsService, LocationService locationService, HelperAnalyticsRepository helperAnalyticsRepo) {
         this.helperRepo = helperRepo;
         this.helperSkillRepo = helperSkillRepo;
         this.taskInvitationRepo = taskInvitationRepo;
         this.taskInvoiceRepo = taskInvoiceRepo;
         this.notificationsService = notificationsService;
         this.locationService = locationService;
+        this.helperAnalyticsRepo = helperAnalyticsRepo;
     }
+
+
     /**
      * Matches helpers to a task based on location and skills.
      *
@@ -77,19 +82,18 @@ public class MatchingService {
             return new ArrayList<>();
         }
 
-        Integer taskTypeId = task.getTasktypeid() != null 
-            ? task.getTasktypeid().getTasktypeid()
-            : null;
-
+        Integer taskTypeId = task.getTasktypeid() != null
+                ? task.getTasktypeid().getTasktypeid()
+                : null;
 
         List<Helper> availableHelpers = helperRepo.findByAvailable(true);
-
         List<MatchedHelperDTO> matched = new ArrayList<>();
 
-        for(Helper helper : availableHelpers) {
+        for (Helper helper : availableHelpers) {
 
-            if (helper.getUserid() != null && helper.getUserid().getUserid() == requesterUserId) {
-                continue; 
+            if (helper.getUserid() != null
+                    && helper.getUserid().getUserid() == requesterUserId) {
+                continue;
             }
 
             String helperZone = getZoneFromHelper(helper);
@@ -103,10 +107,11 @@ public class MatchingService {
 
             boolean skillMatched = false;
             if (taskTypeId != null) {
-                List<HelperSkill> skills = helperSkillRepo.findHelperId(helper.getHelperid());
+                List<HelperSkill> skills =
+                        helperSkillRepo.findHelperId(helper.getHelperid());
                 for (HelperSkill skill : skills) {
-                if (skill.getTaskTypeId() != null
-                        && skill.getTaskTypeId().getTasktypeid() == taskTypeId) {
+                    if (skill.getTaskTypeId() != null
+                            && skill.getTaskTypeId().getTasktypeid() == taskTypeId) {
                         skillMatched = true;
                         break;
                     }
@@ -117,34 +122,33 @@ public class MatchingService {
                 continue;
             }
 
-            boolean alreadyExist =  taskInvitationRepo
-                .findByTaskId_TaskidAndHelperId_Helperid(taskId, helper.getHelperid())
-                .isPresent();
+            boolean alreadyExists = taskInvitationRepo
+                    .findByTaskId_TaskidAndHelperId_Helperid(taskId, helper.getHelperid())
+                    .isPresent();
 
-            if(!alreadyExist){
+            if (!alreadyExists) {
                 TaskInvitation invitation = TaskInvitation.builder()
-                .taskId(task)
-                .helperId(helper)
-                .status(null)
-                .invitedAt(new Date())
-                .build();
+                        .taskId(task)
+                        .helperId(helper)
+                        .status(null)
+                        .invitedAt(new Date())
+                        .build();
                 taskInvitationRepo.save(invitation);
 
-                String newTask = "New Task Created";
-
-                if(helper.getUserid() != null){
-                   eventPublisher.publishEvent(new HelperMatchedEvent(
-                        helper.getUserid().getUserid(),
-                        taskId,
-                        task.getTitle() 
-                    ));
+                if (helper.getUserid() != null) {
+                    eventPublisher.publishEvent(new HelperMatchedEvent(
+                            helper.getUserid().getUserid(),
+                            taskId,
+                            task.getTitle()));
                 }
             }
-            
 
             String helperName = helper.getUserid() != null
-                    ? helper.getUserid().getFirstName() + " " + helper.getUserid().getLastName()
+                    ? helper.getUserid().getFirstName() + " "
+                            + helper.getUserid().getLastName()
                     : "Unknown";
+
+            double trustScore = resolveTrustScore(helper);
 
             matched.add(new MatchedHelperDTO(
                     helper.getHelperid(),
@@ -152,19 +156,43 @@ public class MatchingService {
                     helperZone,
                     skillMatched,
                     helper.getHelperXp(),
-                    "Helpers matched"
-            ));
+                    "Helpers matched",
+                    trustScore));
         }
 
         matched.sort((a, b) -> {
             if (a.isSkillMatched() != b.isSkillMatched()) {
                 return a.isSkillMatched() ? -1 : 1;
             }
+            int trustCompare = Double.compare(b.getTrustScore(), a.getTrustScore());
+            if (trustCompare != 0) {
+                return trustCompare;
+            }
             return Integer.compare(b.getHelperXp(), a.getHelperXp());
         });
 
         return matched;
     }
+
+
+ /**
+     * Resolves the model-computed trust score for a helpe
+     *
+     * @param helper the helper entity
+     * @return the trust score in [0, 5], or 0.0 if unavailable
+     */
+    private double resolveTrustScore(Helper helper) {
+        
+        if (helper.getUserid() == null) {
+            return 0.0;
+        }
+
+        return helperAnalyticsRepo
+                .findByUserId(helper.getUserid().getUserid())
+                .map(analytics -> (double) analytics.getAverageRating())
+                .orElse(0.0);
+    }
+
 
     /**
      * Retrieves the neighbourhood zone from a given task.
