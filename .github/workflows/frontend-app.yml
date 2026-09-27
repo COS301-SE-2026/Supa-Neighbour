@@ -84,7 +84,7 @@ jobs:
           storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}
           keyAlias=${{ secrets.RELEASE_KEY_ALIAS }}
-          storeFile=app/supa-release.jks
+          storeFile=supa-release.jks
           EOF
 
       - name: Build release APK

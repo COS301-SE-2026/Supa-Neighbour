@@ -26,8 +26,26 @@ public record TrustGraphResponseDTO(
     /** Which endorsement edges a traversal follows. */
     public enum GraphDirection { OUT, IN, BOTH }
 
+
+    /**
+     * A user in the graph.
+     *
+     * @param userId      the user
+     * @param displayName the user's display name, {@code null} when not resolved
+     * @param hop         distance in hops from the root; 0 for the root itself,
+     *                    and 0 for every node of a zone-wide graph
+     */
     public record Node(Integer userId, String displayName, int hop) { }
 
+
+    /**
+     * A directed endorsement edge.
+     *
+     * @param fromUserId endorser
+     * @param toUserId   endorsee
+     * @param skillTag   skill the endorsement was for
+     * @param weight     endorsement weight
+     */
     public record Edge(Integer fromUserId, Integer toUserId, String skillTag, Integer weight) { }
 
 }

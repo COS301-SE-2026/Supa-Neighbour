@@ -23,6 +23,10 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: 'maven'
+      - name: Write Firebase service account key
+        run: |
+          mkdir -p backend/src/main/resources/Firebase
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}' > backend/src/main/resources/Firebase/serviceAccountKey.json
       - name: Build backend
         run: |
           cd backend

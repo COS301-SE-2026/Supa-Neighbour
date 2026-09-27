@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/helper_profile_response.dart';
+import '../models/trust_score_breakdown.dart';
 
 // INTERFACE (Contract)
 abstract class IHelperProfileService {
   Future<HelperProfileResponse> getHelperProfile(int helperId);
   Future<HelperProfileResponse> getHelperProfileByUserId(int userId);
+  Future<TrustScoreBreakdown> getTrustScore(int userId);
 }
 
 class HelperProfileService implements IHelperProfileService {
@@ -83,4 +85,32 @@ class HelperProfileService implements IHelperProfileService {
       throw Exception('Connection error: ${e.message}');
     }
   }
+
+  @override
+Future<TrustScoreBreakdown> getTrustScore(int userId) async {
+  try {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception('User not authenticated');
+    }
+    final idToken = await user.getIdToken();
+    if (idToken == null) {
+      throw Exception('Failed to get Firebase token');
+    }
+
+    final response = await _dio.get(
+      '/api/helpers/$userId/trust-score',
+      options: Options(
+        headers: {'Authorization': 'Bearer $idToken'},
+      ),
+    );
+
+    if (response.statusCode == 200 && response.data != null) {
+      return TrustScoreBreakdown.fromJson(response.data);
+    }
+    throw Exception('Failed to load trust score');
+  } on DioException catch (e) {
+    throw Exception('Connection error: ${e.message}');
+  }
+}
 }

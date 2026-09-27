@@ -15,15 +15,15 @@ import com.app.api.models.Notifications;
 import com.app.api.repositories.NotificationRepository;
 import com.app.api.repositories.UserDeviceRepository;
 import com.app.api.repositories.UserRepository;
+import com.google.firebase.messaging.AndroidConfig;
+import com.google.firebase.messaging.AndroidNotification;
+import com.google.firebase.messaging.ApnsConfig;
+import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
-import com.google.firebase.messaging.AndroidConfig;
-import com.google.firebase.messaging.AndroidNotification;
-import com.google.firebase.messaging.ApnsConfig;
-import com.google.firebase.messaging.Aps;
 
 /**
  * Sends push notifications via Firebase Cloud Messaging (FCM) to a user's
@@ -102,57 +102,11 @@ public class NotificationsService {
      * @param commenterName    display name of the commenter
      */
     public void sendPostCommentNotifications(int postAuthorUserId, int postId, String commenterName) {
-        LOGGER.info("🔔 sendPostCommentNotif() called: userId={}, type={}, entityId={}", postId);
         send(postAuthorUserId,
                 "New comment under your post!",
                 commenterName + " commented on your post",
                 "POST_COMMENT",
                 String.valueOf(postId));
-    }
-
-    /**
-     * Send a test notification directly to a specific device token.
-     * Used for development testing from the Flutter app.
-     *
-     * @param fcmToken the device FCM token
-     * @param title    the notification title
-     * @param body     the notification body
-     * @param type     the notification type
-     * @param entityId the ID of the related entity
-     * @throws FirebaseMessagingException if sending fails
-     */
-    public void sendTestNotification(String fcmToken, String title, String body,
-                                     String type, String entityId) throws FirebaseMessagingException {
-
-        Message message = Message.builder()
-                .setToken(fcmToken)
-                .setNotification(Notification.builder()
-                        .setTitle(title)
-                        .setBody(body)
-                        .build())
-                .putData("type", type)
-                .putData("entityId", entityId)
-                .putData("click_action", "FLUTTER_NOTIFICATION_CLICK")
-                .build();
-
-        try {
-            String response = FirebaseMessaging.getInstance().send(message);
-            LOGGER.info("✅ Test notification sent successfully: {}", response);
-        } catch (FirebaseMessagingException e) {
-            LOGGER.error("❌ FCM send failed: {}", e.getMessage(), e);
-
-            if (e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED ||
-                    e.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT) {
-                String tokenPreview = fcmToken.length() > 20
-                        ? fcmToken.substring(0, 20) + "..."
-                        : fcmToken;
-                LOGGER.warn("⚠️ Invalid FCM token: {}", tokenPreview);
-            }
-            throw e;
-        } catch (Exception e) {
-            LOGGER.error("Unexpected error while sending test notification: {}", e.getMessage(), e);
-            throw new RuntimeException("Unexpected error sending test notification", e);
-        }
     }
 
     /**
@@ -205,6 +159,10 @@ public class NotificationsService {
      * Uses HIGH priority on Android so the notification is delivered immediately
      * even under Doze mode. Dead tokens are deleted so they stop being retried.
      *
+     * <p>Cleanup failures (e.g. deleting a dead token from the DB) are caught
+     * and logged so they never abort the send loop — every other token for the
+     * user still gets its chance to receive the notification.
+     *
      * @param userId   the user to notify
      * @param title    notification title
      * @param body     notification body
@@ -212,10 +170,8 @@ public class NotificationsService {
      * @param entityId the ID of the relevant entity as a string
      */
     private void send(int userId, String title, String body, String type, String entityId) {
-            LOGGER.info("🔔 send() called: userId={}, type={}, entityId={}", userId, type, entityId);
         notifPersistance.saveNotification(userId, title, body, type, entityId);
 
-        
         List<String> tokens = userDeviceRepository.findTokensByUserId(userId);
 
         for (String token : tokens) {
@@ -246,11 +202,18 @@ public class NotificationsService {
             try {
                 FirebaseMessaging.getInstance().send(message);
             } catch (FirebaseMessagingException e) {
-                if (e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED ||
-                        e.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT) {
-                    userDeviceRepository.deleteToken(token);
+                MessagingErrorCode code = e.getMessagingErrorCode();
+                if (code == MessagingErrorCode.UNREGISTERED ||
+                        code == MessagingErrorCode.INVALID_ARGUMENT) {
+                    try {
+                        userDeviceRepository.deleteToken(token);
+                    } catch (Exception cleanupEx) {
+                        // Never let cleanup failure stop us from trying the next token
+                        LOGGER.warn("Failed to remove dead token: {}", cleanupEx.getMessage());
+                    }
                 }
-                LOGGER.error("FCM send failed for user {}: {}", userId, e.getMessage(), e);
+                // SonarQube-safe: only the error code is logged, never the token or user id
+                LOGGER.warn("FCM delivery failed: code={}", code);
             }
         }
     }
@@ -258,44 +221,42 @@ public class NotificationsService {
     /**
      * Fetches all notifications for a user, most recent first.
      *
-     * @param userId the user_id to fetch notifications for 
+     * @param userId the user_id to fetch notifications for
      * @return the user's notifications as DTOs
      */
-    public List<NotificationDTO> getNotificationsForUser(int userId){
+    public List<NotificationDTO> getNotificationsForUser(int userId) {
         return notificationRepository.findByUser_UseridOrderByCreatedatDesc(userId)
-        .stream()
-        .map(this::toDTO)
-        .collect(Collectors.toList());
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
-
 
     /**
      * Marks a single notification as read.
      *
      * @param notificationId the notification to mark as read
+     * @param userId the user requesting the change
      */
-    public void markAsRead(int notificationId, int userId){
-        Notifications notification = notificationRepository.findById(notificationId).orElseThrow(() -> new IllegalArgumentException("Notification not found: " + notificationId));
+    public void markAsRead(int notificationId, int userId) {
+        Notifications notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + notificationId));
         if (notification.getUser() == null ||
-            notification.getUser().getUserid() != userId) {
+                notification.getUser().getUserid() != userId) {
             throw new IllegalArgumentException(
-                "Notification does not belong to user: " + userId
-            );
+                    "Notification does not belong to user: " + userId);
         }
         notification.setIsread(true);
         notificationRepository.save(notification);
     }
 
-    private NotificationDTO toDTO(Notifications n){
+    private NotificationDTO toDTO(Notifications n) {
         return new NotificationDTO(
-            n.getNotificationid(),
-            n.getNotificationtype(),
-            n.getEntityid(),
-            n.getNotificationtitle(),
-            n.getNotificationbody(),
-            n.isIsread(),
-            n.getCreatedat().format(TIMESTAMP_FORMAT)
-        );
+                n.getNotificationid(),
+                n.getNotificationtype(),
+                n.getEntityid(),
+                n.getNotificationtitle(),
+                n.getNotificationbody(),
+                n.isIsread(),
+                n.getCreatedat().format(TIMESTAMP_FORMAT));
     }
-
 }

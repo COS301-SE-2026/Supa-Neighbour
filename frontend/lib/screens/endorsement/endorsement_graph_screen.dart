@@ -413,7 +413,7 @@ class _EndorsementGraphScreenState
     );
   }
 
-  /// Renders a single user node in the graph.
+  //// Renders a single user node in the graph.
   Widget _buildNodeWidget(EndorsementGraphNode node) {
     final isCentre = node.isCentreNode;
     final radius = isCentre ? 32.0 : 24.0;
