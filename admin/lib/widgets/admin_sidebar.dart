@@ -104,6 +104,13 @@ class AdminSidebar extends StatelessWidget {
                   index: 2,
                   route: '/users',
                 ),
+                _buildNavItem(
+                  context: context,
+                  icon: Icons.hub,
+                  label: 'Trust Graph',
+                  index: 3,
+                  route: '/trust-graph',
+                ),
                 // TODO: Role-gate this item — only show for super admins
                 // (admin_access_level = 2). Waiting on backend to return
                 // adminAccessLevel in /api/auth/admin/login response.
@@ -112,21 +119,21 @@ class AdminSidebar extends StatelessWidget {
                   context: context,
                   icon: Icons.admin_panel_settings,
                   label: 'Applications',
-                  index: 3,
+                  index: 4,
                   route: '/applications',
                 ),
                 _buildNavItem(
                   context: context,
                   icon: Icons.location_on,
                   label: 'Zones',
-                  index: 4,
+                  index: 5,
                   route: '/zones',
                 ),
                 _buildNavItem(
                   context: context,
                   icon: Icons.settings,
                   label: 'Settings',
-                  index: 5,
+                  index: 6,
                   route: '/settings',
                 ),
               ],

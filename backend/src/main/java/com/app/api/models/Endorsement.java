@@ -7,18 +7,23 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.FetchType;
 
 import java.time.LocalDateTime;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Getter
 @Setter
 @Data
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "endorsement_table")
 public class Endorsement{
     @Id
@@ -35,7 +40,7 @@ public class Endorsement{
     private User endorseeid;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "zone_id", nullable = false)
+    @JoinColumn(name = "location_id", nullable = false)
     private Location zoneid;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -84,5 +89,18 @@ public class Endorsement{
         this.skillTag = skillTag;
         this.taskid = taskid;
         this.weight = weight;
+        this.createdAt = LocalDateTime.now();
+    }
+
+
+    /**
+     * JPA lifecycle callback that stamps {@link #createdAt} immediately before the
+     * entity is first persisted.
+     */
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
     }
 }

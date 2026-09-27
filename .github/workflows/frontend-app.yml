@@ -76,6 +76,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
         working-directory: frontend
+        
+      - name: Decode release keystore
+        run: |
+          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > frontend/android/app/supa-release.jks
+          cat > frontend/android/key.properties <<EOF
+          storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}
+          keyAlias=${{ secrets.RELEASE_KEY_ALIAS }}
+          storeFile=app/supa-release.jks
+          EOF
 
       - name: Build release APK
         run: flutter build apk --release -t lib/main.dart

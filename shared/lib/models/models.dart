@@ -14,3 +14,4 @@ export 'review_model.dart';
 export 'address_model.dart';
 export 'auth_session.dart';
 export 'admin_application_model.dart';
+export 'endorsement_model.dart';

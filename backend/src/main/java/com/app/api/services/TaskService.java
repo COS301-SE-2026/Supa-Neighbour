@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -61,6 +62,8 @@ public class TaskService {
 
     private final ApplicationEventPublisher eventPublisher;
 
+    private final HelperTasksService helperTasksService;
+
     /**
      * Constructs a TaskService with the required repositories.
      * @param taskRepo the task repository
@@ -75,7 +78,8 @@ public class TaskService {
             MessageRepository messageRepo, HelperRepository helperRepo, TaskInvitationRepository taskInvitationRepo,
             ApplicationEventPublisher eventPublisher,
             TaskImageRepository taskImageRepo,
-            BlobStorageService blobStorageService) {
+            BlobStorageService blobStorageService,
+            HelperTasksService helperTasksService) {
         this.taskRepo = taskRepo;
         this.analyticsRepo = analyticsRepo;
         this.dependentRepo = dependentRepo;
@@ -86,6 +90,7 @@ public class TaskService {
         this.eventPublisher = eventPublisher;
         this.taskImageRepo = taskImageRepo;
         this.blobStorageService = blobStorageService;
+        this.helperTasksService = helperTasksService;
     }
 
     /**
@@ -323,6 +328,7 @@ public class TaskService {
         
         List<TaskInvitation> pending = taskInvitationRepo.findByHelperId_HelperidAndStatus(helper.getHelperid(), null);
         List<Integer> taskIds = new ArrayList<>();
+        
         for(TaskInvitation invitation: pending){
             TaskInvoice taskInvoice = invitation.getTaskId();
             if(taskInvoice != null){
@@ -368,9 +374,16 @@ public class TaskService {
         }
 
         List<Task> tasks = taskRepo.findByDependentId(dependent.getDependentId());
+
+        // One query for every task's completion photos
+        List<Integer> taskIds = tasks.stream().map(Task::getTaskId).toList();
+        Map<Integer, List<String>> photosByTask = helperTasksService.fetchPhotosByTaskIds(taskIds);
+
         List<TaskDetailDTO> details = new ArrayList<>();
         for (Task task : tasks) {
-            details.add(toDetailDTO(task));
+            TaskDetailDTO dto = toDetailDTO(task);
+            dto.setCompletionPhotos(photosByTask.getOrDefault(task.getTaskId(), List.of()));
+            details.add(dto);
         }
         return details;
     }

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supa_neighbour/models/verification_model.dart';
 import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
+import '../../providers/service_providers.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../leaderboard/helper_profile_preview_screen.dart';
 
-class TaskAwaitingApprovalScreen extends StatelessWidget {
+class TaskAwaitingApprovalScreen extends ConsumerWidget {
   final Task task;
 
   const TaskAwaitingApprovalScreen({
@@ -14,7 +17,11 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final verifications = ref.watch(
+      completionVerificationsProvider(int.tryParse(task.id) ?? -1),
+    );
+
     return Scaffold(
       backgroundColor: AppColors.background(context),
       appBar: AppBar(
@@ -283,6 +290,26 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            verifications.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.only(bottom: 16),
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              ),
+              error: (e, st) {
+                debugPrint('[verification] load failed: $e');
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text('Verification error: $e',
+                      style: const TextStyle(color: Colors.red, fontSize: 12)),
+                );
+              }, // non-critical, hide on failure
+              data: (list) => list.isEmpty
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildVerificationCard(context, list),
+                    ),
+            ),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -356,6 +383,120 @@ class TaskAwaitingApprovalScreen extends StatelessWidget {
       bottomNavigationBar: BottomNavBar(
         currentIndex: 1,
        onTap: (_) {},
+      ),
+    );
+  }
+
+  Widget _buildVerificationCard(
+      BuildContext context, List<VerificationResult> list) {
+    final verified = list.where((r) => r.status == 'VERIFIED').length;
+    final review = list.where((r) => r.status == 'NEEDS_REVIEW').length;
+    final failed = list.where((r) => r.status == 'FAILED').length;
+    final allGood = verified == list.length;
+    final aiRan = list.any((r) => r.aiInsight != null);
+    final color =
+        allGood ? AppColors.primaryTeal(context) : const Color(0xFFFF9800);
+
+    // First result that has a location verdict
+    final loc = list.firstWhere(
+      (r) => r.locationVerified != null,
+      orElse: () => list.first,
+    );
+    final insight = list
+        .map((r) => r.aiInsight)
+        .firstWhere((i) => i != null, orElse: () => null);
+
+    String headline;
+    if (allGood) {
+      headline = 'Photos verified';
+    } else if (failed > 0) {
+      headline = '$failed photo(s) did not pass checks';
+    } else {
+      headline = '$review photo(s) flagged for manual review';
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(allGood ? Icons.verified : Icons.flag_outlined,
+                  color: color, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  headline,
+                  style: GoogleFonts.poppins(
+                    color: AppColors.charcoal(context),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$verified of ${list.length} photos passed automatic checks.',
+            style: GoogleFonts.openSans(
+              color: AppColors.charcoal(context),
+              fontSize: 13,
+            ),
+          ),
+          if (loc.locationVerified != null) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Icon(
+                  loc.locationVerified! ? Icons.location_on : Icons.location_off,
+                  size: 16,
+                  color: color,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    loc.locationVerified!
+                        ? 'Completed at the task location'
+                        : 'Photo taken ${loc.distanceM?.round() ?? '?'} m from the task',
+                    style: GoogleFonts.openSans(
+                      color: AppColors.charcoal(context),
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (!aiRan) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Automatic photo comparison was unavailable, so the requester will review your photos.',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 12,
+              ),
+            ),
+          ],
+          if (insight != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              insight,
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

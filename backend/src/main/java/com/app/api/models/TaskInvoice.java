@@ -108,7 +108,57 @@ public class TaskInvoice {
     @OneToMany(mappedBy = "taskid", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TaskImage> images;
 
+    /** The task latitude in decimal degrees, or {@code null} if not set. */
+    @Column(name = "task_lat")
+    private Double taskLat;
+
+    /** The task longitude in decimal degrees, or {@code null} if not set. */
+    @Column(name = "task_lng")
+    private Double taskLng; 
+
+    @Column(name = "google_calendar_event_id_helper")
+    private String googleCalendarEventIdHelper;
+
+    @Column(name = "google_calendar_event_id_dependent")
+    private String googleCalendarEventIdDependent;
+
     /**
+     * Gets the Google Calendar event ID for the helper.
+     *
+     * @return the helper Google Calendar event ID
+     */
+    public String getGoogleCalendarEventIdHelper() {
+        return googleCalendarEventIdHelper;
+    }
+
+    /**
+     * Sets the Google Calendar event ID for the helper.
+     *
+     * @param googleCalendarEventIdHelper the helper Google Calendar event ID
+     */
+    public void setGoogleCalendarEventIdHelper(String googleCalendarEventIdHelper) {
+        this.googleCalendarEventIdHelper = googleCalendarEventIdHelper;
+    }
+
+    /**
+     * Gets the Google Calendar event ID for the dependent.
+     *
+     * @return the dependent Google Calendar event ID
+     */
+    public String getGoogleCalendarEventIdDependent() {
+        return googleCalendarEventIdDependent;
+    }
+
+    /**
+     * Sets the Google Calendar event ID for the dependent.
+     *
+     * @param googleCalendarEventIdDependent the dependent Google Calendar event ID
+     */
+    public void setGoogleCalendarEventIdDependent(String googleCalendarEventIdDependent) {
+        this.googleCalendarEventIdDependent = googleCalendarEventIdDependent;
+    }
+
+/**
      * Gets the task identifier.
      *
      * @return the task identifier
@@ -469,4 +519,21 @@ public class TaskInvoice {
         this.reviewSnippet = reviewSnippet;
     }
 
+    /**
+     * Gets the task longitude in decimal degrees.
+     *
+     * @return the task longitude, or {@code null} if not set
+     */
+    public Double getTaskLng() {
+        return taskLng;
+    }
+
+    /**
+     * Sets the task longitude in decimal degrees.
+     *
+     * @param taskLng the task longitude, or {@code null} to clear it
+     */
+    public void setTaskLng(Double taskLng) {
+        this.taskLng = taskLng;
+    }
 }

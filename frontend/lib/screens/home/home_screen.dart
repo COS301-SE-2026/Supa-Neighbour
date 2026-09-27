@@ -65,7 +65,8 @@ class HomeContent extends ConsumerStatefulWidget {
   ConsumerState<HomeContent> createState() => _HomeContentState();
 }
 
-class _HomeContentState extends ConsumerState<HomeContent> {
+class _HomeContentState extends ConsumerState<HomeContent>
+    with WidgetsBindingObserver {
   List<Task> _nearbyTasks = [];
   List<Task> _availableTasks = [];
    
@@ -82,8 +83,29 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _currentUser = AuthSession.instance.currentUser;
     _loadData();
+
+    // Pull fresh notifications so the unread badge is accurate on app start.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationsProvider.notifier).refresh();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Whenever the user comes back to the app, refetch the notifications list
+    // so the unread badge stays in sync with the backend.
+    if (state == AppLifecycleState.resumed) {
+      ref.read(notificationsProvider.notifier).refresh();
+    }
   }
 
   Future<void> _loadData() async {
@@ -155,19 +177,58 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_none, color: AppColors.primaryTeal(context)),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NotificationsScreen(
-                    onNotificationTap: (int tabIndex) {
-                      // Call the changeTab method on the parent HomeScreen
-                      homeScreenState?.changeTab(tabIndex);
+          // Notification bell with unread badge
+          Consumer(
+            builder: (context, ref, _) {
+              final notifications = ref.watch(notificationsProvider);
+              final unreadCount =
+                  notifications.where((n) => !n.isRead).length;
+
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.notifications_none,
+                      color: AppColors.primaryTeal(context),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NotificationsScreen(
+                            onNotificationTap: (int tabIndex) {
+                              homeScreenState?.changeTab(tabIndex);
+                            },
+                          ),
+                        ),
+                      );
                     },
                   ),
-                ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: AppColors.error(context),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(minWidth: 16),
+                        child: Text(
+                          unreadCount > 99 ? '99+' : '$unreadCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
               );
             },
           ),

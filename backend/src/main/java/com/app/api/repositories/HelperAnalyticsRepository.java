@@ -14,7 +14,13 @@ import java.util.Optional;
  */
 @Repository
 public interface HelperAnalyticsRepository extends JpaRepository<HelperAnalytics, String> {
-
+/**
+ * Finds the helper analytics row for the given user.
+ *
+ * @param userId the user's id
+ * @return the matching analytics row, if present
+ */
+Optional<HelperAnalytics> findByUserid_Userid(Integer userId);
     /**
      * Finds a HelperAnalytics entity by the associated user id.
      * @param userId the id of the user

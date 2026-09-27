@@ -2,6 +2,7 @@ package com.app.api.repositories;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
@@ -51,12 +52,16 @@ public class UserDeviceRepository {
     }
 
     /**
-     * Deletes a dead/unregistered token, e.g. after FCM reports UNREGISTERED.
+     * Deletes a dead/unregistered token.
      *
-     * @param fcmToken the token to remove
+     * REQUIRES_NEW is critical: this method is called from a
+     * TransactionalEventListener(AFTER_COMMIT), at which point the outer
+     * transaction has already been committed. Without REQUIRES_NEW, the
+     * delete runs outside any transaction and Spring/Hibernate throws
+     * InvalidDataAccessApiUsageException: "Executing an update/delete query".
      */
-    @Transactional
-    public void deleteToken(String fcmToken){
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deleteToken(String fcmToken) {
         Query query = entityManager.createNativeQuery(
             "DELETE FROM user_device_table WHERE fcm_token = :fcmToken"
         );

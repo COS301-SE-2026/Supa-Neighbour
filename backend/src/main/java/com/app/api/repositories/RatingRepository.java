@@ -58,11 +58,6 @@ public class RatingRepository {
     /**
      * Retrieves the dependent user's identifier for the specified task.
      *
-     * <p>
-     * This is used to verify that the authenticated user is the
-     * requester associated with the task.
-     * </p>
-     *
      * @param taskId the identifier of the task
      * @return the dependent user's identifier, or {@code null} if no
      *         dependent is associated with the task
@@ -81,54 +76,31 @@ public class RatingRepository {
         } catch (NoResultException e) {
             return null;
         }
-
     }
 
     /**
-     * Determines whether the supplied rating is valid.
+     * Determines whether the supplied star rating is within the valid range.
      *
      * @param rating the rating value to validate
-     * @return {@code true} if the rating exists in the rating table;
-     *         otherwise {@code false}
+     * @return {@code true} if 1 <= rating <= 5; otherwise {@code false}
      */
-    public boolean isValidRating(String rating) {
-        String sql = "SELECT COUNT(*) FROM rating_table WHERE rating_review = :rating";
-
-        long count = ((Number) em.createNativeQuery(sql).setParameter("rating", rating).getSingleResult()).longValue();
-        return count > 0;
-    }
-
-    /**
-     * Stores a rating and optional review snippet for the specified task.
-     *
-     * @param taskId        the identifier of the task
-     * @param rating        the rating submitted by the dependent
-     * @param reviewSnippet the accompanying review snippet, if provided
-     */
-    public void submitRating(int taskId, String rating, String reviewSnippet) {
-        String sql = """
-                UPDATE task_invoice_table
-                SET dependent_rating_review = :rating,
-                    review_snippet          = :reviewSnippet
-                WHERE task_id = :taskId
-                """;
-        em.createNativeQuery(sql).setParameter("rating", rating).setParameter("reviewSnippet", reviewSnippet)
-                .setParameter("taskId", taskId).executeUpdate();
+    public boolean isValidRating(int rating) {
+        return rating >= 1 && rating <= 5;
     }
 
     /**
      * Recalculates the average rating for the specified helper.
      *
      * <p>
-     * The average is computed from all submitted dependent ratings
-     * associated with the helper's completed tasks and is stored in
-     * the helper analytics table.
+     * The average is computed directly from the numeric
+     * {@code dependent_rating_review} values on the helper's tasks and
+     * is stored in the helper analytics table.
      * </p>
      *
      * @param helperId the identifier of the helper whose average rating
      *                 is to be recalculated
      */
-    public void recalculateAverageRating(int helperId) {
+    public void recalculateAverageRating(int helperId, int rating) {
         String getHelperUserIdSql = """
                 SELECT user_id FROM helper_table WHERE helper_id = :helperId
                 """;
@@ -136,29 +108,15 @@ public class RatingRepository {
         int helperUserId = ((Number) em.createNativeQuery(getHelperUserIdSql).setParameter("helperId", helperId)
                 .getSingleResult()).intValue();
 
-        String avgSql = """
-                      SELECT AVG(
-                    CASE r.rating_review
-                        WHEN 'Outstanding' THEN 5.0
-                        WHEN 'Excellent'   THEN 4.0
-                        WHEN 'Very Good'   THEN 3.0
-                        WHEN 'Good'        THEN 2.0
-                        WHEN 'Average'     THEN 1.0
-                    END
-                )
-                FROM task_invoice_table ti
-                JOIN rating_table       r ON r.rating_review = ti.dependent_rating_review
-                WHERE ti.helper_id                 = :helperId
-                  AND ti.dependent_rating_review   IS NOT NULL
-                """;
+        double currentAverage = findAverageRating(helperId);
+        int ratingCount = countCompletedRatingsForHelper(helperId);
 
-        Object result = em.createNativeQuery(avgSql).setParameter("helperId", helperId).getSingleResult();
-
-        if (result == null) {
-            return;
+        double newAverage;
+        if (currentAverage <= 0 || ratingCount == 0) {
+            newAverage = rating;
+        } else {
+            newAverage = ((currentAverage * ratingCount) + rating) / (ratingCount + 1.0);
         }
-
-        double newAverage = ((Number) result).doubleValue();
 
         String updateSql = """
                 UPDATE helper_analytics_table
@@ -189,5 +147,30 @@ public class RatingRepository {
         } catch(NoResultException e){
             return null;
         }
+    }
+
+    /**
+     * Counts how many completed tasks for the specified helper have a
+     * dependent rating recorded.
+     *
+     * @param helperId the identifier of the helper whose completed ratings
+     *                 are being counted
+     * @return the number of completed task invoices for the helper that have a
+     *         non-null dependent rating review
+     */
+    public int countCompletedRatingsForHelper(int helperId) {
+        String sql = """
+            SELECT COUNT(*)
+            FROM task_invoice_table ti
+            WHERE ti.helper_id = :helperId
+            AND ti.status = 'completed'
+            AND ti.dependent_rating_review IS NOT NULL
+            """;
+
+        Number count = (Number) em.createNativeQuery(sql)
+            .setParameter("helperId", helperId)
+            .getSingleResult();
+
+        return count == null ? 0 : count.intValue();
     }
 }

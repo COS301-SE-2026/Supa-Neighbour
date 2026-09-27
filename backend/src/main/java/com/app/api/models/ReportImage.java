@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.PrePersist;
 
 @Entity
 @Table(name = "report_image_table")
@@ -108,5 +109,15 @@ public class ReportImage {
      */
     public LocalDateTime getUploadedAt() {
         return uploadedAt;
+    }
+
+    /**
+     * Returns the date and time when the image was uploaded.
+     *
+     * @return the upload timestamp, or {@code null} if not set
+     */
+    @PrePersist
+    protected void onCreate() {
+        this.uploadedAt = LocalDateTime.now();
     }
 }
