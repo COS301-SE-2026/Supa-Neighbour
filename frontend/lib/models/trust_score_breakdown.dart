@@ -20,13 +20,13 @@ class TrustScoreBreakdown {
   factory TrustScoreBreakdown.fromJson(Map<String, dynamic> json) {
     double parse(dynamic v) => (v as num?)?.toDouble() ?? 0.0;
     return TrustScoreBreakdown(
-      completionRate: parse(json['completionRate']),
-      ratingReliability: parse(json['ratingReliability']),
-      communityStanding: parse(json['communityStanding']),
-      recency: parse(json['recency']),
-      zoneActivity: parse(json['zoneActivity']),
-      longevity: parse(json['longevity']),
-      overall: parse(json['overall']),
+    completionRate: parse(json['completionRate']),
+    ratingReliability: parse(json['ratingVolumeScore']),
+    communityStanding: parse(json['reportPenalty']),
+    recency: parse(json['recencyScore']),
+    zoneActivity: parse(json['zoneActivity']),
+    longevity: parse(json['daysActive']),
+    overall: parse(json['trustScore']),
     );
   }
 
