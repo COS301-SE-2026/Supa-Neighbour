@@ -21,7 +21,7 @@ class HelperProfileResponse {
 
   factory HelperProfileResponse.fromJson(Map<String, dynamic> json) {
     return HelperProfileResponse(
-      userId: json['userId'] as int? ?? 0,
+      userId: json['helperId'] as int? ?? 0,
       displayName: json['displayName'] as String? ?? '',
       level: json['level'] as String?,
       trustScore: (json['trustScore'] as num?)?.toDouble() ?? 0.0,
