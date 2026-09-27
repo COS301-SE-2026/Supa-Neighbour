@@ -46,7 +46,7 @@ public class TrustScoreController {
      * @param helperRepository used to verify the helper exists
      * @param firebaseAuthService used to authenticate the caller
      */
-    public TrustScoreController(TrustScoreFeatureService featureService,mTrustScoreModel model,
+    public TrustScoreController(TrustScoreFeatureService featureService,TrustScoreModel model,
             HelperRepository helperRepository, FirebaseAuthService firebaseAuthService) {
 
         this.featureService = featureService;
