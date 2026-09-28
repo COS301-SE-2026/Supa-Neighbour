@@ -34,8 +34,8 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
   // ===== REQUIRED EVIDENCE PHOTOS (CAMERA ONLY) =====
   final List<File> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
-  static const int _minImages = 5;
-  static const int _maxImages = 10;
+  static const int _minImages = 2;
+  static const int _maxImages = 5;
 
   // ===== REQUIRED LOCATION =====
   Position? _location;
