@@ -11,24 +11,24 @@ import '../../providers/service_providers.dart';
 /// approval. Skill tags are curated by the backend; the user can select
 /// up to 3 chips or skip entirely.
 class EndorsementPromptSheet extends ConsumerStatefulWidget {
-  final String endorseeId;
+  final int endorseeId;
   final String endorseeName;
-  final String? taskId;
+  final int? taskId;
 
   const EndorsementPromptSheet({
     super.key,
     required this.endorseeId,
     required this.endorseeName,
-    this.taskId,
+    required this.taskId,
   });
 
   /// Convenience helper: shows the sheet and returns true if the user
   /// submitted at least one endorsement.
   static Future<bool> show(
     BuildContext context, {
-    required String endorseeId,
+    required int endorseeId,
     required String endorseeName,
-    String? taskId,
+    int? taskId,
   }) async {
     final result = await showModalBottomSheet<bool>(
       context: context,

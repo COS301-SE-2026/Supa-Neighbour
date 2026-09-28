@@ -90,20 +90,42 @@ class EndorsementSummary {
       );
 
   factory EndorsementSummary.fromJson(Map<String, dynamic> json) {
+    final rawUserId = json['userId'];
+    final centreId = rawUserId?.toString() ?? '';
+
+    final outerNodes = (json['miniGraphNodes'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .map(EndorsementGraphNode.fromJson)
+        .toList();
+
+    // Backend doesn't send a centre node or edges yet (Option A stopgap).
+    // Synthesize both: the current user as the hub, plus a spoke edge to
+    // each endorser. No per-skill color/weight info is available this way,
+    // so edges fall through to the painter's default neutral color.
+    final centreNode = EndorsementGraphNode(
+      userId: centreId,
+      displayName: '',
+      trustScore: 0.0,
+      isCentreNode: true,
+    );
+
+    final edges = outerNodes
+        .map((n) => EndorsementGraphEdge(
+              fromUserId: centreId,
+              toUserId: n.userId,
+              skillTag: '', // unknown at this granularity — neutral color
+              weight: 1,
+            ))
+        .toList();
+
     return EndorsementSummary(
-      totalCount: json['totalCount'] as int? ?? 0,
+      totalCount: json['totalEndorsements'] as int? ?? 0,
       topSkills: (json['topSkills'] as List<dynamic>? ?? [])
           .whereType<Map<String, dynamic>>()
           .map(SkillCount.fromJson)
           .toList(),
-      miniGraphNodes: (json['miniGraphNodes'] as List<dynamic>? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(EndorsementGraphNode.fromJson)
-          .toList(),
-      miniGraphEdges: (json['miniGraphEdges'] as List<dynamic>? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(EndorsementGraphEdge.fromJson)
-          .toList(),
+      miniGraphNodes: [centreNode, ...outerNodes],
+      miniGraphEdges: edges,
     );
   }
 }
@@ -123,8 +145,8 @@ class SkillCount {
   factory SkillCount.fromJson(Map<String, dynamic> json) {
     return SkillCount(
       skillTag: json['skillTag'] as String? ?? '',
-      displayName: json['displayName'] as String? ?? '',
-      count: json['count'] as int? ?? 0,
+      displayName: json['skillDisplayName'] as String? ?? '',
+      count: json['endorsementCount'] as int? ?? 0,
     );
   }
 }
@@ -147,8 +169,8 @@ class EndorsementGraphNode {
 
   factory EndorsementGraphNode.fromJson(Map<String, dynamic> json) {
     return EndorsementGraphNode(
-      userId: json['userId'] as String? ?? '',
-      displayName: json['displayName'] as String? ?? '',
+      userId: json['userId'].toString(),
+      displayName: json['displayName'] as String? ?? json['name'] as String? ?? '',
       profilePhoto: json['profilePhoto'] as String?,
       trustScore: (json['trustScore'] as num?)?.toDouble() ?? 0.0,
       isCentreNode: json['isCentreNode'] as bool? ?? false,
@@ -158,22 +180,22 @@ class EndorsementGraphNode {
 
 /// An edge in the endorsement graph (represents an endorsement).
 class EndorsementGraphEdge {
-  final String endorserId;
-  final String endorseeId;
+  final String fromUserId;
+  final String toUserId;
   final String skillTag;
   final int weight;
 
   EndorsementGraphEdge({
-    required this.endorserId,
-    required this.endorseeId,
+    required this.fromUserId,
+    required this.toUserId,
     required this.skillTag,
     required this.weight,
   });
 
   factory EndorsementGraphEdge.fromJson(Map<String, dynamic> json) {
     return EndorsementGraphEdge(
-      endorserId: json['endorserId'] as String? ?? '',
-      endorseeId: json['endorseeId'] as String? ?? '',
+      fromUserId: json['fromUserId'].toString(),
+      toUserId: json['toUserId'].toString(),
       skillTag: json['skillTag'] as String? ?? '',
       weight: json['weight'] as int? ?? 1,
     );
@@ -239,7 +261,7 @@ class SkillTag {
 
   factory SkillTag.fromJson(Map<String, dynamic> json) {
     return SkillTag(
-      tag: json['tag'] as String? ?? '',
+      tag: json['skillTag'] as String? ?? '',
       displayName: json['displayName'] as String? ?? '',
       category: json['category'] as String? ?? '',
     );

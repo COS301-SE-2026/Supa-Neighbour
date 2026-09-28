@@ -129,7 +129,7 @@ public class PostsController {
         ) {
        try{
             String token = authHeader.replace("Bearer ", "");
-            int userId = firebaseAuthService.getUserIdFromToken(token);
+            firebaseAuthService.getUserIdFromToken(token);
             PostDetailDTO detail = postsService.getPostDetail(postId);
             if(detail == null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Post not found"));
