@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import com.app.api.vision.*;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -14,25 +13,34 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
+import com.app.api.vision.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Covers response parsing and image downscaling without a network call. The HTTP call itself
- * (call/requestBody/auth header) is not exercised here - that needs a live key or a mock server,
- * and is the thing to check by hand against the real API first (see the guide, §5.1/§7).
+ * Covers response parsing and image downscaling without a network call, same approach as
+ * GeminiVisionClientTest. The HTTP call itself (endpoint, deployment path, api-key header) is not
+ * exercised here - that needs a real deployment, and is the thing to check by hand once Gendac
+ * confirms the resource/deployment to use (see the guide, §5.1/§7).
  */
-class GeminiVisionClientTest {
+class AzureOpenAiVisionClientTest {
 
     private final VisionProperties properties = new VisionProperties();
-    private final GeminiVisionClient client = new GeminiVisionClient(properties, new ObjectMapper());
+    private final AzureOpenAiVisionClient client;
+
+    AzureOpenAiVisionClientTest() {
+        properties.getAzureOpenai().setEndpoint("https://example.openai.azure.com");
+        properties.getAzureOpenai().setDeployment("gpt-4o-mini");
+        properties.getAzureOpenai().setKey("test-key");
+        client = new AzureOpenAiVisionClient(properties, new ObjectMapper());
+    }
 
     // ---------------------------------------------------------------- parse(): compare (expectVerdict = true)
 
     @Test
     void parsesACompleteVerdict() {
-        String body = geminiEnvelope("{\"labels\":[\"tap\",\"sink\"],\"confidence\":0.87,"
-                + "\"insight\":\"The tap is no longer dripping.\",\"taskLooksComplete\":true}");
+        String body = chatEnvelope("{\"labels\":[\"tap\",\"sink\"],\"confidence\":0.87,"
+                + "\"insight\":\"The tap is no longer dripping.\",\"taskLooksComplete\":true}", "stop");
 
         VisionResult r = client.parse(body, true);
 
@@ -45,8 +53,8 @@ class GeminiVisionClientTest {
 
     @Test
     void parsesAnIncompleteVerdict() {
-        String body = geminiEnvelope("{\"labels\":[],\"confidence\":0.6,\"insight\":\"Still dripping.\","
-                + "\"taskLooksComplete\":false}");
+        String body = chatEnvelope("{\"labels\":[],\"confidence\":0.6,\"insight\":\"Still dripping.\","
+                + "\"taskLooksComplete\":false}", "stop");
 
         VisionResult r = client.parse(body, true);
 
@@ -56,7 +64,7 @@ class GeminiVisionClientTest {
 
     @Test
     void missingTaskLooksCompleteIsInvalidWhenAVerdictWasExpected() {
-        String body = geminiEnvelope("{\"labels\":[],\"confidence\":0.6,\"insight\":\"x\"}");
+        String body = chatEnvelope("{\"labels\":[],\"confidence\":0.6,\"insight\":\"x\"}", "stop");
 
         VisionResult r = client.parse(body, true);
 
@@ -68,7 +76,7 @@ class GeminiVisionClientTest {
 
     @Test
     void baselineDoesNotRequireTaskLooksComplete() {
-        String body = geminiEnvelope("{\"labels\":[\"tap\"],\"confidence\":0.9,\"insight\":\"A dripping tap.\"}");
+        String body = chatEnvelope("{\"labels\":[\"tap\"],\"confidence\":0.9,\"insight\":\"A dripping tap.\"}", "stop");
 
         VisionResult r = client.parse(body, false);
 
@@ -76,33 +84,16 @@ class GeminiVisionClientTest {
         assertFalse(r.taskLooksComplete());   // never claims completion
     }
 
-    // ---------------------------------------------------------------- safety / blocking
+    // ---------------------------------------------------------------- content filter
 
     @Test
-    void promptLevelBlockIsContentFiltered() {
-        String body = "{\"promptFeedback\":{\"blockReason\":\"SAFETY\"}}";
+    void finishReasonContentFilterIsContentFiltered() {
+        String body = chatEnvelope("{}", "content_filter");
 
         VisionResult r = client.parse(body, true);
 
         assertFalse(r.available());
         assertEquals(VisionResult.Outcome.CONTENT_FILTERED, r.outcome());
-    }
-
-    @Test
-    void candidateFinishReasonSafetyIsContentFiltered() {
-        String body = "{\"candidates\":[{\"finishReason\":\"SAFETY\",\"content\":{\"parts\":[]}}]}";
-
-        VisionResult r = client.parse(body, true);
-
-        assertFalse(r.available());
-        assertEquals(VisionResult.Outcome.CONTENT_FILTERED, r.outcome());
-    }
-
-    @Test
-    void prohibitedContentIsContentFiltered() {
-        String body = "{\"candidates\":[{\"finishReason\":\"PROHIBITED_CONTENT\",\"content\":{\"parts\":[]}}]}";
-
-        assertEquals(VisionResult.Outcome.CONTENT_FILTERED, client.parse(body, true).outcome());
     }
 
     // ---------------------------------------------------------------- malformed responses
@@ -116,7 +107,7 @@ class GeminiVisionClientTest {
     }
 
     @Test
-    void noCandidatesIsInvalidResponse() {
+    void noChoicesIsInvalidResponse() {
         VisionResult r = client.parse("{}", true);
 
         assertFalse(r.available());
@@ -124,8 +115,8 @@ class GeminiVisionClientTest {
     }
 
     @Test
-    void modelTextThatIsNotJsonIsInvalidResponse() {
-        String body = geminiEnvelopeRaw("Sure, here is my answer: it looks done!");
+    void modelContentThatIsNotJsonIsInvalidResponse() {
+        String body = chatEnvelopeRaw("Sure, here is my answer: it looks done!", "stop");
 
         VisionResult r = client.parse(body, true);
 
@@ -138,28 +129,23 @@ class GeminiVisionClientTest {
     @Test
     void statusCodesMapToTheRightOutcome() {
         assertEquals(VisionResult.Outcome.RATE_LIMITED,
-                GeminiVisionClient.outcomeFor(responseException(429, "quota exceeded")));
+                AzureOpenAiVisionClient.outcomeFor(responseException(429, "rate limit exceeded")));
         assertEquals(VisionResult.Outcome.CONTENT_FILTERED,
-                GeminiVisionClient.outcomeFor(responseException(400, "Reason: SAFETY blocked")));
+                AzureOpenAiVisionClient.outcomeFor(responseException(400,
+                        "{\"error\":{\"code\":\"content_filter\",\"message\":\"blocked\"}}")));
         assertEquals(VisionResult.Outcome.ERROR,
-                GeminiVisionClient.outcomeFor(responseException(401, "API key not valid")));
+                AzureOpenAiVisionClient.outcomeFor(responseException(401, "Access denied")));
         assertEquals(VisionResult.Outcome.ERROR,
-                GeminiVisionClient.outcomeFor(responseException(500, "internal error")));
+                AzureOpenAiVisionClient.outcomeFor(responseException(404, "DeploymentNotFound")));
+        assertEquals(VisionResult.Outcome.ERROR,
+                AzureOpenAiVisionClient.outcomeFor(responseException(500, "internal error")));
     }
 
-    @Test
-    void blankApiKeyFailsFast() {
-        IllegalStateException ex = assertThrows(IllegalStateException.class,
-                () -> GeminiVisionClient.requireApiKey("   "));
-
-        assertTrue(ex.getMessage().contains("GEMINI_API_KEY"));
-    }
-
-    // ---------------------------------------------------------------- downscaling
+    // ---------------------------------------------------------------- downscaling (shares logic shape with Gemini's)
 
     @Test
     void largeImageIsShrunkToTheConfiguredEdge() throws IOException {
-        properties.getGemini().setMaxImageEdgePx(200);
+        properties.getAzureOpenai().setMaxImageEdgePx(200);
         byte[] big = png(2000, 1000);
 
         byte[] small = client.downscale(big);
@@ -171,7 +157,7 @@ class GeminiVisionClientTest {
 
     @Test
     void smallImageIsNotUpscaled() throws IOException {
-        properties.getGemini().setMaxImageEdgePx(1600);
+        properties.getAzureOpenai().setMaxImageEdgePx(1600);
         byte[] tiny = png(50, 40);
 
         byte[] result = client.downscale(tiny);
@@ -188,14 +174,15 @@ class GeminiVisionClientTest {
 
     // ---------------------------------------------------------------- helpers
 
-    /** Wraps a JSON object as the model's answer text, the way Gemini nests it under candidates[0].content.parts[0].text. */
-    private static String geminiEnvelope(String answerJson) {
-        return geminiEnvelopeRaw(answerJson);
+    /** Wraps a JSON object as the model's answer, the way Azure nests it under choices[0].message.content. */
+    private static String chatEnvelope(String answerJson, String finishReason) {
+        return chatEnvelopeRaw(answerJson, finishReason);
     }
 
-    private static String geminiEnvelopeRaw(String modelText) {
+    private static String chatEnvelopeRaw(String modelText, String finishReason) {
         String escaped = modelText.replace("\\", "\\\\").replace("\"", "\\\"");
-        return "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"" + escaped + "\"}]},\"finishReason\":\"STOP\"}]}";
+        return "{\"choices\":[{\"finish_reason\":\"" + finishReason + "\","
+                + "\"message\":{\"role\":\"assistant\",\"content\":\"" + escaped + "\"}}]}";
     }
 
     private static org.springframework.web.reactive.function.client.WebClientResponseException responseException(

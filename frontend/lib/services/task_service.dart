@@ -5,6 +5,7 @@ import '../models/verification_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http_parser/http_parser.dart';
 
 
 // INTERFACE (Contract)
@@ -88,8 +89,7 @@ class TaskService implements ITaskService {
   TaskService({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
-              baseUrl: 'http://localhost:8080',
-              //baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
+              baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net', 
               connectTimeout: const Duration(seconds: 10),// will update timeut if needed
               receiveTimeout: const Duration(seconds: 10),
             ));
@@ -364,11 +364,11 @@ class TaskService implements ITaskService {
   Future<void> acceptTaskInvitation(int taskId) async {
     try {
       final token = await _getToken();
-      final path = '/api/task-invitations/$taskId/accept';
-      final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
+      //final path = '/api/task-invitations/$taskId/accept';
+      //final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
 
       await _dio.post(
-        url,
+        '/api/task-invitations/$taskId/accept',
         options: token != null
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
@@ -481,8 +481,10 @@ Future<void> declineTaskInvitation(int taskId) async {
   }) async {
     try{
       final token = await _getToken();
+      final path = '/api/tasks/$taskId/rate';
+      final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
       final Response<Map<String, dynamic>> res = await _dio.post(
-        '/api/tasks/$taskId/rate',
+        url,
         data: {
           'rating': rating,
           if(reviewSnippet != null && reviewSnippet.isNotEmpty)
@@ -522,7 +524,11 @@ Future<void> declineTaskInvitation(int taskId) async {
       final bytes = await image.readAsBytes();
 
       final formData = FormData.fromMap({
-        'file': MultipartFile.fromBytes(bytes, filename: image.name),
+        'file':  MultipartFile.fromBytes(
+          bytes,
+          filename: image.name,
+          contentType: MediaType('image', 'jpeg'), // camera capture is JPEG
+        ),
         'captureSource': 'CAMERA',
         'capturedAt': capturedAt.toUtc().toIso8601String(),
         if (lat != null) 'lat': lat,
@@ -566,8 +572,10 @@ Future<void> declineTaskInvitation(int taskId) async {
   Future<List<VerificationResult>> getCompletionVerifications(int taskId) async {
     try {
       final token = await _getToken();
+      final path = '/api/taskinvoices/$taskId/completion-evidence';
+      final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
       final Response<List<dynamic>> res = await _dio.get(
-        '/api/taskinvoices/$taskId/completion-evidence',
+        url,
         options: token != null
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
@@ -588,8 +596,10 @@ Future<void> declineTaskInvitation(int taskId) async {
   }) async {
     try {
       final token = await _getToken();
+      final path = '/api/taskinvoices/$taskId/completion-decision';
+      final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
       await _dio.post(
-        '/api/taskinvoices/$taskId/completion-decision',
+        url,
         data: {
           'decision': decision,
           if (note != null) 'note': note,

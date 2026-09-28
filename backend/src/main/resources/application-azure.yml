@@ -33,8 +33,13 @@ azure:
     report-container: reports
 
 supaneighbour:
-  vision:
-    mode: gemini
+  vision: 
+    mode: azure-openai
+    azure-openai:
+      endpoint: ${AZURE_OPENAI_ENDPOINT:}
+      key: ${AZURE_OPENAI_KEY:}
+      deployment: ${AZURE_OPENAI_DEPLOYMENT:}
+      api-version: "2025-01-01-preview"
     stub:
       outcome: complete       # unused while mode is gemini, but harmless to leave
     gemini:
