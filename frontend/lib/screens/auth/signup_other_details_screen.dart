@@ -7,6 +7,8 @@ import '../../models/user_model.dart';
 import '../home/home_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import 'package:flutter/services.dart';
+import '../../utils/sa_phone.dart';
 
 class SignupOtherDetailsScreen extends ConsumerStatefulWidget {
   final User user;
@@ -37,10 +39,10 @@ class _SignupOtherDetailsScreenState extends ConsumerState<SignupOtherDetailsScr
   }
 
   Future<void> _handleFinish() async {
-    if (_phoneController.text.isEmpty) {
+    if (!SaPhone.isValid(_phoneController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please enter your phone number'),
+          content: const Text('Enter a valid South African number, e.g. 082 123 4567'),
           backgroundColor: AppColors.primaryTeal(context),
         ),
       );
@@ -73,7 +75,7 @@ class _SignupOtherDetailsScreenState extends ConsumerState<SignupOtherDetailsScr
       firstName: widget.user.firstName,
       lastName: widget.user.lastName,
       password: widget.password,
-      phoneNumber: _phoneController.text.trim(),
+      phoneNumber: SaPhone.toE164(_phoneController.text)!,
       dateOfBirth: dateOfBirth,
       gender: widget.user.gender ?? 'Other',
       username: _usernameController.text.trim(),
@@ -217,7 +219,7 @@ class _SignupOtherDetailsScreenState extends ConsumerState<SignupOtherDetailsScr
                             _buildTextField(
                               'Phone Number',
                               _phoneController,
-                              'Enter your phone number',  // Updated placeholder
+                              'Enter your phone number e.g. 082 123 4567',  // Updated placeholder
                               isNumber: true,
                             ),
 
@@ -318,6 +320,12 @@ class _SignupOtherDetailsScreenState extends ConsumerState<SignupOtherDetailsScr
               color: AppColors.charcoal(context),
             ),
             keyboardType: isNumber ? TextInputType.phone : TextInputType.text,
+            inputFormatters: isNumber
+                ? [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')),
+                    LengthLimitingTextInputFormatter(16),
+                  ]
+                : null,
             cursorColor: AppColors.primaryTeal(context),
             decoration: InputDecoration(
               hintText: hint,
