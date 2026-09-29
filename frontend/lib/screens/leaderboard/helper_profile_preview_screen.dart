@@ -36,9 +36,7 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
   bool _isInvited = false;
   String? _errorMessage;
   TrustScoreBreakdown? _trustBreakdown;
-  bool _isTrustLoading = false;
 
-  
   HelperProfileResponse? _profileData;
   
   List<Review> _reviews = [];

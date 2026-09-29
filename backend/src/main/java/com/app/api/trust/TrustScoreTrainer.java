@@ -38,7 +38,7 @@ import java.util.Optional;
 @Component
 public class TrustScoreTrainer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TrustScoreTrainer.class);
+    private static final Logger log = LoggerFactory.getLogger(TrustScoreTrainer.class);
 
     private static final double LEARNING_RATE = 0.01;
     private static final int EPOCHS = 100;
@@ -81,11 +81,11 @@ public class TrustScoreTrainer {
      */
     @EventListener(ApplicationReadyEvent.class)
     public void runOnStartup() {
-        LOG.info("TrustScoreTrainer: running initial training pass on startup.");
+        log.info("TrustScoreTrainer: running initial training pass on startup.");
         try {
             applicationContext.getBean(TrustScoreTrainer.class).runFullPipeline();
         } catch (Exception e) {
-            LOG.error("TrustScoreTrainer: pipeline failed — {}", e.getMessage(), e);
+            log.error("TrustScoreTrainer: pipeline failed — {}", e.getMessage(), e);
         }
     }
 
@@ -97,11 +97,11 @@ public class TrustScoreTrainer {
      */
     @Scheduled(cron = "0 0 2 * * *")
     public void runScheduled() {
-        LOG.info("TrustScoreTrainer: running scheduled daily retraining.");
+        log.info("TrustScoreTrainer: running scheduled daily retraining.");
         try {
             applicationContext.getBean(TrustScoreTrainer.class).runFullPipeline();
         } catch (Exception e) {
-            LOG.error("TrustScoreTrainer: scheduled pipeline failed — {}", e.getMessage(), e);
+            log.error("TrustScoreTrainer: scheduled pipeline failed — {}", e.getMessage(), e);
         }
     }
 
@@ -116,18 +116,18 @@ public class TrustScoreTrainer {
         List<TrustScoreFeatures> allFeatures = featureService.computeAllFeatures();
 
         if (allFeatures.isEmpty()) {
-            LOG.warn("TrustScoreTrainer: no helpers found, skipping training.");
+            log.warn("TrustScoreTrainer: no helpers found, skipping training.");
             return;
         }
 
-        LOG.info("TrustScoreTrainer: loaded features for {} helpers.", allFeatures.size());
+        log.info("TrustScoreTrainer: loaded features for {} helpers.", allFeatures.size());
 
         List<TrainingSample> labelled = labelSamples(allFeatures);
-        LOG.info("TrustScoreTrainer: {} helpers labelled ({} excluded as ambiguous).",
+        log.info("TrustScoreTrainer: {} helpers labelled ({} excluded as ambiguous).",
                 labelled.size(), allFeatures.size() - labelled.size());
 
         if (labelled.size() < 5) {
-            LOG.warn("TrustScoreTrainer: too few labelled samples ({}), "
+            log.warn("TrustScoreTrainer: too few labelled samples ({}), "
                     + "skipping training, writing raw feature scores instead.", labelled.size());
             persistScores(allFeatures);
             return;
@@ -138,7 +138,7 @@ public class TrustScoreTrainer {
         List<TrainingSample> trainSet = labelled.subList(0, splitIndex);
         List<TrainingSample> testSet  = labelled.subList(splitIndex, labelled.size());
 
-        LOG.info("TrustScoreTrainer: {} training samples, {} test samples.",
+        log.info("TrustScoreTrainer: {} training samples, {} test samples.",
                 trainSet.size(), testSet.size());
 
         model.train(trainSet, LEARNING_RATE, EPOCHS);
@@ -240,7 +240,7 @@ public class TrustScoreTrainer {
                 ? 2 * precision * recall / (precision + recall)
                 : 0.0;
 
-        LOG.info("TrustScoreTrainer: evaluation on {} test samples, Precision={}, Recall={}, F1={}",
+        log.info("TrustScoreTrainer: evaluation on {} test samples, Precision={}, Recall={}, F1={}",
                 testSet.size(),
                 String.format("%.3f", precision),
                 String.format("%.3f", recall),
@@ -265,7 +265,7 @@ public class TrustScoreTrainer {
      * @param allFeatures feature vectors for all helpers, used to get helper IDs for the DB lookup and to run inference
      */
     private void persistScores(List<TrustScoreFeatures> allFeatures) {
-        LOG.info("TrustScoreTrainer: persisting trust scores for {} helpers.", allFeatures.size());
+        log.info("TrustScoreTrainer: persisting trust scores for {} helpers.", allFeatures.size());
 
         for (TrustScoreFeatures features : allFeatures) {
             int helperId = features.getHelperId();
@@ -295,12 +295,12 @@ public class TrustScoreTrainer {
                 helperAnalyticsRepository.save(newRecord);
             }
 
-            LOG.debug("TrustScoreTrainer: helper {} — rawScore={}, scaledScore={}",
+            log.debug("TrustScoreTrainer: helper {} — rawScore={}, scaledScore={}",
                     helperId,
                     String.format("%.4f", rawScore),
                     String.format("%.2f", scaledScore));
         }
 
-        LOG.info("TrustScoreTrainer: trust scores persisted successfully.");
+        log.info("TrustScoreTrainer: trust scores persisted successfully.");
     }
 }
