@@ -75,7 +75,7 @@ class _MiniGraphPainter extends CustomPainter {
     final outerNodes = <EndorsementGraphNode>[];
 
     for (final node in nodes) {
-      if (node.isCentreNode) {
+      if (node.isCentre) {
         positions[node.userId] = centre;
       } else {
         outerNodes.add(node);
@@ -143,7 +143,7 @@ class _MiniGraphPainter extends CustomPainter {
       final pos = positions[node.userId];
       if (pos == null) continue;
 
-      final isCentre = node.isCentreNode;
+      final isCentre = node.isCentre;
       final radius = isCentre ? 8.0 : 4.0;
 
       // Node fill

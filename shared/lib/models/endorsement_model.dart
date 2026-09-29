@@ -152,29 +152,37 @@ class SkillCount {
 }
 
 /// A node in the endorsement graph (represents a user).
+/// A node in the endorsement graph (represents a user).
 class EndorsementGraphNode {
   final String userId;
   final String displayName;
   final String? profilePhoto;
-  final double trustScore;
-  final bool isCentreNode;
+  final double? trustScore;
+  final bool? isCentreNode; // raw, nullable — some endpoints omit it
 
   EndorsementGraphNode({
     required this.userId,
     required this.displayName,
     this.profilePhoto,
-    required this.trustScore,
-    this.isCentreNode = false,
+    this.trustScore,
+    this.isCentreNode,
   });
+
+  bool get isCentre => isCentreNode ?? false;
 
   factory EndorsementGraphNode.fromJson(Map<String, dynamic> json) {
     return EndorsementGraphNode(
-      userId: json['userId'].toString(),
-      displayName: json['displayName'] as String? ?? json['name'] as String? ?? '',
+      userId: _idFromJson(json['userId']),
+      displayName: json['displayName'] as String? ?? '',
       profilePhoto: json['profilePhoto'] as String?,
-      trustScore: (json['trustScore'] as num?)?.toDouble() ?? 0.0,
-      isCentreNode: json['isCentreNode'] as bool? ?? false,
+      trustScore: (json['trustScore'] as num?)?.toDouble(),
+      isCentreNode: json['isCentreNode'] as bool?,
     );
+  }
+
+  static String _idFromJson(dynamic value) {
+    if (value == null) return '';
+    return value.toString();
   }
 }
 
@@ -194,11 +202,16 @@ class EndorsementGraphEdge {
 
   factory EndorsementGraphEdge.fromJson(Map<String, dynamic> json) {
     return EndorsementGraphEdge(
-      fromUserId: json['fromUserId'].toString(),
-      toUserId: json['toUserId'].toString(),
+      fromUserId: _idFromJson(json['fromUserId']),
+      toUserId: _idFromJson(json['toUserId']),
       skillTag: json['skillTag'] as String? ?? '',
       weight: json['weight'] as int? ?? 1,
     );
+  }
+
+  static String _idFromJson(dynamic value) {
+    if (value == null) return '';
+    return value.toString();
   }
 }
 
@@ -271,83 +284,152 @@ class SkillTag {
 
 /// A flagged endorsement pattern for admin review.
 /// Detected by the backend's anti-abuse scan.
+
 class SuspiciousEndorsement {
   final String patternId;
   final String patternType; // 'mutual_ring', 'sudden_spike', 'island_group'
+  final String patternTypeDisplay;
   final List<String> involvedUserIds;
+  final List<AbuseFlagParticipant> participants;
   final String description;
   final DateTime detectedAt;
-  final String severity; // 'low', 'medium', 'high'
+  final DateTime firstDetectedAt;
+  final String severity; // 'low' / 'medium' / 'high' — derived, see _severityFrom
+  final String status; // 'open', 'investigate', 'dismiss'
+  final int occurrenceCount;
+  final double? metricValue;
+  final int? zoneId;
+  final String? runId;
 
-  SuspiciousEndorsement({
+SuspiciousEndorsement({
     required this.patternId,
     required this.patternType,
+    required this.patternTypeDisplay,
     required this.involvedUserIds,
+    required this.participants,
     required this.description,
     required this.detectedAt,
+    required this.firstDetectedAt,
     required this.severity,
+    required this.status,
+    required this.occurrenceCount,
+    this.metricValue,
+    this.zoneId,
+    this.runId,
   });
 
   factory SuspiciousEndorsement.fromJson(Map<String, dynamic> json) {
+    final participants = (json['participants'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .map(AbuseFlagParticipant.fromJson)
+        .toList();
+
+    final lastDetected = json['lastDetectedAt'] != null
+        ? DateTime.tryParse(json['lastDetectedAt'].toString()) ?? DateTime.now()
+        : DateTime.now();
+    final firstDetected = json['firstDetectedAt'] != null
+        ? DateTime.tryParse(json['firstDetectedAt'].toString()) ?? lastDetected
+        : lastDetected;
+    final occurrenceCount = json['occurrenceCount'] as int? ?? 0;
+
     return SuspiciousEndorsement(
-      patternId: json['patternId'] as String? ?? '',
+      patternId: (json['flagId'] as num?)?.toString() ?? '',
       patternType: json['patternType'] as String? ?? '',
-      involvedUserIds: (json['involvedUserIds'] as List<dynamic>? ?? [])
-          .whereType<String>()
-          .toList(),
-      description: json['description'] as String? ?? '',
-      detectedAt: json['detectedAt'] != null
-          ? DateTime.tryParse(json['detectedAt'].toString()) ?? DateTime.now()
-          : DateTime.now(),
-      severity: json['severity'] as String? ?? 'low',
+      patternTypeDisplay: json['patternTypeDisplay'] as String? ?? '',
+      involvedUserIds: participants.map((p) => p.userId).toList(),
+      participants: participants,
+      description: json['patternTypeDisplay'] as String? ?? '',
+      detectedAt: lastDetected,
+      firstDetectedAt: firstDetected,
+      severity: _severityFrom(occurrenceCount),
+      status: json['status'] as String? ?? 'open',
+      occurrenceCount: occurrenceCount,
+      metricValue: (json['metricValue'] as num?)?.toDouble(),
+      zoneId: json['zoneId'] as int?,
+      runId: json['runId'] as String?,
     );
+  }
+
+  static String _severityFrom(int occurrenceCount) {
+    if (occurrenceCount >= 5) return 'high';
+    if (occurrenceCount >= 2) return 'medium';
+    return 'low';
   }
 }
 
-/// Zone-wide metrics for the admin dashboard.
+class AbuseFlagParticipant{
+  final String userId;
+  final String role;
+
+  AbuseFlagParticipant({
+    required this.userId,
+    required this.role
+  });
+
+  factory AbuseFlagParticipant.fromJson(Map<String, dynamic> json){
+    return AbuseFlagParticipant(
+      userId: _idFromJson(json['userId']), 
+      role: json['role'] as String? ?? '',
+    );
+  }
+
+  static String _idFromJson(dynamic value){
+    if(value == null){
+      return '';
+    }
+
+    return value.toString();
+  }
+}
+
 class ZoneInsights {
-  final int totalEndorsements;
-  final int totalUsers;
   final int clusterCount;
   final int largestClusterSize;
   final int isolatedUserCount;
-  final List<String> bridgeUserIds;
-  final List<SkillCount> topSkills;
+  final DateTime? computedAt;
+  final String? runId;
 
   ZoneInsights({
-    required this.totalEndorsements,
-    required this.totalUsers,
     required this.clusterCount,
     required this.largestClusterSize,
     required this.isolatedUserCount,
-    required this.bridgeUserIds,
-    required this.topSkills,
+    this.computedAt,
+    this.runId,
   });
 
   factory ZoneInsights.empty() => ZoneInsights(
-        totalEndorsements: 0,
-        totalUsers: 0,
         clusterCount: 0,
         largestClusterSize: 0,
         isolatedUserCount: 0,
-        bridgeUserIds: const [],
-        topSkills: const [],
       );
 
   factory ZoneInsights.fromJson(Map<String, dynamic> json) {
+    final members = (json['members'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .toList();
+
+    final sizeByCluster = <int, int>{};
+    var isolatedCount = 0;
+    for (final m in members) {
+      final clusterLabel = m['clusterLabel'] as int? ?? 0;
+      sizeByCluster.update(clusterLabel, (v) => v + 1, ifAbsent: () => 1);
+      final totalDegree = m['totalDegree'] as int? ?? 0;
+      if (totalDegree == 0) isolatedCount++;
+    }
+    final largestClusterSize = sizeByCluster.values.isEmpty
+        ? 0
+        : sizeByCluster.values.reduce((a, b) => a > b ? a : b);
+
     return ZoneInsights(
-      totalEndorsements: json['totalEndorsements'] as int? ?? 0,
-      totalUsers: json['totalUsers'] as int? ?? 0,
       clusterCount: json['clusterCount'] as int? ?? 0,
-      largestClusterSize: json['largestClusterSize'] as int? ?? 0,
-      isolatedUserCount: json['isolatedUserCount'] as int? ?? 0,
-      bridgeUserIds: (json['bridgeUserIds'] as List<dynamic>? ?? [])
-          .whereType<String>()
-          .toList(),
-      topSkills: (json['topSkills'] as List<dynamic>? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(SkillCount.fromJson)
-          .toList(),
+      largestClusterSize: largestClusterSize,
+      isolatedUserCount: isolatedCount,
+      computedAt: json['computedAt'] != null
+          ? DateTime.tryParse(json['computedAt'].toString())
+          : null,
+      runId: json['runId'] as String?,
     );
   }
+
+
 }

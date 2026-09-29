@@ -15,6 +15,8 @@ import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.api.tuple.primitive.IntIntPair;
 import org.eclipse.collections.impl.map.mutable.primitive.IntIntHashMap;
 import org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap;
+import com.app.api.models.User;
+import com.app.api.models.Address;
 
 
  
@@ -178,6 +180,26 @@ public class EndorsementClusterService {
                         .toList();
 
         return new ClusterMembershipResponseDTO(zoneId,first.getComputedAt(),first.getRunId(),clusterCount,memebers);
+    }
+
+    /**
+     * Resolves the zone a user belongs to from their own address, the same
+     * derivation used by {@code create()} for endorsement zone-scoping.
+     *
+     * @param user the user whose zone to resolve
+     * @return the zone's location id
+     * @throws ResponseStatusException 404 if the user has no address, or the
+     *         resolved location doesn't exist
+     */
+    public Integer zoneIdForUser(User user) {
+        Address address = user.getAddressid();
+        if (address == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User has no address on file");
+        }
+        Integer zoneId = address.getNeighbourhoodid().getLocationid();
+        locationRepository.findById(zoneId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found"));
+        return zoneId;
     }
 
     private LouvainResult detectCommunities(List<EdgeRow> edgeRows) {

@@ -240,17 +240,18 @@ public class EndorsementController {
         return ResponseEntity.ok(endorsementService.catalogue());
     }
 
-        /**
+    /**
      * Returns the endorsement graph for a whole zone. Admin only.
      *
      * @param zoneId the zone to inspect
      * @param limit  edge cap, clamped server-side
      * @return 200 with the zone graph
      */
-
-    @GetMapping (path = "/admin/zone/{zoneId}/graph", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TrustGraphResponseDTO> zoneGraph(@PathVariable Integer zoneId,@RequestParam(defaultValue = "500")int limit,@RequestHeader("Authorization") String authHeader) {
-        try{
+    @GetMapping(path = "/admin/zone/graph", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TrustGraphResponseDTO> zoneGraph(
+            @RequestParam(defaultValue = "500") int limit,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
             User user = userRepository.findById(userId).orElse(null);
@@ -258,7 +259,7 @@ public class EndorsementController {
                 return ResponseEntity.notFound().build();
             }
             endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL, user);
-            return ResponseEntity.ok(endorsementService.zoneGraph(zoneId, limit));
+            return ResponseEntity.ok(endorsementService.zoneGraph(user, limit));
         } catch (FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
@@ -299,21 +300,21 @@ public class EndorsementController {
      * @return 200 with the cached memberships; 401 if the token is invalid;
      *         403 if the caller is not an admin; 404 if the caller has no user record
      */
-    @GetMapping(path = "zone/{zoneId}/clusters", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/zone/clusters", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ClusterMembershipResponseDTO> clusters(
-        @PathVariable Integer zoneId,
         @RequestHeader("Authorization") String authHeader
     ) {
-        try{
+        try {
             String token = authHeader.replace("Bearer ", "");
             int userId = firebaseAuthService.getUserIdFromToken(token);
             User user = userRepository.findById(userId).orElse(null);
             if (user == null) {
                 return ResponseEntity.notFound().build();
-            }  
+            }
             endorsementService.requireAdmin(ZONE_GRAPH_MIN_ADMIN_LEVEL, user);
+            int zoneId = endorsementClusterService.zoneIdForUser(user);
             return ResponseEntity.ok(endorsementClusterService.readCached(zoneId));
-        }catch (FirebaseAuthException e) {
+        } catch (FirebaseAuthException e) {
             return ResponseEntity.status(401).build();
         }
     }

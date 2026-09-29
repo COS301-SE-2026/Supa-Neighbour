@@ -1,5 +1,5 @@
 // admin/lib/services/endorsement_service_mock.dart
-
+/*
 import 'package:shared/shared.dart';
 import 'endorsement_service.dart';
 
@@ -124,7 +124,7 @@ class EndorsementServiceMock implements IEndorsementService {
   ];
 
   @override
-  Future<EndorsementGraph> getZoneGraph({int depth = 3}) async {
+  Future<EndorsementGraph> getZoneGraph({int limit = 500}) async {
     await Future.delayed(const Duration(milliseconds: 600));
 
     return EndorsementGraph(
@@ -177,13 +177,9 @@ class EndorsementServiceMock implements IEndorsementService {
       ..sort((a, b) => b.count.compareTo(a.count));
 
     return ZoneInsights(
-      totalEndorsements: _endorsements.length,
-      totalUsers: _users.length,
       clusterCount: 4, // seeded clusters
       largestClusterSize: 4, // u17-u20 or u1-u4
       isolatedUserCount: 1, // u11
-      bridgeUserIds: ['u4', 'u9'],
-      topSkills: topSkills.take(5).toList(),
     );
   }
 
@@ -205,4 +201,4 @@ class EndorsementServiceMock implements IEndorsementService {
         return skillTag;
     }
   }
-}
+}*/

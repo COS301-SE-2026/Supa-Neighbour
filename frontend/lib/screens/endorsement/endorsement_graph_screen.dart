@@ -415,7 +415,7 @@ class _EndorsementGraphScreenState
 
   //// Renders a single user node in the graph.
   Widget _buildNodeWidget(EndorsementGraphNode node) {
-    final isCentre = node.isCentreNode;
+    final isCentre = node.isCentre;
     final radius = isCentre ? 32.0 : 24.0;
     final initial =
         node.displayName.isNotEmpty ? node.displayName[0].toUpperCase() : '?';
@@ -488,7 +488,7 @@ class _EndorsementGraphScreenState
   void _onNodeTapped(EndorsementGraphNode node) {
     if (!mounted) return;
 
-    if (node.isCentreNode) {
+    if (node.isCentre) {
       return;
     }
 
