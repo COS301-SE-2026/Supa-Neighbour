@@ -7,9 +7,10 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "supaneighbour.vision")
 public class VisionProperties {
 
-    public enum Mode {STUB, GEMINI}
+    public enum Mode {STUB, AZURE_OPENAI, GEMINI}
 
     private Mode mode;
+    private final AzureOpenai azureOpenai = new AzureOpenai();
     private final Gemini gemini = new Gemini();
     private final Stub stub = new Stub();
 
@@ -38,6 +39,15 @@ public class VisionProperties {
      */
     public Gemini getGemini(){
         return gemini;
+    }
+
+    /**
+     * Gets the Azure OpenAI settings.
+     *
+     * @return the azureOpenai settings; never {@code null}
+     */
+    public AzureOpenai getAzureOpenai() { 
+        return azureOpenai; 
     }
 
     /**
@@ -73,6 +83,116 @@ public class VisionProperties {
          */
         public void setOutcome(Outcome outcome){
             this.outcome = outcome;
+        }
+    }
+
+    public static class AzureOpenai{
+        private String endpoint;
+        private String key;
+        private String deployment;
+        private String apiVersion;
+        private int maxImageEdgePx = 1600;
+        private int timeoutSeconds = 30;
+
+        /**
+         * Returns the Azure OpenAI resource endpoint.
+         *
+         * @return the endpoint base URL
+         */
+        public String getEndpoint() {
+             return endpoint; 
+        }
+
+        /**
+         * Sets the Azure OpenAI resource endpoint.
+         *
+         * @param endpoint the endpoint base URL
+         */
+        public void setEndpoint(String endpoint) { 
+            this.endpoint = endpoint; 
+        }
+         /**
+         * Returns the API key used to authenticate requests.
+         *
+         * @return the API key
+         */
+        public String getKey() { 
+            return key; 
+        }
+        /**
+         * Sets the API key used to authenticate requests.
+         *
+         * @param key the API key
+         */
+        public void setKey(String key) { 
+            this.key = key; 
+        }
+        /**
+         * Returns the name of the model deployment to target.
+         *
+         * @return the deployment name
+         */
+        public String getDeployment() {
+             return deployment; 
+        }
+        /**
+         * Sets the name of the model deployment to target.
+         *
+         * @param deployment the deployment name
+         */
+        public void setDeployment(String deployment) {
+             this.deployment = deployment; 
+        }
+        /**
+         * Returns the Azure OpenAI REST API version to use.
+         *
+         * @return the API version string
+         */
+        public String getApiVersion() {
+             return apiVersion; 
+        }
+        /**
+         * Sets the Azure OpenAI REST API version to use.
+         *
+         * @param apiVersion the API version string
+         */
+        public void setApiVersion(String apiVersion) {
+             this.apiVersion = apiVersion; 
+        }
+        /**
+         * Returns the maximum allowed length, in pixels, of the longest edge of
+         * an image before downscaling is applied.
+         *
+         * @return the maximum image edge in pixels
+         */
+        public int getMaxImageEdgePx() {
+             return maxImageEdgePx; 
+        }
+        /**
+         * Sets the maximum allowed length, in pixels, of the longest edge of an
+         * image before downscaling is applied.
+         *
+         * @param maxImageEdgePx the maximum image edge in pixels
+         */
+        public void setMaxImageEdgePx(int maxImageEdgePx) {
+             this.maxImageEdgePx = maxImageEdgePx; 
+        }
+        /**
+         * Returns the per-request timeout, in seconds, for calls to Azure
+         * OpenAI.
+         *
+         * @return the timeout in seconds
+         */
+        public int getTimeoutSeconds() { 
+            return timeoutSeconds; 
+        }
+        /**
+         * Sets the per-request timeout, in seconds, for calls to Azure OpenAI.
+         *
+         * @param timeoutSeconds the timeout in seconds
+         */
+        public void setTimeoutSeconds(int timeoutSeconds) { 
+            this.timeoutSeconds = timeoutSeconds; 
         }
     }
 
