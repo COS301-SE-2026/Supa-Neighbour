@@ -104,6 +104,18 @@ class _HelpModalContent extends StatelessWidget {
         'Report inappropriate content',
       ],
      },
+      'endorsement_graph': {
+        'title': 'How to Use Your Trust Network',
+        'icon': Icons.hub_outlined,
+        'items': [
+          'Each circle is a neighbour connected to you by endorsements',
+          'The larger centre circle is you',
+          'Lines show who has endorsed whom',
+          'Tap the skill chips at the top to filter the graph',
+          'Tap any neighbour to view their profile',
+          'Pinch to zoom in and out, drag to pan around',
+        ],
+      },
     };
 
     final data = helpData[section] ?? helpData['home']!;
