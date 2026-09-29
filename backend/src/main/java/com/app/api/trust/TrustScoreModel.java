@@ -41,7 +41,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 @Component
 public class TrustScoreModel {
 
-    private static final Logger log = LoggerFactory.getLogger(TrustScoreModel.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TrustScoreModel.class);
 
     public static final int FEATURE_COUNT = 6;
 
@@ -114,7 +114,7 @@ public class TrustScoreModel {
      */
     public void train(List<TrainingSample> samples, double learningRate, int epochs) {
         if (samples == null || samples.isEmpty()) {
-            log.warn("TrustScoreModel: no training samples provided — keeping current weights.");
+            LOG.warn("TrustScoreModel: no training samples provided — keeping current weights.");
             return;
         }
 
@@ -130,7 +130,7 @@ public class TrustScoreModel {
         }
 
         int m = samples.size();
-        log.info("TrustScoreModel: starting training — {} samples, {} epochs, lr={}",
+        LOG.info("TrustScoreModel: starting training — {} samples, {} epochs, lr={}",
                 m, epochs, learningRate);
 
         for (int epoch = 0; epoch < epochs; epoch++) {
@@ -156,7 +156,7 @@ public class TrustScoreModel {
 
             if (epoch % 10 == 0) {
                 double cost = computeCost(samples, localWeights, localBias);
-                log.info("TrustScoreModel: epoch {} — cost={}", epoch, String.format("%.6f", cost));
+                LOG.info("TrustScoreModel: epoch {} — cost={}", epoch, String.format("%.6f", cost));
             }
         }
 
@@ -169,7 +169,7 @@ public class TrustScoreModel {
             lock.writeLock().unlock();
         }
 
-        log.info("TrustScoreModel: training complete — new weights: {}", Arrays.toString(localWeights));
+        LOG.info("TrustScoreModel: training complete — new weights: {}", Arrays.toString(localWeights));
     }
 
     /**
@@ -246,7 +246,7 @@ public class TrustScoreModel {
             double y = sample.getLabel();
             double yHat = sigmoid(dotProduct(localWeights, x) + localBias);
             double eps = 1e-15;
-            total += -y * Math.log(yHat + eps) - (1 - y) * Math.log(1 - yHat + eps);
+            total += -y * Math.LOG(yHat + eps) - (1 - y) * Math.LOG(1 - yHat + eps);
         }
 
         return total / samples.size();
