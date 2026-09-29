@@ -246,7 +246,7 @@ public class TrustScoreModel {
             double y = sample.getLabel();
             double yHat = sigmoid(dotProduct(localWeights, x) + localBias);
             double eps = 1e-15;
-            total += -y * Math.LOG(yHat + eps) - (1 - y) * Math.LOG(1 - yHat + eps);
+            total += -y * Math.log(yHat + eps) - (1 - y) * Math.log(1 - yHat + eps);
         }
 
         return total / samples.size();
