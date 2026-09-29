@@ -108,84 +108,127 @@ class _HelpModalContent extends StatelessWidget {
 
     final data = helpData[section] ?? helpData['home']!;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.75,
+        maxWidth: 420,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                data['icon'] as IconData,
-                color: AppColors.primaryTeal(context),
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                data['title'] as String,
-                style: GoogleFonts.poppins(
-                  color: AppColors.charcoal(context),
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+      child: SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          decoration: BoxDecoration(
+            color: AppColors.background(context),
           ),
-          const SizedBox(height: 16),
-          ...(data['items'] as List<String>).map((item) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
                   Icon(
-                    Icons.circle,
-                    size: 6,
+                    data['icon'] as IconData,
                     color: AppColors.primaryTeal(context),
+                    size: 28,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      item,
-                      style: GoogleFonts.openSans(
+                      data['title'] as String,
+                      style: GoogleFonts.poppins(
                         color: AppColors.charcoal(context),
-                        fontSize: 15,
-                        height: 1.4,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ],
               ),
-            );
-          }),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryTeal(context),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+              ...(data['items'] as List<String>).map((item) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.circle,
+                        size: 6,
+                        color: AppColors.primaryTeal(context),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          item,
+                          style: GoogleFonts.openSans(
+                            color: AppColors.charcoal(context),
+                            fontSize: 15,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryTeal(context),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Got it',
+                    style: GoogleFonts.openSans(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
-              child: Text(
-                'Got it',
-                style: GoogleFonts.openSans(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    final navigator = Navigator.of(context);
+                    navigator.pop();
+                    navigator.push(
+                      MaterialPageRoute(
+                        builder: (_) => const HelpMenuScreen(),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'More help',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.primaryTeal(context),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward,
+                        size: 16,
+                        color: AppColors.primaryTeal(context),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
