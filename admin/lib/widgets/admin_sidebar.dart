@@ -111,7 +111,6 @@ class AdminSidebar extends StatelessWidget {
                   index: 3,
                   route: '/trust-graph',
                 ),
-                // TODO: Role-gate this item — only show for super admins
                 // (admin_access_level = 2). Waiting on backend to return
                 // adminAccessLevel in /api/auth/admin/login response.
                 // Then wrap in: if (currentUser.isSuperAdmin) ...[

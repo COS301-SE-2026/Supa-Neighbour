@@ -326,7 +326,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               children: [
                 _buildNetworkMetric(
                   label: 'Endorsements',
-                  value: insights.totalEndorsements.toString(),
+                  value: insights.clusterCount.toString(),
                   icon: Icons.hub_outlined,
                   color: AppColors.primaryTeal,
                 ),
