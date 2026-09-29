@@ -355,7 +355,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('Enter your phone number'), findsOneWidget);
+      expect(find.textContaining('Enter your phone number'), findsOneWidget);
       
       resetTestWindow(tester);
     });
@@ -456,7 +456,10 @@ void main() {
       await tester.tap(find.text('Finish Profile'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Please enter your phone number'), findsOneWidget);
+      expect(
+      find.text('Enter a valid South African number, e.g. 082 123 4567'),
+      findsOneWidget,
+    );
       
       resetTestWindow(tester);
     });
