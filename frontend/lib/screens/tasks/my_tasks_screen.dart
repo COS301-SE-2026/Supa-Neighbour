@@ -9,6 +9,8 @@ import 'task_detail_screen.dart';
 import 'task_completion_page.dart';
 import 'task_awaiting_approval_screen.dart';
 import 'task_approval_screen.dart';
+import '../chat/chat_detail_screen.dart';
+import '../../models/chat_thread.dart';
 import '../../models/auth_session.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
@@ -543,11 +545,75 @@ Widget _buildTaskCardContent(Task task, bool isRequesterView, bool isAvailableTa
                   ),
                 ),
               ),
+            if (['assigned', 'in_progress', 'pending_approval', 'completed']
+                .contains(task.status))
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: GestureDetector(
+                  onTap: () => _openChat(task),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A9D8F).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF2A9D8F), width: 1),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.chat_bubble_outline, size: 12, color: Color(0xFF2A9D8F)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Chat',
+                          style: GoogleFonts.openSans(
+                            color: const Color(0xFF2A9D8F),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ],
     ),
   );
+}
+
+Future<void> _openChat(Task task) async {
+  final currentUserId = int.tryParse(
+    AuthSession.instance.currentUser?.id ?? '',
+  );
+  if (currentUserId == null) return;
+
+  try {
+    final chatService = ref.read(chatServiceProvider);
+    final List<Map<String, dynamic>> data =
+        await chatService.getChatsByUserId(currentUserId);
+    final chats = data.map((c) => ChatThread.fromJson(c)).toList();
+    final thread = chats.firstWhere(
+      (c) => c.taskId.toString() == task.id,
+      orElse: () => throw Exception('no_chat'),
+    );
+    if (!mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatDetailScreen(chat: thread),
+      ),
+    );
+  } catch (_) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Chat not available yet for this task.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
 }
 void _acceptTask(Task task) async {
   try {
