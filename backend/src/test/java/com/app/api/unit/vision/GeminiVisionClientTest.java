@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.app.api.vision.*;
-import com.app.api.verification.*;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;

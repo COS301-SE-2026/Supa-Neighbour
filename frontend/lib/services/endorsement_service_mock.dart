@@ -1,5 +1,5 @@
 // frontend/lib/services/endorsement_service_mock.dart
-
+/*
 import 'package:shared/shared.dart';
 import 'endorsement_service.dart';
 
@@ -49,7 +49,7 @@ class EndorsementServiceMock implements IEndorsementService {
   // ---- Mock endorsements received by the current user ----
   final _myEndorsements = [
     Endorsement(
-      endorsementId: 'e1',
+      endorsementId: 1,
       endorserId: 'david',
       endorseeId: 'me',
       zoneId: 'zone1',
@@ -322,9 +322,9 @@ class EndorsementServiceMock implements IEndorsementService {
 
   @override
   Future<Endorsement> createEndorsement({
-    required String endorseeId,
+    required int endorseeId,
     required String skillTag,
-    String? taskId,
+    int? taskId,
   }) async {
     await Future.delayed(const Duration(milliseconds: 400));
 
@@ -349,4 +349,4 @@ class EndorsementServiceMock implements IEndorsementService {
     await Future.delayed(const Duration(milliseconds: 200));
     return List.from(_skillTags);
   }
-}
+}*/

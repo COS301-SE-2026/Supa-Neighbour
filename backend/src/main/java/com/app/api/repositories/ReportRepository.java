@@ -142,4 +142,14 @@ public interface ReportRepository extends JpaRepository<Report, Integer>{
      */
     @Query(value = "SELECT COUNT(*) FROM report_table WHERE admin_id = :adminId AND resolved_at IS NOT NULL", nativeQuery = true)
     Long countCompletedReports(@Param("adminId") int adminId);
+
+    /**
+     * Counts the number of reports filed against a specific user since a given timestamp.
+     * @param userId the ID of the user being reported
+     * @param since the timestamp from which to start counting reports
+     * @return the total number of reports filed against the specified user since the given timestamp
+     */
+    @Query(value = "SELECT COUNT(*) FROM report_table WHERE reported_user_id = :userId AND created_at >= :since", nativeQuery = true)
+    Long countReportsAgainstUserSince(@Param("userId") int userId, @Param("since") java.sql.Timestamp since);
+
 }

@@ -26,9 +26,9 @@ abstract class IEndorsementService {
   });
   Future<List<TrustPath>> getTrustPaths({required String toUserId});
   Future<Endorsement> createEndorsement({
-    required String endorseeId,
+    required int endorseeId,
     required String skillTag,
-    String? taskId,
+    int? taskId,
   });
   Future<List<SkillTag>> getSkillTags();
 }
@@ -40,8 +40,8 @@ class EndorsementService implements IEndorsementService {
   EndorsementService({Dio? dio, fb.FirebaseAuth? firebaseAuth})
       : _dio = dio ??
             Dio(BaseOptions(
-              baseUrl:
-                  'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
+              //baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
+              baseUrl: 'http://localhost:8080',
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
             )),
@@ -112,7 +112,7 @@ class EndorsementService implements IEndorsementService {
     final token = await _requireToken();
     try {
       final response = await _dio.get(
-        '/api/users/endorsement/me/summary',
+        '/api/endorsements/me/summary',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -134,12 +134,8 @@ class EndorsementService implements IEndorsementService {
   }) async {
     final token = await _requireToken();
     try {
-      final path = userId == null
-          ? '/api/users/endorsement-graph'
-          : '/api/users/$userId/endorsement-graph';
-
       final response = await _dio.get(
-        path,
+        '/api/endorsements/me/graph',
         queryParameters: {
           'depth': depth,
           if (skillTag != null && skillTag.isNotEmpty) 'skillTag': skillTag,
@@ -182,9 +178,9 @@ class EndorsementService implements IEndorsementService {
 
   @override
   Future<Endorsement> createEndorsement({
-    required String endorseeId,
+    required int endorseeId,
     required String skillTag,
-    String? taskId,
+    int? taskId,
   }) async {
     final token = await _requireToken();
     try {
@@ -217,11 +213,22 @@ class EndorsementService implements IEndorsementService {
       );
 
       final data = response.data;
-      if (data is List) {
-        return data
-            .whereType<Map<String, dynamic>>()
-            .map(SkillTag.fromJson)
-            .toList();
+      if (data is Map<String, dynamic> && data['categories'] is List) {
+        final tags = <SkillTag>[];
+        for (final category in data['categories'] as List) {
+          if (category is! Map<String, dynamic>) continue;
+          final categoryName = category['category'] as String?;
+          final skills = category['skills'];
+          if (skills is! List) continue;
+          for (final skill in skills) {
+            if (skill is! Map<String, dynamic>) continue;
+            tags.add(SkillTag.fromJson({
+              ...skill,
+              'category': categoryName,
+            }));
+          }
+        }
+        return tags;
       }
       throw EndorsementServiceException('Unexpected response shape.');
     } on DioException catch (e) {

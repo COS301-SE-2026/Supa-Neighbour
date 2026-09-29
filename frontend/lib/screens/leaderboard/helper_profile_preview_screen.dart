@@ -5,6 +5,7 @@ import '../../constants/app_colors.dart';
 import '../../models/user_model.dart';
 import '../../models/review_model.dart';
 import '../../models/helper_profile_response.dart';
+import '../../models/trust_score_breakdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 import '../reports/report_screen.dart'; 
@@ -34,7 +35,8 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
   bool _isInviting = false;
   bool _isInvited = false;
   String? _errorMessage;
-  
+  TrustScoreBreakdown? _trustBreakdown;
+
   HelperProfileResponse? _profileData;
   
   List<Review> _reviews = [];
@@ -100,6 +102,13 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
         _profileData = data;
         _isLoading = false;
       });
+
+      try {
+        final breakdown = await helperProfileService.getTrustScore(_profileData!.userId);
+        setState(() { _trustBreakdown = breakdown; });
+      } catch (_) {
+        // trust score is non-critical
+      }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
@@ -384,6 +393,10 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
             const SizedBox(height: 24),
             _buildStatsRow(),
             const SizedBox(height: 24),
+            if (_trustBreakdown != null) ...[
+              _buildTrustBreakdownSection(),
+              const SizedBox(height: 24),
+            ],
             _buildSkillsSection(),
             const SizedBox(height: 24),
             _buildAboutSection(),
@@ -525,6 +538,80 @@ class _HelperProfilePreviewScreenState extends ConsumerState<HelperProfilePrevie
       ],
     );
   }
+
+  Widget _buildTrustBreakdownSection() {
+  final breakdown = _trustBreakdown!;
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Text(
+            'Trust Breakdown',
+            style: GoogleFonts.poppins(
+              color: AppColors.charcoal(context),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Tooltip(
+            message: 'Computed by our Adaptive Trust Score Engine — '
+                'a logistic regression model trained on helper data.',
+            child: Icon(Icons.info_outline,
+                size: 16, color: AppColors.textGrey(context)),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      ...breakdown.features.map((entry) {
+        final value = entry.value;
+        final color = value >= 0.7
+            ? AppColors.success(context)
+            : value >= 0.4
+                ? const Color(0xFFE9C46A)
+                : AppColors.error(context);
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    entry.key,
+                    style: GoogleFonts.openSans(
+                      fontSize: 13,
+                      color: AppColors.charcoal(context),
+                    ),
+                  ),
+                  Text(
+                    '${(value * 100).toStringAsFixed(0)}%',
+                    style: GoogleFonts.openSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              LinearProgressIndicator(
+                value: value.clamp(0.0, 1.0),
+                backgroundColor: AppColors.surfaceGrey(context),
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+                minHeight: 6,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ],
+          ),
+        );
+      }),
+    ],
+  );
+}
+
 
   Widget _buildStatItem(String value, String label) {
     return Container(
