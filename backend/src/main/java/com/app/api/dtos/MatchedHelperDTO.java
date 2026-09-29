@@ -11,6 +11,7 @@ public class MatchedHelperDTO {
     private boolean skillMatched;
     private int helperXp;
     private String invitationStatus;
+    private double trustScore;
 
     /**
      * Constructs a MatchedHelperDTO with the specified details.
@@ -21,16 +22,17 @@ public class MatchedHelperDTO {
      * @param skillMatched indicates if the helper's skills match the requirements
      * @param helperXp the experience points of the helper
      * @param invitationStatus the status of any invitation sent to the helper
+     * @param trustScore the computed trust score scaled to [0, 5] from model
      */
-    public MatchedHelperDTO(int helperId, String helperName,
-            String neighbourhoodZone, boolean skillMatched,
-            int helperXp, String invitationStatus) {
+    public MatchedHelperDTO(int helperId, String helperName, String neighbourhoodZone, 
+            boolean skillMatched, int helperXp, String invitationStatus,double trustScore) {
         this.helperId = helperId;
         this.helperName = helperName;
         this.neighbourhoodZone = neighbourhoodZone;
         this.skillMatched = skillMatched;
         this.helperXp = helperXp;
         this.invitationStatus = invitationStatus;
+        this.trustScore = trustScore;
     }
 
     /**
@@ -85,5 +87,15 @@ public class MatchedHelperDTO {
      */
     public String getInvitationStatus() {
         return invitationStatus;
+    }
+
+
+     /**
+     * Returns the computed trust score scaled to the [0, 5] range.
+     *
+     * @return the trust score in [0, 5], or 0.0 if unavailable
+     */
+    public double getTrustScore() {
+        return trustScore;
     }
 }

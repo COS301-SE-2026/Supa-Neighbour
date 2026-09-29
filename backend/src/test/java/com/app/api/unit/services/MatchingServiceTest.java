@@ -34,6 +34,7 @@ import com.app.api.models.TaskType;
 import com.app.api.models.User;
 import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.HelperSkillRepository;
+import com.app.api.repositories.HelperAnalyticsRepository;
 import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskInvoiceRepository;
 import com.app.api.services.LocationService;
@@ -65,6 +66,9 @@ class MatchingServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    @Mock 
+    private HelperAnalyticsRepository helperAnalyticsRepo;
+
     private MatchingService matchingService;
 
     private static final int TASK_ID = 100;
@@ -76,7 +80,8 @@ class MatchingServiceTest {
     void setUp() throws Exception {
         matchingService = new MatchingService(
                 helperRepo, helperSkillRepo, taskInvitationRepo,
-                taskInvoiceRepo, notificationsService, locationService);
+                taskInvoiceRepo, notificationsService, locationService, 
+                helperAnalyticsRepo);
 
         var field = MatchingService.class.getDeclaredField("eventPublisher");
         field.setAccessible(true);

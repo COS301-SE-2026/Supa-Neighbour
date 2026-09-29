@@ -102,6 +102,9 @@ public class TaskInvoice {
     @Column(name = "instructions")
     private String instructions;
 
+    @Column(name = "review_snippet")
+    private String reviewSnippet;
+
     @OneToMany(mappedBy = "taskid", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TaskImage> images;
 
@@ -496,6 +499,24 @@ public class TaskInvoice {
      */
     public void setImages(List<TaskImage> images) {
         this.images = images;
+    }
+
+    /**
+     * Gets the review snippet linked to tasks
+     * 
+     * @return the review snippet
+     */
+    public String getReviewSnippet() {
+        return reviewSnippet;
+    }
+
+    /**
+     * Set the review snippet
+     * 
+     * @param reviewSnippet the snippet of the reviewd task
+     */
+    public void setReviewSnippet(String reviewSnippet) {
+        this.reviewSnippet = reviewSnippet;
     }
 
     /**

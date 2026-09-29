@@ -98,13 +98,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     try {
       final service = ref.read(helperProfileServiceProvider);
-      final data = await service.getTrustScore(userId);
+      // resolve userId → helperId before calling trust-score
+      // the backend trust-score endpoint expects a helper ID not a user ID
+      final helperProfile = await service.getHelperProfileByUserId(userId);
+      final data = await service.getTrustScore(helperProfile.userId);
       if (!mounted) return;
       setState(() {
         _trustScore = data;
         _isLoadingTrustScore = false;
       });
     } catch (_) {
+      // user may not be a helper — silently ignore
       if (!mounted) return;
       setState(() {
         _trustScore = null;
