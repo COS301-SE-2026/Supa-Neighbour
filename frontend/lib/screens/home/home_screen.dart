@@ -25,19 +25,24 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  int _myTasksInitialTab = 0;
 
-  final List<Widget> _screens = [
+  List<Widget> get _screens => [
     const HomeContent(),
-    const MyTasksScreen(),
+    MyTasksScreen(
+          key: ValueKey(_myTasksInitialTab),
+          initialTab: _myTasksInitialTab,
+        ),
     const InboxScreen(),
     const LeaderboardScreen(),
     const ProfileScreen(),
   ];
 
   // Method to change tab from outside
-  void changeTab(int index) {
+  void changeTab(int index, {int myTasksTab = 0}) {
     setState(() {
       _currentIndex = index;
+      _myTasksInitialTab = myTasksTab;
     });
   }
 
@@ -48,11 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: (index) => changeTab(index),
       ),
     );
   }
@@ -457,12 +458,9 @@ class _HomeContentState extends ConsumerState<HomeContent>
       ),
       TextButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const MyTasksScreen(initialTab: 0),
-            ),
-          );
+          context
+              .findAncestorStateOfType<_HomeScreenState>()
+              ?.changeTab(1, myTasksTab: 2); // 1 = My Tasks tab, 2 = Available sub-tab
         },
         child: Text(
           'See All',
