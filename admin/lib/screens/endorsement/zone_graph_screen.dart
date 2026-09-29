@@ -89,8 +89,8 @@ class _ZoneGraphScreenState extends ConsumerState<ZoneGraphScreen> {
     }
 
     for (final edge in graph.edges) {
-      final from = nodeMap[edge.endorserId];
-      final to = nodeMap[edge.endorseeId];
+      final from = nodeMap[edge.fromUserId];
+      final to = nodeMap[edge.toUserId];
       if (from == null || to == null) continue;
       gvGraph.addEdge(from, to);
     }

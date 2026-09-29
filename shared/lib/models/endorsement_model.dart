@@ -202,8 +202,8 @@ class EndorsementGraphEdge {
 
   factory EndorsementGraphEdge.fromJson(Map<String, dynamic> json) {
     return EndorsementGraphEdge(
-      endorserId: _idFromJson(json['fromUserId']),
-      endorseeId: _idFromJson(json['toUserId']),
+      fromUserId: _idFromJson(json['fromUserId']),
+      toUserId: _idFromJson(json['toUserId']),
       skillTag: json['skillTag'] as String? ?? '',
       weight: json['weight'] as int? ?? 1,
     );

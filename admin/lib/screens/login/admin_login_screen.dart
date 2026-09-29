@@ -166,7 +166,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
               ),
               
               // DEV MODE ONLY: Skip login button — automatically hidden in release builds
-              if (kDebugMode) ...[
+              /*if (kDebugMode) ...[
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () => context.go('/dashboard'),
@@ -179,7 +179,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                     ),
                   ),
                 ),
-              ],
+              ],*/
             ],
           ),
         ),
