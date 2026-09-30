@@ -38,7 +38,6 @@ class EndorsementService implements IEndorsementService {
   EndorsementService({Dio? dio, fb.FirebaseAuth? firebaseAuth})
       : _dio = dio ??
             Dio(BaseOptions(
-             // baseUrl:'http://localhost:8080',
               baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
@@ -58,7 +57,7 @@ class EndorsementService implements IEndorsementService {
     switch (statusCode) {
       case 401:
         return EndorsementServiceException(
-            'Session expired — please log in again.',
+            'Session expired - please log in again.',
             statusCode: 401);
       case 403:
         return EndorsementServiceException(

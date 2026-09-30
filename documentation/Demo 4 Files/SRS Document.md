@@ -6,7 +6,7 @@
 - [SupaNeighbour - SRS Document](#supaneighbour---srs-document)
   - [Table of Contents](#table-of-contents)
 - [1. Introduction](#1-introduction)
-  - [Business Needs:](#business-needs)
+  - [Business Needs](#business-needs)
   - [Project Scope](#project-scope)
 - [2. User Characteristics](#2-user-characteristics)
 - [3. User Stories](#3-user-stories)
@@ -15,6 +15,7 @@
   - [3. Communication (R3)](#3-communication-r3)
   - [4. Security \& Privacy (R4)](#4-security--privacy-r4)
   - [5. Gamification \& Trust Scoring (R5)](#5-gamification--trust-scoring-r5)
+  - [6. Administration (R7)](#6-administration-r7)
 - [4. Use cases](#4-use-cases)
   - [4.1 Use Cases](#41-use-cases)
   - [4.2 Use Case Diagram](#42-use-case-diagram)
@@ -38,10 +39,16 @@
   - [R6: User Interface and Accessibility](#r6-user-interface-and-accessibility)
     - [R6.1: The system shall follow design best practices for usability.](#r61-the-system-shall-follow-design-best-practices-for-usability)
     - [R6.2: The system shall provide visual feedback and guidance.](#r62-the-system-shall-provide-visual-feedback-and-guidance)
+  - [R7: Administration and Moderation](#r7-administration-and-moderation)
+    - [R7.1: The system shall allow administrators to securely authenticate and access the admin dashboard.](#r71-the-system-shall-allow-administrators-to-securely-authenticate-and-access-the-admin-dashboard)
+    - [R7.2: The system shall allow administrators to view and manage user-submitted reports.](#r72-the-system-shall-allow-administrators-to-view-and-manage-user-submitted-reports)
+    - [R7.3: The system shall log moderation actions taken against user accounts.](#r73-the-system-shall-log-moderation-actions-taken-against-user-accounts)
+    - [R7.4: The system shall allow administrators to manage their own profile.](#r74-the-system-shall-allow-administrators-to-manage-their-own-profile)
 - [6. Non-Functional Requirements](#6-non-functional-requirements)
   - [6.1 Reliability](#61-reliability)
   - [6.2 Maintainability](#62-maintainability)
   - [6.3 Availability](#63-availability)
+  - [6.4 Usability](#64-usability)
 - [7. Domain Model](#7-domain-model)
 
 ---
@@ -499,7 +506,7 @@ The system shall allow an administrator to take action on a submitted report.
 
 ## 4.1 Use Cases
 
-Please find the Use Cases Listed on the following Link: [Use Cases](/documentation/Demo%203%20Files/High%20Level%20Use%20Case%20V2.md)
+Please find the Use Cases Listed on the following Link: [Use Cases](/documentation/Demo%204%20Files/High%20Level%20Use%20Case%20V2.md)
 
 
 

@@ -81,15 +81,11 @@ enum TaskImageType { reference, completion }
 class TaskService implements ITaskService {
   final Dio _dio;
 
-  static const String _localBackendUrl = String.fromEnvironment(
-    'LOCAL_BACKEND_URL',
-    defaultValue: '',
-  );
 
   TaskService({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
-              baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net', 
+              baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               connectTimeout: const Duration(seconds: 10),// will update timeut if needed
               receiveTimeout: const Duration(seconds: 10),
             ));
@@ -171,9 +167,8 @@ class TaskService implements ITaskService {
     try {
       final token = await _getToken();
       const path = '/tasks/create';
-      final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
       final Response<Map<String, dynamic>> res = await _dio.post(
-        url,
+        path,
         data: {
           'dependentId': dependentId,
           'taskTypeId': taskTypeId,
@@ -459,9 +454,8 @@ Future<void> declineTaskInvitation(int taskId) async {
     try {
       final token = await _getToken();
       final path = '/api/taskinvoices/$taskId/images';
-      final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
       await _dio.post(
-        url,
+        path,
         data: {'imageUrls': imageUrls},
         queryParameters: {'type': type.name.toUpperCase()},
         options: token != null
@@ -482,9 +476,8 @@ Future<void> declineTaskInvitation(int taskId) async {
     try{
       final token = await _getToken();
       final path = '/api/tasks/$taskId/rate';
-      final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
       final Response<Map<String, dynamic>> res = await _dio.post(
-        url,
+        path,
         data: {
           'rating': rating,
           if(reviewSnippet != null && reviewSnippet.isNotEmpty)
@@ -520,7 +513,6 @@ Future<void> declineTaskInvitation(int taskId) async {
     try{
       final token = await _getToken();
       final path = '/api/taskinvoices/$taskId/completion-evidence';
-      final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
       final bytes = await image.readAsBytes();
 
       final formData = FormData.fromMap({
@@ -538,7 +530,7 @@ Future<void> declineTaskInvitation(int taskId) async {
       });
 
       final Response<Map<String, dynamic>> res = await _dio.post(
-        url,
+        path,
         data: formData,
         options: Options(
           headers: token != null ? {'Authorization': 'Bearer $token'} : null, 
@@ -573,9 +565,8 @@ Future<void> declineTaskInvitation(int taskId) async {
     try {
       final token = await _getToken();
       final path = '/api/taskinvoices/$taskId/completion-evidence';
-      final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
       final Response<List<dynamic>> res = await _dio.get(
-        url,
+        path,
         options: token != null
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
@@ -597,9 +588,8 @@ Future<void> declineTaskInvitation(int taskId) async {
     try {
       final token = await _getToken();
       final path = '/api/taskinvoices/$taskId/completion-decision';
-      final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
       await _dio.post(
-        url,
+        path,
         data: {
           'decision': decision,
           if (note != null) 'note': note,

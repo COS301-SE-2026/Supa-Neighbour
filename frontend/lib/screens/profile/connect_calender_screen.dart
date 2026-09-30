@@ -14,14 +14,10 @@ class ConnectCalenderScreen extends StatefulWidget {
 class _ConnectCalenderScreenState extends State<ConnectCalenderScreen> {
   bool _connecting = false;
 
-  static const String _backendBaseUrl = String.fromEnvironment(
-    'LOCAL_BACKEND_URL',
-    defaultValue: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
-  );
 
   late final Dio _localDio = Dio(
     BaseOptions(
-      baseUrl: _backendBaseUrl,
+      baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),
     ),

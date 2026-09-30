@@ -41,7 +41,6 @@ class EndorsementService implements IEndorsementService {
       : _dio = dio ??
             Dio(BaseOptions(
               baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
-              //baseUrl: 'http://localhost:8080',
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
             )),
@@ -63,7 +62,7 @@ class EndorsementService implements IEndorsementService {
             statusCode: 400);
       case 401:
         return EndorsementServiceException(
-            'Session expired — please log in again.',
+            'Session expired - please log in again.',
             statusCode: 401);
       case 403:
         return EndorsementServiceException(
