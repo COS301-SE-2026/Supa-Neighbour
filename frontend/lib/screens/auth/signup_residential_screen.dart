@@ -7,8 +7,8 @@ import 'signup_other_details_screen.dart';
 
 class SignupResidentialScreen extends StatefulWidget {
   final User user;
-  final String idToken;  
-  final String password;  
+  final String idToken;
+  final String password;
 
   const SignupResidentialScreen({
     super.key,
@@ -23,14 +23,26 @@ class SignupResidentialScreen extends StatefulWidget {
 
 class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
   final TextEditingController _streetController = TextEditingController();
-  final TextEditingController _townController = TextEditingController();
   final TextEditingController _zipCodeController = TextEditingController();
   final bool _isLoading = false;
+
+  /// Selected town from the dropdown. Null until the user picks one.
+  String? _selectedTown;
+
+  /// Available towns — restricted list.
+  static const List<String> _towns = [
+    'Hillcrest',
+    'Hatfield',
+    'Brooklyn',
+    'Sunnyside',
+    'Lynnwood',
+    'Menlyn',
+    'Menlo Park',
+  ];
 
   @override
   void dispose() {
     _streetController.dispose();
-    _townController.dispose();
     _zipCodeController.dispose();
     super.dispose();
   }
@@ -38,7 +50,7 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
   User _buildUpdatedUser() {
     return widget.user.copyWith(
       street: _streetController.text,
-      town: _townController.text,
+      town: _selectedTown ?? '',
       zipCode: _zipCodeController.text,
     );
   }
@@ -53,10 +65,10 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
       );
       return;
     }
-    if (_townController.text.isEmpty) {
+    if (_selectedTown == null || _selectedTown!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please enter your town/city'),
+          content: const Text('Please select your town'),
           backgroundColor: AppColors.primaryTeal(context),
         ),
       );
@@ -99,7 +111,7 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
     final titleSize = isSmallScreen ? 24.0 : (isLargeScreen ? 40.0 : 32.0);
     final subtitleSize = isSmallScreen ? 14.0 : (isLargeScreen ? 24.0 : 18.0);
     final buttonHeight = isSmallScreen ? 48.0 : 56.0;
-    
+
     // Spacing
     final spacing = screenHeight * 0.015;
     final largeSpacing = screenHeight * 0.03;
@@ -198,17 +210,13 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
                           _buildTextField(
                             'Street',
                             _streetController,
-                            'Enter your street address',  // Updated placeholder
+                            'Enter your street address',
                           ),
 
                           SizedBox(height: spacing),
 
-                          // Town Field
-                          _buildTextField(
-                            'Town',
-                            _townController,
-                            'Enter your town',  // Updated placeholder
-                          ),
+                          // Town Dropdown
+                          _buildTownDropdown(context, screenWidth, screenHeight),
 
                           SizedBox(height: spacing),
 
@@ -216,7 +224,7 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
                           _buildTextField(
                             'Zip Code',
                             _zipCodeController,
-                            '',  // Empty placeholder
+                            '',
                             isNumber: true,
                           ),
 
@@ -319,6 +327,81 @@ class _SignupResidentialScreenState extends State<SignupResidentialScreen> {
                 horizontal: screenWidth * 0.04,
                 vertical: screenHeight * 0.01,
               ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTownDropdown(
+    BuildContext context,
+    double screenWidth,
+    double screenHeight,
+  ) {
+    final isSmallScreen = screenWidth < 400;
+    final buttonHeight = isSmallScreen ? 48.0 : 56.0;
+    final spacing = screenHeight * 0.015;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Town',
+          style: AppTextStyles.bodyText(context).copyWith(
+            fontWeight: FontWeight.w500,
+            color: AppColors.primaryTeal(context),
+          ),
+        ),
+        SizedBox(height: spacing * 0.3),
+        Container(
+          width: double.infinity,
+          height: buttonHeight,
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(29),
+            color: AppColors.background(context),
+            border: Border.all(
+              color: AppColors.primaryTeal(context),
+              width: 2,
+            ),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedTown,
+              isExpanded: true,
+              hint: Text(
+                'Select your town',
+                style: AppTextStyles.bodyText(context).copyWith(
+                  color: AppColors.textGrey(context),
+                ),
+              ),
+              icon: Icon(
+                Icons.keyboard_arrow_down,
+                color: AppColors.primaryTeal(context),
+                size: 22,
+              ),
+              dropdownColor: AppColors.background(context),
+              borderRadius: BorderRadius.circular(20),
+              style: AppTextStyles.bodyText(context).copyWith(
+                color: AppColors.charcoal(context),
+              ),
+              items: _towns.map((town) {
+                return DropdownMenuItem<String>(
+                  value: town,
+                  child: Text(
+                    town,
+                    style: AppTextStyles.bodyText(context).copyWith(
+                      color: AppColors.charcoal(context),
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedTown = value;
+                });
+              },
             ),
           ),
         ),
