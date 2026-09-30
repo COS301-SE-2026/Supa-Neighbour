@@ -420,9 +420,9 @@ void main() {
       resetTestWindow(tester);
     });
 
-    testWidgets('navigates to SignupResidentialScreen when fields are filled', (WidgetTester tester) async {
+    testWidgets('shows snackbar when birthday is not selected', (WidgetTester tester) async {
       setLargeTestWindow(tester);
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: SignupDetailsScreen(
@@ -435,24 +435,53 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Enter first name
-      final firstNameField = find.byType(TextField).first;
-      await tester.enterText(firstNameField, 'John');
+      await tester.enterText(find.byType(TextField).first, 'John');
       await tester.pump();
-
-      // Enter last name
-      final lastNameField = find.byType(TextField).last;
-      await tester.enterText(lastNameField, 'Doe');
+      await tester.enterText(find.byType(TextField).last, 'Doe');
       await tester.pump();
 
       await tester.tap(find.text('Next'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(SignupResidentialScreen), findsOneWidget);
-      
+      expect(find.text('Please select your birthday'), findsOneWidget);
+      expect(find.byType(SignupResidentialScreen), findsNothing);
+
       resetTestWindow(tester);
     });
 
+    testWidgets('navigates to SignupResidentialScreen when fields are filled', (WidgetTester tester) async {
+      setLargeTestWindow(tester);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: SignupDetailsScreen(
+            email: testEmail,
+            idToken: testIdToken,
+            password: testPassword,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'John');
+      await tester.pump();
+      await tester.enterText(find.byType(TextField).last, 'Doe');
+      await tester.pump();
+
+      // Pick a birthday: the picker opens on the latest allowed date (exactly 18 today), so just confirm it
+      await tester.tap(find.text('Select your birthday'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Next'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SignupResidentialScreen), findsOneWidget);
+
+      resetTestWindow(tester);
+    });
     testWidgets('title has correct color', (WidgetTester tester) async {
       setLargeTestWindow(tester);
       

@@ -26,9 +26,17 @@ class SignupDetailsScreen extends StatefulWidget {
 class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  DateTime? _selectedDate;
   String _selectedGender = 'Male';
   final bool _isLoading = false;
+  static const int _minAge = 18;
+
+  DateTime get _latestAllowedDob {
+    final now = DateTime.now();
+    return DateTime(now.year - _minAge, now.month, now.day);
+  }
+
+  bool _isOldEnough(DateTime dob) => !dob.isAfter(_latestAllowedDob);
 
   @override
   void dispose() {
@@ -43,18 +51,20 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
       email: widget.email,
       firstName: _firstNameController.text,
       lastName: _lastNameController.text,
-      birthday: _selectedDate,
+      birthday: _selectedDate!,
       gender: _selectedGender,
       createdAt: widget.partialUser?.createdAt ?? DateTime.now(),
     );
   }
 
   Future<void> _selectDate(BuildContext context) async {
+    final latest = _latestAllowedDob;
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDate: _selectedDate ?? latest,
       firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
+      lastDate: latest, // blocks anyone under 18
+      helpText: 'Select your date of birth',
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -92,6 +102,25 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
       );
       return;
     }
+
+    if (_selectedDate == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Please select your birthday'),
+        backgroundColor: AppColors.primaryTeal(context),
+      ),
+    );
+    return;
+  }
+  if (!_isOldEnough(_selectedDate!)) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('You must be 18 or older to sign up'),
+        backgroundColor: AppColors.primaryTeal(context),
+      ),
+    );
+    return;
+  }
 
     final user = _buildUser();
 
@@ -301,9 +330,13 @@ class _SignupDetailsScreenState extends State<SignupDetailsScreen> {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          '${_selectedDate.toLocal()}'.split(' ')[0],
+                                          _selectedDate == null
+                                              ? 'Select your birthday'
+                                              : '${_selectedDate!.toLocal()}'.split(' ')[0],
                                           style: AppTextStyles.bodyText(context).copyWith(
-                                            color: AppColors.charcoal(context),
+                                            color: _selectedDate == null
+                                                ? AppColors.textGrey(context)
+                                                : AppColors.charcoal(context),
                                           ),
                                         ),
                                         Icon(
