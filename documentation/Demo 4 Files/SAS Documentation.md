@@ -434,42 +434,64 @@ The screenshots below show CI/CD pipeline deployment times, each staying within 
 
 ### 6.2.3 Usability
 
-A moderated usability test was conducted with 5 participants to evaluate the mobile application's usability. Participants were asked to complete 5 core tasks while being timed and observed.
+A moderated usability test was conducted with 5 participants to evaluate the mobile application's usability. Participants were asked to complete 6 core tasks while being timed and observed. Each task had a defined target completion time, and outcomes were recorded as either completed successfully, completed with assistance, or failed/abandoned.
 
 #### Task Completion Results
 
-| Task                     | Target            | Completion Rate       | Average Time         | Status         |
-| ------------------------ | ----------------- | --------------------- | -------------------- | -------------- |
-| T1: Create Account       | ≤ 2 min          | 100% (5/5)            | 1m 25s               | Pass           |
-| T2: Profile Setup        | ≤ 1.5 min        | 100% (5/5)            | 1m 10s               | Pass           |
-| T3: Post a Task          | ≤ 1.5 min        | 80% (4/5)             | 1m 35s               | Slightly above |
-| T4: Browse & Accept Task | ≤ 1.5 min        | 100% (5/5)            | 1m 20s               | Pass           |
-| T5: Navigate to Chat     | ≤ 30 sec         | 80% (4/5)             | 22s                  | Pass           |
-| **Overall**        | **< 5 min** | **92% (23/25)** | **1m 46s avg** | **Pass** |
-
-#### System Usability Scale (SUS) Results
-
-| Participant       | SUS Score      |
-| ----------------- | -------------- |
-| P1                | 100            |
-| P2                | 75             |
-| P3                | 100            |
-| P4                | 85             |
-| P5                | 57.5           |
-| **Average** | **83.5** |
-
-**Interpretation:** The average SUS score of **83.5** falls within the "Excellent" range (> 80), indicating that users found the application highly usable and would recommend it to others. The target of SUS > 70 was exceeded.
+| Task                              | Target      | Completed Successfully | Completed w/ Assistance | Failed / Abandoned | Average Time | Status          |
+| --------------------------------- | ----------- | ---------------------- | ----------------------- | ------------------ | ------------ | --------------- |
+| T1: Create Account                | ≤ 2 min     | 60% (3/5)              | 40% (2/5)               | 0% (0/5)           | 1:48         | Pass w/ support |
+| T2: Profile Setup                 | ≤ 1.5 min   | 80% (4/5)              | 20% (1/5)               | 0% (0/5)           | 0:44         | Pass            |
+| T3: Post a Task                   | ≤ 1.5 min   | 100% (5/5)             | 0% (0/5)                | 0% (0/5)           | 0:49         | Pass            |
+| T4: Browse & Accept Task          | ≤ 1.5 min   | 60% (3/5)              | 40% (2/5)               | 0% (0/5)           | 0:47         | Pass w/ support |
+| T5: Navigate to Chat              | ≤ 30 sec    | 100% (5/5)             | 0% (0/5)                | 0% (0/5)           | 0:13         | Pass            |
+| T6: Navigate to Bulletin & Post   | ≤ 120 sec   | 80% (4/5)              | 20% (1/5)               | 0% (0/5)           | 0:26         | Pass            |
+| **Overall**                       | —           | **80% (24/30)**        | **20% (6/30)**          | **0% (0/30)**      | **0:47 avg** | **Pass**        |
 
 #### Key Findings
 
 **Strengths:**
 
-- Users found the app intuitive and easy to navigate
-- The bottom navigation bar provided clear access to core features
-- Task creation and acceptance workflows were well understood
+- T3 (Post a Task) and T5 (Navigate to Chat) were completed successfully by all 5 participants without assistance. Users described the flow as "intuitive and straight to the point."
+- The chat icon placement within the Tasks section was easily discoverable, with all users locating it within 30 seconds.
+- The bulletin board tab heading and its location within the chat screen were described as clear and logically placed.
 
 **Areas for Improvement:**
 
-- Task posting took longer for some users - consider more guidance
-- Chat button discoverability could be improved for older users
-- Onboarding for first-time users could be enhanced
+- T1 (Create Account) required assistance for 2 of 5 participants, and one user noted the flow felt "a bit too long." Consider simplifying the account creation steps.
+- T2 (Profile Setup) showed a wide variance in completion time (11s to 2m), suggesting inconsistent user confidence. Additional inline guidance may help.
+- T4 (Browse & Accept Task) needed assistance for 2 of 5 participants, with one noting they "had to understand quite a bit." Improving the task acceptance UI could reduce friction.
+- T6 (Navigate to Bulletin & Post) required assistance for 1 of 5 participants, though the tab was generally well received.
+
+#### Summary
+
+All 6 tasks were completed by all participants, with no failures or abandonments. 80% of task attempts were completed independently, and the remaining 20% required minimal assistance. Overall, the application demonstrated strong usability across core flows, with the account creation, profile setup, browse/accept, and bulletin posting flows identified as areas for further refinement.
+
+![alt text](<Task 1 duration and notes.png>) ![alt text](<Task 1 chart.png>)
+
+
+
+![alt text](<Task 2 Duration and notes.png>) ![alt text](<Task 2 chart.png>)
+
+
+![alt text](<Task 3 Duration and Notes.png>) ![alt text](<Task 3 chart.png>)
+
+
+![alt text](<Task 4 Duration and notes.png>) ![alt text](<Task 4 chart.png>)
+
+
+![alt text](<Task 5 duration and notes.png>) ![alt text](<Task 5 chart.png>)
+
+
+![alt text](<Task 6 duration and notes.png>) ![alt text](chart.png)
+
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
+![alt text](image-4.png)
+![alt text](image-5.png)
+![alt text](image-6.png)
+![alt text](image-7.png)
+![alt text](image-8.png)
+![alt text](image-9.png)
+![alt text](image-10.png)
