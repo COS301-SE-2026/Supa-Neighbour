@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:google_sign_in/google_sign_in.dart';
+import '../../constants/app_colors.dart';
+import '../help/help_menu_screen.dart';
 
 class ConnectCalenderScreen extends StatefulWidget {
   const ConnectCalenderScreen({super.key});
@@ -87,7 +89,20 @@ class _ConnectCalenderScreenState extends State<ConnectCalenderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Calendar Sync')),
+      appBar: AppBar(
+        title: const Text('Calendar Sync'),
+         actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'connect_calendar');
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: _connecting
             ? const CircularProgressIndicator()

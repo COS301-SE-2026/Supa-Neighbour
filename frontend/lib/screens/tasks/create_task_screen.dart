@@ -11,6 +11,7 @@ import '../../constants/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 import '../../services/task_service.dart';
+import '../help/help_menu_screen.dart';
 
 
 class CreateTaskScreen extends ConsumerStatefulWidget {
@@ -616,6 +617,17 @@ Future<void> _submitTask() async {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'create_task');
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

@@ -57,7 +57,7 @@ class EndorsementService implements IEndorsementService {
     switch (statusCode) {
       case 401:
         return EndorsementServiceException(
-            'Session expired — please log in again.',
+            'Session expired - please log in again.',
             statusCode: 401);
       case 403:
         return EndorsementServiceException(

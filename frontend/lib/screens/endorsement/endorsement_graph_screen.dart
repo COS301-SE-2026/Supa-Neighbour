@@ -7,6 +7,7 @@ import 'package:graphview/GraphView.dart';
 import 'package:shared/shared.dart' hide AppColors;
 import '../../constants/app_colors.dart';
 import '../../providers/service_providers.dart';
+import '../help/help_menu_screen.dart';
 import '../leaderboard/helper_profile_preview_screen.dart';
 
 class EndorsementGraphScreen extends ConsumerStatefulWidget {
@@ -197,6 +198,17 @@ class _EndorsementGraphScreenState
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'endorsement_graph');
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

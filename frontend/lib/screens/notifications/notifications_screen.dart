@@ -6,6 +6,7 @@ import '../../models/notification_model.dart';
 import '../profile/settings_screen.dart';
 import '../profile/achievements_screen.dart';
 import '../../services/notification_api_service.dart';
+import '../help/help_menu_screen.dart';
 
 // Provider for notifications
 final notificationsApiServiceProvider = Provider<INotificationsApiService>((ref) {
@@ -113,6 +114,15 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'notifications');
+            },
+          ),
           if (unreadCount > 0)
             TextButton(
               onPressed: () {

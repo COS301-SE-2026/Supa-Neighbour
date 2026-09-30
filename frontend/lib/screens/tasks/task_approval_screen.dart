@@ -10,7 +10,7 @@ import '../../providers/service_providers.dart';
 import 'package:supa_neighbour/models/verification_model.dart';
 import '../../screens/tasks/task_report_screen.dart';
 import '../endorsement/endorsement_prompt_sheet.dart';
-
+import '../help/help_menu_screen.dart';
 class TaskApprovalScreen extends ConsumerStatefulWidget {
   final Task task;
 
@@ -54,6 +54,17 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'task_approval');
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -181,7 +192,9 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.surfaceGrey(context)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -449,17 +462,31 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Approve Task Completion?'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          'Approve Task Completion?',
+          style: GoogleFonts.poppins(
+            color: AppColors.charcoal(context),
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Confirming...will award XP to the helper and mark this task as complete.',
+            Text(
+              'Confirming will award XP to the helper and mark this task as complete.',
+              style: GoogleFonts.openSans(
+                color: AppColors.charcoal(context),
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Rating: ${_rating.toStringAsFixed(1)} / 5.0',
-              style: TextStyle(
+              style: GoogleFonts.openSans(
                 fontWeight: FontWeight.w600,
                 color: AppColors.citrusYellow(context),
               ),
@@ -469,14 +496,28 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.openSans(
+                color: AppColors.textGrey(context),
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: AppColors.primaryTeal(context),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: const Text('Approve'),
+            child: Text(
+              'Approve',
+              style: GoogleFonts.openSans(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),

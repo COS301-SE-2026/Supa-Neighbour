@@ -91,101 +91,271 @@ class _HelpModalContent extends StatelessWidget {
           'Manage your privacy settings',
         ],
       },
-
       'bulletin': {
-      'title': 'How to Use Bulletin',
-      'icon': Icons.announcement,
-      'items': [
-        'View community announcements from neighbours',
-        'Create posts to share news or ask for help',
-        'Filter posts by category',
-        'Search for specific posts',
-        'Tap "Helpful" to show appreciation',
-        'Report inappropriate content',
-      ],
-     },
+        'title': 'How to Use Bulletin',
+        'icon': Icons.announcement,
+        'items': [
+          'View community announcements from neighbours',
+          'Create posts to share news or ask for help',
+          'Filter posts by category',
+          'Search for specific posts',
+          'Tap "Helpful" to show appreciation',
+          'Report inappropriate content',
+        ],
+      },
+      'endorsement_graph': {
+        'title': 'How to Use Your Trust Network',
+        'icon': Icons.hub_outlined,
+        'items': [
+          'Each circle is a neighbour connected to you by endorsements',
+          'The larger centre circle is you',
+          'Lines show who has endorsed whom',
+          'Tap the skill chips at the top to filter the graph',
+          'Tap any neighbour to view their profile',
+          'Pinch to zoom in and out, drag to pan around',
+        ],
+      },
+      'admin_application': {
+        'title': 'How to Apply to be an Admin',
+        'icon': Icons.admin_panel_settings,
+        'items': [
+          'Admins help moderate the community and review reports',
+          'Tap the button to submit an application with your reason for applying',
+          'Your application is reviewed by an existing admin',
+          'You can see the status of your application on this screen',
+          'Pending means it\'s waiting for review',
+          'If approved, you\'ll gain access to the admin dashboard',
+          'If rejected, you can apply again after making changes',
+        ],
+      },
+      'my_reports': {
+        'title': 'How to Use My Reports',
+        'icon': Icons.report_outlined,
+        'items': [
+          'See all the reports you\'ve submitted',
+          'Filter by status to find pending, assigned, or resolved reports',
+          'Filter by type to narrow down to user, post, comment, or task reports',
+          'Each card shows the status, type, and reason at a glance',
+          'Resolved reports show the action taken',
+          'Pull down to refresh the list',
+        ],
+      },
+      'connect_calendar': {
+        'title': 'How to Connect Google Calendar',
+        'icon': Icons.calendar_today,
+        'items': [
+          'Sync your accepted tasks to your Google Calendar automatically',
+          'Tap the button to sign in with Google',
+          'Grant calendar access when prompted',
+          'Once connected, task dates and times appear in your calendar',
+          'You can disconnect any time from your Google Account settings',
+        ],
+      },
+      'create_task': {
+        'title': 'How to Create a Task',
+        'icon': Icons.add_task,
+        'items': [
+          'Give your task a clear title',
+          'Pick a category: Pet Care, Home Repair, and more',
+          'Capture your location so helpers can find the task',
+          'Choose a date and time',
+          'Take at least 2 photos of the task using your camera',
+          'Add instructions to help the helper',
+          'Tap Post Task when everything is filled in',
+        ],
+      },
+      'task_approval': {
+        'title': 'How to Approve a Task',
+        'icon': Icons.fact_check,
+        'items': [
+          'Review the helper\'s completion note and photos',
+          'Automatic checks show if the photos were taken at the task location',
+          'Report the task if something is wrong',
+          'Rate the helper by tapping the stars',
+          'Add a written review',
+          'Tap Approve and Rate to confirm',
+          'You will then be asked to endorse the helper',
+        ],
+      },
+      'task_completion': {
+        'title': 'How to Complete a Task',
+        'icon': Icons.task_alt,
+        'items': [
+          'Take at least 1 photo of your completed work using your camera',
+          'Capture your location so the app can verify where the photo was taken',
+          'The app checks that your photo was taken at the task location',
+          'Add a completion note to tell the requester what you did',
+          'Tap Mark as Complete when you are done',
+          'The requester will review your work and confirm completion',
+        ],
+      },
+      'available_helpers': {
+        'title': 'How to Choose a Helper',
+        'icon': Icons.people_outline,
+        'items': [
+          'See all helpers who match your task',
+          'Each helper card shows their name and invitation status',
+          'Tap a helper to view their full profile and trust score',
+          'Use the filter button to narrow the list',
+          'Use the sort button to reorder by trust or XP',
+        ],
+      },
+      'notifications': {
+        'title': 'How to Use Notifications',
+        'icon': Icons.notifications,
+        'items': [
+          'Unread notifications are marked with a coloured dot',
+          'Tap any notification to jump to the related screen',
+          'Swipe left on a notification to dismiss it',
+          'Tap Mark all read to clear the unread count',
+        ],
+      },
+      'report': {
+        'title': 'How to Submit a Report',
+        'icon': Icons.flag_outlined,
+        'items': [
+          'Select a dispute reason for task reports (No Show, Incomplete, Damage)',
+          'Write a short reason and add a description',
+          'Attach photos to support your report (optional)',
+          'Attach up to 5 photos from camera or gallery',
+          'Tap Submit Report when you are done',
+        ],
+      },
+      'achievements': {
+        'title': 'How to Use Achievements',
+        'icon': Icons.emoji_events,
+        'items': [
+          'Earned achievements are shown in full colour',
+          'Unearned achievements are shown in grey',
+          'Tap any achievement to see how to earn it',
+          'Your progress bar shows how many you have earned',
+        ],
+      },
     };
 
     final data = helpData[section] ?? helpData['home']!;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.75,
+        maxWidth: 420,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                data['icon'] as IconData,
-                color: AppColors.primaryTeal(context),
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                data['title'] as String,
-                style: GoogleFonts.poppins(
-                  color: AppColors.charcoal(context),
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+      child: SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          decoration: BoxDecoration(
+            color: AppColors.background(context),
           ),
-          const SizedBox(height: 16),
-          ...(data['items'] as List<String>).map((item) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
                   Icon(
-                    Icons.circle,
-                    size: 6,
+                    data['icon'] as IconData,
                     color: AppColors.primaryTeal(context),
+                    size: 28,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      item,
-                      style: GoogleFonts.openSans(
+                      data['title'] as String,
+                      style: GoogleFonts.poppins(
                         color: AppColors.charcoal(context),
-                        fontSize: 15,
-                        height: 1.4,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ],
               ),
-            );
-          }),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryTeal(context),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+              ...(data['items'] as List<String>).map((item) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.circle,
+                        size: 6,
+                        color: AppColors.primaryTeal(context),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          item,
+                          style: GoogleFonts.openSans(
+                            color: AppColors.charcoal(context),
+                            fontSize: 15,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryTeal(context),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Got it',
+                    style: GoogleFonts.openSans(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
-              child: Text(
-                'Got it',
-                style: GoogleFonts.openSans(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    final navigator = Navigator.of(context);
+                    navigator.pop();
+                    navigator.push(
+                      MaterialPageRoute(
+                        builder: (_) => const HelpMenuScreen(),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'More help',
+                        style: GoogleFonts.openSans(
+                          color: AppColors.primaryTeal(context),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward,
+                        size: 16,
+                        color: AppColors.primaryTeal(context),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -222,18 +392,18 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF264653)),
+          icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Help & Support',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF264653),
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -248,7 +418,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
             Text(
               'Frequently Asked Questions',
               style: GoogleFonts.poppins(
-                color: const Color(0xFF264653),
+                color: AppColors.charcoal(context),
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
@@ -268,7 +438,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceGrey(context),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -284,7 +454,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
         title: Text(
           faq['question']!,
           style: GoogleFonts.openSans(
-            color: const Color(0xFF264653),
+            color: AppColors.charcoal(context),
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -293,7 +463,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
           Text(
             faq['answer']!,
             style: GoogleFonts.openSans(
-              color: const Color(0xFF6B7280),
+              color: AppColors.textGrey(context),
               fontSize: 14,
               height: 1.5,
             ),
@@ -308,10 +478,10 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
     margin: const EdgeInsets.only(bottom: 16),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: const Color(0xFF2A9D8F).withValues(alpha: 0.05),
+      color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
       borderRadius: BorderRadius.circular(12),
       border: Border.all(
-        color: const Color(0xFF2A9D8F),
+        color: AppColors.primaryTeal(context),
         width: 1,
       ),
     ),
@@ -404,12 +574,12 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A9D8F).withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF2A9D8F),
-          width: 1,
-        ),
+      color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: AppColors.primaryTeal(context),
+        width: 1,
+      ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,7 +587,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
           Text(
             'Need more help?',
             style: GoogleFonts.poppins(
-              color: const Color(0xFF264653),
+              color: AppColors.charcoal(context),
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -426,7 +596,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
           Text(
             'If you\'re still having trouble, our support team is here to help.',
             style: GoogleFonts.openSans(
-              color: const Color(0xFF6B7280),
+              color: AppColors.textGrey(context),
               fontSize: 14,
             ),
           ),
@@ -438,7 +608,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
                 // TODO for later: Open email or contact form
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2A9D8F),
+                backgroundColor: AppColors.primaryTeal(context),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
