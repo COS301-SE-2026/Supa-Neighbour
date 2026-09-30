@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../models/report_dto.dart';
 import '../../providers/service_providers.dart';
+import '../help/help_menu_screen.dart';
+
 
 class MyReportsScreen extends ConsumerStatefulWidget {
   const MyReportsScreen({super.key});
@@ -80,6 +82,17 @@ class _MyReportsScreenState extends ConsumerState<MyReportsScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'my_reports');
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

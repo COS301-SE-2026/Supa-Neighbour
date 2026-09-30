@@ -130,6 +130,19 @@ class _HelpModalContent extends StatelessWidget {
           'If rejected, you can apply again after making changes',
         ],
       },
+
+        'my_reports': {
+        'title': 'How to Use My Reports',
+        'icon': Icons.report_outlined,
+        'items': [
+          'See all the reports you\'ve submitted',
+          'Filter by status to find pending, assigned, or resolved reports',
+          'Filter by type to narrow down to user, post, comment, or task reports',
+          'Each card shows the status, type, and reason at a glance',
+          'Resolved reports show the action taken',
+          'Pull down to refresh the list',
+        ],
+      },
     };
 
     final data = helpData[section] ?? helpData['home']!;
