@@ -6,9 +6,6 @@ import 'screens/login/admin_login_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/reports/reports_screen.dart';
 import 'screens/reports/report_detail_screen.dart';
-import 'screens/users/users_screen.dart';
-import 'screens/zones/zones_screen.dart';
-import 'screens/settings/settings_screen.dart';
 import 'widgets/admin_scaffold.dart';
 import 'screens/applications/applications_screen.dart';
 import 'screens/applications/application_detail_screen.dart';
@@ -33,20 +30,14 @@ final router = GoRouter(
     ),
     ShellRoute(
       builder: (context, state, child) {
-        int selectedIndex = 0;
+               int selectedIndex = 0;
         final location = state.uri.path;
         if (location.startsWith('/reports')) {
           selectedIndex = 1;
-        } else if (location.startsWith('/users')) {
-          selectedIndex = 2;
         } else if (location.startsWith('/trust-graph')) {
-          selectedIndex = 3;
+          selectedIndex = 2;
         } else if (location.startsWith('/applications')) {
-          selectedIndex = 4;
-        } else if (location.startsWith('/zones')) {
-          selectedIndex = 5;
-        } else if (location.startsWith('/settings')) {
-          selectedIndex = 6;
+          selectedIndex = 3;
         }
         
         return AdminScaffold(
@@ -77,13 +68,6 @@ final router = GoRouter(
             ReportDetailScreen(reportId: int.parse(state.pathParameters['id']!)),
           ),
         ),
-                GoRoute(
-          path: '/users',
-          name: 'users',
-          pageBuilder: (context, state) => _buildPageWithNoTransition(
-            const UsersScreen(),
-          ),
-        ),
         GoRoute(
           path: '/trust-graph',
           name: 'trustGraph',
@@ -107,20 +91,6 @@ final router = GoRouter(
             ),
           ),
         ),
-        GoRoute(
-          path: '/zones',
-          name: 'zones',
-          pageBuilder: (context, state) => _buildPageWithNoTransition(
-            const ZonesScreen(),
-          ),
-        ),
-        GoRoute(
-          path: '/settings',
-          name: 'settings',
-          pageBuilder: (context, state) => _buildPageWithNoTransition(
-            const SettingsScreen(),
-          ),
-        ),
       ],
     ),
   ],
@@ -128,10 +98,7 @@ final router = GoRouter(
 
 String _getTitle(String location) {
   if (location.startsWith('/reports')) return 'Reports Management';
-  if (location.startsWith('/users')) return 'User Management';
   if (location.startsWith('/trust-graph')) return 'Trust Graph';
   if (location.startsWith('/applications')) return 'Admin Applications';
-  if (location.startsWith('/zones')) return 'Neighbourhood Zones';
-  if (location.startsWith('/settings')) return 'Settings';
   return 'Dashboard';
 }
