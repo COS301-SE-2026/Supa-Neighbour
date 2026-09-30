@@ -143,6 +143,18 @@ class _HelpModalContent extends StatelessWidget {
           'Pull down to refresh the list',
         ],
       },
+
+        'connect_calendar': {
+        'title': 'How to Connect Google Calendar',
+        'icon': Icons.calendar_today,
+        'items': [
+          'Sync your accepted tasks to your Google Calendar automatically',
+          'Tap the button to sign in with Google',
+          'Grant calendar access when prompted',
+          'Once connected, task dates and times appear in your calendar',
+          'You can disconnect any time from your Google Account settings',
+        ],
+      },
     };
 
     final data = helpData[section] ?? helpData['home']!;
