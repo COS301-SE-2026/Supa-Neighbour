@@ -116,6 +116,20 @@ class _HelpModalContent extends StatelessWidget {
           'Pinch to zoom in and out, drag to pan around',
         ],
       },
+
+        'admin_application': {
+        'title': 'How to Apply to be an Admin',
+        'icon': Icons.admin_panel_settings,
+        'items': [
+          'Admins help moderate the community and review reports',
+          'Tap the button to submit an application with your reason for applying',
+          'Your application is reviewed by an existing admin',
+          'You can see the status of your application on this screen',
+          'Pending means it\'s waiting for review',
+          'If approved, you\'ll gain access to the admin dashboard',
+          'If rejected, you can apply again after making changes',
+        ],
+      },
     };
 
     final data = helpData[section] ?? helpData['home']!;
