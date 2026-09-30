@@ -61,7 +61,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
         backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.primaryTeal(context)),
+          icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -69,9 +69,9 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
         title: Text(
           'Achievements',
           style: GoogleFonts.poppins(
-            color: AppColors.primaryTeal(context),
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+          color: AppColors.charcoal(context),
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,

@@ -66,7 +66,9 @@ class CustomInputField extends StatelessWidget {
             errorText: errorText,
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.surfaceGrey(context)
+                : Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 1),

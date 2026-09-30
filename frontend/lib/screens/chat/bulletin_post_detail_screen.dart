@@ -492,9 +492,9 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
           ),
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
+            decoration: BoxDecoration(
+              color: AppColors.surfaceGrey(context),
+              boxShadow: const [
                 BoxShadow(
                   color: Color(0x0A000000),
                   blurRadius: 8,
@@ -517,11 +517,22 @@ class _BulletinPostDetailScreenState extends ConsumerState<BulletinPostDetailScr
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide(color: AppColors.surfaceGrey(context)),
+                      ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
                       ),
+                      filled: true,
+                      fillColor: AppColors.background(context),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                    onTapOutside: (_) => FocusScope.of(context).unfocus(),
+                    style: GoogleFonts.openSans(
+                      color: AppColors.charcoal(context),
+                      fontSize: 14,
                     ),
                     onSubmitted: (_) => _submitComment(),
                   ),

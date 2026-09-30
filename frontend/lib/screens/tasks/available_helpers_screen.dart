@@ -107,12 +107,6 @@ class _AvailableHelpersScreenState extends ConsumerState<AvailableHelpersScreen>
               HelpMenuScreen.showHelpModal(context, 'available_helpers');
             },
           ),
-          IconButton(
-            icon: Icon(Icons.filter_list, color: AppColors.primaryTeal(context)),
-            onPressed: () {
-              _showFilterOptions();
-            },
-          ),
         ],
       ),
       body: Padding(

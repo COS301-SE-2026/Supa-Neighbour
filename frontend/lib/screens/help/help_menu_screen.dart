@@ -392,18 +392,18 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background(context),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF264653)),
+          icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Help & Support',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF264653),
+            color: AppColors.charcoal(context),
             fontSize: 24,
             fontWeight: FontWeight.w600,
           ),
@@ -418,7 +418,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
             Text(
               'Frequently Asked Questions',
               style: GoogleFonts.poppins(
-                color: const Color(0xFF264653),
+                color: AppColors.charcoal(context),
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
@@ -438,7 +438,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceGrey(context),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -454,7 +454,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
         title: Text(
           faq['question']!,
           style: GoogleFonts.openSans(
-            color: const Color(0xFF264653),
+            color: AppColors.charcoal(context),
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -463,7 +463,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
           Text(
             faq['answer']!,
             style: GoogleFonts.openSans(
-              color: const Color(0xFF6B7280),
+              color: AppColors.textGrey(context),
               fontSize: 14,
               height: 1.5,
             ),
@@ -478,10 +478,10 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
     margin: const EdgeInsets.only(bottom: 16),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: const Color(0xFF2A9D8F).withValues(alpha: 0.05),
+      color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
       borderRadius: BorderRadius.circular(12),
       border: Border.all(
-        color: const Color(0xFF2A9D8F),
+        color: AppColors.primaryTeal(context),
         width: 1,
       ),
     ),
@@ -574,12 +574,12 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A9D8F).withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF2A9D8F),
-          width: 1,
-        ),
+      color: AppColors.primaryTeal(context).withValues(alpha: 0.05),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: AppColors.primaryTeal(context),
+        width: 1,
+      ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -587,7 +587,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
           Text(
             'Need more help?',
             style: GoogleFonts.poppins(
-              color: const Color(0xFF264653),
+              color: AppColors.charcoal(context),
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -596,7 +596,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
           Text(
             'If you\'re still having trouble, our support team is here to help.',
             style: GoogleFonts.openSans(
-              color: const Color(0xFF6B7280),
+              color: AppColors.textGrey(context),
               fontSize: 14,
             ),
           ),
@@ -608,7 +608,7 @@ class _HelpMenuScreenState extends State<HelpMenuScreen> {
                 // TODO for later: Open email or contact form
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2A9D8F),
+                backgroundColor: AppColors.primaryTeal(context),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
