@@ -93,7 +93,7 @@ class Task {
     : _resolveCategoryName(json['taskTypeId'] as int?),
     category: _resolveCategoryName(json['taskTypeId'] as int?),
     date: startDate,
-   time: _parseStartTime(json['startTime'] as String?) ?? TimeOfDay(hour: startDate.hour, minute: startDate.minute),
+   time: _parseStartTime(json['startTime'] as String?) ?? const TimeOfDay(hour: 8, minute: 0),
     xpReward: _resolveXpReward(json['taskTypeId'] as int?),
     instructions: json['instructions'] as String? ?? '',
     status: status,
