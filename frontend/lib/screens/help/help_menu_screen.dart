@@ -91,19 +91,18 @@ class _HelpModalContent extends StatelessWidget {
           'Manage your privacy settings',
         ],
       },
-
       'bulletin': {
-      'title': 'How to Use Bulletin',
-      'icon': Icons.announcement,
-      'items': [
-        'View community announcements from neighbours',
-        'Create posts to share news or ask for help',
-        'Filter posts by category',
-        'Search for specific posts',
-        'Tap "Helpful" to show appreciation',
-        'Report inappropriate content',
-      ],
-     },
+        'title': 'How to Use Bulletin',
+        'icon': Icons.announcement,
+        'items': [
+          'View community announcements from neighbours',
+          'Create posts to share news or ask for help',
+          'Filter posts by category',
+          'Search for specific posts',
+          'Tap "Helpful" to show appreciation',
+          'Report inappropriate content',
+        ],
+      },
       'endorsement_graph': {
         'title': 'How to Use Your Trust Network',
         'icon': Icons.hub_outlined,
@@ -116,8 +115,7 @@ class _HelpModalContent extends StatelessWidget {
           'Pinch to zoom in and out, drag to pan around',
         ],
       },
-
-        'admin_application': {
+      'admin_application': {
         'title': 'How to Apply to be an Admin',
         'icon': Icons.admin_panel_settings,
         'items': [
@@ -130,8 +128,7 @@ class _HelpModalContent extends StatelessWidget {
           'If rejected, you can apply again after making changes',
         ],
       },
-
-        'my_reports': {
+      'my_reports': {
         'title': 'How to Use My Reports',
         'icon': Icons.report_outlined,
         'items': [
@@ -143,8 +140,7 @@ class _HelpModalContent extends StatelessWidget {
           'Pull down to refresh the list',
         ],
       },
-
-        'connect_calendar': {
+      'connect_calendar': {
         'title': 'How to Connect Google Calendar',
         'icon': Icons.calendar_today,
         'items': [
@@ -153,6 +149,86 @@ class _HelpModalContent extends StatelessWidget {
           'Grant calendar access when prompted',
           'Once connected, task dates and times appear in your calendar',
           'You can disconnect any time from your Google Account settings',
+        ],
+      },
+      'create_task': {
+        'title': 'How to Create a Task',
+        'icon': Icons.add_task,
+        'items': [
+          'Give your task a clear title',
+          'Pick a category: Pet Care, Home Repair, and more',
+          'Capture your location so helpers can find the task',
+          'Choose a date and time',
+          'Take at least 2 photos of the task using your camera',
+          'Add instructions to help the helper',
+          'Tap Post Task when everything is filled in',
+        ],
+      },
+      'task_approval': {
+        'title': 'How to Approve a Task',
+        'icon': Icons.fact_check,
+        'items': [
+          'Review the helper\'s completion note and photos',
+          'Automatic checks show if the photos were taken at the task location',
+          'Report the task if something is wrong',
+          'Rate the helper by tapping the stars',
+          'Add a written review',
+          'Tap Approve and Rate to confirm',
+          'You will then be asked to endorse the helper',
+        ],
+      },
+      'task_completion': {
+        'title': 'How to Complete a Task',
+        'icon': Icons.task_alt,
+        'items': [
+          'Take at least 1 photo of your completed work using your camera',
+          'Capture your location so the app can verify where the photo was taken',
+          'The app checks that your photo was taken at the task location',
+          'Add a completion note to tell the requester what you did',
+          'Tap Mark as Complete when you are done',
+          'The requester will review your work and confirm completion',
+        ],
+      },
+      'available_helpers': {
+        'title': 'How to Choose a Helper',
+        'icon': Icons.people_outline,
+        'items': [
+          'See all helpers who match your task',
+          'Each helper card shows their name and invitation status',
+          'Tap a helper to view their full profile and trust score',
+          'Use the filter button to narrow the list',
+          'Use the sort button to reorder by trust or XP',
+        ],
+      },
+      'notifications': {
+        'title': 'How to Use Notifications',
+        'icon': Icons.notifications,
+        'items': [
+          'Unread notifications are marked with a coloured dot',
+          'Tap any notification to jump to the related screen',
+          'Swipe left on a notification to dismiss it',
+          'Tap Mark all read to clear the unread count',
+        ],
+      },
+      'report': {
+        'title': 'How to Submit a Report',
+        'icon': Icons.flag_outlined,
+        'items': [
+          'Select a dispute reason for task reports (No Show, Incomplete, Damage)',
+          'Write a short reason and add a description',
+          'Attach photos to support your report (optional)',
+          'Attach up to 5 photos from camera or gallery',
+          'Tap Submit Report when you are done',
+        ],
+      },
+      'achievements': {
+        'title': 'How to Use Achievements',
+        'icon': Icons.emoji_events,
+        'items': [
+          'Earned achievements are shown in full colour',
+          'Unearned achievements are shown in grey',
+          'Tap any achievement to see how to earn it',
+          'Your progress bar shows how many you have earned',
         ],
       },
     };

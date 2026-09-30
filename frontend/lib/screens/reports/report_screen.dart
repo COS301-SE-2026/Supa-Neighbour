@@ -6,6 +6,7 @@ import '../../constants/app_colors.dart';
 import '../../models/report_request.dart';
 import '../../providers/service_providers.dart';
 import 'dart:typed_data';
+import '../help/help_menu_screen.dart';
 
 /// The kind of entity being reported.
 /// Maps 1:1 onto the backend's reportType enum on submit.
@@ -338,6 +339,17 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'report');
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

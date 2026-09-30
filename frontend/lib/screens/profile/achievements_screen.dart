@@ -7,6 +7,7 @@ import '../../widgets/achievements/achievement_grid.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import '../help/help_menu_screen.dart';
 
 class AchievementsScreen extends ConsumerStatefulWidget {
   const AchievementsScreen({super.key});
@@ -75,6 +76,15 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
         ),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'achievements');
+            },
+          ),
           IconButton(
             icon: Icon(Icons.settings_outlined, color: AppColors.charcoal(context)),
             onPressed: () {

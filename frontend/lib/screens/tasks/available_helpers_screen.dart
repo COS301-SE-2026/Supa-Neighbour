@@ -7,6 +7,7 @@ import '../../constants/app_colors.dart';
 import '../../models/task_model.dart';
 import '../leaderboard/helper_profile_preview_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../help/help_menu_screen.dart';
 
 class AvailableHelpersScreen extends ConsumerStatefulWidget {
   final Task task;
@@ -97,6 +98,15 @@ class _AvailableHelpersScreenState extends ConsumerState<AvailableHelpersScreen>
         ),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'available_helpers');
+            },
+          ),
           IconButton(
             icon: Icon(Icons.filter_list, color: AppColors.primaryTeal(context)),
             onPressed: () {

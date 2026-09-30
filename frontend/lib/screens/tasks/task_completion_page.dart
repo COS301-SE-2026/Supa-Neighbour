@@ -9,6 +9,7 @@ import '../../models/task_model.dart';
 import '../../constants/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import '../help/help_menu_screen.dart';
 //import '../../services/task_service.dart';
 
 class TaskCompletionPage extends ConsumerStatefulWidget {
@@ -705,6 +706,17 @@ class _TaskCompletionPageState extends ConsumerState<TaskCompletionPage> {
         backgroundColor: AppColors.background(context),
         elevation: 0,
         foregroundColor: AppColors.charcoal(context),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'task_completion');
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

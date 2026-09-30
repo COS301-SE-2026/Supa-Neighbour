@@ -10,7 +10,7 @@ import '../../providers/service_providers.dart';
 import 'package:supa_neighbour/models/verification_model.dart';
 import '../../screens/tasks/task_report_screen.dart';
 import '../endorsement/endorsement_prompt_sheet.dart';
-
+import '../help/help_menu_screen.dart';
 class TaskApprovalScreen extends ConsumerStatefulWidget {
   final Task task;
 
@@ -54,6 +54,17 @@ class _TaskApprovalScreenState extends ConsumerState<TaskApprovalScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'task_approval');
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
