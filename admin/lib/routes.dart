@@ -6,10 +6,10 @@ import 'screens/login/admin_login_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/reports/reports_screen.dart';
 import 'screens/reports/report_detail_screen.dart';
-import 'screens/users/users_screen.dart';
-import 'screens/zones/zones_screen.dart';
-import 'screens/settings/settings_screen.dart';
 import 'widgets/admin_scaffold.dart';
+import 'screens/applications/applications_screen.dart';
+import 'screens/applications/application_detail_screen.dart';
+import 'screens/endorsement/zone_graph_screen.dart';
 
 CustomTransitionPage _buildPageWithNoTransition(Widget child) {
   return CustomTransitionPage(
@@ -30,16 +30,14 @@ final router = GoRouter(
     ),
     ShellRoute(
       builder: (context, state, child) {
-        int selectedIndex = 0;
+               int selectedIndex = 0;
         final location = state.uri.path;
         if (location.startsWith('/reports')) {
           selectedIndex = 1;
-        } else if (location.startsWith('/users')) {
+        } else if (location.startsWith('/trust-graph')) {
           selectedIndex = 2;
-        } else if (location.startsWith('/zones')) {
+        } else if (location.startsWith('/applications')) {
           selectedIndex = 3;
-        } else if (location.startsWith('/settings')) {
-          selectedIndex = 4;
         }
         
         return AdminScaffold(
@@ -71,24 +69,26 @@ final router = GoRouter(
           ),
         ),
         GoRoute(
-          path: '/users',
-          name: 'users',
+          path: '/trust-graph',
+          name: 'trustGraph',
           pageBuilder: (context, state) => _buildPageWithNoTransition(
-            const UsersScreen(),
+            const ZoneGraphScreen(),
           ),
         ),
         GoRoute(
-          path: '/zones',
-          name: 'zones',
+          path: '/applications',
+          name: 'applications',
           pageBuilder: (context, state) => _buildPageWithNoTransition(
-            const ZonesScreen(),
+            const ApplicationsScreen(),
           ),
         ),
         GoRoute(
-          path: '/settings',
-          name: 'settings',
+          path: '/applications/:id',
+          name: 'applicationDetail',
           pageBuilder: (context, state) => _buildPageWithNoTransition(
-            const SettingsScreen(),
+            ApplicationDetailScreen(
+              applicationId: int.parse(state.pathParameters['id']!),
+            ),
           ),
         ),
       ],
@@ -98,8 +98,7 @@ final router = GoRouter(
 
 String _getTitle(String location) {
   if (location.startsWith('/reports')) return 'Reports Management';
-  if (location.startsWith('/users')) return 'User Management';
-  if (location.startsWith('/zones')) return 'Neighbourhood Zones';
-  if (location.startsWith('/settings')) return 'Settings';
+  if (location.startsWith('/trust-graph')) return 'Trust Graph';
+  if (location.startsWith('/applications')) return 'Admin Applications';
   return 'Dashboard';
 }

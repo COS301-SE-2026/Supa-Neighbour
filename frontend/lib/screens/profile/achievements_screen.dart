@@ -7,6 +7,7 @@ import '../../widgets/achievements/achievement_grid.dart';
 import 'package:supa_neighbour/screens/profile/settings_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
+import '../help/help_menu_screen.dart';
 
 class AchievementsScreen extends ConsumerStatefulWidget {
   const AchievementsScreen({super.key});
@@ -60,7 +61,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
         backgroundColor: AppColors.background(context),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.primaryTeal(context)),
+          icon: Icon(Icons.arrow_back, color: AppColors.charcoal(context)),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -68,13 +69,22 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
         title: Text(
           'Achievements',
           style: GoogleFonts.poppins(
-            color: AppColors.primaryTeal(context),
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+          color: AppColors.charcoal(context),
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal(context),
+            ),
+            onPressed: () {
+              HelpMenuScreen.showHelpModal(context, 'achievements');
+            },
+          ),
           IconButton(
             icon: Icon(Icons.settings_outlined, color: AppColors.charcoal(context)),
             onPressed: () {

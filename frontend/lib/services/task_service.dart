@@ -1,8 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import '../models/task_model.dart';
+import '../models/verification_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:http_parser/http_parser.dart';
 
 
 // INTERFACE (Contract)
@@ -23,6 +26,8 @@ abstract class ITaskService {
     String? title,
     String? instructions,
     String? startTime,
+    double? taskLat,
+    double? taskLng,
   });
 
   Future<Task> updateTask({
@@ -35,6 +40,16 @@ abstract class ITaskService {
     List<String>? imageUrls,
   });
 
+  Future<VerificationResult> submitCompletionEvidence({
+    required int taskId,
+    required XFile image,
+    required DateTime capturedAt,
+    double? lat,
+    double? lng,
+    double? accuracyM,
+    String? deviceId,
+  });
+
   Future<void> deleteTask(int taskId);
   Future<Map<String, dynamic>> getUserById(int userId);
   Future<int?> getDependentIdForUser(int userId);
@@ -44,20 +59,32 @@ abstract class ITaskService {
   Future<void> declineTaskInvitation(int taskId);
   Future<List<Task>> getAvailableTasks(int currentUserId);
   Future<void> matchHelpersForTask(int taskId);
+  Future<List<VerificationResult>> getCompletionVerifications(int taskId);
 
   Future<String?> uploadTaskImage(XFile imageFile);
-  Future<void> saveTaskImages(int taskId, List<String> imageUrls);
+  Future<Map<String, dynamic>> rateTask({
+    required int taskId,
+    required int rating,
+    String? reviewSnippet,
+  });
+  Future<void> saveTaskImages(int taskId, List<String> imageUrls, {required TaskImageType type});
+  Future<void> submitCompletionDecision({
+    required int taskId,
+    required String decision, // 'CONFIRM' or 'DISPUTE'
+    String? note,
+  });
 }
 
+enum TaskImageType { reference, completion }
 
 /// responsible for all task-related API calls.
 class TaskService implements ITaskService {
   final Dio _dio;
 
+
   TaskService({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
-             // baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               baseUrl: 'https://parsebackend-cxgda4a7dthma8bt.southafricanorth-01.azurewebsites.net',
               connectTimeout: const Duration(seconds: 10),// will update timeut if needed
               receiveTimeout: const Duration(seconds: 10),
@@ -134,20 +161,25 @@ class TaskService implements ITaskService {
     String? title,
     String? instructions,
     String? startTime,
+    double? taskLat,
+    double? taskLng,
   }) async {
     try {
       final token = await _getToken();
+      const path = '/tasks/create';
       final Response<Map<String, dynamic>> res = await _dio.post(
-        '/tasks/create',
+        path,
         data: {
           'dependentId': dependentId,
           'taskTypeId': taskTypeId,
           'startDate': startDate.toIso8601String().split('T').first,
-          if(startTime != null ) 'startTime': startTime,
+          if (startTime != null) 'startTime': startTime,
           'isImmediate': isImmediate,
           'needsSpecialist': needsSpecialist,
           'title': title,
           'instructions': instructions,
+          if (taskLat != null) 'taskLat': taskLat,
+          if (taskLng != null) 'taskLng': taskLng,
         },
         options: token != null
             ? Options(headers: {'Authorization': 'Bearer $token'})
@@ -327,6 +359,9 @@ class TaskService implements ITaskService {
   Future<void> acceptTaskInvitation(int taskId) async {
     try {
       final token = await _getToken();
+      //final path = '/api/task-invitations/$taskId/accept';
+      //final url = _localBackendUrl.isNotEmpty ? '$_localBackendUrl$path' : path;
+
       await _dio.post(
         '/api/task-invitations/$taskId/accept',
         options: token != null
@@ -404,7 +439,7 @@ Future<void> declineTaskInvitation(int taskId) async {
       final res = await _dio.post(
         '/api/upload/task/image',
         data: formData,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        options: token != null ? Options(headers: {'Authorization': 'Bearer $token'}) : null,
       );
       return (res.data as Map<String, dynamic>)['imageUrl'] as String?;
     } on DioException catch (e) {
@@ -415,12 +450,14 @@ Future<void> declineTaskInvitation(int taskId) async {
   /// POST /api/taskinvoices/{taskId}/images
   /// Saves a list of uploaded image URLs to the task in the database.
   @override
-  Future<void> saveTaskImages(int taskId, List<String> imageUrls) async {
+  Future<void> saveTaskImages(int taskId, List<String> imageUrls, {required TaskImageType type}) async {
     try {
       final token = await _getToken();
+      final path = '/api/taskinvoices/$taskId/images';
       await _dio.post(
-        '/api/taskinvoices/$taskId/images',
+        path,
         data: {'imageUrls': imageUrls},
+        queryParameters: {'type': type.name.toUpperCase()},
         options: token != null
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
@@ -429,5 +466,147 @@ Future<void> declineTaskInvitation(int taskId) async {
       throw Exception("Couldn't save task images: ${e.message}");
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> rateTask({
+    required int taskId,
+    required int rating,
+    String? reviewSnippet,
+  }) async {
+    try{
+      final token = await _getToken();
+      final path = '/api/tasks/$taskId/rate';
+      final Response<Map<String, dynamic>> res = await _dio.post(
+        path,
+        data: {
+          'rating': rating,
+          if(reviewSnippet != null && reviewSnippet.isNotEmpty)
+            'reviewSnippet': reviewSnippet,
+        },
+        options: token != null ? Options(headers: {'Authorization': 'Bearer $token'}) : null,
+      );
+      return res.data!;
+    }on DioException catch (e) {
+      final data = e.response?.data;
+      String message;
+      if (data is Map && data['error'] != null) {
+        message = data['error'].toString();
+      } else if (data is String && data.isNotEmpty) {
+        message = data;
+      } else {
+        message = e.message ?? 'Failed to submit rating';
+      }
+      throw Exception(message);
+    }
+  }
+
+  @override
+  Future<VerificationResult> submitCompletionEvidence({
+    required int taskId,
+    required XFile image,
+    required DateTime capturedAt,
+    double? lat,
+    double? lng,
+    double? accuracyM,
+    String? deviceId,
+  }) async {
+    try{
+      final token = await _getToken();
+      final path = '/api/taskinvoices/$taskId/completion-evidence';
+      final bytes = await image.readAsBytes();
+
+      final formData = FormData.fromMap({
+        'file':  MultipartFile.fromBytes(
+          bytes,
+          filename: image.name,
+          contentType: MediaType('image', 'jpeg'), // camera capture is JPEG
+        ),
+        'captureSource': 'CAMERA',
+        'capturedAt': capturedAt.toUtc().toIso8601String(),
+        if (lat != null) 'lat': lat,
+        if (lng != null) 'lng': lng,
+        if (accuracyM != null) 'accuracyM': accuracyM,
+        if (deviceId != null) 'deviceId': deviceId,
+      });
+
+      final Response<Map<String, dynamic>> res = await _dio.post(
+        path,
+        data: formData,
+        options: Options(
+          headers: token != null ? {'Authorization': 'Bearer $token'} : null, 
+          sendTimeout: const Duration(seconds: 60),
+          receiveTimeout: const Duration(seconds: 60),
+        ),
+      );
+      debugPrint('[completion-evidence] status=${res.statusCode} body=${res.data}');
+
+      final result =  VerificationResult.fromJson(res.data!);
+      debugPrint('[completion-evidence] '
+      'verificationId=${result.verificationId} '
+      'status=${result.status} '
+      'score=${result.score} '
+      'locationVerified=${result.locationVerified} '
+      'distanceM=${result.distanceM} '
+      'geofenceRadiusM=${result.geofenceRadiusM} '
+      'reasons=${result.reasons} '
+      'completionImageId=${result.completionImageId}');
+      debugPrint('[completion-evidence] aiInsight=${result.aiInsight} '
+      '=> AI ${result.aiInsight != null ? "WAS called" : "was NOT called / unavailable"}');
+      return result;
+    }on DioException catch (e){
+      final data = e.response?.data;
+      final message = data is Map && data['error'] != null ? data['error'].toString() : e.message;
+      throw Exception(message ?? "Couldn't submit completion photo");
+    }
+  }
+
+  @override
+  Future<List<VerificationResult>> getCompletionVerifications(int taskId) async {
+    try {
+      final token = await _getToken();
+      final path = '/api/taskinvoices/$taskId/completion-evidence';
+      final Response<List<dynamic>> res = await _dio.get(
+        path,
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      return (res.data ?? [])
+          .map((j) => VerificationResult.fromJson(j as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw Exception("Couldn't load verification: ${e.message}");
+    }
+  }
+
+  @override
+  Future<void> submitCompletionDecision({
+    required int taskId,
+    required String decision,
+    String? note,
+  }) async {
+    try {
+      final token = await _getToken();
+      final path = '/api/taskinvoices/$taskId/completion-decision';
+      await _dio.post(
+        path,
+        data: {
+          'decision': decision,
+          if (note != null) 'note': note,
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+    } on DioException catch (e) {
+      // Backend errors come back as {"error": "..."} (400/401/403/404/409)
+      final data = e.response?.data;
+      final message = data is Map && data['error'] != null
+          ? data['error'].toString()
+          : e.message;
+      throw Exception(message ?? "Couldn't submit decision");
+    }
+  }
+
 
 }

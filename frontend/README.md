@@ -38,9 +38,10 @@ flutter pub get
 ```
 
 This is the Flutter equivalent of `npm install` — it reads `pubspec.yaml` and downloads all required packages.
----
+------------------------------------------------------------------------------------
 
 ### Step 3: Verify that everything installed correctly
+
 Verify it installed correctly:
 
 ```bash
@@ -67,18 +68,22 @@ This means Flutter cannot detect Android tooling on your machine. You have two o
 1. Download and install Android Studio on the **Windows side** (not inside WSL2) from [developer.android.com/studio](https://developer.android.com/studio)
 2. Open Android Studio → SDK Manager → install **Android SDK Platform 34**
 3. Add this to your `~/.bashrc` in WSL2 — replacing `YOUR_USERNAME` with your Windows username:
+
 ```bash
 export ANDROID_HOME='/mnt/c/Users/YOUR_USERNAME/AppData/Local/Android/Sdk' - should just be the path to the Sdk of Android Studio
 export PATH=$PATH:$ANDROID_HOME/emulator
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 ```
+
 4. Reload it:
+
 ```bash
 source ~/.bashrc
 ```
+
 5. Open Android Studio → Device Manager → create and start a virtual device
 6. Run the app:
-flutter run
+   flutter run
 
 ---
 
@@ -88,11 +93,14 @@ flutter run
 2. Go to **Settings → Developer Options** and enable **USB Debugging**
 3. Connect your phone to your computer via USB
 4. Verify Flutter detects it:
+
 ```bash
 flutter devices
 ```
+
 You should see your phone listed.
 5. Run the app:
+
 ```bash
 flutter run
 ```
@@ -130,9 +138,11 @@ export CHROME_EXECUTABLE='/mnt/c/Program Files (x86)/Microsoft/Edge/Application/
 ```
 
 Reload it:
+
 ```bash
 source ~/.bashrc
 ```
+
 This should enable you to run the web admin page now
 
 ### Step 4 — Run the web page
@@ -184,15 +194,15 @@ frontend/
 
 ## Common commands
 
-| Command | What it does |
-|---|---|
-| `flutter pub get` | Installs/updates dependencies from pubspec.yaml |
-| `flutter run -d web-server --web-port=3000` | Runs the web dashboard locally |
-| `flutter test` | Runs all unit and widget tests |
-| `flutter test --coverage`| Runs all , ensure you have lcov installed
-| `flutter analyze`| Runs Linting on all frontend files
-| `flutter build web` | Builds the web dashboard for deployment |
-| `flutter doctor` | Checks your Flutter setup for any issues |
+| Command                                       | What it does                                    |
+| --------------------------------------------- | ----------------------------------------------- |
+| `flutter pub get`                           | Installs/updates dependencies from pubspec.yaml |
+| `flutter run -d web-server --web-port=3000` | Runs the web dashboard locally                  |
+| `flutter test`                              | Runs all unit and widget tests                  |
+| `flutter test --coverage`                   | Runs all , ensure you have lcov installed       |
+| `flutter analyze`                           | Runs Linting on all frontend files              |
+| `flutter build web`                         | Builds the web dashboard for deployment         |
+| `flutter doctor`                            | Checks your Flutter setup for any issues        |
 
 ---
 

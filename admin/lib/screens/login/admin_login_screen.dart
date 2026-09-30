@@ -20,10 +20,6 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   bool _obscurePassword = true;
   String? _errorMessage;
 
-  //MOCK LOGIN - Bypass for development
-  /*void _mockLogin() {
-    context.go('/dashboard');
-  }*/
 
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
@@ -167,20 +163,6 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                       : const Text('Login'),
                 ),
               ),
-              
-              // DEV MODE: Skip login button
-              /*const SizedBox(height: 12),
-              TextButton(
-                onPressed: _mockLogin,
-                child: const Text(
-                  'Skip Login (Dev Mode)',
-                  style: TextStyle(
-                    color: AppColors.textGrey,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),*/
             ],
           ),
         ),

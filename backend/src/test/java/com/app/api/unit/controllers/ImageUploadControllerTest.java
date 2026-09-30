@@ -142,4 +142,42 @@ public class ImageUploadControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value("An unexpected error occured. Please try again"));
     }
+
+        @Test
+    void uploadReportImage_success_returns201WithUrl() throws Exception {
+        when(blobStorageService.uploadReportImage(any())).thenReturn(IMAGE_URL);
+
+        mockMvc.perform(multipart("/api/upload/report/image").file(validFile()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.imageUrl").value(IMAGE_URL));
+
+        verify(blobStorageService).uploadReportImage(any());
+    }
+
+    @Test
+    void uploadReportImage_invalidFile_returns400() throws Exception {
+        when(blobStorageService.uploadReportImage(any()))
+                .thenThrow(new IllegalArgumentException("File must be jpg, png, or gif"));
+
+        mockMvc.perform(multipart("/api/upload/report/image").file(validFile()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("File must be jpg, png, or gif"));
+    }
+
+    @Test
+    void uploadReportImage_ioException_returns500() throws Exception {
+        when(blobStorageService.uploadReportImage(any())).thenThrow(new IOException("upload failed"));
+
+        mockMvc.perform(multipart("/api/upload/report/image").file(validFile()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("An unexpected error occured. Please try again"));
+    }
+
+    @Test
+    void uploadReportImage_missingFilePart_returns400() throws Exception {
+        mockMvc.perform(multipart("/api/upload/report/image"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(blobStorageService);
+    }
 }

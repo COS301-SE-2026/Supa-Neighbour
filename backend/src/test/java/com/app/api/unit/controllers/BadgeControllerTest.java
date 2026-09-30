@@ -9,9 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.app.api.security.FirebaseAuthenticationFilter;
 import java.util.List;
-import com.app.api.models.Address;
 import com.app.api.repositories.UserRepository;
-import com.app.api.services.AddressService;
 import com.app.api.services.BadgesService;
 import com.app.api.services.FirebaseAuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;

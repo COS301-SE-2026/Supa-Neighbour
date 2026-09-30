@@ -20,6 +20,8 @@ import org.springframework.web.server.ResponseStatusException;
 import com.app.api.dtos.HelperTaskDTO;
 import com.app.api.dtos.HelperTaskResponse;
 import com.app.api.repositories.HelperTasksRepository;
+import com.app.api.repositories.TaskImageRepository;
+import com.app.api.services.BlobStorageService;
 import com.app.api.services.HelperTasksService;
  
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +29,12 @@ class HelperTasksServiceTest {
     
         @Mock
     private HelperTasksRepository helperTasksRepository;
+
+    @Mock
+    private TaskImageRepository taskImageRepository;
+
+    @Mock
+    private BlobStorageService blobStorageService;
  
     @InjectMocks
     private HelperTasksService helperTasksService;

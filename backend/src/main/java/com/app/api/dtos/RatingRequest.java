@@ -1,5 +1,7 @@
 package com.app.api.dtos;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 
 /**
@@ -9,8 +11,10 @@ import jakarta.validation.constraints.NotBlank;
  * snippet provided by the dependent after a completed task.</p>
  */
 public class RatingRequest {
-    @NotBlank(message = "rating is required")
-    private String rating;
+    @NotNull(message = "rating is required")
+    @Min(value = 1, message = "rating must be between 1 and 5")
+    @Max(value = 5, message = "rating must be between 1 and 5")
+    private Integer rating;
 
     private String reviewSnippet;
 
@@ -19,7 +23,7 @@ public class RatingRequest {
      *
      * @return the rating value
      */
-    public String getRating(){
+    public Integer getRating(){
         return rating;
     }
 
@@ -37,7 +41,7 @@ public class RatingRequest {
      *
      * @param rating the rating to assign
      */
-    public void setRating(String rating){
+    public void setRating(Integer rating){
         this.rating = rating;
     }
 

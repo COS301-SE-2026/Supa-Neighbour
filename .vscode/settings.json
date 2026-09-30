@@ -1,5 +1,6 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "automatic",
-    "java.checkstyle.configuration": "${workspaceFolder}/backend/checkstyle-suppressions.xml"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.checkstyle.configuration": "${workspaceFolder}/backend/checkstyle-suppressions.xml",
+    "cmake.sourceDirectory": "/home/blegibz/COS 301/Supa-Neighbour/frontend/linux"
 }

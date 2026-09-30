@@ -15,6 +15,10 @@ import '../tasks/task_detail_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/service_providers.dart';
 import '../notifications/notifications_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../constants/terms_conditions.dart';
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
+import '../auth/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,19 +29,32 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  int _myTasksInitialTab = 0;
 
-  final List<Widget> _screens = [
+  final ScrollController _termsScroll = ScrollController();
+
+  @override
+  void dispose() {
+    _termsScroll.dispose();
+    super.dispose();
+  }
+
+  List<Widget> get _screens => [
     const HomeContent(),
-    const MyTasksScreen(),
+    MyTasksScreen(
+          key: ValueKey(_myTasksInitialTab),
+          initialTab: _myTasksInitialTab,
+        ),
     const InboxScreen(),
     const LeaderboardScreen(),
     const ProfileScreen(),
   ];
 
   // Method to change tab from outside
-  void changeTab(int index) {
+  void changeTab(int index, {int myTasksTab = 0}) {
     setState(() {
       _currentIndex = index;
+      _myTasksInitialTab = myTasksTab;
     });
   }
 
@@ -48,14 +65,138 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: (index) => changeTab(index),
       ),
     );
   }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkTerms());
+  }
+
+  String _termsKey(String userId) => 'terms_accepted_v${kTermsVersion}_$userId';
+
+  Future<bool> _hasAcceptedTerms() async {
+    final userId = AuthSession.instance.currentUser?.id;
+    if (userId == null) return true;
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_termsKey(userId)) ?? false;
+  }
+
+  Future<void> _saveAcceptance() async {
+    final userId = AuthSession.instance.currentUser?.id;
+    if (userId == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_termsKey(userId), true);
+  }
+
+  Future<void> _checkTerms() async {
+    final accepted = await _hasAcceptedTerms();
+    if (accepted || !mounted) return;
+
+    final agreed = await _showTermsDialog();
+
+    if (agreed == true) {
+      await _saveAcceptance();
+      return;
+    } 
+    await FirebaseAuth.instance.signOut();
+    AuthSession.instance.logout(); 
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('current_user_id');
+    await prefs.remove('current_dependent_id');
+    await prefs.setBool('remember_me', false);
+
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
+  Future<bool?> _showTermsDialog() {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        final maxBodyHeight = MediaQuery.of(dialogContext).size.height * 0.4;
+
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            backgroundColor: AppColors.background(dialogContext),
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            insetPadding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+            contentPadding: const EdgeInsets.fromLTRB(24, 0, 12, 0),
+            actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            title: Text(
+              'Terms & Conditions',
+              style: GoogleFonts.poppins(
+                color: AppColors.primaryTeal(dialogContext),
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxBodyHeight),
+              child: Scrollbar(
+                controller: _termsScroll,
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  controller: _termsScroll,
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Text(
+                    kTermsText,
+                    style: GoogleFonts.openSans(
+                      color: AppColors.charcoal(dialogContext),
+                      fontSize: 13,
+                      height: 1.45,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.textGrey(dialogContext),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(
+                  'Decline',
+                  style: GoogleFonts.openSans(fontWeight: FontWeight.w600),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryTeal(dialogContext),
+                  foregroundColor: AppColors.textLight(dialogContext),
+                  elevation: 0,
+                  shape: const StadiumBorder(),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: Text(
+                  'I Accept',
+                  style: GoogleFonts.openSans(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+}
 }
 
 class HomeContent extends ConsumerStatefulWidget {
@@ -65,7 +206,8 @@ class HomeContent extends ConsumerStatefulWidget {
   ConsumerState<HomeContent> createState() => _HomeContentState();
 }
 
-class _HomeContentState extends ConsumerState<HomeContent> {
+class _HomeContentState extends ConsumerState<HomeContent>
+    with WidgetsBindingObserver {
   List<Task> _nearbyTasks = [];
   List<Task> _availableTasks = [];
    
@@ -82,8 +224,29 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _currentUser = AuthSession.instance.currentUser;
     _loadData();
+
+    // Pull fresh notifications so the unread badge is accurate on app start.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationsProvider.notifier).refresh();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Whenever the user comes back to the app, refetch the notifications list
+    // so the unread badge stays in sync with the backend.
+    if (state == AppLifecycleState.resumed) {
+      ref.read(notificationsProvider.notifier).refresh();
+    }
   }
 
   Future<void> _loadData() async {
@@ -117,10 +280,8 @@ class _HomeContentState extends ConsumerState<HomeContent> {
   }
 
  Future<void> _loadNearbyTasks() async {
-  await _loadData();
-}
-
-
+    await _loadData();
+ }
 
   String getGreeting() {
     final hour = DateTime.now().hour;
@@ -155,19 +316,58 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_none, color: AppColors.primaryTeal(context)),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NotificationsScreen(
-                    onNotificationTap: (int tabIndex) {
-                      // Call the changeTab method on the parent HomeScreen
-                      homeScreenState?.changeTab(tabIndex);
+          // Notification bell with unread badge
+          Consumer(
+            builder: (context, ref, _) {
+              final notifications = ref.watch(notificationsProvider);
+              final unreadCount =
+                  notifications.where((n) => !n.isRead).length;
+
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.notifications_none,
+                      color: AppColors.primaryTeal(context),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NotificationsScreen(
+                            onNotificationTap: (int tabIndex) {
+                              homeScreenState?.changeTab(tabIndex);
+                            },
+                          ),
+                        ),
+                      );
                     },
                   ),
-                ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: AppColors.error(context),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(minWidth: 16),
+                        child: Text(
+                          unreadCount > 99 ? '99+' : '$unreadCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
               );
             },
           ),
@@ -396,12 +596,9 @@ class _HomeContentState extends ConsumerState<HomeContent> {
       ),
       TextButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const MyTasksScreen(initialTab: 0),
-            ),
-          );
+          context
+              .findAncestorStateOfType<_HomeScreenState>()
+              ?.changeTab(1, myTasksTab: 2); // 1 = My Tasks tab, 2 = Available sub-tab
         },
         child: Text(
           'See All',

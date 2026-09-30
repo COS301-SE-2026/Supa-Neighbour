@@ -17,10 +17,11 @@ import lombok.Data;
 @Builder
 @Entity
 @Table(name = "location_table")
-public class Location {
+public class Location { 
+
     @Id
-    @Column(name = "location_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "location_id")
     private int locationid;
 
     @Column(name = "location_center_point")

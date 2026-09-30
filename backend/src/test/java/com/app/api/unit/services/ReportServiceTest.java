@@ -1,45 +1,56 @@
 package com.app.api.unit.services;
 
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import org.mockito.Mock;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.app.api.dtos.PatchReportDTO;
 import com.app.api.dtos.PatchReportResponseDTO;
 import com.app.api.dtos.ReportRequestDTO;
 import com.app.api.dtos.ReportResponseDTO;
-import org.springframework.context.ApplicationEventPublisher;
-
-import com.app.api.repositories.DependentRepository;
-import com.app.api.repositories.HelperRepository;
 import com.app.api.models.Comments;
 import com.app.api.models.Posts;
 import com.app.api.models.Report;
-import com.app.api.models.Task;
 import com.app.api.models.User;
 import com.app.api.repositories.AdminRepository;
 import com.app.api.repositories.CommentsRepository;
+import com.app.api.repositories.DependentRepository;
+import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.PostsRepository;
+import com.app.api.repositories.ReportImageRepository;
 import com.app.api.repositories.ReportRepository;
 import com.app.api.repositories.TaskRepository;
 import com.app.api.repositories.UserRepository;
 import com.app.api.services.ModerationActionService;
 import com.app.api.services.ReportDetailService;
 import com.app.api.services.ReportService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import com.app.api.dtos.ReportImageResponseDTO;
+import com.app.api.models.ReportImage;
 
 @ExtendWith(MockitoExtension.class)
 public class ReportServiceTest {
@@ -60,6 +71,8 @@ public class ReportServiceTest {
     private TaskRepository taskRepository;
     @Mock
     private AdminRepository adminRepository;
+    @Mock
+    private ReportImageRepository reportImageRepo;
 
     private ReportService reportService;
 
@@ -79,7 +92,8 @@ void setUp() {
             applicationEventPublisher,
             dependentRepository,
             helperRepository,
-            adminRepository);
+            adminRepository,
+            reportImageRepo);
 }
 
     @Test
@@ -771,4 +785,31 @@ void setUp() {
                 () -> reportService.matchReportToAdmin(1));
         assertEquals(HttpStatus.SERVICE_UNAVAILABLE, ex.getStatusCode());
     }
+
+    @Test
+    void linkImageToReport_reportNotFound_throws404() {
+        when(reportRepository.findById(1)).thenReturn(Optional.empty());
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> reportService.linkImageToReport(1, 10, "https://example.com/image.jpg"));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+
+    @Test
+    void linkImageToReport_reportFound_savesAndReturnsImage() {
+        Report report = new Report();
+        report.setReportId(1);
+
+        String imageUrl = "https://parseandcoblob.blob.core.windows.net/reports/abc.jpg";
+        ReportImage savedImage = new ReportImage(report, imageUrl);
+
+        when(reportRepository.findById(1)).thenReturn(Optional.of(report));
+        when(reportImageRepo.save(any(ReportImage.class))).thenReturn(savedImage);
+
+        ReportImageResponseDTO result = reportService.linkImageToReport(1, 10, imageUrl);
+
+        assertEquals(imageUrl, result.getImageUrl());
+        verify(reportImageRepo).save(any(ReportImage.class));
+    }
+        
 }

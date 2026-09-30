@@ -33,12 +33,15 @@ import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
 import com.app.api.models.Badges;
 import com.app.api.models.Dependent;
+import com.app.api.models.Helper;
 import com.app.api.models.HelperAnalytics;
 import com.app.api.models.Ratings;
 import com.app.api.models.Settings;
 import com.app.api.models.User;
+import com.app.api.models.Admin;
 import com.app.api.models.UserAchievement;
 import com.app.api.repositories.AddressRepository;
+import com.app.api.repositories.AdminRepository;
 import com.app.api.repositories.BadgesRepository;
 import com.app.api.repositories.DependentRepository;
 import com.app.api.repositories.HelperAnalyticsRepository;
@@ -53,7 +56,6 @@ import com.app.api.services.ModerationActionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import com.app.api.models.Helper;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
@@ -93,6 +95,9 @@ class AuthControllerTest {
 
     @Mock
     private ModerationActionService moderationActionService;
+
+    @Mock 
+    private AdminRepository adminRepository;
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
@@ -335,8 +340,14 @@ void registerUser_WhenNewUser_ReturnsOkWithUser() throws Exception {
         when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
 
         User adminUser = new User();
+        adminUser.setUserid(1);
         adminUser.setIsAdmin(true);
         when(userRepository.findByFirebaseUid("admin-uid")).thenReturn(Optional.of(adminUser));
+
+        // ⬇️ This is what's missing
+        Admin admin = new Admin();
+        admin.setUserid(adminUser); // or whatever the mapping is
+        when(adminRepository.findByUserId(1)).thenReturn(Optional.of(admin));
 
         mockMvc.perform(post("/api/auth/admin/login")
                 .header("Authorization", BEARER_TOKEN)
@@ -351,8 +362,12 @@ void registerUser_WhenNewUser_ReturnsOkWithUser() throws Exception {
         when(firebaseAuthService.verifyIdToken(RAW_TOKEN)).thenReturn(decodedToken);
 
         User regularUser = new User();
+        regularUser.setUserid(2);
         regularUser.setIsAdmin(false);
         when(userRepository.findByFirebaseUid("user-uid")).thenReturn(Optional.of(regularUser));
+
+        // ⬇️ Stub as empty so controller returns 403
+        when(adminRepository.findByUserId(2)).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/auth/admin/login")
                 .header("Authorization", BEARER_TOKEN)
@@ -371,7 +386,6 @@ void registerUser_WhenNewUser_ReturnsOkWithUser() throws Exception {
         when(userRepository.findByFirebaseUid("firebase-uid-1")).thenReturn(Optional.of(user));
         
         when(moderationActionService.isBanned(user)).thenReturn(true);
-        //when(moderationActionService.isSuspended(user)).thenReturn(false);
 
         mockMvc.perform(post("/api/auth/login")
                 .header("Authorization", BEARER_TOKEN)

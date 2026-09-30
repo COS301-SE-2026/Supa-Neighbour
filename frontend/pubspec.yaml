@@ -40,14 +40,19 @@ dependencies:
   image_picker: ^1.0.5
   firebase_core: ^4.14.0
   firebase_auth: ^6.6.1
-  shared_preferences: ^2.3.2
+  shared_preferences: ^2.5.5
   firebase_messaging: ^16.6.0
   url_launcher: ^6.3.1
   path_provider: ^2.1.2  # To get storage paths
   open_file: ^3.4.1  # To open the downloaded file
+  google_sign_in: ^6.2.1
+  flutter_local_notifications: ^17.2.3
+  graphview: ^1.5.1
+  geolocator: ^13.0.1
 
   shared:
     path: ../shared
+  http_parser: ^4.1.2
 
 
 dev_dependencies:

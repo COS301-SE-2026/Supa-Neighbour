@@ -7,15 +7,22 @@ spring:
     hikari:
       connection-timeout: 5000
       max-lifetime: 600000
+      maximum-pool-size: 10 
   jpa:
     hibernate:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+
+    flyway:
+      enabled: true
+      baseline-on-migrate: true
+      baseline-version: 0
+
 azure:
   storage:
     connection-string: ${BLOB_CONNECTION_STRING}
@@ -23,6 +30,39 @@ azure:
     profiles-container: profiles
     task-images-container: task-images
     chat-images-container: chat-images
+    report-container: reports
+
+supaneighbour:
+  vision: 
+    mode: azure-openai
+    azure-openai:
+      endpoint: ${AZURE_OPENAI_ENDPOINT:}
+      key: ${AZURE_OPENAI_KEY:}
+      deployment: ${AZURE_OPENAI_DEPLOYMENT:}
+      api-version: "2025-01-01-preview"
+    stub:
+      outcome: complete       # unused while mode is gemini, but harmless to leave
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: gemini-flash-latest
+      max-image-edge-px: 1600                  # downscale before sending (see §5.1)
+      timeout-seconds: 30
+  verification:
+    geofence-radius-m: 75
+    arrival-geofence-radius-m: 150
+    task-window-grace-minutes: 30
+    zone: Africa/Johannesburg
+    weights:
+      ai: 0.45
+      geo: 0.25
+      meta: 0.15
+      time: 0.15
+    thresholds:
+      verified: 0.75
+      needs-review: 0.45
+    max-upload-bytes: 12582912
+    allowed-mime: ["image/jpeg", "image/png"]
+    
 management:
   endpoint:
     health:
@@ -32,3 +72,8 @@ management:
     web:
       exposure:
         include: health
+google:
+  oauth:
+    client-id: ${GOOGLE_CLIENT_ID:YOUR_CLIENT_ID.apps.googleusercontent.com}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:}

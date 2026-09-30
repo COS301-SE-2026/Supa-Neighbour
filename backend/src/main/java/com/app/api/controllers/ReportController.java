@@ -1,24 +1,13 @@
 package com.app.api.controllers;
 
-import com.app.api.dtos.PatchReportDTO;
-import com.app.api.dtos.PatchReportResponseDTO;
-import com.app.api.dtos.ReportMatchResponseDTO;
-import com.app.api.dtos.ReportRequestDTO;
-import com.app.api.dtos.ReportResponseDTO;
-import com.app.api.dtos.ReportDTO;
-import com.app.api.repositories.AdminRepository;
-import com.app.api.services.FirebaseAuthService;
-import com.app.api.services.ReportService;
-import com.google.firebase.auth.FirebaseAuthException;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,10 +16,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import com.app.api.dtos.AdminDashboardDTO;
 
-import java.util.List;
-import java.util.Map;
+import com.app.api.dtos.AdminDashboardDTO;
+import com.app.api.dtos.PatchReportDTO;
+import com.app.api.dtos.PatchReportResponseDTO;
+import com.app.api.dtos.ReportDTO;
+import com.app.api.dtos.ReportImageLinkRequestDTO;
+import com.app.api.dtos.ReportImageResponseDTO;
+import com.app.api.dtos.ReportMatchResponseDTO;
+import com.app.api.dtos.ReportRequestDTO;
+import com.app.api.dtos.ReportResponseDTO;
+import com.app.api.repositories.AdminRepository;
+import com.app.api.services.FirebaseAuthService;
+import com.app.api.services.ReportService;
+import com.google.firebase.auth.FirebaseAuthException;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 /**
 
@@ -302,5 +304,43 @@ public class ReportController {
 
         AdminDashboardDTO result = reportService.getAdminDashboard(userId);
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Attaches an already-uploaded image URL to a report.
+     *
+     * <p>Extracts the Firebase token from the {@code Authorization} header,
+     * resolves the calling user, and delegates to the service layer to link
+     * the image. On success, returns the created image details with a
+     * {@code 201 Created} status.</p>
+     *
+     * @param authHeader the {@code Authorization} header containing a Bearer token
+     * @param reportId   the ID of the report to attach the image to
+     * @param request    the request body containing the image URL
+     * @return {@code 201} with the linked image details, {@code 400} for invalid
+     *         input, {@code 401} for an invalid/expired token, {@code 403} if the
+     *         caller does not own the report, or {@code 404} if the report is not found
+     */
+    @Operation(summary = "Attach an already-uploaded image URL to a report")
+    @ApiResponse(responseCode = "201", description = "Image linked successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid request body")
+    @ApiResponse(responseCode = "403", description = "Not permitted to add images to this report")
+    @ApiResponse(responseCode = "404", description = "Report not found")
+    @PostMapping("/{reportId}/images")
+    public ResponseEntity<?> linkReportImage(
+        @RequestHeader("Authorization") String authHeader,
+        @PathVariable Integer reportId,
+        @RequestBody ReportImageLinkRequestDTO request
+    ){
+        try{
+            String token = authHeader.replace("Bearer ", "");
+            int userId = firebaseAuthService.getUserIdFromToken(token);
+            ReportImageResponseDTO dto = reportService.linkImageToReport(reportId, userId, request.getImageUrl());
+            return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+        } catch (FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getReason()));
+        }
     }
 }

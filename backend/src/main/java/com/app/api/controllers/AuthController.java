@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.Optional;
 
 import com.app.api.dtos.RegisterRequest;
 import com.app.api.models.Address;
@@ -23,6 +24,7 @@ import com.app.api.models.Ratings;
 import com.app.api.models.Settings;
 import com.app.api.models.Settings.ThemeMode;
 import com.app.api.models.User;
+import com.app.api.models.Admin;
 import com.app.api.models.UserAchievement;
 import com.app.api.repositories.AddressRepository;
 import com.app.api.repositories.AdminRepository;
@@ -351,7 +353,8 @@ public class AuthController {
         } catch (RuntimeException e) {
                 return ResponseEntity.status(HttpStatus.SC_NOT_FOUND).body("User not found");
         }
-        if(!Boolean.TRUE.equals(user.getIsAdmin())){
+        Optional<Admin> admin = adminRepository.findByUserId(user.getUserid());
+        if (admin.isEmpty()) {
             return ResponseEntity.status(HttpStatus.SC_FORBIDDEN).body("Not an admin");
         }
 

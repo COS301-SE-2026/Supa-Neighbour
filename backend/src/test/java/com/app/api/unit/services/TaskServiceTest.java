@@ -37,8 +37,11 @@ import com.app.api.repositories.ChatRepository;
 import com.app.api.repositories.DependentRepository;
 import com.app.api.repositories.HelperRepository;
 import com.app.api.repositories.MessageRepository;
+import com.app.api.repositories.TaskImageRepository;
 import com.app.api.repositories.TaskInvitationRepository;
 import com.app.api.repositories.TaskRepository;
+import com.app.api.services.BlobStorageService;
+import com.app.api.services.HelperTasksService;
 import com.app.api.services.TaskService;
 
 public class TaskServiceTest
@@ -70,6 +73,15 @@ public class TaskServiceTest
     @Mock
     private TaskInvitationRepository taskInvitationRepo;
 
+    @Mock
+    private TaskImageRepository taskImageRepo;
+
+    @Mock
+    private BlobStorageService blobStorageService;
+
+    @Mock
+    private HelperTasksService helperTasksService;
+    
     @BeforeEach
     @SuppressWarnings("unused")
     void setUp()

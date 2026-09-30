@@ -1,5 +1,7 @@
 package com.app.api.dtos;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
@@ -21,6 +23,7 @@ public class HelperTaskDTO {
     private String completionNote;
     private String requesterName;
     private Integer requesterUserId;
+    private List<String> completionPhotos;
 
     /**
      * Creates a helper task data transfer object.
@@ -107,7 +110,7 @@ public class HelperTaskDTO {
     /**
      * Returns the completion note provided for the task.
      * 
-     * $@return the completion note
+     * @return the completion note
      */
     public String getCompletionNote(){
         return completionNote;
@@ -129,5 +132,24 @@ public class HelperTaskDTO {
      */
     public Integer getRequesterUserId() {
         return requesterUserId;
+    }
+
+    /**
+     * Returns the list of completionPhotos uploaded by the helper
+     *
+     * @return the completionPhotos
+     **/
+    public List<String> getCompletionPhotos(){
+        return completionPhotos;
+    }
+
+
+    /**
+     * sets the list of completionPhotos uploaded by helper
+     * 
+     * @param completionPhotos
+     */
+    public void setCompletionPhotos(List<String> completionPhotos){
+        this.completionPhotos = completionPhotos;
     }
 }

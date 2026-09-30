@@ -49,6 +49,12 @@ public class BlobStorageConfig {
     private String chatImagesContainer;
 
     /**
+     * Name of the Blob Storage container for reports
+     */
+    @Value("${azure.storage.report-container}")
+    private String reportsContainer;
+
+    /**
      * Creates an Azure {@link BlobServiceClient} using the configured
      * connection string.
      *
@@ -96,6 +102,16 @@ public class BlobStorageConfig {
     @Bean(name = "chatImagesContainerClient")
     public BlobContainerClient chatImagesContainerClient(){
         return serviceClient().getBlobContainerClient(chatImagesContainer);
+    }
+
+        /**
+     * Created a {@link BlobContainerClient} for the chat Images container
+     * 
+     * @return Azure BlobStorage client for the chat-images
+     */
+    @Bean(name = "reportsContainerClient")
+    public BlobContainerClient reportContainerClient(){
+        return serviceClient().getBlobContainerClient(reportsContainer);
     }
 
 }

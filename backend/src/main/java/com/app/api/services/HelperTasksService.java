@@ -1,6 +1,7 @@
 package com.app.api.services;
  
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -9,7 +10,13 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.app.api.dtos.HelperTaskDTO;
 import com.app.api.dtos.HelperTaskResponse;
+import com.app.api.models.TaskImage;
 import com.app.api.repositories.HelperTasksRepository;
+import com.app.api.repositories.TaskImageRepository;
+import com.app.api.repositories.TaskImageRepository;
+import com.app.api.services.BlobStorageService;
+import java.util.HashMap; 
+import java.util.Map;
 
 /**
  * Service responsible for retrieving and processing
@@ -26,14 +33,43 @@ public class HelperTasksService {
     
     private static final List<String> INVOICE_STATUSES = List.of("assigned", "in_progress", "pending_approval", "completed", "cancelled");
 
+    private final TaskImageRepository taskImageRepo;
+    private final BlobStorageService blobStorageService;
     /**
      * Constructs a {@code HelperTasksService} with the required repository.
      *
      * @param helperTasksRepository repository used to retrieve helper task
      *                              information
      */
-    public HelperTasksService(HelperTasksRepository helperTasksRepository){
+    public HelperTasksService(HelperTasksRepository helperTasksRepository, TaskImageRepository taskImageRepo, BlobStorageService blobStorageService){
         this.helperTasksRepository = helperTasksRepository;
+        this.taskImageRepo = taskImageRepo;
+        this.blobStorageService = blobStorageService;
+    }
+
+    /**
+     * Fetches completion photos for the given task IDs, grouped by task ID and
+     * returned as freshly generated SAS URLs.
+     *
+     * @param taskIds the task IDs to fetch photos for; an empty list returns an empty map
+     * @return a map of task ID to list of SAS URLs; empty if no photos are found
+     */
+    public Map<Integer, List<String>> fetchPhotosByTaskIds(List<Integer> taskIds){
+        if(taskIds.isEmpty()){
+            return Map.of();
+        }
+
+        List<TaskImage> images =
+        taskImageRepo.findByTaskid_TaskidInAndImageType(taskIds, "COMPLETION");
+        Map<Integer, List<String>> photosByTask = new HashMap<>();
+
+        for(TaskImage image : images){
+            int taskId = image.getTaskid().getTaskid();
+            String sasUrl = blobStorageService.generateTaskSasUrl(image.getImageUrl());
+            photosByTask.computeIfAbsent(taskId, k -> new ArrayList<>()).add(sasUrl);
+        }
+
+        return photosByTask;
     }
 
     /**
@@ -63,8 +99,16 @@ public class HelperTasksService {
         List<Object[]> acceptedRows = helperTasksRepository.findAcceptedTasks(helperId, limit, offset);
 
         List<HelperTaskDTO> tasks = new ArrayList<>();
+        List<Integer> taskIds = new ArrayList<>();
         for(Object[] row : acceptedRows){
-            tasks.add(mapRow(row));
+            HelperTaskDTO dto = mapRow(row);
+            tasks.add(dto);
+            taskIds.add(dto.getTaskId());
+        }
+
+        Map<Integer, List<String>> photosByTask = fetchPhotosByTaskIds(taskIds);
+        for (HelperTaskDTO dto : tasks) {
+            dto.setCompletionPhotos(photosByTask.get(dto.getTaskId()));
         }
 
         int total = helperTasksRepository.countAcceptedTasks(helperId);
@@ -110,8 +154,16 @@ public class HelperTasksService {
         List<Object[]> completedRows = helperTasksRepository.findCompletedTasks(helperId, limit, offset);
 
         List<HelperTaskDTO> tasks = new ArrayList<>();
+        List<Integer> taskIds = new ArrayList<>();
         for(Object[] row : completedRows){
-            tasks.add(mapRow(row));
+            HelperTaskDTO dto = mapRow(row);
+            tasks.add(dto);
+            taskIds.add(dto.getTaskId());
+        }
+
+        Map<Integer, List<String>> photosByTask = fetchPhotosByTaskIds(taskIds);
+        for (HelperTaskDTO dto : tasks) {
+            dto.setCompletionPhotos(photosByTask.get(dto.getTaskId()));
         }
 
         return tasks;
