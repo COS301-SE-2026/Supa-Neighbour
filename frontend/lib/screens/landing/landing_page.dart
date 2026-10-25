@@ -64,7 +64,7 @@ class _LandingPageState extends State<LandingPage> {
     ),
     _TeamMember(
       name: 'Amantle Keamogetse Temo',
-      role: 'Role',
+      role: 'Integration Engineer',
       linkedInUrl: 'https://www.linkedin.com/in/your-handle-4',
       cvPath: 'cvs/member-4.pdf',
     ),
