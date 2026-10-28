@@ -56,6 +56,16 @@ class _LandingPageState extends State<LandingPage> {
 
   static const List<Map<String, String>> _heroScreenshots = [
     {
+      'title': 'SupaNeighbour',
+      'path': 'assets/screenshots/splash-screen.jpeg',
+      'caption': 'Your neighbourly helper'
+    },
+    {
+      'title': 'Sign In',
+      'path': 'assets/screenshots/login-screen.png',
+      'caption': 'Log in and join your community'
+    },
+    {
       'title': 'Home Feed',
       'path': 'assets/screenshots/home-screen.png',
       'caption': 'Connect with neighbours nearby'
