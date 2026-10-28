@@ -387,43 +387,50 @@ class _LandingPageState extends State<LandingPage> {
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Image.asset(
-                        'assets/Logo.png',
-                        height: 32,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2A9D8F),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'S',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                  Flexible(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/Logo.png',
+                          height: 32,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2A9D8F),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'S',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'SupaNeighbour',
-                        style: GoogleFonts.poppins(
-                          color: const Color(0xFF264653),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                            );
+                          },
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            'SupaNeighbour',
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF264653),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 12),
                   ElevatedButton(
                     onPressed: _downloadApk,
                     style: ElevatedButton.styleFrom(
@@ -676,7 +683,9 @@ class _LandingPageState extends State<LandingPage> {
           ),
         ),
         const SizedBox(height: 24),
-        Row(
+        Wrap(
+          spacing: 16,
+          runSpacing: 12,
           children: [
             ElevatedButton(
               onPressed: _downloadApk,
@@ -696,7 +705,6 @@ class _LandingPageState extends State<LandingPage> {
                 ),
               ),
             ),
-            const SizedBox(width: 16),
             OutlinedButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
