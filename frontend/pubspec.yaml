@@ -84,6 +84,7 @@ flutter:
   assets:
     - assets/Logo.svg
     - assets/Logo.png
+    - assets/parse-co.png
     - assets/screenshots/
     - assets/pdf/
 
