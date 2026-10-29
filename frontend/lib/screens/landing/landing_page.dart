@@ -177,7 +177,8 @@ class _LandingPageState extends State<LandingPage> {
     if (cvPath.startsWith('http://') || cvPath.startsWith('https://')) {
       return _openUrl(Uri.parse(cvPath));
     }
-    return _openUrl(Uri.base.resolve(cvPath));
+    // Flutter web serves bundled assets under /assets/<declared path>
+    return _openUrl(Uri.base.resolve('assets/$cvPath'));
   }
 
   static const String _apkDownloadUrl =
