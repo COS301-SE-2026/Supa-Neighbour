@@ -669,18 +669,6 @@ class _LandingPageState extends State<LandingPage> {
                     },
                   ),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    width: 110,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
