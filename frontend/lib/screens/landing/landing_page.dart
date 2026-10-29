@@ -98,33 +98,36 @@ class _LandingPageState extends State<LandingPage> {
     _TeamMember(
       name: 'Blessing K Gibendi',
       role: 'Team Leader',
-      linkedInUrl: 'https://www.linkedin.com/in/your-handle-1',
-      cvPath: 'cvs/member-1.pdf',
+      linkedInUrl: 'https://www.linkedin.com/in/blessing-gibendi-774556272/',
+      cvPath: 'assets/pdf/Blessing_Gibendi_CV_final.pdf',
+      photoPath: 'assets/Blessing_Photo.png'
     ),
     _TeamMember(
       name: 'Michelle W Njoroge',
       role: 'Frontend Lead & Design',
       linkedInUrl: 'https://www.linkedin.com/in/michelle-njoroge-12264a209/',
-      cvPath: 'https://docs.google.com/document/d/1hSBp3x1ci6aT9vns7LTPsr6xdWlJlvx-Ogknh2Gbw38/edit?usp=sharing',
+      cvPath: 'assets/pdf/Michelle_Njoroge_CV.pdf',
       photoPath: 'assets/official-photo-Michelle.jpg',
     ),
     _TeamMember(
       name: 'David Ekele Kalu',
       role: 'Frontend Engineer',
-      linkedInUrl: 'https://www.linkedin.com/in/your-handle-3',
-      cvPath: 'cvs/member-3.pdf',
+      linkedInUrl: 'https://www.linkedin.com/in/david-kalu-504150402/',
+      cvPath: 'assets/pdf/David_Kalu_CV.pdf',
+      photoPath: 'assets/David_Photo.jpeg'
     ),
     _TeamMember(
       name: 'Amantle Keamogetse Temo',
       role: 'Integration Engineer',
-      linkedInUrl: 'https://www.linkedin.com/in/your-handle-4',
-      cvPath: 'cvs/member-4.pdf',
+      linkedInUrl: 'https://www.linkedin.com/in/amantle-temo-54bb6b369?utm_source=share_via&utm_content=profile&utm_medium=member_ios',
+      cvPath: 'assets/pdf/Amantle_K_Temo_CV.pdf',
     ),
     _TeamMember(
       name: 'Divo Kohler',
       role: 'Backend Engineer',
-      linkedInUrl: 'https://www.linkedin.com/in/your-handle-5',
-      cvPath: 'cvs/member-5.pdf',
+      linkedInUrl: 'https://www.linkedin.com/in/divo-kmohler-1023b6397/',
+      cvPath: 'assets/pdf/Divo_Kohler_CV.pdf',
+      photoPath: 'assets/Divo_Photo.jpeg'
     ),
   ];
 
