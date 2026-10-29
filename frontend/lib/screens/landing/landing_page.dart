@@ -9,12 +9,14 @@ class _TeamMember {
   final String role;
   final String linkedInUrl;
   final String cvPath;
+  final String? photoPath;
 
   const _TeamMember({
     required this.name,
     required this.role,
     required this.linkedInUrl,
     required this.cvPath,
+    this.photoPath,
   });
 }
 
@@ -39,6 +41,11 @@ class _LandingPageState extends State<LandingPage> {
 
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0;
+
+  // Feature Dropdown Hover State
+  OverlayEntry? _featuresOverlayEntry;
+  final LayerLink _featuresLink = LayerLink();
+  bool _isFeaturesHovered = false;
 
   // Keys for section jumping
   final GlobalKey _feature1Key = GlobalKey();
@@ -97,8 +104,9 @@ class _LandingPageState extends State<LandingPage> {
     _TeamMember(
       name: 'Michelle W Njoroge',
       role: 'Frontend Lead & Design',
-      linkedInUrl: 'https://www.linkedin.com/in/your-handle-2',
-      cvPath: 'cvs/member-2.pdf',
+      linkedInUrl: 'https://www.linkedin.com/in/michelle-njoroge-12264a209/',
+      cvPath: 'https://docs.google.com/document/d/1hSBp3x1ci6aT9vns7LTPsr6xdWlJlvx-Ogknh2Gbw38/edit?usp=sharing',
+      photoPath: 'assets/official-photo-Michelle.jpg',
     ),
     _TeamMember(
       name: 'David Ekele Kalu',
@@ -124,6 +132,9 @@ class _LandingPageState extends State<LandingPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(() {
+      if (_featuresOverlayEntry != null) {
+        _removeFeaturesDropdown();
+      }
       setState(() {
         _scrollOffset = _scrollController.offset;
       });
@@ -143,6 +154,7 @@ class _LandingPageState extends State<LandingPage> {
 
   @override
   void dispose() {
+    _removeFeaturesDropdown();
     _scrollController.dispose();
     _heroPageController.dispose();
     _carouselTimer?.cancel();
@@ -158,7 +170,12 @@ class _LandingPageState extends State<LandingPage> {
     }
   }
 
-  Future<void> _openCv(String cvPath) => _openUrl(Uri.base.resolve(cvPath));
+  Future<void> _openCv(String cvPath) {
+    if (cvPath.startsWith('http://') || cvPath.startsWith('https://')) {
+      return _openUrl(Uri.parse(cvPath));
+    }
+    return _openUrl(Uri.base.resolve(cvPath));
+  }
 
   static const String _apkDownloadUrl =
       'https://github.com/COS301-SE-2026/Supa-Neighbour/releases/download/latest-dev/supa-neighbour.apk';
@@ -365,89 +382,159 @@ class _LandingPageState extends State<LandingPage> {
     );
   }
 
+  // Hover Features Menu
   Widget _buildRichFeaturesDropdown() {
-    return PopupMenuButton<GlobalKey>(
-      tooltip: 'Show features',
-      offset: const Offset(0, 48),
-      elevation: 8,
-      shadowColor: Colors.black.withValues(alpha: 0.15),
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.black.withValues(alpha: 0.05)),
-      ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Features',
-              style: GoogleFonts.openSans(
-                color: _charcoal,
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
+    return CompositedTransformTarget(
+      link: _featuresLink,
+      child: MouseRegion(
+        onEnter: (_) => _showFeaturesDropdown(),
+        onExit: (_) {
+          _isFeaturesHovered = false;
+          Future.delayed(const Duration(milliseconds: 150), () {
+            if (!_isFeaturesHovered) {
+              _removeFeaturesDropdown();
+            }
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Features',
+                style: GoogleFonts.openSans(
+                  color: _charcoal,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
               ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: _charcoal),
-          ],
+              const SizedBox(width: 4),
+              const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: _charcoal),
+            ],
+          ),
         ),
       ),
-      onSelected: _scrollToKey,
-      itemBuilder: (context) => [
-        _buildDropdownMenuItem(
-          key: _feature1Key,
-          icon: Icons.add_task_rounded,
-          title: 'Create a Task',
-          subtitle: 'Post requests for plant care, pets & packages',
-          iconColor: _tealPrimary,
-        ),
-        _buildDropdownMenuItem(
-          key: _feature2Key,
-          icon: Icons.handshake_outlined,
-          title: 'Complete a Task',
-          subtitle: 'Help out neighbours nearby & earn rewards',
-          iconColor: _tealDark,
-        ),
-        _buildDropdownMenuItem(
-          key: _feature3Key,
-          icon: Icons.star_outline_rounded,
-          title: 'Review & Rate',
-          subtitle: 'Build trusted ratings in your community',
-          iconColor: _citrusAccent,
-        ),
-        _buildDropdownMenuItem(
-          key: _feature4Key,
-          icon: Icons.emoji_events_outlined,
-          title: 'Gamification',
-          subtitle: 'Earn XP, unlock badges & top leaderboards',
-          iconColor: _tealPrimary,
-        ),
-        _buildDropdownMenuItem(
-          key: _feature5Key,
-          icon: Icons.campaign_outlined,
-          title: 'Community Bulletin',
-          subtitle: 'Stay updated with local news & pet alerts',
-          iconColor: _charcoal,
-        ),
-      ],
     );
   }
 
-  PopupMenuItem<GlobalKey> _buildDropdownMenuItem({
+  void _showFeaturesDropdown() {
+    _isFeaturesHovered = true;
+    if (_featuresOverlayEntry != null) return;
+
+    _featuresOverlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        width: 340,
+        child: CompositedTransformFollower(
+          link: _featuresLink,
+          showWhenUnlinked: false,
+          offset: const Offset(-40, 42),
+          child: MouseRegion(
+            onEnter: (_) => _isFeaturesHovered = true,
+            onExit: (_) {
+              _isFeaturesHovered = false;
+              _removeFeaturesDropdown();
+            },
+            child: Material(
+              color: Colors.transparent,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: Transform.translate(
+                      offset: Offset(0, 10 * (1 - value)),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 24,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildHoverDropdownItem(
+                        key: _feature1Key,
+                        icon: Icons.add_task_rounded,
+                        title: 'Create a Task',
+                        subtitle: 'Post requests for plant care, pets & packages',
+                        iconColor: _tealPrimary,
+                      ),
+                      _buildHoverDropdownItem(
+                        key: _feature2Key,
+                        icon: Icons.handshake_outlined,
+                        title: 'Complete a Task',
+                        subtitle: 'Help out neighbours nearby & earn rewards',
+                        iconColor: _tealDark,
+                      ),
+                      _buildHoverDropdownItem(
+                        key: _feature3Key,
+                        icon: Icons.star_outline_rounded,
+                        title: 'Review & Rate',
+                        subtitle: 'Build trusted ratings in your community',
+                        iconColor: _citrusAccent,
+                      ),
+                      _buildHoverDropdownItem(
+                        key: _feature4Key,
+                        icon: Icons.emoji_events_outlined,
+                        title: 'Gamification',
+                        subtitle: 'Earn XP, unlock badges & top leaderboards',
+                        iconColor: _tealPrimary,
+                      ),
+                      _buildHoverDropdownItem(
+                        key: _feature5Key,
+                        icon: Icons.campaign_outlined,
+                        title: 'Community Bulletin',
+                        subtitle: 'Stay updated with local news & pet alerts',
+                        iconColor: _charcoal,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_featuresOverlayEntry!);
+  }
+
+  void _removeFeaturesDropdown() {
+    _featuresOverlayEntry?.remove();
+    _featuresOverlayEntry = null;
+  }
+
+  Widget _buildHoverDropdownItem({
     required GlobalKey key,
     required IconData icon,
     required String title,
     required String subtitle,
     required Color iconColor,
   }) {
-    return PopupMenuItem<GlobalKey>(
-      value: key,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      child: Container(
-        width: 320,
-        padding: const EdgeInsets.all(8),
+    return InkWell(
+      onTap: () {
+        _removeFeaturesDropdown();
+        _scrollToKey(key);
+      },
+      borderRadius: BorderRadius.circular(14),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1340,6 +1427,8 @@ class _LandingPageState extends State<LandingPage> {
   }
 
   Widget _buildParseCoTeamCard(_TeamMember member, Color neonAccent) {
+    final hasPhoto = member.photoPath != null;
+
     return _HoverCard(
       child: Container(
         width: 210,
@@ -1369,8 +1458,18 @@ class _LandingPageState extends State<LandingPage> {
                 color: const Color(0xFF21262D),
                 border: Border.all(color: neonAccent.withValues(alpha: 0.4)),
               ),
-              child: Center(
-                child: Icon(Icons.code_rounded, size: 36, color: neonAccent),
+              child: ClipOval(
+                child: hasPhoto
+                    ? Image.asset(
+                        member.photoPath!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Center(
+                          child: Icon(Icons.code_rounded, size: 36, color: neonAccent),
+                        ),
+                      )
+                    : Center(
+                        child: Icon(Icons.code_rounded, size: 36, color: neonAccent),
+                      ),
               ),
             ),
             const SizedBox(height: 14),
@@ -1517,7 +1616,6 @@ class _LandingPageState extends State<LandingPage> {
 // HELPER INTERACTIVE WIDGETS
 // ============================================================
 
-// Lightweight scroll-triggered entrance animation wrapper
 class ScrollAnimate extends StatefulWidget {
   final Widget child;
   final Duration duration;
