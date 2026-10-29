@@ -207,10 +207,10 @@ class _LandingPageState extends State<LandingPage> {
             child: Column(
               children: [
                 const SizedBox(height: 72),
-                _buildHeroSection(context),
+                ScrollAnimate(child: _buildHeroSection(context)),
                 _buildFeatureBlocks(context),
                 _buildWowFactorsSection(context),
-                _buildHowItWorksSection(context),
+                ScrollAnimate(child: _buildHowItWorksSection(context)),
                 _buildTeamSection(context),
                 _buildCTASection(context),
                 _buildFooter(context),
@@ -767,18 +767,20 @@ class _LandingPageState extends State<LandingPage> {
 
     return Column(
       children: features.map((f) {
-        return Container(
-          key: f['key'] as GlobalKey,
-          width: double.infinity,
-          color: f['bg'] as Color,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 80),
-          child: _constrained(
-            _buildSingleFeatureRow(
-              context: context,
-              title: f['title'] as String,
-              desc: f['desc'] as String,
-              imagePaths: f['images'] as List<String>,
-              isReversed: f['isReversed'] as bool,
+        return ScrollAnimate(
+          child: Container(
+            key: f['key'] as GlobalKey,
+            width: double.infinity,
+            color: f['bg'] as Color,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 80),
+            child: _constrained(
+              _buildSingleFeatureRow(
+                context: context,
+                title: f['title'] as String,
+                desc: f['desc'] as String,
+                imagePaths: f['images'] as List<String>,
+                isReversed: f['isReversed'] as bool,
+              ),
             ),
           ),
         );
@@ -965,63 +967,71 @@ class _LandingPageState extends State<LandingPage> {
       child: _constrained(
         Column(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: _citrusAccent.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                'WOW FACTORS',
-                style: GoogleFonts.openSans(
-                  color: _charcoal,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'What makes SupaNeighbour different',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                color: _charcoal,
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: Text(
-                'Three features that go beyond standard task sharing. '
-                'Graph algorithms, machine learning, and computer vision '
-                'applied to a real neighbourhood problem.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.openSans(
-                  color: _mutedGrey,
-                  fontSize: 18,
-                  height: 1.5,
-                ),
+            ScrollAnimate(
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _citrusAccent.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'WOW FACTORS',
+                      style: GoogleFonts.openSans(
+                        color: _charcoal,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'What makes SupaNeighbour different',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      color: _charcoal,
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 640),
+                    child: Text(
+                      'Three features that go beyond standard task sharing. '
+                      'Graph algorithms, machine learning, and computer vision '
+                      'applied to a real neighbourhood problem.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.openSans(
+                        color: _mutedGrey,
+                        fontSize: 18,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 40),
             ...wows.map((w) {
-              return Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 24),
-                color: w['bg'] as Color,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 60),
-                child: _buildWowRow(
-                  context: context,
-                  number: w['number'] as String,
-                  title: w['title'] as String,
-                  tagline: w['tagline'] as String,
-                  desc: w['desc'] as String,
-                  imagePaths: w['images'] as List<String>,
-                  isReversed: w['isReversed'] as bool,
+              return ScrollAnimate(
+                child: Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  color: w['bg'] as Color,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 60),
+                  child: _buildWowRow(
+                    context: context,
+                    number: w['number'] as String,
+                    title: w['title'] as String,
+                    tagline: w['tagline'] as String,
+                    desc: w['desc'] as String,
+                    imagePaths: w['images'] as List<String>,
+                    isReversed: w['isReversed'] as bool,
+                  ),
                 ),
               );
             }),
@@ -1221,133 +1231,121 @@ class _LandingPageState extends State<LandingPage> {
   }
 
   // ============================================================
-  // TEAM SECTION
-  // ============================================================
-
-// ============================================================
   // TEAM SECTION (Parse & Co Dark Neon Tech Theme)
   // ============================================================
   Widget _buildTeamSection(BuildContext context) {
-    // Parse & Co Brand Colors derived from logo
-    const parseCoBg = Color(0xFF0D1117);          // Deep dark tech background
-    const parseCoNeon = Color(0xFF00FFC2);        // Electric green/teal accent from logo
-    const parseCoMuted = Color(0xFF8B949E);       // Muted text color for dark mode
+    const parseCoBg = Color(0xFF0D1117);
+    const parseCoNeon = Color(0xFF00FFC2);
+    const parseCoMuted = Color(0xFF8B949E);
 
     return Container(
       key: _teamKey,
       width: double.infinity,
       decoration: const BoxDecoration(
-        // Smooth gradient transition from white to Parse & Co dark theme
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.white,        // Seamless transition from upper section
-            parseCoBg,           // Blends smoothly into dark tech section
+            Colors.white,
             parseCoBg,
-            Color(0xFF1C7A6F),   // Blends seamlessly into CTA section background
+            parseCoBg,
+            Color(0xFF1C7A6F),
           ],
           stops: [0.0, 0.15, 0.85, 1.0],
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 100),
       child: _constrained(
-        Column(
-          children: [
-            // Parse & Co Logo Badge & Monogram Icon
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: parseCoBg,
-                border: Border.all(color: parseCoNeon, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: parseCoNeon.withValues(alpha: 0.35),
-                    blurRadius: 24,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/parse-co.png',
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => Center(
-                    child: Text(
-                      'P&C',
-                      style: GoogleFonts.poppins(
-                        color: parseCoNeon,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+        ScrollAnimate(
+          child: Column(
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: parseCoBg,
+                  border: Border.all(color: parseCoNeon, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: parseCoNeon.withValues(alpha: 0.35),
+                      blurRadius: 24,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(8),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/parse-co.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => Center(
+                      child: Text(
+                        'P&C',
+                        style: GoogleFonts.poppins(
+                          color: parseCoNeon,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-
-            // Tagline Pill
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: parseCoNeon.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: parseCoNeon.withValues(alpha: 0.3)),
-              ),
-              child: Text(
-                'BUILT TO SOLVE • DESIGNED TO SCALE',
-                style: GoogleFonts.openSans(
-                  color: parseCoNeon,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: parseCoNeon.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: parseCoNeon.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  'BUILT TO SOLVE • DESIGNED TO SCALE',
+                  style: GoogleFonts.openSans(
+                    color: parseCoNeon,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // Section Heading
-            Text(
-              'Meet Parse & Co',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 38,
-                fontWeight: FontWeight.bold,
+              const SizedBox(height: 16),
+              Text(
+                'Meet Parse & Co',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 38,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'The team behind SupaNeighbour at the University of Pretoria',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(color: parseCoMuted, fontSize: 16),
-            ),
-            const SizedBox(height: 52),
-
-            // Team Cards Row
-            Wrap(
-              spacing: 20,
-              runSpacing: 20,
-              alignment: WrapAlignment.center,
-              children: _team.map((member) => _buildParseCoTeamCard(member, parseCoNeon)).toList(),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                'The team behind SupaNeighbour at the University of Pretoria',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.openSans(color: parseCoMuted, fontSize: 16),
+              ),
+              const SizedBox(height: 52),
+              Wrap(
+                spacing: 20,
+                runSpacing: 20,
+                alignment: WrapAlignment.center,
+                children: _team.map((member) => _buildParseCoTeamCard(member, parseCoNeon)).toList(),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // Dark Glassmorphic Card for Parse & Co Team Members
   Widget _buildParseCoTeamCard(_TeamMember member, Color neonAccent) {
     return _HoverCard(
       child: Container(
         width: 210,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22), // Dark card surface
+          color: const Color(0xFF161B22),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: neonAccent.withValues(alpha: 0.2),
@@ -1363,7 +1361,6 @@ class _LandingPageState extends State<LandingPage> {
         ),
         child: Column(
           children: [
-            // Member Avatar
             Container(
               width: 76,
               height: 76,
@@ -1377,8 +1374,6 @@ class _LandingPageState extends State<LandingPage> {
               ),
             ),
             const SizedBox(height: 14),
-
-            // Member Name
             Text(
               member.name,
               textAlign: TextAlign.center,
@@ -1389,8 +1384,6 @@ class _LandingPageState extends State<LandingPage> {
               ),
             ),
             const SizedBox(height: 4),
-
-            // Member Role
             Text(
               member.role,
               textAlign: TextAlign.center,
@@ -1400,8 +1393,6 @@ class _LandingPageState extends State<LandingPage> {
               ),
             ),
             const SizedBox(height: 18),
-
-            // LinkedIn Action
             OutlinedButton(
               onPressed: () => _openUrl(Uri.parse(member.linkedInUrl)),
               style: OutlinedButton.styleFrom(
@@ -1419,8 +1410,6 @@ class _LandingPageState extends State<LandingPage> {
               ),
             ),
             const SizedBox(height: 8),
-
-            // CV Action
             ElevatedButton(
               onPressed: () => _openCv(member.cvPath),
               style: ElevatedButton.styleFrom(
@@ -1444,6 +1433,7 @@ class _LandingPageState extends State<LandingPage> {
       ),
     );
   }
+
   // ============================================================
   // CTA & FOOTER
   // ============================================================
@@ -1523,7 +1513,65 @@ class _LandingPageState extends State<LandingPage> {
   }
 }
 
-// Helper Hover Effect Widgets for Dynamic Interactivity
+// ============================================================
+// HELPER INTERACTIVE WIDGETS
+// ============================================================
+
+// Lightweight scroll-triggered entrance animation wrapper
+class ScrollAnimate extends StatefulWidget {
+  final Widget child;
+  final Duration duration;
+  final double verticalOffset;
+
+  const ScrollAnimate({
+    super.key,
+    required this.child,
+    this.duration = const Duration(milliseconds: 700),
+    this.verticalOffset = 40.0,
+  });
+
+  @override
+  State<ScrollAnimate> createState() => _ScrollAnimateState();
+}
+
+class _ScrollAnimateState extends State<ScrollAnimate> {
+  bool _hasTriggered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final box = context.findRenderObject() as RenderBox?;
+        if (box != null && box.hasSize) {
+          final position = box.localToGlobal(Offset.zero);
+          final screenHeight = MediaQuery.of(context).size.height;
+          if (!_hasTriggered && position.dy < screenHeight * 0.88) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) setState(() => _hasTriggered = true);
+            });
+          }
+        }
+
+        return TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.0, end: _hasTriggered ? 1.0 : 0.0),
+          duration: widget.duration,
+          curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
+            return Opacity(
+              opacity: value,
+              child: Transform.translate(
+                offset: Offset(0, widget.verticalOffset * (1 - value)),
+                child: child,
+              ),
+            );
+          },
+          child: widget.child,
+        );
+      },
+    );
+  }
+}
+
 class _HoverCard extends StatefulWidget {
   final Widget child;
   const _HoverCard({required this.child});
