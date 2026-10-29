@@ -102,11 +102,11 @@ class _LandingPageState extends State<LandingPage> {
       cvPath: 'assets/pdf/Blessing_Gibendi_CV_final.pdf',
       photoPath: 'assets/Blessing_Photo.png'
     ),
-    _TeamMember(
+   _TeamMember(
       name: 'Michelle W Njoroge',
       role: 'Frontend Lead & Design',
       linkedInUrl: 'https://www.linkedin.com/in/michelle-njoroge-12264a209/',
-      cvPath: 'assets/pdf/Michelle_Njoroge_CV.pdf',
+      cvPath: 'https://docs.google.com/document/d/1hSBp3x1ci6aT9vns7LTPsr6xdWlJlvx-Ogknh2Gbw38/edit?usp=sharing',
       photoPath: 'assets/official-photo-Michelle.jpg',
     ),
     _TeamMember(
