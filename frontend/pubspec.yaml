@@ -84,6 +84,11 @@ flutter:
   assets:
     - assets/Logo.svg
     - assets/Logo.png
+    - assets/parse-co.png
+    - assets/official-photo-Michelle.jpg
+    - assets/Divo_Photo.jpeg
+    - assets/David_Photo.jpeg
+    - assets/Blessing_Photo.png
     - assets/screenshots/
     - assets/pdf/
 
