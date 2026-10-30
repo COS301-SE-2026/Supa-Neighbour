@@ -8,6 +8,9 @@ on:
       - 'frontend/lib/screens/style_guide/**'
       - 'frontend/lib/main_landing.dart'
       - 'frontend/lib/main_style_guide.dart'
+      - 'frontend/assets/**'
+      - 'frontend/web/**'
+      - 'frontend/pubspec.yaml'
   pull_request:
     branches: [ main, dev ]
     paths:
@@ -15,6 +18,9 @@ on:
       - 'frontend/lib/screens/style_guide/**'
       - 'frontend/lib/main_landing.dart'
       - 'frontend/lib/main_style_guide.dart'
+      - 'frontend/assets/**'
+      - 'frontend/web/**'
+      - 'frontend/pubspec.yaml'
 
 jobs:
   build:
